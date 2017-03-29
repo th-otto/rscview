@@ -566,6 +566,7 @@ AC_CONFIG_FILES([
 Makefile
 data/Makefile
 vdilib/Makefile
+aeslib/Makefile
 src/Makefile
 ])
 
