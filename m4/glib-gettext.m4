@@ -1,0 +1,1 @@
+/usr/share/aclocal/glib-gettext.m4

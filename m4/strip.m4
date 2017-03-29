@@ -1,0 +1,1 @@
+/usr/share/aclocal-1.15/strip.m4
