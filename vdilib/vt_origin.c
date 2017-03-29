@@ -1,0 +1,34 @@
+/*
+ *  $Id: vt_origin.c,v 1.7 2003/08/07 07:41:39 a_bercegeay Exp $
+ */
+
+#include "gem_vdiP.h"
+
+/** 
+ *
+ *  @param handle Device handle
+ *  @param xorigin 
+ *  @param yorigin 
+ *
+ *  @since 
+ *
+ *  @sa
+ *
+ *
+ *
+ */
+
+void
+vt_origin (short handle, short xorigin, short yorigin)
+{
+	short vdi_control[VDI_CNTRLMAX]; 
+	short vdi_intin[2];   
+	short vdi_intout[VDI_INTOUTMAX]; /* from TOS.HYP binding.... */
+	
+	VDI_PARAMS(vdi_control, vdi_intin, 0L, vdi_intout, vdi_dummy);
+	
+	vdi_intin[0] = xorigin;
+	vdi_intin[1] = yorigin;
+	
+	VDI_TRAP_ESC (vdi_params, handle, 5,83, 0,2);
+}

@@ -1,0 +1,31 @@
+/*
+ *  $Id: n_v_delete_ctab.c,v 1.6 2003/08/07 06:28:22 a_bercegeay Exp $
+ */
+
+#include "gem_vdiP.h"
+
+/** 
+ *
+ *  @param handle Device handle
+ *  @param ctab 
+ *
+ *  @return 
+ *
+ *  @since NVDI 5 ?
+ *
+ *
+ *
+ */
+
+short
+v_delete_ctab (short handle, COLOR_TAB * ctab)
+{
+	short vdi_control[VDI_CNTRLMAX]; 
+	short vdi_intout[1]; 
+
+	VDI_PARAMS(vdi_control, (short*)&ctab, 0L, vdi_intout, vdi_dummy);
+	
+	VDI_TRAP_ESC (vdi_params, handle, 206,9, 0,2);
+
+	return vdi_intout[0];
+}

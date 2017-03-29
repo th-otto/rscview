@@ -1,0 +1,34 @@
+/*
+ *  $Id: vsp_film.c,v 1.6 2003/08/07 07:38:13 a_bercegeay Exp $
+ */
+
+#include "gem_vdiP.h"
+
+/** 
+ *
+ *  @param handle Device handle
+ *  @param index 
+ *  @param lightness 
+ *
+ *  @since all VDI versions
+ *
+ *  @sa
+ *
+ *
+ *
+ */
+
+void
+vsp_film (short handle, short index, short lightness)
+{
+	short vdi_control[VDI_CNTRLMAX]; 
+	short vdi_intin[2];   
+	
+	VDI_PARAMS(vdi_control, vdi_intin, 0L, vdi_dummy, vdi_dummy );
+	
+	vdi_intin[0] = index;
+	vdi_intin[1] = lightness;
+	
+	VDI_TRAP_ESC (vdi_params, handle, 5,91, 0,2);
+}
+

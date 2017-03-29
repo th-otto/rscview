@@ -565,6 +565,7 @@ AC_SUBST([BUILD_PREFIX])
 AC_CONFIG_FILES([
 Makefile
 data/Makefile
+vdilib/Makefile
 src/Makefile
 ])
 
