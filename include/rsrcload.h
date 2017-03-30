@@ -44,6 +44,8 @@ struct _rscfile {
 	XRS_HEADER header;		/* header from file */
 	char *data;				/* file or memory contents */
 	_BOOL rsc_swap_flag;	/* wether data was swapped when loading */
+	_BOOL rsc_little_endian;
+	_BOOL rsc_xrsc_flag;
 	unsigned int allocated;	/* bitmask of allocated arrays */
 #define RSC_ALLOC_TRINDEX  0x0001
 #define RSC_ALLOC_OBJECT   0x0002
@@ -94,6 +96,7 @@ void hrelease_objs(OBJECT *objects, _UWORD num_objs);
 #define XRSC_NO_INSERT_POPUPS 0x0001
 #define XRSC_NO_ZERO_ROOT     0x0002
 #define XRSC_NO_OBFIX         0x0004
+#define XRSC_SAFETY_CHECKS    0x0008
 
 RSCFILE *xrsrc_load(const char *fname, _UWORD flags);
 _BOOL xrsrc_free(RSCFILE *file);

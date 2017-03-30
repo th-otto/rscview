@@ -919,15 +919,15 @@ static _BOOL rsc_xml_output_source_file(RSCFILE *file, XRS_HEADER *xrsc_header, 
 _BOOL rsc_xml_source(RSCFILE *file, rsc_counter *counter, _UBYTE *filename, _UBYTE *buf)
 {
 	XRS_HEADER xrsc_header;
-	_UBYTE h_ext[4];
 	_BOOL ok;
 
-	strcpy(h_ext, ".xml");
-
-	xrsc_get_header(&xrsc_header, buf);
+	xrsc_header = file->header;
+	count_trees(file, &xrsc_header, counter, TRUE);
 	if (file_create(filename, "w") == FALSE)
+	{
 		return FALSE;
+	}
 	index_trees(file, &xrsc_header, buf);
-	ok = rsc_xml_output_source_file(file, &xrsc_header, counter, buf, h_ext, "orcs_xml.tpl");
+	ok = rsc_xml_output_source_file(file, &file->header, counter, buf, NULL, "orcs_xml.tpl");
 	return file_close(ok);
 }

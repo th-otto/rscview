@@ -500,12 +500,12 @@ AC_DEFUN([AC_TRANSLATE_DEFINE], [
 ###############################################################################
 
 AH_TEMPLATE([SPEC_DEBUG], [define to 1 to get debugging code])
-AH_TEMPLATE([DEBUG_ALLOC], [define to 2 to get malloc/free debugging code])
 AC_ARG_ENABLE(debug,
 [AC_HELP_STRING(--enable-debug, [Enable debugging [default=disabled]])],
 enable_debug="$enableval", enable_debug=no)
 if test "$enable_debug" = "yes"; then
   LOCAL_CFLAGS="-g"
+  AC_DEFINE(SPEC_DEBUG)
 else
   LOCAL_CFLAGS=""
 fi

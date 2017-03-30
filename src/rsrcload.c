@@ -6,6 +6,7 @@
 #include <rsrcload.h>
 #include <ro_mem.h>
 #include <w_draw.h>
+#include <rsc.h>
 #include "fileio.h"
 
 
@@ -48,6 +49,41 @@ static ICONBLK empty_icon = {
 	0, 0, 16, 1,
 	0, 0, 7, 1
 };
+static USERBLK empty_user = { 0, 0 };
+static OBJECT empty_object = { NIL, NIL, NIL, G_BOX, OF_NONE, OS_NORMAL, {0x1181L}, 0,0, 43,5 };
+
+#undef CHECK
+
+#define OFFSET(p1, p2, type) \
+	((type)((char *)(p1) - (char *)(p2)))
+
+#define L(p) ((_LONG)(p))
+
+#define MAKEPTR(p1, offset) \
+	((char *)(p1) + (size_t)(offset))
+
+#define CHECK_SIZE(offset, size) \
+	(L(offset) < 0 || L(offset) >= L(size))
+
+#define CHECK(p) \
+	CHECK_SIZE(p, file->header.rsh_rssize)
+
+/*
+ * do not check for odd addresses
+ * of little-endian resources;
+ * they seem to be quite common
+ */
+#define IS_REALLY_ODD(p) (!file->rsc_little_endian && (L(p) & 1))
+
+#define CHECK_ODD(p) \
+	(CHECK(p) || IS_REALLY_ODD(p))
+
+
+#define RSC_OK     0 /* all fine */
+#define RSC_ERROR  1 /* is RSC file, but can't load it */
+#define RSC_NORSC  2 /* not a RSC file at all */
+#define RSC_ABORT  3 /* error loading, but don't issue message */
+#define RSC_NOFILE 4 /* file not found */
 
 /******************************************************************************/
 /*** ---------------------------------------------------------------------- ***/
@@ -339,9 +375,32 @@ static void flip_header(RS_HEADER *header)
 	header->rsh_rssize = bswap_16(header->rsh_rssize);
 }
 
+static void flip_xrsrc_header(XRS_HEADER *header)
+{
+	header->rsh_vrsn = bswap_16(header->rsh_vrsn);
+	header->rsh_extvrsn = bswap_16(header->rsh_extvrsn);
+	header->rsh_object = bswap_32(header->rsh_object);
+	header->rsh_tedinfo = bswap_32(header->rsh_tedinfo);
+	header->rsh_iconblk = bswap_32(header->rsh_iconblk);
+	header->rsh_bitblk = bswap_32(header->rsh_bitblk);
+	header->rsh_frstr = bswap_32(header->rsh_frstr);
+	header->rsh_string = bswap_32(header->rsh_string);
+	header->rsh_imdata = bswap_32(header->rsh_imdata);
+	header->rsh_frimg = bswap_32(header->rsh_frimg);
+	header->rsh_trindex = bswap_32(header->rsh_trindex);
+	header->rsh_nobs = bswap_32(header->rsh_nobs);
+	header->rsh_ntree = bswap_32(header->rsh_ntree);
+	header->rsh_nted = bswap_32(header->rsh_nted);
+	header->rsh_nib = bswap_32(header->rsh_nib);
+	header->rsh_nbb = bswap_32(header->rsh_nbb);
+	header->rsh_nstring = bswap_32(header->rsh_nstring);
+	header->rsh_nimages = bswap_32(header->rsh_nimages);
+	header->rsh_rssize = bswap_32(header->rsh_rssize);
+}
+
 /*** ---------------------------------------------------------------------- ***/
 
-#define FLIP_DATA 0
+#define FLIP_DATA 1
 
 #if FLIP_DATA
 static void flip_image(size_t words, _WORD *data)
@@ -354,24 +413,40 @@ static void flip_image(size_t words, _WORD *data)
 
 /*** ---------------------------------------------------------------------- ***/
 
-static _BOOL flip_data(RSCFILE *file)
+static _BOOL xrsc_flip_data(RSCFILE *file, _ULONG filesize)
 {
 	_UWORD i;
 	size_t words;
-
+	_ULONG offset;
+	
 	{
 		/***** flip data and mask of iconblocks *****/
 		ICONBLK *p;
 
 		p = file->rs_iconblk;
-		for (i = 0; i < file->header.rsh_nib; i++)
+		for (i = 0; i < file->header.rsh_nib; i++, p++)
 		{
 			words = iconblk_masksize(p) >> 1;
 
+			if (filesize != 0)
+			{
+				offset = OFFSET(p->ib_pmask, file->data, _ULONG);
+				if ((offset + words + words) > filesize)
+				{
+					nf_debugprintf("flip_data: iconblk[%u]: ip_pmask $%lx out of range\n", i, offset);
+					*p = empty_icon;
+					continue;
+				}
+				offset = OFFSET(p->ib_pdata, file->data, _ULONG);
+				if ((offset + words + words) > filesize)
+				{
+					nf_debugprintf("flip_data: iconblk[%u]: ip_pdata $%lx out of range\n", i, offset);
+					*p = empty_icon;
+					continue;
+				}
+			}
 			flip_image(words, p->ib_pmask);
 			flip_image(words, p->ib_pdata);
-
-			p++;
 		}
 	}
 
@@ -383,6 +458,16 @@ static _BOOL flip_data(RSCFILE *file)
 		for (i = 0; i < file->header.rsh_nbb; i++)
 		{
 			words = bitblk_datasize(pbitblk) >> 1;
+			if (filesize != 0)
+			{
+				offset = OFFSET(pbitblk[i].bi_pdata, file->data, _ULONG);
+				if ((offset + words + words) > filesize)
+				{
+					nf_debugprintf("flip_data: bitblk[%u]: bi_pdata $%lx out of range\n", i, offset);
+					pbitblk[i] = empty_bit;
+					continue;
+				}
+			}
 			flip_image(words, pbitblk[i].bi_pdata);
 		}
 	}
@@ -393,28 +478,28 @@ static _BOOL flip_data(RSCFILE *file)
 
 /*** ---------------------------------------------------------------------- ***/
 
-static __inline__ uint16_t get_word(const char *p)
+static INLINE uint16_t get_word(const char *p)
 {
 	return *((const uint16_t *)(p));
 }
 
 /*** ---------------------------------------------------------------------- ***/
 
-static __inline__ uint32_t get_long(const char *p)
+static INLINE uint32_t get_long(const char *p)
 {
 	return *((const uint32_t *)(p));
 }
 
 /*** ---------------------------------------------------------------------- ***/
 
-static __inline__ void swap_word(char *p)
+static INLINE void swap_word(char *p)
 {
 	*((uint16_t *)(p)) = bswap_16(*((uint16_t *)(p)));
 }
 
 /*** ---------------------------------------------------------------------- ***/
 
-static __inline__ void swap_long(char *p)
+static INLINE void swap_long(char *p)
 {
 	*((uint32_t *)(p)) = bswap_32(*((uint32_t *)(p)));
 }
@@ -490,15 +575,39 @@ static void flip_iconblk(char *blk)
 
 /*** ---------------------------------------------------------------------- ***/
 
-static _BOOL flip_rsc(XRS_HEADER *header, char *rsc_buffer)
+static _BOOL xrsc_flip_rsc(RSCFILE *file, _ULONG filesize)
 {
 	_UWORD i;
+	char *rsc_buffer = file->data;
+	XRS_HEADER *header = &file->header;
+	
+#if FLIP_DATA
+	/*
+	 * we access image data as big-endian always,
+	 * so swap it now when saving a file,
+	 * before their pointers are also swapped
+	 */
+	if (HOST_BYTE_ORDER == BYTE_ORDER_BIG_ENDIAN)
+	{
+		if (filesize == 0)
+			xrsc_flip_data(file, filesize);
+	}
+#endif
 
 	{
 		/***** fix objects *****/
 		char *obj;
 
-		obj = rsc_buffer + header->rsh_object;
+		if (filesize != 0)
+		{
+			if (header->rsh_object > header->rsh_rssize ||
+				(header->rsh_nobs > 0 && header->rsh_object + header->rsh_nobs * RSC_SIZEOF_OBJECT > header->rsh_rssize))
+			{
+				nf_debugprintf("swap: rsh_object %lx[%lx] out of range\n", header->rsh_object, header->rsh_nobs);
+				return FALSE;
+			}
+		}
+		obj = MAKEPTR(rsc_buffer, header->rsh_object);
 		for (i = 0; i < header->rsh_nobs; i++, obj += RSC_SIZEOF_OBJECT)
 		{
 			swap_word(obj + 0);
@@ -515,8 +624,12 @@ static _BOOL flip_rsc(XRS_HEADER *header, char *rsc_buffer)
 			if ((get_word(obj + 6) & OBTYPEMASK) == G_USERDEF)
 			{
 				/* swap userblk.ub_parm */
-				char *user = rsc_buffer + (size_t)get_long(obj + 12);
-				swap_long(user + 4);
+				_ULONG offset = get_long(obj + 12);
+				if (offset >= RSC_SIZEOF_RS_HEADER && offset < filesize)
+				{
+					char *user = MAKEPTR(rsc_buffer, offset);
+					swap_long(user + 4);
+				}
 			}
 		}
 	}
@@ -525,7 +638,13 @@ static _BOOL flip_rsc(XRS_HEADER *header, char *rsc_buffer)
 		/***** flip tedinfos *****/
 		char *ted;
 
-		ted = rsc_buffer + header->rsh_tedinfo;
+		if (filesize != 0)
+		{
+			if (header->rsh_tedinfo > header->rsh_rssize ||
+				(header->rsh_nted != 0 && header->rsh_tedinfo + header->rsh_nted * RSC_SIZEOF_TEDINFO > header->rsh_rssize))
+				return FALSE;
+		}
+		ted = MAKEPTR(rsc_buffer, header->rsh_tedinfo);
 		for (i = 0; i < header->rsh_nted; i++, ted += RSC_SIZEOF_TEDINFO)
 		{
 			swap_long(ted + 0);
@@ -546,7 +665,13 @@ static _BOOL flip_rsc(XRS_HEADER *header, char *rsc_buffer)
 		/***** flip iconblocks *****/
 		char *p;
 
-		p = rsc_buffer + header->rsh_iconblk;
+		if (filesize != 0)
+		{
+			if (header->rsh_iconblk > header->rsh_rssize ||
+				(header->rsh_nib != 0 && header->rsh_iconblk + header->rsh_nib * RSC_SIZEOF_ICONBLK > header->rsh_rssize))
+				return FALSE;
+		}
+		p = MAKEPTR(rsc_buffer, header->rsh_iconblk);
 		for (i = 0; i < header->rsh_nib; i++, p += RSC_SIZEOF_ICONBLK)
 		{
 			flip_iconblk(p);
@@ -557,7 +682,13 @@ static _BOOL flip_rsc(XRS_HEADER *header, char *rsc_buffer)
 		/***** flip bitblocks *****/
 		char *bit;
 
-		bit = rsc_buffer + header->rsh_bitblk;
+		if (filesize != 0)
+		{
+			if (header->rsh_bitblk > header->rsh_rssize ||
+				(header->rsh_nbb != 0 && header->rsh_bitblk + header->rsh_nbb * RSC_SIZEOF_BITBLK > header->rsh_rssize))
+				return FALSE;
+		}
+		bit = MAKEPTR(rsc_buffer, header->rsh_bitblk);
 		for (i = 0; i < header->rsh_nbb; i++, bit += RSC_SIZEOF_BITBLK)
 		{
 			swap_long(bit + 0);
@@ -573,7 +704,13 @@ static _BOOL flip_rsc(XRS_HEADER *header, char *rsc_buffer)
 		/***** flip free strings *****/
 		char *pfrstr;
 
-		pfrstr = rsc_buffer + header->rsh_frstr;
+		if (filesize != 0)
+		{
+			if (header->rsh_frstr > header->rsh_rssize ||
+				(header->rsh_nstring != 0 && header->rsh_frstr + header->rsh_nstring * RSC_SIZEOF_PTR > header->rsh_rssize))
+				return FALSE;
+		}
+		pfrstr = MAKEPTR(rsc_buffer, header->rsh_frstr);
 		for (i = 0; i < header->rsh_nstring; i++, pfrstr += RSC_SIZEOF_PTR)
 		{
 			swap_long(pfrstr);
@@ -584,7 +721,13 @@ static _BOOL flip_rsc(XRS_HEADER *header, char *rsc_buffer)
 		/***** flip free images *****/
 		char *pfrimg;
 
-		pfrimg = rsc_buffer + header->rsh_frimg;
+		if (filesize != 0)
+		{
+			if (header->rsh_frimg > header->rsh_rssize ||
+				(header->rsh_nimages != 0 && header->rsh_frimg + header->rsh_nimages * RSC_SIZEOF_PTR > header->rsh_rssize))
+				return FALSE;
+		}
+		pfrimg = MAKEPTR(rsc_buffer, header->rsh_frimg);
 		for (i = 0; i < header->rsh_nimages; i++, pfrimg += RSC_SIZEOF_PTR)
 		{
 			swap_long(pfrimg);
@@ -595,6 +738,12 @@ static _BOOL flip_rsc(XRS_HEADER *header, char *rsc_buffer)
 		/***** flip trees *****/
 		char *ptrindex;
 
+		if (filesize != 0)
+		{
+			if (header->rsh_trindex > header->rsh_rssize ||
+				(header->rsh_ntree != 0 && header->rsh_trindex + header->rsh_ntree * RSC_SIZEOF_PTR > header->rsh_rssize))
+				return FALSE;
+		}
 		ptrindex = rsc_buffer + header->rsh_trindex;
 		for (i = 0; i < header->rsh_ntree; i++, ptrindex += RSC_SIZEOF_PTR)
 		{
@@ -602,12 +751,25 @@ static _BOOL flip_rsc(XRS_HEADER *header, char *rsc_buffer)
 		}
 	}
 
+#if FLIP_DATA
+	/*
+	 * we access image data as big-endian always,
+	 * so swap it now when loading a file,
+	 * after their pointers have been fixed
+	 */
+	if (HOST_BYTE_ORDER == BYTE_ORDER_BIG_ENDIAN)
+	{
+		if (filesize != 0)
+			xrsc_flip_data(file, filesize);
+	}
+#endif
+
 	return TRUE;
 }
 
 /*** ---------------------------------------------------------------------- ***/
 
-static _BOOL intel_2_m68k(XRS_HEADER *xrsc_header, char *rsc_buffer)
+static _BOOL intel_2_m68k(RSCFILE *file, _LONG filesize)
 {
 #if 0
 	/* fix font from IBM to ATARI */
@@ -650,7 +812,7 @@ static _BOOL intel_2_m68k(XRS_HEADER *xrsc_header, char *rsc_buffer)
 		pstring++;
 	} /* while */
 #endif
-	return flip_rsc(xrsc_header, rsc_buffer);
+	return xrsc_flip_rsc(file, filesize);
 }
 #endif /* SWAP_ALLOWED */
 
@@ -714,15 +876,36 @@ static _WORD _CDECL draw_userdef(PARMBLK *pb)
 
 /*** ---------------------------------------------------------------------- ***/
 
+static void report_problem(XRS_HEADER *xrsc_header, const char *what, _LONG offset, const char **whats_wrong)
+{
+	if (whats_wrong)
+		*whats_wrong = what;
+	if (offset == 0)
+	{
+		nf_debugprintf("%s: offset is NULL\n", what);
+	} else if (offset < (_LONG)RSC_SIZEOF_RS_HEADER)
+	{
+		nf_debugprintf("%s: offset $%lx points to RSC file header\n", what, offset);
+	} else if (offset >= L(xrsc_header->rsh_rssize))
+	{
+		nf_debugprintf("%s: offset $%lx is beyond EOF\n", what, offset);
+	} else if (offset & 1)
+	{
+		nf_debugprintf("%s: offset $%lx is odd\n", what, offset);
+	} else
+	{
+		nf_debugprintf("%s: offset $%lx\n", what, offset);
+	}
+}
+
+/*** ---------------------------------------------------------------------- ***/
+
 /*
  * xrsrc_load: like rsrc_load()
- *
- * Traegt die Addresse der Objekt-Baeume ins global-Feld ein
- * und rechnet die Koordinaten auf die Aufloesung um.
  */
 RSCFILE *xrsrc_load(const char *filename, _UWORD flags)
 {
-	register _UWORD UObj;
+	register _ULONG UObj;
 	CICONBLK *cicon_p;
 	CICONBLK *cicon_dst;
 	char headerbuf[max(RSC_SIZEOF_XRS_HEADER, RSC_SIZEOF_RS_HEADER)];
@@ -730,42 +913,55 @@ RSCFILE *xrsrc_load(const char *filename, _UWORD flags)
 	XRS_HEADER xrsc_header;
 	char *buf = NULL;
 	_BOOL swap_flag = FALSE;
-	_BOOL not_rsc = FALSE;
+	_BOOL xrsc_flag = FALSE;
+	_WORD error = RSC_OK;
 	FILE *fp;
 	_ULONG filesize;
 	RSCFILE *file;
-	_ULONG n_ciconblks;
 	_ULONG n_cicons;
 	_ULONG n_userblks;
+	_ULONG offset;
+	_ULONG idx;
+	const char *whats_wrong = NULL;
+	RSC_RSM_CRC crc_for_string = RSC_CRC_NONE;
 	
 	cicon_p = NULL;
 	cicon_dst = NULL;
 	fp = fopen(filename, "rb");
 
 	if (fp == NULL)
+	{
+		err_fopen(filename);
 		return NULL;
+	}
 #ifdef HAVE_FSTAT
 	{
 		struct stat st;
 		
 		if (fstat(fileno(fp), &st) < 0)
-			filesize = 0, not_rsc = TRUE;
+			filesize = 0, error = RSC_ERROR;
 		else
 			filesize = st.st_size;
 	}
 #else
 	if (fseek(fp, 0l, SEEK_END) != 0)
-		filesize = 0, not_rsc = TRUE;
+		filesize = 0, error = RSC_ERROR;
 	else
 		filesize = ftell(fp);
 	if (fseek(fp, 0l, SEEK_SET) != 0)
-		not_rsc = TRUE;
+		error = RSC_ERROR;
 #endif
-
-	if (not_rsc || fread(headerbuf, 1, sizeof(headerbuf), fp) != sizeof(headerbuf))
+	
+	if (error == RSC_OK && filesize < RSC_SIZEOF_RS_HEADER)
+		error = RSC_NORSC;
+	
+	if (error == RSC_OK && fread(headerbuf, 1, sizeof(headerbuf), fp) != sizeof(headerbuf))
 	{
-		not_rsc = TRUE;
-	} else
+		nf_debugprintf("reading header failed\n");
+		error = RSC_ERROR;
+	}
+	
+	if (error == RSC_OK)
 	{
 		rsc_get_header(&rs_header, headerbuf);
 		xrsc_get_header(&xrsc_header, headerbuf);
@@ -775,75 +971,136 @@ RSCFILE *xrsrc_load(const char *filename, _UWORD flags)
 			{
 #if SWAP_ALLOWED
 				flip_header(&rs_header);
+				flip_xrsrc_header(&xrsc_header);
 				if (test_header(&rs_header, filesize) != FALSE)
 				{
-					if (filesize > 65536l && !(rs_header.rsh_vrsn & RSC_EXT_FLAG))
+					if (filesize > 65534l && !(rs_header.rsh_vrsn & RSC_EXT_FLAG))
 					{
-						not_rsc = TRUE;
+						nf_debugprintf("normal header && filesize >64k but no extension flag set\n");
+						error = RSC_NORSC;
 					} else
 					{
 						swap_flag = TRUE;
 						xrsc_hdr2xrsc(&xrsc_header, &rs_header, 0);
 					}
+				} else if (test_xrsc_header(&xrsc_header, filesize) != FALSE)
+				{
+					swap_flag = TRUE;
+					xrsc_flag = TRUE;
 				} else
 #endif
 				{
-					not_rsc = TRUE;
+					nf_debugprintf("header check failed\n");
+					error = RSC_NORSC;
 				}
+			} else
+			{
+				xrsc_flag = TRUE;
 			}
 		} else
 		{
-			if (filesize > 65536l && !(rs_header.rsh_vrsn & RSC_EXT_FLAG))
+			if (filesize > 65534l && !(rs_header.rsh_vrsn & RSC_EXT_FLAG))
 			{
-				not_rsc = TRUE;
+				nf_debugprintf("normal header && filesize >64k but no extension flag set\n");
+				error = RSC_NORSC;
 			} else
 			{
 				xrsc_hdr2xrsc(&xrsc_header, &rs_header, 0);
 			}
 		}
 	}
-	if (not_rsc ||
-		test_xrsc_header(&xrsc_header, filesize) == FALSE ||
-		fseek(fp, 0l, SEEK_SET) != 0 ||
-		(sizeof(size_t) <= 2 && filesize >= 65534l) ||
-		(buf = (unsigned char *)g_malloc(sizeof(RSCFILE) + (size_t)filesize)) == NULL ||
-		fread(buf + sizeof(RSCFILE), 1, (size_t)filesize, fp) != filesize
-#if SWAP_ALLOWED
-		|| (swap_flag != FALSE && intel_2_m68k(&xrsc_header, buf) == FALSE)
-#endif
-		)
+	if (error == RSC_OK)
 	{
-		g_free(buf);
-		fclose(fp);
-		return NULL;
+		if (test_xrsc_header(&xrsc_header, filesize) == FALSE ||
+			fseek(fp, 0l, SEEK_SET) != 0)
+		{
+			nf_debugprintf("xrsc_header check failed\n");
+			error = RSC_NORSC;
+		}
 	}
+	if (error == RSC_OK && filesize >= 65534l && sizeof(size_t) <= 2)
+	{
+		warn_toobig();
+		error = RSC_ABORT;
+	}
+	if (error == RSC_OK)
+	{
+		if ((buf = g_new(char, sizeof(RSCFILE) + (size_t)filesize)) == NULL)
+		{
+			fclose(fp);
+			return NULL;
+		}
+	}
+
+	if (error == RSC_OK && (_ULONG)fread(buf + sizeof(RSCFILE), 1, (size_t)filesize, fp) != filesize)
+	{
+		error = RSC_ERROR;
+	}
+
 	fclose(fp);
 	file = (RSCFILE *)buf;
 	memset(file, 0, sizeof(RSCFILE));
-	file->data = buf;
+	rsc_init_file(file);
+	if (error == RSC_OK)
+		file->rsc_rsm_crc = rsc_rsm_calc_crc(buf, filesize);
 	buf += sizeof(RSCFILE);
+	file->data = buf;
 	file->header = xrsc_header;
 	file->rsc_swap_flag = swap_flag;
+	file->rsc_xrsc_flag = xrsc_flag;
+	file->rsc_little_endian = swap_flag ^ (HOST_BYTE_ORDER != BYTE_ORDER_BIG_ENDIAN);
+	strcpy(file->rsc_rsxfilename, filename);
 	
+#if SWAP_ALLOWED
+	if (error == RSC_OK && swap_flag)
+	{
+		if (intel_2_m68k(file, filesize) == FALSE)
+		{
+			nf_debugprintf("flipping resource failed\n");
+			warn_damaged(filename, "Data");
+			error = RSC_ABORT;
+		}
+	}
+#endif
+	
+	switch (error)
+	{
+	case RSC_OK:
+		break;
+	case RSC_NORSC:
+		err_nota_rsc(filename);
+		break;
+	case RSC_ERROR:
+		err_fread(filename);
+		break;
+	}
+	if (error != RSC_OK)
+	{
+		xrsrc_free(file);
+		return NULL;
+	}
+			
 	/*
 	 * Some resource editors fail to mark an extended RSC in the header,
 	 * do a quick check first wether any color icons are present
 	 */
-	n_ciconblks = 0;
+	file->rsc_nciconblks = 0;
 	n_userblks = 0;
+	if (xrsc_header.rsh_nobs > 0 &&
+		xrsc_header.rsh_object >= RSC_SIZEOF_RS_HEADER)
 	{
 		char *pobject;
 		_ULONG i;
-		_UBYTE type;
+		_UWORD type;
 		
-		pobject = buf + (size_t)xrsc_header.rsh_object;
+		pobject = MAKEPTR(buf, xrsc_header.rsh_object);
 		for (i = 0; i < xrsc_header.rsh_nobs; i++, pobject += RSC_SIZEOF_OBJECT)
 		{
-			type = (swap_flag ^ (HOST_BYTE_ORDER == BYTE_ORDER_BIG_ENDIAN)) ? pobject[7] : pobject[6];
+			type = get_word(pobject + 6) & OBTYPEMASK;
 			if (type == G_CICON)
 			{
 				xrsc_header.rsh_vrsn |= RSC_EXT_FLAG;
-				n_ciconblks++;
+				file->rsc_nciconblks++;
 			}
 			if (type == G_USERDEF)
 				n_userblks++;
@@ -863,7 +1120,7 @@ RSCFILE *xrsrc_load(const char *filename, _UWORD flags)
 		 * - an offset to the CICON ptr list
 		 * - an endmarker (zero)
 		 */
-		p = (int32_t *)(buf + (size_t)xrsc_header.rsh_rssize);
+		p = (int32_t *)(MAKEPTR(buf, xrsc_header.rsh_rssize));
 		if (swap_flag)
 		{
 			p[RSC_EXT_FILESIZE] = bswap_32(p[RSC_EXT_FILESIZE]);
@@ -951,7 +1208,7 @@ RSCFILE *xrsrc_load(const char *filename, _UWORD flags)
 		}
 	}
 
-	if (rsrc_load_works())
+	if (rsrc_load_works() && !(flags & XRSC_SAFETY_CHECKS))
 	{
 		/*
 		 * simple case, we just have to translate file offsets in memory addresses
@@ -1042,18 +1299,37 @@ RSCFILE *xrsrc_load(const char *filename, _UWORD flags)
 			char *src;
 			OBJECT **dst;
 			
-			file->rs_trindex = g_new(OBJECT *, file->header.rsh_ntree);
+			file->rs_trindex = g_new0(OBJECT *, file->header.rsh_ntree);
 			if (file->rs_trindex == NULL)
 			{
 				xrsrc_free(file);
 				return NULL;
 			}
 			file->allocated |= RSC_ALLOC_TRINDEX;
-			src = buf + (size_t)file->header.rsh_trindex;
 			dst = file->rs_trindex;
-			for (UObj = 0; UObj < xrsc_header.rsh_ntree; UObj++, src += RSC_SIZEOF_PTR, dst++)
+			if (file->header.rsh_trindex < RSC_SIZEOF_RS_HEADER ||
+				file->header.rsh_trindex + file->header.rsh_ntree * RSC_SIZEOF_PTR > file->header.rsh_rssize)
 			{
-				*dst = (OBJECT *)(buf + (size_t)get_long(src));
+				report_problem(&file->header, "rsh_trindex out of range", file->header.rsh_trindex, NULL);
+				warn_damaged(filename, "Trees");
+				for (UObj = 0; UObj < xrsc_header.rsh_ntree; UObj++, dst++)
+					*dst = &empty_object;
+			} else
+			{
+				src = MAKEPTR(buf, file->header.rsh_trindex);
+				for (UObj = 0; UObj < xrsc_header.rsh_ntree; UObj++, src += RSC_SIZEOF_PTR, dst++)
+				{
+					offset = get_long(src);
+					if (offset < RSC_SIZEOF_RS_HEADER || CHECK_ODD(offset))
+					{
+						nf_debugprintf("tree offset[%lu] out of range: $%lx\n", UObj, offset);
+						warn_damaged(filename, "Trees");
+						*dst = &empty_object;
+					} else
+					{
+						*dst = (OBJECT *)MAKEPTR(buf, offset);
+					}
+				}
 			}
 		}
 		
@@ -1069,21 +1345,29 @@ RSCFILE *xrsrc_load(const char *filename, _UWORD flags)
 				return NULL;
 			}
 			file->allocated |= RSC_ALLOC_OBJECT;
-			src = buf + (size_t)file->header.rsh_object;
-			dst = file->rs_object;
-			for (UObj = 0; UObj < xrsc_header.rsh_nobs; UObj++, src += RSC_SIZEOF_OBJECT, dst++)
+			if (file->header.rsh_object < RSC_SIZEOF_RS_HEADER ||
+				file->header.rsh_object + file->header.rsh_nobs * RSC_SIZEOF_OBJECT > file->header.rsh_rssize)
 			{
-				dst->ob_next = get_word(src + 0);
-				dst->ob_head = get_word(src + 2);
-				dst->ob_tail = get_word(src + 4);
-				dst->ob_type = get_word(src + 6);
-				dst->ob_flags = get_word(src + 8);
-				dst->ob_state = get_word(src + 10);
-				dst->ob_spec.index = get_long(src + 12);
-				dst->ob_x = get_word(src + 16);
-				dst->ob_y = get_word(src + 18);
-				dst->ob_width = get_word(src + 20);
-				dst->ob_height = get_word(src + 22);
+				report_problem(&file->header, "rsh_object out of range", file->header.rsh_trindex, NULL);
+				warn_damaged(filename, "Objects");
+			} else
+			{
+				src = MAKEPTR(buf, file->header.rsh_object);
+				dst = file->rs_object;
+				for (UObj = 0; UObj < xrsc_header.rsh_nobs; UObj++, src += RSC_SIZEOF_OBJECT, dst++)
+				{
+					dst->ob_next = get_word(src + 0);
+					dst->ob_head = get_word(src + 2);
+					dst->ob_tail = get_word(src + 4);
+					dst->ob_type = get_word(src + 6);
+					dst->ob_flags = get_word(src + 8);
+					dst->ob_state = get_word(src + 10);
+					dst->ob_spec.index = get_long(src + 12);
+					dst->ob_x = get_word(src + 16);
+					dst->ob_y = get_word(src + 18);
+					dst->ob_width = get_word(src + 20);
+					dst->ob_height = get_word(src + 22);
+				}
 			}
 		}
 
@@ -1099,21 +1383,68 @@ RSCFILE *xrsrc_load(const char *filename, _UWORD flags)
 				return NULL;
 			}
 			file->allocated |= RSC_ALLOC_TEDINFO;
-			src = buf + (size_t)file->header.rsh_tedinfo;
-			dst = file->rs_tedinfo;
-			for (UObj = 0; UObj < xrsc_header.rsh_nted; UObj++, src += RSC_SIZEOF_TEDINFO, dst++)
+			if (file->header.rsh_trindex < RSC_SIZEOF_RS_HEADER)
 			{
-				dst->te_ptext = buf + (size_t)get_long(src + 0);
-				dst->te_ptmplt = buf + (size_t)get_long(src + 4);
-				dst->te_pvalid = buf + (size_t)get_long(src + 8);
-				dst->te_font = get_word(src + 12);
-				dst->te_fontid = get_word(src + 14);
-				dst->te_just = get_word(src + 16);
-				dst->te_color = get_word(src + 18);
-				dst->te_fontsize = get_word(src + 20);
-				dst->te_thickness = get_word(src + 22);
-				dst->te_txtlen = get_word(src + 24);
-				dst->te_tmplen = get_word(src + 26);
+				report_problem(&xrsc_header, "rsh_trindex out of range", file->header.rsh_trindex, &whats_wrong);
+				warn_damaged(filename, "Tedinfos");
+			} else
+			{
+				src = MAKEPTR(buf, file->header.rsh_tedinfo);
+				dst = file->rs_tedinfo;
+				for (UObj = 0; UObj < xrsc_header.rsh_nted; UObj++, src += RSC_SIZEOF_TEDINFO, dst++)
+				{
+					idx = get_long(src + 0);
+					/*
+					 * some broken Digital GEM RSC files have an offset of -1
+					 */
+					if (idx == 0xffffffffUL && file->rsc_little_endian)
+						idx = 0;
+					if (idx == 0)
+					{
+						/* silently ignore NULL ptrs from broken Digital GEM resource files */
+						dst->te_ptext = empty;
+						dst->te_txtlen = 1;
+					} else if (idx < RSC_SIZEOF_RS_HEADER || CHECK(idx))
+					{
+						dst->te_ptext = empty;
+						dst->te_txtlen = 1;
+						report_problem(&xrsc_header, "te_ptext out of range", idx, &whats_wrong);
+					} else
+					{
+						dst->te_ptext = MAKEPTR(buf, idx);
+						dst->te_txtlen = get_word(src + 24);
+					}
+					idx = get_long(src + 4);
+					if (idx < RSC_SIZEOF_RS_HEADER || CHECK(idx))
+					{
+						dst->te_ptmplt = empty;
+						dst->te_tmplen = 1;
+						/* silently ignore NULL ptrs from broken Digital GEM resource files */
+						if (idx != 0 || !file->rsc_little_endian)
+							report_problem(&xrsc_header, "te_ptmplt out of range", idx, &whats_wrong);
+					} else
+					{
+						dst->te_ptmplt = MAKEPTR(buf, idx);
+						dst->te_tmplen = get_word(src + 26);
+					}
+					idx = get_long(src + 8);
+					if (idx < RSC_SIZEOF_RS_HEADER || CHECK(idx))
+					{
+						dst->te_pvalid = empty;
+						/* silently ignore NULL ptrs from broken Digital GEM resource files */
+						if (idx != 0 || !file->rsc_little_endian)
+							report_problem(&xrsc_header, "te_pvalid out of range", idx, &whats_wrong);
+					} else
+					{
+						dst->te_pvalid = MAKEPTR(buf, idx);
+					}
+					dst->te_font = get_word(src + 12);
+					dst->te_fontid = get_word(src + 14);
+					dst->te_just = get_word(src + 16);
+					dst->te_color = get_word(src + 18);
+					dst->te_fontsize = get_word(src + 20);
+					dst->te_thickness = get_word(src + 22);
+				}
 			}
 		}
 
@@ -1129,26 +1460,70 @@ RSCFILE *xrsrc_load(const char *filename, _UWORD flags)
 				return NULL;
 			}
 			file->allocated |= RSC_ALLOC_ICONBLK;
-			src = buf + (size_t)file->header.rsh_iconblk;
-			dst = file->rs_iconblk;
-			for (UObj = 0; UObj < xrsc_header.rsh_nib; UObj++, src += RSC_SIZEOF_ICONBLK, dst++)
+			if (file->header.rsh_iconblk < RSC_SIZEOF_RS_HEADER ||
+				file->header.rsh_iconblk + file->header.rsh_nib * RSC_SIZEOF_ICONBLK > file->header.rsh_rssize)
 			{
-				dst->ib_pmask = (_WORD *)(buf + (size_t)get_long(src + 0));
-				dst->ib_pdata = (_WORD *)(buf + (size_t)get_long(src + 4));
-				dst->ib_ptext = buf + (size_t)get_long(src + 8);
-				dst->ib_char = get_word(src + 12);
-				dst->ib_xchar = get_word(src + 14);
-				dst->ib_ychar = get_word(src + 16);
-				dst->ib_xicon = get_word(src + 18);
-				dst->ib_yicon = get_word(src + 20);
-				dst->ib_wicon = get_word(src + 22);
-				dst->ib_hicon = get_word(src + 24);
-				dst->ib_xtext = get_word(src + 26);
-				dst->ib_ytext = get_word(src + 28);
-				dst->ib_wtext = get_word(src + 30);
-				dst->ib_htext = get_word(src + 32);
-				W_Fix_Bitmap(dst->ib_pmask, dst->ib_wicon, dst->ib_hicon, 1);
-				W_Fix_Bitmap(dst->ib_pdata, dst->ib_wicon, dst->ib_hicon, 1);
+				report_problem(&xrsc_header, "rsh_iconblk out of range", file->header.rsh_iconblk, &whats_wrong);
+				warn_damaged(filename, "Iconblks");
+			} else
+			{
+				src = MAKEPTR(buf, file->header.rsh_iconblk);
+				dst = file->rs_iconblk;
+				for (UObj = 0; UObj < xrsc_header.rsh_nib; UObj++, src += RSC_SIZEOF_ICONBLK, dst++)
+				{
+					idx = get_long(src + 0);
+					if (idx < RSC_SIZEOF_RS_HEADER || CHECK_ODD(idx))
+					{
+						report_problem(&xrsc_header, "ib_pmask out of range", idx, &whats_wrong);
+						/*
+						 * some broken editors put the icon data in the extended resource part
+						 */
+						if (idx >= RSC_SIZEOF_RS_HEADER && !CHECK_SIZE(idx, filesize) && !IS_REALLY_ODD(idx))
+							dst->ib_pmask = (_WORD *)MAKEPTR(buf, idx);
+						else
+							dst->ib_pmask = imdata;
+					} else
+					{
+						dst->ib_pmask = (_WORD *)MAKEPTR(buf, idx);
+					}
+					idx = get_long(src + 4);
+					if (idx < RSC_SIZEOF_RS_HEADER || CHECK_ODD(idx))
+					{
+						report_problem(&xrsc_header, "ib_pdata out of range", idx, &whats_wrong);
+						if (idx >= RSC_SIZEOF_RS_HEADER && !CHECK_SIZE(idx, filesize) && !IS_REALLY_ODD(idx))
+							dst->ib_pdata = (_WORD *)MAKEPTR(buf, idx);
+						else
+							dst->ib_pdata = imdata;
+					} else
+					{
+						dst->ib_pdata = (_WORD *)MAKEPTR(buf, idx);
+					}
+					idx = get_long(src + 8);
+					if (idx < RSC_SIZEOF_RS_HEADER || CHECK(idx))
+					{
+						report_problem(&xrsc_header, "ib_ptext out of range", idx, &whats_wrong);
+						if (idx >= RSC_SIZEOF_RS_HEADER && !CHECK_SIZE(idx, filesize))
+							dst->ib_ptext = MAKEPTR(buf, idx);
+						else
+							dst->ib_ptext = empty;
+					} else
+					{
+						dst->ib_ptext = MAKEPTR(buf, idx);
+					}
+					dst->ib_char = get_word(src + 12);
+					dst->ib_xchar = get_word(src + 14);
+					dst->ib_ychar = get_word(src + 16);
+					dst->ib_xicon = get_word(src + 18);
+					dst->ib_yicon = get_word(src + 20);
+					dst->ib_wicon = get_word(src + 22);
+					dst->ib_hicon = get_word(src + 24);
+					dst->ib_xtext = get_word(src + 26);
+					dst->ib_ytext = get_word(src + 28);
+					dst->ib_wtext = get_word(src + 30);
+					dst->ib_htext = get_word(src + 32);
+					W_Fix_Bitmap(dst->ib_pmask, dst->ib_wicon, dst->ib_hicon, 1);
+					W_Fix_Bitmap(dst->ib_pdata, dst->ib_wicon, dst->ib_hicon, 1);
+				}
 			}
 		}
 
@@ -1164,17 +1539,33 @@ RSCFILE *xrsrc_load(const char *filename, _UWORD flags)
 				return NULL;
 			}
 			file->allocated |= RSC_ALLOC_BITBLK;
-			src = buf + (size_t)file->header.rsh_bitblk;
-			dst = file->rs_bitblk;
-			for (UObj = 0; UObj < xrsc_header.rsh_nbb; UObj++, src += RSC_SIZEOF_BITBLK, dst++)
+			if (file->header.rsh_bitblk < RSC_SIZEOF_RS_HEADER ||
+				file->header.rsh_bitblk + file->header.rsh_nbb * RSC_SIZEOF_BITBLK > file->header.rsh_rssize)
 			{
-				dst->bi_pdata = (_WORD *)(buf + (size_t)get_long(src + 0));
-				dst->bi_wb = get_word(src + 4);
-				dst->bi_hl = get_word(src + 6);
-				dst->bi_x = get_word(src + 8);
-				dst->bi_y = get_word(src + 10);
-				dst->bi_color = get_word(src + 12);
-				W_Fix_Bitmap(dst->bi_pdata, dst->bi_wb * 8, dst->bi_hl, 1);
+				report_problem(&xrsc_header, "rsh_bitblk out of range", file->header.rsh_bitblk, &whats_wrong);
+				warn_damaged(filename, "Bitblks");
+			} else
+			{
+				src = MAKEPTR(buf, file->header.rsh_bitblk);
+				dst = file->rs_bitblk;
+				for (UObj = 0; UObj < xrsc_header.rsh_nbb; UObj++, src += RSC_SIZEOF_BITBLK, dst++)
+				{
+					idx = get_long(src + 0);
+					if (idx < RSC_SIZEOF_RS_HEADER || CHECK_ODD(idx))
+					{
+						dst->bi_pdata = imdata;
+						report_problem(&xrsc_header, "bi_pdata out of range", idx, &whats_wrong);
+					} else
+					{
+						dst->bi_pdata = (_WORD *)MAKEPTR(buf, idx);
+					}
+					dst->bi_wb = get_word(src + 4);
+					dst->bi_hl = get_word(src + 6);
+					dst->bi_x = get_word(src + 8);
+					dst->bi_y = get_word(src + 10);
+					dst->bi_color = get_word(src + 12);
+					W_Fix_Bitmap(dst->bi_pdata, dst->bi_wb * 8, dst->bi_hl, 1);
+				}
 			}
 		}
 
@@ -1190,14 +1581,35 @@ RSCFILE *xrsrc_load(const char *filename, _UWORD flags)
 				return NULL;
 			}
 			file->allocated |= RSC_ALLOC_FRSTR;
-			src = buf + (size_t)file->header.rsh_frstr;
-			dst = file->rs_frstr;
-			for (UObj = 0; UObj < xrsc_header.rsh_nstring; UObj++, src += RSC_SIZEOF_PTR, dst++)
+			if (file->header.rsh_frstr < RSC_SIZEOF_RS_HEADER ||
+				file->header.rsh_frstr + file->header.rsh_nstring * RSC_SIZEOF_PTR > file->header.rsh_rssize)
 			{
-				*dst = buf + (size_t)get_long(src);
+				report_problem(&xrsc_header, "rsh_frstr out of range", file->header.rsh_frstr, &whats_wrong);
+				warn_damaged(filename, "Strings");
+			} else
+			{
+				src = MAKEPTR(buf, file->header.rsh_frstr);
+				dst = file->rs_frstr;
+				for (UObj = 0; UObj < xrsc_header.rsh_nstring; UObj++, src += RSC_SIZEOF_PTR, dst++)
+				{
+					offset = get_long(src);
+					if (CHECK_SIZE(offset, filesize))
+					{
+						nf_debugprintf("string offset[%lu] out of range: $%lx\n", UObj, offset);
+						warn_damaged(filename, "Strings");
+						*dst = empty;
+					} else
+					{
+						*dst = MAKEPTR(buf, offset);
+						if ((crc_for_string = rsc_get_crc_string(*dst)) != RSC_CRC_NONE)
+						{
+							file->rsc_opts.crc_string = TRUE;
+						}
+					}
+				}
 			}
 		}
-
+		
 		if (file->header.rsh_nimages > 0)
 		{
 			char *src;
@@ -1210,17 +1622,34 @@ RSCFILE *xrsrc_load(const char *filename, _UWORD flags)
 				return NULL;
 			}
 			file->allocated |= RSC_ALLOC_FRIMG;
-			src = buf + (size_t)file->header.rsh_frimg;
-			dst = file->rs_frimg;
-			for (UObj = 0; UObj < xrsc_header.rsh_nimages; UObj++, src += RSC_SIZEOF_PTR, dst++)
+			if (file->header.rsh_frimg < RSC_SIZEOF_RS_HEADER ||
+				file->header.rsh_frimg + file->header.rsh_nimages * RSC_SIZEOF_PTR > file->header.rsh_rssize)
 			{
-				*dst = (BITBLK *)(buf + (size_t)get_long(src));
+				report_problem(&xrsc_header, "rsh_frimg out of range", file->header.rsh_frimg, &whats_wrong);
+				warn_damaged(filename, "Images");
+			} else
+			{
+				src = MAKEPTR(buf, file->header.rsh_frimg);
+				dst = file->rs_frimg;
+				for (UObj = 0; UObj < xrsc_header.rsh_nimages; UObj++, src += RSC_SIZEOF_PTR, dst++)
+				{
+					offset = get_long(src);
+					if (CHECK_SIZE(offset, filesize) || IS_REALLY_ODD(offset))
+					{
+						nf_debugprintf("image offset[%lu] out of range: $%lx\n", UObj, offset);
+						warn_damaged(filename, "Images");
+						*dst = &empty_bit;
+					} else
+					{
+						*dst = (BITBLK *)MAKEPTR(buf, offset);
+					}
+				}
 			}
 		}
 
-		if (n_ciconblks > 0)
+		if (file->rsc_nciconblks > 0)
 		{
-			file->rs_ciconblk = g_new(CICONBLK, n_ciconblks);
+			file->rs_ciconblk = g_new(CICONBLK, file->rsc_nciconblks);
 			if (file->rs_ciconblk == NULL)
 			{
 				xrsrc_free(file);
@@ -1242,7 +1671,6 @@ RSCFILE *xrsrc_load(const char *filename, _UWORD flags)
 		}
 	}
 
-	n_ciconblks = 0;
 	n_cicons = 0;
 	n_userblks = 0;
 	{
@@ -1252,6 +1680,7 @@ RSCFILE *xrsrc_load(const char *filename, _UWORD flags)
 			rsc_obfix(rs_object, xrsc_header.rsh_nobs);
 		for (UObj = 0; UObj < xrsc_header.rsh_nobs; UObj++, rs_object++)
 		{
+			idx = rs_object->ob_spec.index;
 			switch (rs_object->ob_type & OBTYPEMASK)
 			{
 			case G_BOX:
@@ -1268,50 +1697,70 @@ RSCFILE *xrsrc_load(const char *filename, _UWORD flags)
 				   might be displayed in window
 				   where we use our own functions
 				 */
-				rs_object->ob_spec.free_string = buf + (size_t)(rs_object->ob_spec.index);
+				if (idx < RSC_SIZEOF_RS_HEADER || CHECK(idx))
+				{
+					rs_object->ob_spec.free_string = empty;
+					report_problem(&xrsc_header, "ob_spec.free_string out of range", idx, &whats_wrong);
+				} else
+				{
+					rs_object->ob_spec.free_string = MAKEPTR(buf, idx);
+				}
 				break;
 
 			case G_TEXT:
 			case G_FTEXT:
 			case G_BOXTEXT:
 			case G_FBOXTEXT:
-				if (file->allocated & RSC_ALLOC_TEDINFO)
+				if (idx < RSC_SIZEOF_RS_HEADER || CHECK_ODD(idx) ||
+					(offset = (idx - file->header.rsh_tedinfo) / RSC_SIZEOF_TEDINFO) >= file->header.rsh_nted)
 				{
-					_ULONG idx = (rs_object->ob_spec.index - file->header.rsh_tedinfo) / RSC_SIZEOF_TEDINFO;
-					if (idx < file->header.rsh_nted)
-						rs_object->ob_spec.tedinfo = &file->rs_tedinfo[idx];
-					else
-						rs_object->ob_spec.tedinfo = &empty_ted;
+					report_problem(&xrsc_header, "ob_spec.tedinfo out of range", idx, &whats_wrong);
+					rs_object->ob_spec.tedinfo = &empty_ted;
 				} else
 				{
-					rs_object->ob_spec.free_string = buf + (size_t)(rs_object->ob_spec.index);
+					if (file->allocated & RSC_ALLOC_TEDINFO)
+					{
+						rs_object->ob_spec.tedinfo = &file->rs_tedinfo[offset];
+					} else
+					{
+						rs_object->ob_spec.free_string = MAKEPTR(buf, idx);
+					}
 				}
-
+				break;
+				
 			case G_IMAGE:
-				if (file->allocated & RSC_ALLOC_BITBLK)
+				if (idx < RSC_SIZEOF_RS_HEADER || CHECK_ODD(idx) ||
+					(offset = (idx - file->header.rsh_bitblk) / RSC_SIZEOF_BITBLK) >= file->header.rsh_nbb)
 				{
-					_ULONG idx = (rs_object->ob_spec.index - file->header.rsh_bitblk) / RSC_SIZEOF_BITBLK;
-					if (idx < file->header.rsh_nbb)
-						rs_object->ob_spec.bitblk = &file->rs_bitblk[idx];
-					else
-						rs_object->ob_spec.bitblk = &empty_bit;
+					rs_object->ob_spec.bitblk = &empty_bit;
+					report_problem(&xrsc_header, "ob_spec.bitblk out of range", idx, &whats_wrong);
 				} else
 				{
-					rs_object->ob_spec.free_string = buf + (size_t)(rs_object->ob_spec.index);
+					if (file->allocated & RSC_ALLOC_BITBLK)
+					{
+						rs_object->ob_spec.bitblk = &file->rs_bitblk[offset];
+					} else
+					{
+						rs_object->ob_spec.free_string = MAKEPTR(buf, idx);
+					}
 				}
 				break;
 
 			case G_ICON:
-				if (file->allocated & RSC_ALLOC_ICONBLK)
+				if (idx < RSC_SIZEOF_RS_HEADER || CHECK_ODD(idx) ||
+					(offset = (idx - file->header.rsh_iconblk) / RSC_SIZEOF_ICONBLK) >= file->header.rsh_nib)
 				{
-					_ULONG idx = (rs_object->ob_spec.index - file->header.rsh_iconblk) / RSC_SIZEOF_ICONBLK;
-					if (idx < file->header.rsh_nib)
-						rs_object->ob_spec.iconblk = &file->rs_iconblk[idx];
-					else
-						rs_object->ob_spec.iconblk = &empty_icon;
+					rs_object->ob_spec.iconblk = &empty_icon;
+					report_problem(&xrsc_header, "ob_spec.iconblk out of range", idx, &whats_wrong);
 				} else
 				{
-					rs_object->ob_spec.free_string = buf + (size_t)(rs_object->ob_spec.index);
+					if (file->allocated & RSC_ALLOC_ICONBLK)
+					{
+						rs_object->ob_spec.iconblk = &file->rs_iconblk[offset];
+					} else
+					{
+						rs_object->ob_spec.free_string = MAKEPTR(buf, idx);
+					}
 				}
 				break;
 
@@ -1327,8 +1776,14 @@ RSCFILE *xrsrc_load(const char *filename, _UWORD flags)
 					_LONG size;
 					char *p;
 					_LONG num_cicons;
-					_LONG idx;
 
+					offset = OFFSET(cicon_p, buf, _LONG);
+					if (offset >= filesize)
+					{
+						report_problem(&xrsc_header, "color icon data out of range", offset, &whats_wrong);
+						xrsrc_free(file);
+						return NULL;
+					}
 					cicon = cicon_p;
 					cicon_p++;
 					if (swap_flag)
@@ -1368,11 +1823,22 @@ RSCFILE *xrsrc_load(const char *filename, _UWORD flags)
 					p += (size_t)size;
 					W_Fix_Bitmap(cicon->monoblk.ib_pdata, cicon->monoblk.ib_wicon, cicon->monoblk.ib_hicon, 1);
 					W_Fix_Bitmap(cicon->monoblk.ib_pmask, cicon->monoblk.ib_wicon, cicon->monoblk.ib_hicon, 1);
-					idx = (_LONG)(intptr_t)cicon->monoblk.ib_ptext;
-					if (idx <= 0 || (buf + (size_t)idx) == p || idx < (_LONG)xrsc_header.rsh_string || idx >= (_LONG)xrsc_header.rsh_rssize)
+					/*
+					 * ib_ptext can either be the offset after the iconblk (when less than CICON_STR_SIZE),
+					 * or point into the string area
+					 */
+					idx = (_ULONG)(uintptr_t)cicon->monoblk.ib_ptext;
+					if (idx >= filesize)
+					{
+						report_problem(&xrsc_header, "ib_ptext out of range", idx, &whats_wrong);
+						cicon->monoblk.ib_ptext = empty;
+					} else if (idx == 0 || (buf + (size_t)idx) == p || idx < xrsc_header.rsh_string || idx >= xrsc_header.rsh_rssize)
+					{
 						cicon->monoblk.ib_ptext = p;
-					else
-						cicon->monoblk.ib_ptext = buf + (size_t)idx;
+					} else
+					{
+						cicon->monoblk.ib_ptext = MAKEPTR(buf, idx);
+					}
 					p += CICON_STR_SIZE;
 					dp = (CICON *)p;
 					num_cicons = (_LONG)(intptr_t)(cicon->mainlist);
@@ -1400,6 +1866,12 @@ RSCFILE *xrsrc_load(const char *filename, _UWORD flags)
 						cicon->mainlist = dp;
 						while (num_cicons != 0)
 						{
+							offset = OFFSET(p, buf, _LONG);
+							if (offset >= filesize)
+							{
+								report_problem(&xrsc_header, "unexpected end of coloricon list", offset, &whats_wrong);
+								break;
+							}
 							dp->num_planes = get_word(p);
 							if (swap_flag)
 								dp->num_planes = bswap_16(dp->num_planes);
@@ -1435,6 +1907,12 @@ RSCFILE *xrsrc_load(const char *filename, _UWORD flags)
 								dp++;
 							else
 								dp = (CICON *)p;
+							offset = OFFSET(p, buf, _LONG);
+							if (offset > filesize)
+							{
+								report_problem(&xrsc_header, "color icon data out of range", offset, &whats_wrong);
+								break;
+							}
 						}
 					}
 					cicon_p = (CICONBLK *)p;
@@ -1442,14 +1920,22 @@ RSCFILE *xrsrc_load(const char *filename, _UWORD flags)
 				break;
 
 			case G_USERDEF:
-				if (file->allocated & RSC_ALLOC_USERBLK)
+				if (idx < RSC_SIZEOF_RS_HEADER || CHECK_ODD(idx))
 				{
-					char *src = buf + (size_t)rs_object->ob_spec.index;
-					rs_object->ob_spec.userblk = &file->rs_userblk[n_userblks++];
-					rs_object->ob_spec.userblk->ub_parm = get_long(src + 4);
+					rs_object->ob_spec.userblk = &empty_user;
+					rs_object->ob_spec.userblk->ub_parm = 0;
+					report_problem(&xrsc_header, "ob_spec.userblk out of range", idx, &whats_wrong);
 				} else
 				{
-					rs_object->ob_spec.userblk = (USERBLK *)(buf + (size_t)rs_object->ob_spec.index);
+					if (file->allocated & RSC_ALLOC_USERBLK)
+					{
+						char *src = MAKEPTR(buf, idx);
+						rs_object->ob_spec.userblk = &file->rs_userblk[n_userblks++];
+						rs_object->ob_spec.userblk->ub_parm = get_long(src + 4);
+					} else
+					{
+						rs_object->ob_spec.userblk = (USERBLK *)MAKEPTR(buf, idx);
+					}
 				}
 				/*
 				 * It's up to the application to set the appropiate function.
@@ -1457,6 +1943,11 @@ RSCFILE *xrsrc_load(const char *filename, _UWORD flags)
 				 * that draws a box only, or simply does nothing.
 				 */
 				rs_object->ob_spec.userblk->ub_code = draw_userdef;
+				break;
+			
+			default:
+				whats_wrong = "unknown object type";
+				nf_debugprintf("%s\n", whats_wrong);
 				break;
 			}
 		}
@@ -1482,11 +1973,60 @@ RSCFILE *xrsrc_load(const char *filename, _UWORD flags)
 #endif
 	}
 	
-#if FLIP_DATA
-	if (swap_flag)
-		flip_data(file);
-#endif
-
+	if (file->rsc_nciconblks == 0 && (xrsc_header.rsh_vrsn & RSC_EXT_FLAG))
+	{
+		warn_cicons();
+	}
+	
+	{
+		RSC_RSM_CRC crc = 0x5555;
+		_ULONG i;
+		_UBYTE *ob;
+		
+		crc += (_WORD)xrsc_header.rsh_ntree * 11;
+		/*
+		 * RSM calculates the crc before adding the string,
+		 * so don't count the string containing the crc
+		 */
+		i = xrsc_header.rsh_nstring;
+		if (file->rsc_opts.crc_string)
+			i--;
+		crc += (_WORD)i * 13;
+		crc += (_WORD)xrsc_header.rsh_nimages * 17;
+		
+		{
+			_WORD idx;
+			
+			ob = MAKEPTR(buf, xrsc_header.rsh_object);
+			idx = 0;
+			for (i = 0; i < xrsc_header.rsh_nobs; i++)
+			{
+				crc += 19;
+				crc += (idx + 1 + (_WORD)get_word(ob + 0)) * 23; /* ob_next */
+				crc += (idx + 1 + (_WORD)get_word(ob + 2)) * 29; /* ob_head */
+				crc += (idx + 1 + (_WORD)get_word(ob + 4)) * 31; /* ob_tail */
+				crc += (idx + 1 + (_WORD)get_word(ob + 6)) * 37; /* ob_type */
+				idx++;
+				if (get_word(ob + 8) & OF_LASTOB)
+					idx = 0;
+			}
+		}
+		
+		if (file->rsc_opts.crc_string && crc != crc_for_string)
+		{
+			nf_debugprintf("orsc_load: crc: calculated $%04x, in file $%04x\n", crc, crc_for_string);
+			warn_crc_string_mismatch(filename);
+		} else if (file->rsc_opts.crc_string)
+		{
+			/*
+			 * Silently remove the CRC string.
+			 * It will be added again when the file is saved.
+			 * This is done after loading the definition files,
+			 * so we don't barf upon an out-of range name index.
+			 */
+		}
+	}
+	
 	return file;
 }
 

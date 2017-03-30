@@ -288,7 +288,7 @@ enum check_code { CHECK_ABORT, CHECK_OK, CHECK_APPEND };
 _BOOL load_all(RSCFILE *file, const _UBYTE *filename);
 enum check_code check_file(_UBYTE *filename, const _UBYTE *extension, _BOOL append_allowed);
 _BOOL save_all(RSCFILE *file, const _UBYTE *filename);
-_VOID err_nota_rsc(const _UBYTE *filename);
+_VOID err_nota_rsc(const char *filename);
 _BOOL ask_ibm(const _UBYTE *filename, _BOOL);
 _BOOL ask_unknown_ext(_VOID);
 _BOOL ask_convert_names(_VOID);

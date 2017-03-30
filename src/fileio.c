@@ -133,7 +133,7 @@ const _UBYTE *rtype_name_short(_WORD type)
 
 /*** ---------------------------------------------------------------------- ***/
 
-CONST _UBYTE *type_name(_WORD type)
+const _UBYTE *type_name(_WORD type)
 {
 	switch (type)
 	{
@@ -164,7 +164,7 @@ CONST _UBYTE *type_name(_WORD type)
 
 /*** ---------------------------------------------------------------------- ***/
 
-_UBYTE *rsx_basename(CONST _UBYTE *name)
+_UBYTE *rsx_basename(const _UBYTE *name)
 {
 	static _UBYTE namebuf[FNAMELEN+1];
 	_UBYTE *dotp;
@@ -172,17 +172,17 @@ _UBYTE *rsx_basename(CONST _UBYTE *name)
 	strcpy(namebuf, name);
 	dotp = strrchr(namebuf, '.');
 	if (dotp != NULL &&
-		(strcasecmp(dotp + 1, ".rsc") == 0))
+		(strcasecmp(dotp + 1, "rsc") == 0))
 		*dotp = '\0';
 	return namebuf;
 }
 
 /*** ---------------------------------------------------------------------- ***/
 
-_VOID set_extension(_UBYTE *filename, CONST _UBYTE *ext)
+_VOID set_extension(char *filename, const char *ext)
 {
-	CONST _UBYTE *p;
-	_UBYTE *p2;
+	const char *p;
+	char *p2;
 
 	p = basename(filename);
 	if ((p2 = strrchr(p, '.')) == NULL)

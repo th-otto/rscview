@@ -13,6 +13,7 @@
 #endif
 
 
+void rsc_init_file(RSCFILE *file);
 _VOID rsc_count_all(RSCFILE *file);
 _VOID rsc_tree_count(RSCFILE *file);
 RSCTREE *rsc_add_tree(RSCFILE *file, _WORD type, const _UBYTE *name, _VOID *object);

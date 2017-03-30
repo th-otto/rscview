@@ -292,11 +292,11 @@ _BOOL output_source_file(
 #define fixnull(p) ((p) ? (p) : "")
 #define printnull(p) ((p) ? (p) : "(nil)")
 
-_VOID err_fopen(const _UBYTE *fname);
-_VOID err_fread(const _UBYTE *fname);
-_VOID err_fwrite(const _UBYTE *fname);
-_VOID err_fcreate(const _UBYTE *fname);
-_VOID err_rename(const _UBYTE *oldname, const _UBYTE *newname);
+_VOID err_fopen(const char *fname);
+_VOID err_fread(const char *fname);
+_VOID err_fwrite(const char *fname);
+_VOID err_fcreate(const char *fname);
+_VOID err_rename(const char *oldname, const char *newname);
 
-_VOID set_extension(_UBYTE *filename, CONST _UBYTE *ext);
+_VOID set_extension(char *filename, const char *ext);
 

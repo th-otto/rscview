@@ -9,6 +9,7 @@
 #include <rsc.h>
 #include <xrsrc.h>
 #include <ro_mem.h>
+#include <fileio.h>
 
 static rsc_options op_rsc_opts = {
 	'@',	/* ted_fillchar */
@@ -28,6 +29,8 @@ static rsc_options op_rsc_opts = {
 	FALSE,	/* magic_buttons */
 	TRUE,	/* menu_keycheck */
 };
+
+#define FOR_FILE(a, b) ((a) == (b) ? (a) : (for_file ? (a) : (b)))
 
 /******************************************************************************/
 /*** ---------------------------------------------------------------------- ***/
@@ -274,7 +277,7 @@ void rsc_tree_delete(RSCTREE *tree)
 
 /*** ---------------------------------------------------------------------- ***/
 
-static void rsc_init_file(RSCFILE *file)
+void rsc_init_file(RSCFILE *file)
 {
 	file->rsc_ntrees = 0;
 	file->rsc_treehead.rt_next =
@@ -314,7 +317,7 @@ RSCFILE *rsc_new_file(const _UBYTE *filename, const _UBYTE *basename)
 {
 	RSCFILE *file;
 	
-	if ((file = g_new(RSCFILE, 1)) == NULL)
+	if ((file = g_new0(RSCFILE, 1)) == NULL)
 		return NULL;
 	if (filename != NULL)
 	{
@@ -420,3 +423,374 @@ const char *ob_cmnt(RSCFILE *file, OBJECT *tree, _WORD ob)
 	return NULL;
 }
 
+/*** ---------------------------------------------------------------------- ***/
+
+static _LONG count_objs(OBJECT *tree, _WORD parent, _LONG idx, XRS_HEADER *xrsc_header, RSCFILE *file, rsc_counter *counter, _BOOL for_file)
+{
+	_WORD mob;
+
+	mob = parent == NIL ? ROOT : tree[parent].ob_head;
+	do
+	{
+		/* OB_INDEX(mob) = (_WORD)idx; */
+		idx++;
+		if (ob_name(file, tree, mob))
+			counter->nnames++;
+		switch (tree[mob].ob_type & OBTYPEMASK)
+		{
+		case G_STRING:
+		case G_TITLE:
+		case G_BUTTON:
+		case G_SHORTCUT:
+			counter->string_space_objects += strlen(tree[mob].ob_spec.free_string) + 1;
+			file->rsc_nstrings += 1;
+			break;
+		
+		case G_BOX:
+		case G_IBOX:
+		case G_BOXCHAR:
+		case G_EXTBOX:
+			break;
+		
+		case G_TEXT:
+		case G_BOXTEXT:
+			if (xrsc_header != NULL)
+			{
+				xrsc_header->rsh_nted++;
+			}
+			counter->string_space_objects += strlen(tree[mob].ob_spec.tedinfo->te_ptext) + 1;
+			counter->string_space_objects += strlen(tree[mob].ob_spec.tedinfo->te_pvalid) + 1;
+			counter->string_space_objects += strlen(tree[mob].ob_spec.tedinfo->te_ptmplt) + 1;
+			counter->total_size += FOR_FILE(RSC_SIZEOF_TEDINFO, sizeof(TEDINFO));
+			file->rsc_nstrings += 3;
+			break;
+		
+		case G_FTEXT:
+		case G_FBOXTEXT:
+			if (xrsc_header != NULL)
+			{
+				xrsc_header->rsh_nted++;
+			}
+			counter->string_space_objects += tree[mob].ob_spec.tedinfo->te_txtlen;
+			counter->string_space_objects += strlen(tree[mob].ob_spec.tedinfo->te_pvalid) + 1;
+			counter->string_space_objects += strlen(tree[mob].ob_spec.tedinfo->te_ptmplt) + 1;
+			counter->total_size += FOR_FILE(RSC_SIZEOF_TEDINFO, sizeof(TEDINFO));
+			file->rsc_nstrings += 3;
+			break;
+		
+		case G_IMAGE:
+			if (xrsc_header != NULL)
+			{
+				xrsc_header->rsh_nbb++;
+			}
+			counter->imdata_size += bitblk_datasize(tree[mob].ob_spec.bitblk);
+			if (counter->imdata_size & 1)
+				counter->imdata_size++;
+			counter->total_size += FOR_FILE(RSC_SIZEOF_BITBLK, sizeof(BITBLK));
+			file->rsc_nimages += 1;
+			break;
+		
+		case G_ICON:
+			if (xrsc_header != NULL)
+			{
+				xrsc_header->rsh_nib++;
+			}
+			counter->string_space_objects += strlen(tree[mob].ob_spec.iconblk->ib_ptext) + 1;
+			counter->imdata_size += iconblk_masksize(tree[mob].ob_spec.iconblk) * 2;
+			counter->total_size += FOR_FILE(RSC_SIZEOF_ICONBLK, sizeof(ICONBLK));
+			file->rsc_nstrings += 1;
+			file->rsc_nimages += 2;
+			break;
+		
+		case G_CICON:
+			{
+				CICON *cicon;
+				_LONG size;
+				_WORD len;
+
+				file->rsc_nciconblks++;
+				counter->cstring_space += CICON_STR_SIZE;
+				len = (_WORD)strlen(tree[mob].ob_spec.ciconblk->monoblk.ib_ptext);
+				if (len > CICON_STR_SIZE)
+					counter->string_space_objects += len + 1;
+				size = iconblk_masksize(&tree[mob].ob_spec.ciconblk->monoblk);
+				counter->cimdata_size += size * 2;
+				counter->ctotal_size += FOR_FILE(RSC_SIZEOF_CICONBLK, sizeof(CICONBLK));
+				cicon = tree[mob].ob_spec.ciconblk->mainlist;
+				while (cicon != NULL)
+				{
+					counter->cimdata_size += size * (cicon->num_planes + 1); /* col_data * num_planes + col_mask */
+					if (cicon->sel_data != 0)
+						counter->cimdata_size += size * (cicon->num_planes + 1);
+					counter->ctotal_size += FOR_FILE(RSC_SIZEOF_CICON, sizeof(CICON));
+					file->rsc_ncicons++;
+					cicon = cicon->next_res;
+				}
+			}
+			file->rsc_nstrings += 1;
+			break;
+		
+		case G_USERDEF:
+			file->rsc_nuserblks++;
+			counter->total_size += FOR_FILE(RSC_SIZEOF_USERBLK, sizeof(USERBLK));
+			break;
+		}
+		if (tree[mob].ob_head != NIL)
+			idx = count_objs(tree, mob, idx, xrsc_header, file, counter, for_file);
+		mob = tree[mob].ob_next;
+		counter->total_size += FOR_FILE(RSC_SIZEOF_OBJECT, sizeof(OBJECT));
+	} while (mob != parent);
+	return idx;
+}
+
+/*** ---------------------------------------------------------------------- ***/
+
+_VOID count_init(XRS_HEADER *xrsc_header, RSCFILE *file, rsc_counter *counter)
+{
+	counter->types.menus = 0;
+	counter->types.dialogs = 0;
+	counter->types.alerts = 0;
+	counter->types.strings = 0;
+	counter->types.images = 0;
+	counter->types.bgh = 0;
+	counter->types.bgh_more = 0;
+	counter->types.bgh_user = 0;
+	xrsc_header->rsh_nobs = 0;
+	xrsc_header->rsh_ntree = 0;
+	xrsc_header->rsh_nted = 0;
+	xrsc_header->rsh_nib = 0;
+	xrsc_header->rsh_nbb = 0;
+	xrsc_header->rsh_nstring = 0;
+	xrsc_header->rsh_nimages = 0;
+	file->rsc_nciconblks = 0;
+	file->rsc_ncicons = 0;
+	file->rsc_nuserblks = 0;
+	file->rsc_nstrings = 0;
+	file->rsc_nimages = 0;
+	counter->total_size = 0;
+	counter->ctotal_size = 0;
+	counter->ext_size = 0;
+	counter->string_space_objects = 0;
+	counter->string_space_free = 0;
+	counter->string_space_total = 0;
+	counter->userblks = 0;
+	counter->imdata_size = 0;
+	counter->cimdata_size = 0;
+	counter->cstring_space = 0;
+	counter->nnames = 0;
+	counter->crc_for_string = 0x5555;
+	counter->conditional.trees = -1;
+	counter->conditional.objects = -1;
+	counter->conditional.tedinfos = -1;
+	counter->conditional.iconblks = -1;
+	counter->conditional.ciconblks = -1;
+	counter->conditional.cicons = -1;
+	counter->conditional.bitblks = -1;
+	counter->conditional.frstr = -1;
+	counter->conditional.strings = -1;
+	counter->conditional.images = -1;
+}
+
+/*** ---------------------------------------------------------------------- ***/
+
+_VOID calc_offsets(XRS_HEADER *xrsc_header, RSCFILE *file, rsc_counter *counter, _BOOL for_file)
+{
+	size_t offset;
+	
+	counter->string_space_total = counter->string_space_objects + counter->string_space_free;
+	counter->total_size += counter->string_space_total;
+	if (counter->total_size & 1)
+		counter->total_size++;
+	counter->total_size += counter->imdata_size;
+	counter->total_size += FOR_FILE(RSC_SIZEOF_XRS_HEADER, sizeof(XRS_HEADER));
+	counter->total_size += xrsc_header->rsh_ntree * FOR_FILE(RSC_SIZEOF_PTR, sizeof(OBJECT *));
+	counter->total_size += xrsc_header->rsh_nimages * FOR_FILE(RSC_SIZEOF_PTR, sizeof(BITBLK *));
+	counter->total_size += xrsc_header->rsh_nstring * FOR_FILE(RSC_SIZEOF_PTR, sizeof(_UBYTE *));
+	
+	/*
+	 * start after header
+	 */
+	offset = FOR_FILE(RSC_SIZEOF_XRS_HEADER, sizeof(XRS_HEADER));
+	xrsc_header->rsh_vrsn = 1;
+	if (counter->total_size > (RS_THRESHOLD + XRS_DIFF_SIZE))
+		xrsc_header->rsh_vrsn = 3;
+	xrsc_header->rsh_extvrsn = XRSC_VRSN_ORCS;
+	/*
+	 * reserve space for G_USERDEFs. Something that DRI forgot.
+	 */
+	offset += (size_t)(file->rsc_nuserblks * FOR_FILE(RSC_SIZEOF_USERBLK, sizeof(USERBLK)));
+	if (file->rsc_flags2 & RF_ALTORDER)
+	{
+		/*
+		 * alternate output order: only needed to write TOS ROM resources
+		 * in their original order
+		 */
+		xrsc_header->rsh_trindex = offset;
+		offset += (size_t)(xrsc_header->rsh_ntree * FOR_FILE(RSC_SIZEOF_PTR, sizeof(OBJECT *)));
+		xrsc_header->rsh_object = offset;
+		offset += (size_t)(xrsc_header->rsh_nobs * FOR_FILE(RSC_SIZEOF_OBJECT, sizeof(OBJECT)));
+		xrsc_header->rsh_tedinfo = offset;
+		offset += (size_t)(xrsc_header->rsh_nted * FOR_FILE(RSC_SIZEOF_TEDINFO, sizeof(TEDINFO)));
+		xrsc_header->rsh_iconblk = offset;
+		offset += (size_t)(xrsc_header->rsh_nib * FOR_FILE(RSC_SIZEOF_ICONBLK, sizeof(ICONBLK)));
+		xrsc_header->rsh_bitblk = offset;
+		offset += (size_t)(xrsc_header->rsh_nbb * FOR_FILE(RSC_SIZEOF_BITBLK, sizeof(BITBLK)));
+		xrsc_header->rsh_frstr = offset;
+		offset += (size_t)(xrsc_header->rsh_nstring * FOR_FILE(RSC_SIZEOF_PTR, sizeof(_UBYTE *)));
+		xrsc_header->rsh_string = offset;
+		offset += (size_t)counter->string_space_total;
+		if (offset & 1)
+			offset++;
+		xrsc_header->rsh_frimg = offset;
+		offset += (size_t)(xrsc_header->rsh_nimages * FOR_FILE(RSC_SIZEOF_PTR, sizeof(BITBLK *)));
+		xrsc_header->rsh_imdata = offset;
+		offset += (size_t)counter->imdata_size;
+	} else
+	{
+		xrsc_header->rsh_string = offset;
+		offset += (size_t)counter->string_space_total;
+		if (offset & 1)
+			offset++;
+		xrsc_header->rsh_imdata = offset;
+		offset += (size_t)counter->imdata_size;
+		xrsc_header->rsh_frstr = offset;
+		offset += (size_t)(xrsc_header->rsh_nstring * FOR_FILE(RSC_SIZEOF_PTR, sizeof(_UBYTE *)));
+		xrsc_header->rsh_bitblk = offset;
+		offset += (size_t)(xrsc_header->rsh_nbb * FOR_FILE(RSC_SIZEOF_BITBLK, sizeof(BITBLK)));
+		xrsc_header->rsh_frimg = offset;
+		offset += (size_t)(xrsc_header->rsh_nimages * FOR_FILE(RSC_SIZEOF_PTR, sizeof(BITBLK *)));
+		xrsc_header->rsh_tedinfo = offset;
+		offset += (size_t)(xrsc_header->rsh_nted * FOR_FILE(RSC_SIZEOF_TEDINFO, sizeof(TEDINFO)));
+		xrsc_header->rsh_iconblk = offset;
+		offset += (size_t)(xrsc_header->rsh_nib * FOR_FILE(RSC_SIZEOF_ICONBLK, sizeof(ICONBLK)));
+		xrsc_header->rsh_object = offset;
+		offset += (size_t)(xrsc_header->rsh_nobs * FOR_FILE(RSC_SIZEOF_OBJECT, sizeof(OBJECT)));
+		xrsc_header->rsh_trindex = offset;
+		offset += (size_t)(xrsc_header->rsh_ntree * FOR_FILE(RSC_SIZEOF_PTR, sizeof(OBJECT *)));
+	}
+	xrsc_header->rsh_rssize = counter->total_size;
+	UNUSED(offset);
+
+	counter->ctotal_size += counter->cstring_space;
+	counter->ctotal_size += counter->cimdata_size;
+	if (file->rsc_nciconblks != 0)
+	{
+		xrsc_header->rsh_vrsn |= RSC_EXT_FLAG;
+		counter->ctotal_size += (file->rsc_nciconblks + 1) * FOR_FILE(RSC_SIZEOF_LONG, sizeof(_LONG));
+	}
+
+	(void) for_file;
+}
+
+/*** ---------------------------------------------------------------------- ***/
+
+_VOID count_trees(RSCFILE *file, XRS_HEADER *xrsc_header, rsc_counter *counter, _BOOL for_file)
+{
+	RSCTREE *tree;
+	OBJECT *ob;
+
+	count_init(xrsc_header, file, counter);
+	FOR_ALL_RSC(file, tree)
+	{
+		switch (tree->rt_type)
+		{
+		case RT_DIALOG:
+		case RT_FREE:
+		case RT_UNKNOWN:
+		case RT_MENU:
+			if (tree->rt_type == RT_MENU)
+			{
+				if ((ob = tree->rt_objects.menu.mn_tree) != NULL)
+					counter->types.menus += 1;
+			} else
+			{
+				if ((ob = tree->rt_objects.dial.di_tree) != NULL)
+					counter->types.dialogs += 1;
+			}
+			if (file->rsc_emutos_othercond_name &&
+				file->rsc_emutos_othercond_string &&
+				counter->conditional.trees < 0 &&
+				strcmp(tree->rt_name, file->rsc_emutos_othercond_name) == 0)
+			{
+				counter->conditional.trees = xrsc_header->rsh_ntree;
+				counter->conditional.objects = xrsc_header->rsh_nobs;
+				counter->conditional.tedinfos = xrsc_header->rsh_nted;
+				counter->conditional.iconblks = xrsc_header->rsh_nib;
+				counter->conditional.ciconblks = file->rsc_nciconblks;
+				counter->conditional.cicons = file->rsc_ncicons;
+				counter->conditional.strings = file->rsc_nstrings;
+				counter->conditional.bitblks = xrsc_header->rsh_nbb;
+				counter->conditional.images = file->rsc_nimages;
+			}
+			if (ob != NULL)
+			{
+				xrsc_header->rsh_nobs += count_objs(ob, NIL, 0l, xrsc_header, file, counter, for_file);
+				tree->rt_index = xrsc_header->rsh_ntree++;
+				counter->nnames += 1;
+			}
+			break;
+		case RT_FRSTR:
+			if (file->rsc_emutos_frstrcond_name &&
+				file->rsc_emutos_frstrcond_string &&
+				counter->conditional.frstr < 0 &&
+				strcmp(tree->rt_name, file->rsc_emutos_frstrcond_name) == 0)
+			{
+				counter->conditional.frstr = xrsc_header->rsh_nstring;
+			}
+			counter->types.strings += 1;
+			counter->string_space_free += strlen(tree->rt_objects.str.fr_str) + 1;
+			tree->rt_index = xrsc_header->rsh_nstring;
+			xrsc_header->rsh_nstring += 1;
+			counter->nnames += 1;
+			file->rsc_nstrings += 1;
+			break;
+		case RT_ALERT:
+			if (file->rsc_emutos_frstrcond_name &&
+				file->rsc_emutos_frstrcond_string &&
+				counter->conditional.frstr < 0 &&
+				strcmp(tree->rt_name, file->rsc_emutos_frstrcond_name) == 0)
+			{
+				counter->conditional.frstr = file->rsc_nstrings;
+			}
+			counter->types.alerts += 1;
+			counter->string_space_free += strlen(tree->rt_objects.alert.al_str) + 1;
+			tree->rt_index = xrsc_header->rsh_nstring;
+			xrsc_header->rsh_nstring += 1;
+			counter->nnames++;
+			file->rsc_nstrings += 1;
+			break;
+		case RT_FRIMG:
+		case RT_MOUSE:
+			counter->types.images += 1;
+			xrsc_header->rsh_nbb += 1;
+			counter->imdata_size += bitblk_datasize(tree->rt_objects.bit);
+			if (counter->imdata_size & 1)
+				counter->imdata_size++;
+			tree->rt_index = xrsc_header->rsh_nimages;
+			xrsc_header->rsh_nimages += 1;
+			counter->total_size += FOR_FILE(RSC_SIZEOF_BITBLK, sizeof(BITBLK));
+			counter->nnames += 1;
+			file->rsc_nimages += 1;
+			break;
+		case RT_BUBBLEUSER:
+			counter->types.bgh++;
+			counter->types.bgh_user += bgh_count(tree->rt_objects.bgh);
+			break;
+		case RT_BUBBLEMORE:
+			counter->types.bgh++;
+			counter->types.bgh_more += bgh_count(tree->rt_objects.bgh);
+			break;
+		}
+	}
+
+	if (file->rsc_opts.crc_string)
+	{
+		counter->types.strings += 1;
+		counter->string_space_free += RSM_CRC_STRLEN;
+		xrsc_header->rsh_nstring += 1;
+		counter->nnames += 1;
+		file->rsc_nstrings += 1;
+	}
+	
+	calc_offsets(xrsc_header, file, counter, for_file);
+}
