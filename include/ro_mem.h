@@ -37,7 +37,7 @@
 
 #define g_malloc(n) malloc(n)
 #define g_calloc(n, s) calloc((size_t)(n), (size_t)(s))
-#define g_malloc0(n) calloc(size_t)(n), 1)
+#define g_malloc0(n) calloc((size_t)(n), 1)
 #define g_realloc(ptr, s) realloc(ptr, s)
 #define g_free(t) free(t)
 
@@ -59,6 +59,7 @@ char *g_strdup(const char *);
 char *g_strndup(const char *, size_t n);
 #endif
 
+char *g_strdup0(const char *str);
 char *g_strvdup(const char *str);
 
 EXTERN_C_END

@@ -5,6 +5,7 @@
 #include "config.h"
 #include <gem.h>
 #include <object.h>
+#include <ro_mem.h>
 
 /*** ---------------------------------------------------------------------- ***/
 
@@ -220,3 +221,43 @@ _LONG iconblk_masksize(ICONBLK *icon)
 {
 	return (_ULONG)((icon->ib_wicon + 15) >> 4) * 2l * (_ULONG)icon->ib_hicon;
 }
+
+/*** ---------------------------------------------------------------------- ***/
+
+/*
+ * like strdup, but append an additional '\0' for use as string array
+ */
+char *g_strdup0(const char *str)
+{
+	char *p;
+	size_t len;
+	
+	if (str == NULL)
+		return NULL;
+	len = strlen(str);
+	if ((p = g_new(char, len + 2)) != NULL)
+	{
+		strcpy(p, str);
+		p[len + 1] = '\0';
+	}
+	return p;
+}
+
+/*** ---------------------------------------------------------------------- ***/
+
+#ifndef HAVE_GLIB
+char *g_strdup(const char *str)
+{
+	char *p;
+	size_t len;
+	
+	if (str == NULL)
+		return NULL;
+	len = strlen(str);
+	if ((p = g_new(char, len + 1)) != NULL)
+	{
+		strcpy(p, str);
+	}
+	return p;
+}
+#endif

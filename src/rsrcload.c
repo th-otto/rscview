@@ -6,6 +6,7 @@
 #include <rsrcload.h>
 #include <ro_mem.h>
 #include <w_draw.h>
+#include "fileio.h"
 
 
 #ifndef O_RDONLY
@@ -420,7 +421,7 @@ static __inline__ void swap_long(char *p)
 
 /*** ---------------------------------------------------------------------- ***/
 
-static void xrsc_get_header(XRS_HEADER *xrsc_header, const char *buf)
+void xrsc_get_header(XRS_HEADER *xrsc_header, const char *buf)
 {
 	xrsc_header->rsh_vrsn = get_word(buf + 0x00);
 	xrsc_header->rsh_extvrsn = get_word(buf + 0x02);
@@ -822,7 +823,7 @@ RSCFILE *xrsrc_load(const char *filename, _UWORD flags)
 	file->data = buf;
 	buf += sizeof(RSCFILE);
 	file->header = xrsc_header;
-	file->swap_flag = swap_flag;
+	file->rsc_swap_flag = swap_flag;
 	
 	/*
 	 * Some resource editors fail to mark an extended RSC in the header,

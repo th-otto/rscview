@@ -4,8 +4,11 @@
 #include <getopt.h>
 #include <errno.h>
 #include "nls.h"
+#include "fileio.h"
 
-static char const program_name[] = "rscview";
+char const program_name[] = "rscview";
+char const program_version[] = VERSION;
+char const program_date[] = "28.03.2017";
 
 static struct option const long_options[] = {
 	{ "version", no_argument, NULL, 'V' }
@@ -61,6 +64,10 @@ int main(int argc, char **argv)
 			fprintf(stderr, _("%s: %s\n"), program_name, strerror(errno));
 		} else
 		{
+			char filename[PATH_MAX];
+			
+			strcpy(filename, file->rsc_rsxfilename);
+			set_extension(filename, "xml");
 			xrsrc_free(file);
 		}
 	}

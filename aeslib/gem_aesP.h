@@ -12,6 +12,19 @@
 #endif
 
 
+/** size of the aes_control[] array */
+#define AES_CTRLMAX		6		/* actually 5; use 6 to make it long aligned */
+/** size of the aes_global[] array */
+#define AES_GLOBMAX		16
+/** size of the aes_intin[] array */
+#define AES_INTINMAX 		16
+/** size of the aes_intout[] array */
+#define AES_INTOUTMAX		16
+/** size of the aes_addrin[] array */
+#define AES_ADDRINMAX		16
+/** size of the aes_addrout[] array */
+#define AES_ADDROUTMAX		16
+
 #define AES_TRAP(aespb) aes(&aespb)
 
 #ifdef __GNUC__

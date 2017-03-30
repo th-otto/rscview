@@ -10,6 +10,7 @@ libaes_a_SOURCES = \
 	rc_intersect.c \
 	rc_array_to_grect.c \
 	rc_grect_to_array.c \
+	globals.c \
 	\
 	$(empty)
 	
