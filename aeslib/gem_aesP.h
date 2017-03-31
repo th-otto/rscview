@@ -15,7 +15,7 @@
 /** size of the aes_control[] array */
 #define AES_CTRLMAX		6		/* actually 5; use 6 to make it long aligned */
 /** size of the aes_global[] array */
-#define AES_GLOBMAX		16
+#define AES_GLOBMAX		(sizeof(AES_GLOBAL) / sizeof(aes_global[0]))
 /** size of the aes_intin[] array */
 #define AES_INTINMAX 		16
 /** size of the aes_intout[] array */
@@ -43,19 +43,19 @@ static __inline long *__aes_intout_long(short n, short *aes_intout)
 
 
 #define AES_PARAMS(opcode,nintin,nintout,naddrin,naddrout) \
-	static short    aes_control[AES_CTRLMAX]={opcode,nintin,nintout,naddrin,naddrout}; \
+	static short const aes_control[AES_CTRLMAX]={opcode,nintin,nintout,naddrin,naddrout}; \
 	short			aes_intin[AES_INTINMAX];			  \
 	short			aes_intout[AES_INTOUTMAX];			  \
-	long			aes_addrin[AES_ADDRINMAX];			  \
-	long			aes_addrout[AES_ADDROUTMAX];		  \
+	const void *	aes_addrin[AES_ADDRINMAX];			  \
+	void *			aes_addrout[AES_ADDROUTMAX];		  \
  														  \
 	AESPB aes_params;									  \
-  	aes_params.control = &aes_control[0];				  \
-  	aes_params.global  = &global_aes[0];				  \
-  	aes_params.intin   = &aes_intin[0]; 				  \
-  	aes_params.intout  = &aes_intout[0];				  \
-  	aes_params.addrin  = &aes_addrin[0];				  \
-  	aes_params.addrout = &aes_addrout[0]
+  	aes_params.control = aes_control;				  \
+  	aes_params.global  = aes_global;				  \
+  	aes_params.intin   = aes_intin; 				  \
+  	aes_params.intout  = aes_intout;				  \
+  	aes_params.addrin  = aes_addrin;				  \
+  	aes_params.addrout = aes_addrout
 
 
 

@@ -10,7 +10,10 @@ char const program_name[] = "rscview";
 char const program_version[] = VERSION;
 char const program_date[] = "28.03.2017";
 
+static gboolean xml_out = FALSE;
+
 static struct option const long_options[] = {
+	{ "xml", no_argument, NULL, 'X' },
 	{ "version", no_argument, NULL, 'V' },
 	{ "help", no_argument, NULL, 'h' },
 	{ NULL, no_argument, NULL, 0 }
@@ -37,10 +40,14 @@ int main(int argc, char **argv)
 	int exit_status = EXIT_SUCCESS;
 	rsc_counter counter;
 	
-	while ((c = getopt_long_only(argc, argv, "hV", long_options, NULL)) != EOF)
+	while ((c = getopt_long_only(argc, argv, "XhV", long_options, NULL)) != EOF)
 	{
 		switch (c)
 		{
+		case 'X':
+			xml_out = TRUE;
+			break;
+			
 		case 'V':
 			print_version();
 			return EXIT_SUCCESS;
@@ -70,12 +77,15 @@ int main(int argc, char **argv)
 		file = xrsrc_load(filename, XRSC_SAFETY_CHECKS);
 		if (file != NULL)
 		{
-			char outfilename[PATH_MAX];
-			
-			strcpy(outfilename, file->rsc_rsxfilename);
-			set_extension(outfilename, "xml");
-			if (rsc_xml_source(file, &counter, outfilename, file->data) == FALSE)
-				exit_status = EXIT_FAILURE;
+			if (xml_out)
+			{
+				char outfilename[PATH_MAX];
+				
+				strcpy(outfilename, file->rsc_rsxfilename);
+				set_extension(outfilename, "xml");
+				if (rsc_xml_source(file, &counter, outfilename, file->data) == FALSE)
+					exit_status = EXIT_FAILURE;
+			}
 			xrsrc_free(file);
 		} else
 		{

@@ -5,6 +5,10 @@ INCLUDES += -I$(srcdir)
 noinst_LIBRARIES = libaes.a
 
 libaes_a_SOURCES = \
+	a_appl_exit.c \
+	a_appl_init.c \
+	a_vq_aes.c \
+	\
 	rc_copy.c \
 	rc_equal.c \
 	rc_intersect.c \

@@ -1,8 +1,3 @@
-/*
- *  $Id: globals.c,v 1.4 2003/02/28 20:46:39 a_bercegeay Exp $
- */
-
-
 #include "gem_aesP.h"
 
 /*

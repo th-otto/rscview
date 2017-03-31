@@ -543,16 +543,71 @@ typedef struct mfstr
 } MFORM;
 
 
-/************************************************************************/
-/* end of portable definitions											*/
-/************************************************************************/
-
 /* Utilities */
 void rc_copy(const GRECT *src, GRECT *dst);
 _WORD rc_equal(const GRECT *r1, const GRECT *r2);
 _WORD rc_intersect(const GRECT *src, GRECT *dst);
 GRECT *array_to_grect (const _WORD *array, GRECT *area);
 _WORD *grect_to_array (const GRECT *area, _WORD *array);
+
+extern _WORD gl_apid;
+extern _WORD gl_ap_version;
+extern _WORD aes_global[];
+
+typedef union
+{
+	void *spec;			/* PC_GEM */
+	long l;
+	short pi[2];
+} aes_private;
+
+/* At last give in to the fact that it is a struct, NOT an array */
+typedef struct _aes_global {
+	_WORD ap_version;
+	_WORD ap_count;
+	_WORD ap_id;
+	aes_private *ap_private;
+	OBJECT **ap_ptree;
+	void *ap_rscmem; /* RSHDR or RSXHDR */
+	_UWORD ap_rsclen; /* note: short only; unusable with resource >64k */
+	_WORD ap_planes;
+	_WORD ap_res1;
+	_WORD ap_res2;
+	_WORD ap_bvdisk;
+	_WORD ap_bvhard;
+} AES_GLOBAL;
+
+#define	_AESversion   (((AES_GLOBAL *)aes_global)->ap_version)
+#define	_AESnumapps   (((AES_GLOBAL *)aes_global)->ap_count)
+#define	_AESapid      (((AES_GLOBAL *)aes_global)->ap_id)
+#define	_AESappglobal ((_LONG)(((AES_GLOBAL *)aes_global)->ap_private))
+#define	_AESrscfile   (((AES_GLOBAL *)aes_global)->ap_ptree)
+#define	_AESrscmem    (((AES_GLOBAL *)aes_global)->ap_rscmem)
+#define	_AESrsclen    (((AES_GLOBAL *)aes_global)->ap_rsclen)
+#define	_AESmaxchar   (((AES_GLOBAL *)aes_global)->ap_bvdisk)
+#define	_AESminchar   (((AES_GLOBAL *)aes_global)->ap_bvhard)
+
+typedef struct
+{
+	const _WORD *control;
+	_WORD *global;
+	_WORD *intin;
+	_WORD *intout;
+	const void **addrin;
+	void **addrout;
+} AESPARBLK;
+
+typedef AESPARBLK AESPB; /* MagiC name */
+
+/*
+ * the AES entry point
+ */
+extern _WORD aes(AESPB *pb);
+
+/****** Application definitions *****************************************/
+
+_WORD appl_init(void);
+_WORD appl_exit(void);
 
 EXTERN_C_END
 
