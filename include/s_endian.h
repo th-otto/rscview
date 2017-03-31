@@ -55,10 +55,13 @@ EXTERN_C_BEG
 #  ifdef __i586__
 #    define HOST_BYTE_ORDER BYTE_ORDER_LITTLE_ENDIAN
 #  endif
+#  ifdef __x86_64__
+#    define HOST_BYTE_ORDER BYTE_ORDER_LITTLE_ENDIAN
+#  endif
 
 #endif
 
-_WORD get_byte_order(_VOID);
+_WORD get_byte_order(void);
 
 uint32_t n2hl(uint32_t val);
 uint32_t h2nl(uint32_t val);
@@ -79,6 +82,7 @@ static __inline uint32_t bswap_32(uint32_t x)
 	__asm__("rorw #8,%0\n\tswap %0\n\trorw #8,%0" : "=d" (x) :  "0" (x) : "cc");
 	return x;
 }
+#define HAVE_BSWAP_32 1
 #elif defined(__PUREC__) && (defined(__mc68000__) && !defined(__mcoldfire__) && !defined(__AHCC__))
 static __inline uint32_t __bswap_32_0(uint32_t x) 0xe058; /* ror.w d0 */
 static __inline uint32_t __bswap_32_1(uint32_t x) 0x4840; /* swap d0 */
@@ -101,7 +105,7 @@ static __inline uint32_t bswap_32(uint32_t v)
 static __inline uint16_t bswap_16(uint16_t v) { return __builtin_bswap16(v); }
 #define HAVE_BSWAP_16 1
 #elif defined(__GNUC__) && (defined(__mc68000__) && !defined(__mcoldfire__))
-static __inline__ uint16_t bwap_16(uint16_t x)
+static __inline__ uint16_t bswap_16(uint16_t x)
 {
 	__asm__("rorw #8,%0" : "=d" (x) :  "0" (x) : "cc");
 	return x;

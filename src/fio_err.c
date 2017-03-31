@@ -10,19 +10,6 @@
 
 /*** ---------------------------------------------------------------------- ***/
 
-#if !defined(OS_ATARI) && defined(SPEC_DEBUG)
-void nf_debugprintf(const char *format, ...)
-{
-	va_list args;
-	
-	va_start(args, format);
-	vfprintf(stderr, format, args);
-	va_end(args);
-}
-#endif
-
-/*** ---------------------------------------------------------------------- ***/
-
 static void error(const char *msg, ...)
 {
 	va_list args;

@@ -609,6 +609,67 @@ extern _WORD aes(AESPB *pb);
 _WORD appl_init(void);
 _WORD appl_exit(void);
 
+/****** Object prototypes ************************************************/
+
+/* the objc_sysvar ob_swhich values */
+#define LK3DIND      1                  /* AES 4.0     */
+#define LK3DACT      2                  /* AES 4.0     */
+#define INDBUTCOL    3                  /* AES 4.0     */
+#define ACTBUTCOL    4                  /* AES 4.0     */
+#define BACKGRCOL    5                  /* AES 4.0     */
+#define AD3DVALUE    6                  /* AES 4.0     */
+#define MX_ENABLE3D  10                 /* MagiC 3.0   */
+#define MENUCOL		 11                 /* MagiC 6     */
+
+#define OB_GETVAR 0
+#define OB_SETVAR 1
+
+/* objc_change modes */
+#define NO_DRAW			0	/* object will not be redrawn, see mt_objc_change() */
+#define REDRAW 			1	/* object will be redrawn, see mt_objc_change() */
+
+/* objc_order modes */
+#define OO_LAST			-1	/* make object the last child, see mt_objc_order() */
+#define OO_FIRST		0	/* make object the first child, see mt_objc_order() */
+
+/* objc_sysvar modes */
+#define SV_INQUIRE		0	/* inquire sysvar data, see mt_objc_sysvar() */
+#define SV_SET 			1	/* set sysvar data, see mt_objc_sysvar() */
+
+_WORD objc_add( OBJECT *ob_atree, _WORD ob_aparent, _WORD ob_achild );
+_WORD objc_delete( OBJECT *ob_dltree, _WORD ob_dlobject );
+_WORD objc_draw( OBJECT *ob_drtree, _WORD ob_drstartob,
+               _WORD ob_drdepth, _WORD ob_drxclip, _WORD ob_dryclip,
+               _WORD ob_drwclip, _WORD ob_drhclip );
+_WORD objc_draw_grect(OBJECT *, _WORD Start, _WORD Depth, const GRECT *r);
+_WORD objc_find( OBJECT *ob_ftree, _WORD ob_fstartob, _WORD ob_fdepth,
+               _WORD ob_fmx, _WORD ob_fmy );
+_WORD objc_offset( OBJECT *ob_oftree, _WORD ob_ofobject,
+                 _WORD *ob_ofxoff, _WORD *ob_ofyoff );
+_WORD objc_order( OBJECT *ob_ortree, _WORD ob_orobject,
+                _WORD ob_ornewpos );
+_WORD objc_edit( OBJECT *ob_edtree, _WORD ob_edobject,
+               _WORD ob_edchar, _WORD *ob_edidx, _WORD ob_edkind );
+_WORD objc_change( OBJECT *ob_ctree, _WORD ob_cobject,
+                 _WORD ob_cresvd, _WORD ob_cxclip, _WORD ob_cyclip,
+                 _WORD ob_cwclip, _WORD ob_chclip,
+                 _WORD ob_cnewstate, _WORD ob_credraw );
+_WORD objc_change_grect( OBJECT *ob_ctree, _WORD ob_cobject, _WORD ob_cresvd, const GRECT *clip, _WORD ob_cnewstate, _WORD ob_credraw );
+_WORD objc_sysvar( _WORD ob_svmode, _WORD ob_svwhich,  /* AES 4.0 */
+                 _WORD ob_svinval1, _WORD ob_svinval2,
+                 _WORD *ob_svoutval1, _WORD *ob_svoutval2); /* AES 4.0 */
+_WORD objc_xfind( OBJECT *ob_ftree, _WORD ob_fstartob, _WORD ob_fdepth,
+               _WORD ob_fmx, _WORD ob_fmy );
+_VOID objc_wchange( OBJECT *ob_ctree, _WORD ob_cobject,
+                 _WORD ob_cnewstate, GRECT *clip, _WORD whandle);
+_VOID objc_wdraw( OBJECT *ob_drtree, _WORD ob_drstartob,
+               _WORD ob_drdepth, GRECT *clip, _WORD whandle);
+_WORD objc_wedit( OBJECT *ob_edtree, _WORD ob_edobject,
+               _WORD ob_edchar, _WORD *ob_edidx, _WORD ob_edkind, _WORD whandle );
+_WORD objc_xedit( OBJECT *ob_edtree, _WORD ob_edobject,
+               _WORD ob_edchar, _WORD *ob_edidx, _WORD ob_edkind, GRECT *r );
+
+
 EXTERN_C_END
 
 #endif /* __PORTAES_H__ */

@@ -86,6 +86,11 @@ int main(int argc, char **argv)
 				if (rsc_xml_source(file, &counter, outfilename, file->data) == FALSE)
 					exit_status = EXIT_FAILURE;
 			}
+			
+			appl_init();
+			
+			appl_exit();
+			
 			xrsrc_free(file);
 		} else
 		{

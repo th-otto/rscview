@@ -567,6 +567,7 @@ Makefile
 data/Makefile
 vdilib/Makefile
 aeslib/Makefile
+aes/Makefile
 src/Makefile
 ])
 

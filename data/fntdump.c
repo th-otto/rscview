@@ -3,12 +3,17 @@
  *
  * Written by Thorsten Otto (May, 2017)
  */
-#include "config.h"
+/*
+ * do not used config values for target when cross-compiling
+ */
+#undef HAVE_CONFIG_H
+
 #include <portab.h>
 #include <s_endian.h>
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
+#include <stdlib.h>
 #include <getopt.h>
 #include "fonthdr.h"
 
@@ -216,6 +221,8 @@ static void fnttoc(UB *b, int l, FILE *out, const char *filename, const char *na
 	off_table = h + LOAD_UL(h + 72);
 	dat_table = h + LOAD_UL(h + 76);
 
+	numoffs = lastc - firstc + 1;
+
 	if ((flags & FONTF_HORTABLE) && hor_table != h && hor_table != off_table && (off_table - hor_table) >= (numoffs * 2))
 	{
 	} else
@@ -262,8 +269,6 @@ static void fnttoc(UB *b, int l, FILE *out, const char *filename, const char *na
 		return;
 	}
 	
-	numoffs = lastc - firstc + 1;
-
 	if (HOST_BIG != FONT_BIG)
 	{
 		UB *u;

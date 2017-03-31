@@ -4,6 +4,9 @@ INCLUDES += -I$(srcdir)
 
 noinst_PROGRAMS = fntdump
 
+CC = $(BUILD_CC)
+EXEEXT = $(BUILD_EXEEXTT)
+
 fntdump_SOURCES = \
 	fntdump.c \
 	$(empty)

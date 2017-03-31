@@ -212,6 +212,7 @@ libvdi_a_SOURCES = \
 	vdi_wstrlen.c \
 	\
 	vdi_dummy.c \
+	nf_debugprintf.c \
 	\
 	vq_gdos.c \
 	\
