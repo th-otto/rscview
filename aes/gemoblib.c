@@ -256,7 +256,7 @@ static void draw_hi(GRECT *prect, _WORD state, _WORD clip, _WORD th, _WORD icol)
 
 	col = (state & SELECTED) ? BLACK : WHITE;
 	gsx_attr(0, MD_REPLACE, col);
-	av_pline(3, pts);
+	v_pline(gl_handle, 3, pts);
 
 	/* Draw shadow:
 	 *   +--------------+
@@ -283,7 +283,7 @@ static void draw_hi(GRECT *prect, _WORD state, _WORD clip, _WORD th, _WORD icol)
 			col = BLACK;
 	}
 	gsx_attr(0, MD_REPLACE, col);
-	av_pline(3, pts);
+	v_pline(gl_handle, 3, pts);
 
 	gsx_mon();
 }
@@ -1340,7 +1340,7 @@ static void my_trans(_WORD *saddr, _UWORD swb, _WORD *daddr, _UWORD dwb, _UWORD 
 	gsx_fix(&gl_dst, daddr, dwb, h);
 	gl_dst.fd_stand = FALSE;
 	gl_dst.fd_nplanes = nplanes;
-	avr_trnfm(&gl_src, &gl_dst);
+	vr_trnfm(gl_handle, &gl_src, &gl_dst);
 }
 
 
@@ -1606,7 +1606,7 @@ void gsx_cblt(_WORD * saddr, _UWORD sx, _UWORD sy, _UWORD swb, _WORD *daddr, _UW
 	ppts[5] = dy;
 	ppts[6] = dx + w - 1;
 	ppts[7] = dy + h - 1;
-	avro_cpyfm(rule, ppts, &gl_src, &gl_dst);
+	vro_cpyfm(gl_handle, rule, ppts, &gl_src, &gl_dst);
 	gsx_mon();
 }
 

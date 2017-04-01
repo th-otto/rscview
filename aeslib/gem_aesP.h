@@ -1,7 +1,3 @@
-/*
- *  $Id: gem_aesP.h,v 1.9 2009/12/20 14:21:02 alanh Exp $
- */
-
 #ifndef _GEM_AES_P_
 # define _GEM_AES_P_
 

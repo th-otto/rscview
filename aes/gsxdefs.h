@@ -1,39 +1,58 @@
+/*	GSXDEFS.H	05/06/84 - 12/08/84	Lee Lorenzen		*/
+
+/*
+ *       Copyright 1999, Caldera Thin Clients, Inc.                      
+ *       This software is licenced under the GNU Public License.         
+ *       Please see LICENSE.TXT for further information.                 
+ *                                                                       
+ *                  Historical Copyright
+ *	-------------------------------------------------------------
+ *	GEM Application Environment Services		  Version 3.0
+ *	Serial No.  XXXX-0000-654321		  All Rights Reserved
+ *	Copyright (C) 1986			Digital Research Inc.
+ *	-------------------------------------------------------------
+ */
+
 #ifndef GSXDEFS_H
 #define GSXDEFS_H 1
 
 #include "ws.h"
 
+extern int gl_moff;
+extern _BOOL gl_mouse;					/* mouse on flag        */
+extern void *tikaddr;
+extern void *tiksav;
+
 /*
  * gemgsxif.[cS]
  */
 
+void gsx_malloc(void);
 void gsx_mfree(void);
 void gsx_mret(void **pmaddr, long *pmlen);
 
 
+void gsx_init(void);
 void gsx_graphic(_BOOL tographic);
-void gsx_escapes(_WORD esc_code);
-void av_hardcopy(void);
 void gsx_wsopen(void);
 void gsx_wsclose(void);
+void gsx_wsclear(void);
+void ratinit(void);
+void ratexit(void);
 void bb_set(_WORD sx, _WORD sy, _WORD sw, _WORD sh, _WORD *pts1, _WORD *pts2, MFDB *pfd, MFDB *psrc, MFDB *pdst);
 void bb_save(GRECT *ps);
 void bb_restore(GRECT *ps);
 void gsx_resetmb(void);
+void gsx_mfset(const MFORM *pmfnew);
+void gsx_xmfset(MFORM *pmfnew);
 void gsx_mxmy(_WORD *pmx, _WORD *pmy);
+_WORD gsx_tick(void *tcode, void *ptsave);
 _WORD gsx_button(void);
+_WORD gsx_kstate(void);
 void gsx_moff(void);
 void gsx_mon(void);
-
-_WORD av_opnwk(_WORD *pwork_in, _WORD *phandle, _WORD *pwork_out);
-void av_pline(_WORD count, _WORD *pxyarray);
-void avst_clip(_WORD clip_flag, _WORD pxyarray);
-void avst_height(_WORD height, _WORD *pchr_width, _WORD *pchr_height, _WORD *pcell_width, _WORD *pcell_height);
-void avr_recfl(_WORD *pxyarray, MFDB *pdesMFDB);
-void avro_cpyfm(_WORD wr_mode, _WORD *pxyarray, MFDB *psrcMFDB, MFDB *pdesMFDB);
-void avrt_cpyfm(_WORD wr_mode, _WORD *pxyarray, MFDB *psrcMFDB, MFDB *pdesMFDB, _WORD fgcolor, _WORD bgcolor);
-void avr_trnfm(MFDB *psrcMFDB, MFDB *pdesMFDB);
-void avsl_width(_WORD width);
+_WORD gsx_char(void);
+_WORD gsx_nplanes(void);
 
 /*
  * apgsxif.[cS]
