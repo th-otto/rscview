@@ -158,7 +158,7 @@ _WORD ev_timer(_LONG count)
 /*
  *	Used by ev_multi() to check on mouse rectangle events
  */
-static _WORD ev_mchk(MOBLK *pmo)
+static _WORD ev_mchk(const MOBLK *pmo)
 {
 	if (rlr == gl_mowner && pmo->m_out != inside(xrat, yrat, &pmo->m_gr))
 		return TRUE;
@@ -171,7 +171,7 @@ static _WORD ev_mchk(MOBLK *pmo)
  *
  *	Do a multi-wait on the specified events.
  */
-_WORD ev_multi(_WORD flags, MOBLK *pmo1, MOBLK *pmo2, _LONG tmcount, intptr_t buparm, _WORD *mebuff, _WORD *prets)
+_WORD ev_multi(_WORD flags, const MOBLK *pmo1, const MOBLK *pmo2, _LONG tmcount, intptr_t buparm, _WORD *mebuff, _WORD *prets)
 {
 	QPB m;
 	EVSPEC wmask, kbmsk, bumsk, m1msk, m2msk, qrmsk, tmmsk;

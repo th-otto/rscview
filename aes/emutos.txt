@@ -1,0 +1,6 @@
+gemobed.c:
+    find_pos:
+       backup str at end
+    curfld:
+       +1 for cursor
+    check: load strings from resource

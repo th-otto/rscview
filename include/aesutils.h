@@ -3,6 +3,12 @@
 
 #include <stdarg.h>
 
+#undef min
+#undef max
+#define max(x,y)	(((x) > (y)) ? (x) : (y))
+#define min(x,y)	(((x) < (y)) ? (x) : (y))
+
+
 EXTERN_C_BEG
 
 
@@ -45,7 +51,7 @@ void fs_sget(OBJECT *tree, _WORD obj, char *pstr);
 void inf_fldset(OBJECT *tree, _WORD obj, _UWORD testfld, _UWORD testbit, _UWORD truestate, _UWORD falsestate);
 void merge_str(char *pdst, const char *ptmp, va_list parms);
 _WORD wildcmp(const char *pwild, const char *ptest);
-void strmcpy(char *dst, size_t len, const char *src);
+size_t strlcpy(char *dst, size_t len, const char *src);
 unsigned int reverse(int index);
 char *xstrpcpy(const char *ps, char *pd);
 _BOOL streq(const char *p1, const char *p2);

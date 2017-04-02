@@ -630,8 +630,8 @@ static void just_draw(OBJECT *tree, _WORD obj, _WORD sx, _WORD sy)
 		{
 		case G_FTEXT:
 		case G_FBOXTEXT:
-			strmcpy(rawstr, sizeof(rawstr), edblk.te_ptext);
-			strmcpy(tmpstr, sizeof(tmpstr), edblk.te_ptmplt);
+			strlcpy(rawstr, sizeof(rawstr), edblk.te_ptext);
+			strlcpy(tmpstr, sizeof(tmpstr), edblk.te_ptmplt);
 			ob_format(edblk.te_just, rawstr, tmpstr, fmtstr);
 			/* fall thru to gr_gtext */
 		case G_BOXCHAR:

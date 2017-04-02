@@ -16,6 +16,7 @@ libgem_a_SOURCES = \
 	gemgsxif.c \
 	geminit.c \
 	gemmnlib.c \
+	gemobed.c \
 	gemobjop.c \
 	gemoblib.c \
 	gemsclib.c \

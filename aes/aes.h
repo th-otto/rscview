@@ -79,6 +79,7 @@ extern char gl_logdrv;
 extern _WORD crt_error;					/* critical error handler semaphore */
 extern _WORD adeskp[3];					/* desktop colors & backgrounds */
 extern OBJECT **aes_rsc_tree;
+extern const char *const *aes_rsc_string;
 
 /*
  * number of ticks since last sample
@@ -230,7 +231,7 @@ _UWORD ev_button(_WORD bflgclks, _UWORD bmask, _UWORD bstate, _WORD *rets);
 _UWORD ev_mouse(const MOBLK *pmo, _WORD *rets);
 _WORD ev_mesag(_WORD *pbuff);
 _WORD ev_timer(_LONG count);
-_WORD ev_multi(_WORD flags, MOBLK *pmo1, MOBLK *pmo2, _LONG tmcount, intptr_t buparm, _WORD *mebuff, _WORD *prets);
+_WORD ev_multi(_WORD flags, const MOBLK *pmo1, const MOBLK *pmo2, _LONG tmcount, intptr_t buparm, _WORD *mebuff, _WORD *prets);
 _WORD ev_dclick(_WORD rate, _WORD setit);
 
 

@@ -138,7 +138,7 @@ _WORD ap_find(const char *pname)
 	register AESPD *p;
 	char temp[9];
 
-	strmcpy(temp, sizeof(temp), pname);
+	strlcpy(temp, sizeof(temp), pname);
 
 	p = fpdnm(temp, 0);
 	return p ? p->p_pid : -1;

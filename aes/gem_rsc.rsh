@@ -326,6 +326,15 @@ static char gem_rsc_string_64[] = "[1][There is not enough memory|in your comput
 static char gem_rsc_string_65[] = "[3][TOS error #%u.][Cancel]";
 static char gem_rsc_string_66[] = "[3][Unsupported AES function #%d.][Cancel]";
 static char gem_rsc_string_67[] = "ITEM SELECTOR";
+static char gem_rsc_string_68[] = "0..9";
+static char gem_rsc_string_69[] = "A..Z \200\216\217\220\222\231\232\245\265\266\267\270\236\302..\334";
+static char gem_rsc_string_70[] = "0..9A..Z \200\216\217\220\222\231\232\245\265\266\267\270\236\302..\334";
+static char gem_rsc_string_71[] = "0..9a..zA..Z\200..\377\\?*:._";
+static char gem_rsc_string_72[] = "0..9a..zA..Z\200..\377\\:_";
+static char gem_rsc_string_73[] = "a..z0..9A..Z\200..\377:?*_";
+static char gem_rsc_string_74[] = "a..z0..9A..Z\200..\377_";
+static char gem_rsc_string_75[] = "a..zA..Z \200..\377";
+static char gem_rsc_string_76[] = "0..9a..zA..Z \200..\377";
 
 
 /* data of NOTEBB */
@@ -440,7 +449,16 @@ static char *rs_frstr[] = {
 	gem_rsc_string_64,
 	gem_rsc_string_65,
 	gem_rsc_string_66,
-	gem_rsc_string_67
+	gem_rsc_string_67,
+	gem_rsc_string_68,
+	gem_rsc_string_69,
+	gem_rsc_string_70,
+	gem_rsc_string_71,
+	gem_rsc_string_72,
+	gem_rsc_string_73,
+	gem_rsc_string_74,
+	gem_rsc_string_75,
+	gem_rsc_string_76
 };
 
 
@@ -592,13 +610,13 @@ static OBJECT *rs_trindex[] = {
 #undef NUM_OBS
 #undef NUM_TREE
 #undef NUM_UD
-#define NUM_STRINGS 68
+#define NUM_STRINGS 77
 #define NUM_BB		11
 #define NUM_IB		0
 #define NUM_CIB     0
 #define NUM_CIC     0
 #define NUM_TI		14
-#define NUM_FRSTR	14
+#define NUM_FRSTR	23
 #define NUM_FRIMG	11
 #define NUM_OBS     66
 #define NUM_TREE	3
@@ -793,8 +811,8 @@ _WORD gem_rsc_rsc_free()
 #endif /* RSC_NAMED_FUNCTIONS */
 
 #else /* !RSC_STATIC_FILE */
-int rs_numstrings = 68;
-int rs_numfrstr = 14;
+int rs_numstrings = 77;
+int rs_numfrstr = 23;
 
 int rs_nuser = 0;
 int rs_numimages = 11;

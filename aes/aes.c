@@ -87,7 +87,7 @@ static _WORD crysbind(AESPB *pb)
 	case 12:
 		aestrace("appl_write()");
 		AES_PARAMS(12,2,1,1,0);
-		ret = ap_rdwr(AQWRT, int_in[0], int_in[1], (_WORD *)NO_CONST(addr_in[0]));
+		ret = ap_rdwr(AQWRT, int_in[0], int_in[1], (_WORD *)addr_in[0]);
 		break;
 #endif
 
@@ -109,7 +109,7 @@ static _WORD crysbind(AESPB *pb)
 	case 15:
 		aestrace("appl_trecord()");
 		AES_PARAMS(15,1,1,1,0);
-		ret = ap_trecd((uint32_t *)NO_CONST(addr_in[0]), int_in[0]);
+		ret = ap_trecd((uint32_t *)addr_in[0], int_in[0]);
 		break;
 #endif
 
@@ -218,7 +218,7 @@ static _WORD crysbind(AESPB *pb)
 	case 23:
 		aestrace("evnt_mesag()");
 		AES_PARAMS(23,0,1,1,0);
-		ret = ev_mesag((_WORD *)NO_CONST(addr_in[0]));
+		ret = ev_mesag((_WORD *)addr_in[0]);
 		break;
 
 	case 24:
@@ -234,7 +234,7 @@ static _WORD crysbind(AESPB *pb)
 		if (int_in[0] & MU_TIMER)
 			timeval = MAKE_ULONG(int_in[15], int_in[14]);
 		lbuparm = HW(int_in[1]) | (uint16_t)((int_in[2] << 8) | int_in[3]);
-		ret = ev_multi(int_in[0], (MOBLK *)NO_CONST(&int_in[4]), (MOBLK *)NO_CONST(&int_in[9]), timeval, lbuparm, (_WORD *)NO_CONST(addr_in[0]), &int_out[1]);
+		ret = ev_multi(int_in[0], (const MOBLK *)&int_in[4], (const MOBLK *)&int_in[9], timeval, lbuparm, (_WORD *)addr_in[0], &int_out[1]);
 		break;
 
 	case 26:
@@ -249,7 +249,7 @@ static _WORD crysbind(AESPB *pb)
 		aestrace("menu_bar()");
 		AES_PARAMS(30,1,1,1,0);
 #if NYI
-		mn_bar((OBJECT *)NO_CONST(addr_in[0]), int_in[0], rlr->p_pid);
+		mn_bar((OBJECT *)addr_in[0], int_in[0], rlr->p_pid);
 #endif
 		break;
 
@@ -257,7 +257,7 @@ static _WORD crysbind(AESPB *pb)
 		aestrace("menu_icheck()");
 		AES_PARAMS(31,2,1,1,0);
 #if NYI
-		do_chg((OBJECT *)NO_CONST(addr_in[0]), int_in[0], CHECKED, int_in[1], FALSE, FALSE);
+		do_chg((OBJECT *)addr_in[0], int_in[0], CHECKED, int_in[1], FALSE, FALSE);
 #endif
 		break;
 
@@ -265,7 +265,7 @@ static _WORD crysbind(AESPB *pb)
 		aestrace("menu_ienable()");
 		AES_PARAMS(32,2,1,1,0);
 #if NYI
-		do_chg((OBJECT *)NO_CONST(addr_in[0]), (int_in[0] & 0x7FFF), DISABLED, !int_in[1], ((int_in[0] & 0x8000) != 0x0), FALSE);
+		do_chg((OBJECT *)addr_in[0], (int_in[0] & 0x7FFF), DISABLED, !int_in[1], ((int_in[0] & 0x8000) != 0x0), FALSE);
 #endif
 		break;
 
@@ -273,7 +273,7 @@ static _WORD crysbind(AESPB *pb)
 		aestrace("menu_tnormal()");
 		AES_PARAMS(33,2,1,1,0);
 #if NYI
-		do_chg((OBJECT *)NO_CONST(addr_in[0]), int_in[0], SELECTED, !int_in[1], TRUE, TRUE);
+		do_chg((OBJECT *)addr_in[0], int_in[0], SELECTED, !int_in[1], TRUE, TRUE);
 #endif
 		break;
 
@@ -360,6 +360,75 @@ static _WORD crysbind(AESPB *pb)
 		unsupported = TRUE;
 #endif
 		break;
+
+	/* Object Manager */
+	case 40:
+		aestrace("objc_add()");
+		AES_PARAMS(40,2,1,1,0);
+		ob_add((OBJECT *)addr_in[0], int_in[0], int_in[1]);
+		break;
+
+	case 41:
+		aestrace("objc_delete()");
+		AES_PARAMS(41,1,1,1,0);
+		ob_delete((OBJECT *)addr_in[0], int_in[0]);
+		break;
+
+	case 42:
+		aestrace("objc_draw()");
+		AES_PARAMS(42,6,1,1,0);
+		gsx_sclip((const GRECT *)&int_in[2]);
+		ob_draw((OBJECT *)addr_in[0], int_in[0], int_in[1]);
+		break;
+
+	case 43:
+		aestrace("objc_find()");
+		AES_PARAMS(43,4,1,1,0);
+		ret = ob_find((OBJECT *)addr_in[0], int_in[0], int_in[1], int_in[2], int_in[3]);
+		break;
+
+	case 44:
+		aestrace("objc_offset()");
+		AES_PARAMS(44,1,3,1,0);
+		if (gl_aes3d)
+			ob_gclip((OBJECT *)addr_in[0], int_in[0], &int_out[1], &int_out[2], &int_out[3], &int_out[4], &int_out[5], &int_out[6]);
+		else
+			ob_offset((OBJECT *)addr_in[0], int_in[0], &int_out[1], &int_out[2]);
+		break;
+
+	case 45:
+		aestrace("objc_order()");
+		AES_PARAMS(45,2,1,1,0);
+		ob_order((OBJECT *)addr_in[0], int_in[0], int_in[1]);
+		break;
+
+	case 46:
+		aestrace("objc_edit()");
+		AES_PARAMS(46,4,2,1,0);
+		int_out[1] = int_in[2];
+		ret = ob_edit((OBJECT *)addr_in[0], int_in[0], int_in[1], &int_out[1], int_in[3]);
+		break;
+
+	case 47:
+		aestrace("objc_change()");
+		AES_PARAMS(47,8,1,1,0);
+		gsx_sclip((const GRECT *)&int_in[2]);
+		ob_change((OBJECT *)addr_in[0], int_in[0], int_in[6], int_in[7]);
+		break;
+
+	case 48:
+		aestrace("objc_sysvar()");
+		AES_PARAMS(48,4,3,0,0);
+		if (gl_aes3d)
+			ret = ob_sysvar(int_in[0], int_in[1], int_in[2], int_in[3], &int_out[1], &int_out[2]);
+		break;
+
+	case 49:
+		aestrace("objc_xfind()");
+		AES_PARAMS(49,4,1,1,0);
+		ret = ob_find((OBJECT *)addr_in[0], int_in[0], int_in[1], int_in[2], int_in[3]);
+		break;
+	
 	}
 	
 	RET_CODE = ret;
