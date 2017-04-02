@@ -9,6 +9,10 @@ libaes_a_SOURCES = \
 	a_appl_init.c \
 	a_vq_aes.c \
 	\
+	a_wind_set.c \
+	a_wind_set_int.c \
+	a_wind_set_str.c \
+	\
 	rc_copy.c \
 	rc_equal.c \
 	rc_intersect.c \

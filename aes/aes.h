@@ -13,6 +13,12 @@
 #define	ADJ3DPIX    2	/* pixel adjustment for 3D objects */
 
 
+#define HW(x) (((uint32_t)(uint16_t)(x) << 16))
+#define MAKE_ULONG(hi,lo) (HW(hi) | (uint16_t)(lo))
+#define LOWORD(x) ((uint16_t)(uint32_t)(x))
+#define HIWORD(x) ((uint16_t)((uint32_t)(x) >> 16))
+
+
 /*
  * dosif.S/jbind.S
  */
@@ -121,7 +127,7 @@ extern _WORD gl_bvdisk;
 extern _WORD gl_bvhard;
 extern _WORD gl_recd;
 extern _WORD gl_rlen;
-extern FPD *gl_rbuf;
+extern uint32_t *gl_rbuf;
 extern _WORD gl_play;
 extern void *gl_store;
 extern _WORD gl_mx;
@@ -133,8 +139,8 @@ _WORD ap_exit(void);
 _WORD rd_mymsg(void *buffer);
 _WORD ap_rdwr(_WORD code, _WORD id, _WORD length, _WORD *pbuff);
 _WORD ap_find(const char *pname);
-void ap_tplay(FPD *pbuff, _WORD length, _WORD scale);
-_WORD ap_trecd(FPD *pbuff, _WORD length);
+void ap_tplay(const uint32_t *pbuff, _WORD length, _WORD scale);
+_WORD ap_trecd(uint32_t *pbuff, _WORD length);
 
 
 
@@ -219,7 +225,7 @@ extern _WORD gl_dclick;
 extern _WORD gl_ticktime;
 
 void ev_rets(_WORD *rets);
-_WORD ev_block(_WORD code, _LONG lvalue);
+_WORD ev_block(_WORD code, intptr_t lvalue);
 _UWORD ev_keybd(void);
 _UWORD ev_button(_WORD bflgclks, _UWORD bmask, _UWORD bstate, _WORD *rets);
 _UWORD ev_mouse(MOBLK *pmo, _WORD *rets);
@@ -233,7 +239,7 @@ _WORD ev_dclick(_WORD rate, _WORD setit);
 /*
  * gemflag.c
  */
-void tchange(_WORD p1, _WORD p2);
+void tchange(_LONG fdata);
 _WORD tak_flag(SPB *sy);
 void amutex(EVB *e, SPB *sy);
 void unsync(SPB *sy);
@@ -300,12 +306,12 @@ AESPD *mowner(_WORD newpd);
 _UWORD dq(CQUEUE *qptr);
 void fq(void);
 void evremove(EVB *e, _UWORD ret);
-void kchange(_WORD ch, _WORD kstat);
+void kchange(_LONG fdata); /* HI: char; LO: keyboard states */
 void post_keybd(AESPD *p, _UWORD ch);
-void bchange(_WORD newowner, _WORD clicks);
+void bchange(_LONG fdata); /* HI: state; LO: clicks */
 _WORD downorup(_WORD newmasks, intptr_t buparm);
 void post_button(AESPD * p, _WORD newmask, _WORD clks);
-void mchange(_WORD rx1, _WORD ry1);
+void mchange(_LONG fdata);
 void post_mouse(AESPD *p, _WORD grx, _WORD gry);
 _WORD inorout(EVB *e, _WORD rx, _WORD ry);
 

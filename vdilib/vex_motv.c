@@ -31,5 +31,6 @@ vex_motv (short handle, void *newhdlr, void **old)
 	
 	VDI_TRAP_00 (vdi_params, handle, 126);
 	
-	*old = vdi_control_ptr(9);
+	if (old)
+		*old = vdi_control_ptr(9);
 }

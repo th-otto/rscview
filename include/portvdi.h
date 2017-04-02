@@ -487,10 +487,10 @@ void    vsm_valuator( _WORD handle, _WORD val_in, _WORD *val_out,
                       _WORD *term, _WORD *status );
 void    vrq_choice( _WORD handle, _WORD ch_in, _WORD *ch_out );
 _WORD    vsm_choice( _WORD handle, _WORD *choice );
-void    vrq_string( _WORD handle, _WORD max_length, _WORD echo_mode,
-                    _WORD *echo_xy, char *string );
-_WORD    vsm_string( _WORD handle, _WORD max_length, _WORD echo_mode,
-                    _WORD *echo_xy, char *string );
+void vrq_string( _WORD handle, _WORD max_length, _WORD echo_mode, _WORD *echo_xy, char *string );
+void vrq_string16( _WORD handle, _WORD max_length, _WORD echo_mode, _WORD *echo_xy, _WORD *string );
+_WORD vsm_string( _WORD handle, _WORD max_length, _WORD echo_mode, _WORD *echo_xy, char *string );
+_WORD vsm_string16( _WORD handle, _WORD max_length, _WORD echo_mode, _WORD *echo_xy, _WORD *string );
 void    vsc_form( _WORD handle, _WORD *pcur_form );
 void    vex_timv( _WORD handle, void *tim_addr, void **otim_addr, _WORD *tim_conv );
 void    v_show_c( _WORD handle, _WORD reset );

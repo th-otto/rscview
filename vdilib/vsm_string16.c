@@ -24,20 +24,17 @@
  */
 
 short
-vsm_string (short handle, short len, short echo, short echoxy[], char *str)
+vsm_string16 (short handle, short len, short echo, short echoxy[], short *str)
 {
-	short vdi_control[VDI_CNTRLMAX]; 
-	short vdi_intin[2];   
-	short vdi_intout[VDI_INTOUTMAX]; 
+	short vdi_control[VDI_CNTRLMAX];
+	short vdi_intin[2];
 	
-	VDI_PARAMS(vdi_control, vdi_intin, echoxy, vdi_intout, vdi_dummy );
+	VDI_PARAMS(vdi_control, vdi_intin, echoxy, str, vdi_dummy );
 	
 	vdi_intin[0]      = len;
 	vdi_intin[1]      = echo;
 	
 	VDI_TRAP (vdi_params, handle, 31, 1,2);
-	
-	vdi_array2str (vdi_intout, str, vdi_control[4]);
 	
 	return vdi_control[4];
 }

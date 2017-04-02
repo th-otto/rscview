@@ -121,12 +121,14 @@ libvdi_a_SOURCES = \
 	vrq_choice.c \
 	vrq_locator.c \
 	vrq_string.c \
+	vrq_string16.c \
 	vrq_valuator.c \
 	vsc_form.c \
 	vsin_mode.c \
 	vsm_choice.c \
 	vsm_locator.c \
 	vsm_string.c \
+	vsm_string16.c \
 	vsm_valuator.c \
 	\
 	vq_calibrate.c \
