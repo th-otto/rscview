@@ -58,7 +58,7 @@ static _WORD crysbind(AESPB *pb)
 	_WORD opcode = OP_CODE;
 	const _WORD *int_in = pb->intin;
 	_WORD *int_out = pb->intout;
-	const void **addr_in = pb->addrin;
+	void **addr_in = pb->addrin;
 	_BOOL unsupported = FALSE;
 	_WORD ret = TRUE;
 	_LONG timeval;
@@ -79,7 +79,7 @@ static _WORD crysbind(AESPB *pb)
 	case 11:
 		aestrace("appl_read()");
 		AES_PARAMS(11,2,1,1,0);
-		ret = ap_rdwr(AQRD, int_in[0], int_in[1], (_WORD *)NO_CONST(addr_in[0]));
+		ret = ap_rdwr(AQRD, int_in[0], int_in[1], (_WORD *)addr_in[0]);
 		break;
 #endif
 
@@ -244,12 +244,127 @@ static _WORD crysbind(AESPB *pb)
 		break;
 #endif
 
+	/* Menu Manager */
+	case 30:
+		aestrace("menu_bar()");
+		AES_PARAMS(30,1,1,1,0);
+#if NYI
+		mn_bar((OBJECT *)NO_CONST(addr_in[0]), int_in[0], rlr->p_pid);
+#endif
+		break;
+
+	case 31:
+		aestrace("menu_icheck()");
+		AES_PARAMS(31,2,1,1,0);
+#if NYI
+		do_chg((OBJECT *)NO_CONST(addr_in[0]), int_in[0], CHECKED, int_in[1], FALSE, FALSE);
+#endif
+		break;
+
+	case 32:
+		aestrace("menu_ienable()");
+		AES_PARAMS(32,2,1,1,0);
+#if NYI
+		do_chg((OBJECT *)NO_CONST(addr_in[0]), (int_in[0] & 0x7FFF), DISABLED, !int_in[1], ((int_in[0] & 0x8000) != 0x0), FALSE);
+#endif
+		break;
+
+	case 33:
+		aestrace("menu_tnormal()");
+		AES_PARAMS(33,2,1,1,0);
+#if NYI
+		do_chg((OBJECT *)NO_CONST(addr_in[0]), int_in[0], SELECTED, !int_in[1], TRUE, TRUE);
+#endif
+		break;
+
+	case 34:
+		aestrace("menu_text()");
+		AES_PARAMS(34,1,1,2,0);
+#if NYI
+		mn_text((OBJECT *)addr_in[0], int_in[0], (const char *)addr_in[1]);
+#endif
+		break;
+
+	case 35:
+		aestrace("menu_register()");
+		AES_PARAMS(35,1,1,1,0);
+#if NYI
+		ret = mn_register(int_in[0], (char *)addr_in[1]);
+#endif
+		break;
+
+	case 36:
+		/* distinguish between menu_unregister() and menu_popup() */
+		if (IN_LEN == 1)
+		{
+			aestrace("menu_unregister()");
+			AES_PARAMS(36,1,1,0,0);
+#if CONF_WITH_PCGEM
+			mn_unregister(int_in[0]);
+#else
+			unsupported = TRUE;
+#endif
+		} else
+		{
+			aestrace("menu_popup()");
+			AES_PARAMS(36,2,1,2,0);
+#if SUBMENUS
+			ret = mn_popup(rlr->p_pid, (MENU *)addr_in[0], int_in[0], int_in[1], (MENU *)addr_in[1]);
+#else
+			unsupported = TRUE;
+#endif
+		}
+		break;
+
+	case 37:
+		/* distinguish between menu_click() and menu_attach() */
+		/*
+		 * although menu_click() is PC-GEM only, it's always
+		 * enabled because the desktop uses it.
+		 */
+		if (AIN_LEN == 0)
+		{
+			aestrace("menu_click()");
+			AES_PARAMS(37,2,1,0,0);
+			if (int_in[1])
+				gl_mnclick = int_in[0];
+			ret = gl_mnclick;
+		} else
+		{
+			aestrace("menu_attach()");
+			AES_PARAMS(37,2,1,2,0);
+#if SUBMENUS
+			ret = mn_attach(rlr->p_pid, int_in[0], (OBJECT *)addr_in[0], int_in[1], (MENU *)addr_in[1]);
+#else
+			unsupported = TRUE;
+#endif
+		}
+		break;
+
+	case 38:
+		aestrace("menu_istart()");
+		AES_PARAMS(38,3,1,1,0);
+#if SUBMENUS
+		ret = mn_istart(rlr->p_pid, int_in[0], (OBJECT *)addr_in[0], int_in[1], int_in[2]);
+#else
+		unsupported = TRUE;
+#endif
+		break;
+
+	case 39:
+		aestrace("menu_settings()");
+		AES_PARAMS(39,1,1,1,0);
+#if SUBMENUS
+		mn_settings(int_in[0], (MN_SET *)addr_in[0]);
+#else
+		unsupported = TRUE;
+#endif
+		break;
 	}
 	
 	RET_CODE = ret;
 		
 	UNUSED(addr_in);
-	UNUSED(int_in);
 	UNUSED(lbuparm);
 	UNUSED(timeval);
 	

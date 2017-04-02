@@ -325,15 +325,22 @@ extern _WORD desk_pid[MAX_ACCS];
 extern _WORD gl_dacnt;
 extern _WORD gl_dabase;
 extern _WORD gl_dabox;
+extern _WORD gl_mnclick;
 
+void mn_init(void);
 _UWORD do_chg(OBJECT *tree, _WORD iitem, _UWORD chgvalue, _WORD dochg, _WORD dodraw, _WORD chkdisabled);
 _WORD mn_do(_WORD *ptitle, _WORD *pitem);
 void mn_bar(OBJECT *tree, _WORD showit, _WORD pid);
 void mn_clsda(void);
 _WORD mn_register(_WORD pid, char *pstr);
+void mn_text(OBJECT *tree, _WORD item, const char *ptext);
 void mn_unregister(_WORD da_id);
 void mn_getownid(AESPD **owner,_WORD *id,_WORD item);
 void ch_wrect(GRECT *r, GRECT *n);
+_WORD mn_istart(_WORD id, _WORD flag, OBJECT *tree, _WORD menu, _WORD item);
+_BOOL mn_attach(_WORD id, _WORD flag, OBJECT *tree, _WORD item, MENU *Menu);
+_BOOL mn_popup(_WORD id, MENU *Menu, _WORD xpos, _WORD ypos, MENU *MData);
+void mn_settings(_WORD flag, MN_SET *Values);
 
 
 /*

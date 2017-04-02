@@ -42,7 +42,7 @@ static __inline long *__aes_intout_long(short n, short *aes_intout)
 	static short const aes_control[AES_CTRLMAX]={opcode,nintin,nintout,naddrin,naddrout}; \
 	short			aes_intin[AES_INTINMAX];			  \
 	short			aes_intout[AES_INTOUTMAX];			  \
-	const void *	aes_addrin[AES_ADDRINMAX];			  \
+	void *	        aes_addrin[AES_ADDRINMAX];			  \
 	void *			aes_addrout[AES_ADDROUTMAX];		  \
  														  \
 	AESPB aes_params;									  \

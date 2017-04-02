@@ -612,7 +612,7 @@ typedef struct
 	_WORD *global;
 	_WORD *intin;
 	_WORD *intout;
-	const void **addrin;
+	void **addrin;
 	void **addrout;
 } AESPARBLK;
 
