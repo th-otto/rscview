@@ -123,8 +123,8 @@ void justretf(void);
 /*
  * gemaplib.c
  */
-extern _WORD gl_bvdisk;
-extern _WORD gl_bvhard;
+extern uint32_t gl_bvdisk;
+extern uint32_t gl_bvhard;
 extern _WORD gl_recd;
 extern _WORD gl_rlen;
 extern uint32_t *gl_rbuf;
@@ -224,14 +224,12 @@ void disp(void);
 extern _WORD gl_dclick;
 extern _WORD gl_ticktime;
 
-void ev_rets(_WORD *rets);
 _WORD ev_block(_WORD code, intptr_t lvalue);
 _UWORD ev_keybd(void);
 _UWORD ev_button(_WORD bflgclks, _UWORD bmask, _UWORD bstate, _WORD *rets);
-_UWORD ev_mouse(MOBLK *pmo, _WORD *rets);
+_UWORD ev_mouse(const MOBLK *pmo, _WORD *rets);
 _WORD ev_mesag(_WORD *pbuff);
 _WORD ev_timer(_LONG count);
-_WORD ev_mchk(MOBLK *pmo);
 _WORD ev_multi(_WORD flags, MOBLK *pmo1, MOBLK *pmo2, _LONG tmcount, intptr_t buparm, _WORD *mebuff, _WORD *prets);
 _WORD ev_dclick(_WORD rate, _WORD setit);
 

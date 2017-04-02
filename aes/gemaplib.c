@@ -25,8 +25,8 @@
 #define MCHNG 2
 #define KCHNG 3
 
-_WORD gl_bvdisk;
-_WORD gl_bvhard;
+uint32_t gl_bvdisk;
+uint32_t gl_bvhard;
 _WORD gl_recd;
 _WORD gl_rlen;
 uint32_t *gl_rbuf;
@@ -54,8 +54,8 @@ _WORD ap_init(AES_GLOBAL *pglobal)
     sh_deskf(0, &pglobal->ap_private);
     pglobal->ap_planes = gl_nplanes;
     pglobal->ap_3resv = &D;
-	pglobal->ap_bvdisk = gl_bvdisk;
-	pglobal->ap_bvdisk = gl_bvhard;
+	pglobal->ap_bvdisk = gl_bvdisk >> 16;
+	pglobal->ap_bvhard = gl_bvhard >> 16;
 
 	strcpy(scdir, SCRAP_DIR_NAME);
 

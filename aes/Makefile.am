@@ -10,6 +10,7 @@ libgem_a_SOURCES = \
 	gemaplib.c \
 	gembase.c \
 	gemctrl.c \
+	gemevlib.c \
 	gemglobe.c \
 	gemgraf.c \
 	gemgsxif.c \
