@@ -18,35 +18,37 @@
 
 #include "ws.h"
 
+typedef void (*PFVOID)(void);
+
 extern int gl_moff;
 extern _BOOL gl_mouse;					/* mouse on flag        */
 extern void *tikaddr;
 extern void *tiksav;
+extern PFVOID drwaddr;
+extern short gl_restype;
+
 
 /*
  * gemgsxif.[cS]
  */
 
-void gsx_malloc(void);
+_BOOL gsx_malloc(void);
 void gsx_mfree(void);
 void gsx_mret(void **pmaddr, long *pmlen);
 
 
 void gsx_init(void);
 void gsx_graphic(_BOOL tographic);
-void gsx_wsopen(void);
 void gsx_wsclose(void);
 void gsx_wsclear(void);
 void ratinit(void);
 void ratexit(void);
-void bb_set(_WORD sx, _WORD sy, _WORD sw, _WORD sh, _WORD *pts1, _WORD *pts2, MFDB *pfd, MFDB *psrc, MFDB *pdst);
 void bb_save(GRECT *ps);
 void bb_restore(GRECT *ps);
-void gsx_resetmb(void);
-void gsx_mfset(const MFORM *pmfnew);
+void gsx_mfset(MFORM *pmfnew);
 void gsx_xmfset(MFORM *pmfnew);
 void gsx_mxmy(_WORD *pmx, _WORD *pmy);
-_WORD gsx_tick(void *tcode, void *ptsave);
+_WORD gsx_tick(void *tcode, void **ptsave);
 _WORD gsx_button(void);
 _WORD gsx_kstate(void);
 void gsx_moff(void);

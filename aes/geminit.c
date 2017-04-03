@@ -37,19 +37,11 @@ int32_t gl_vdo;
 char **aes_rsc_frstr;
 OBJECT **aes_rsc_tree;
 intptr_t drawstk;
-_BOOL sh_up;						/* is the sh_start being ran yet ? */ /* unused */
 _BOOL autoexec;					/* autoexec a file ?    */
 STATIC char g_autoboot[CMDLEN];
 STATIC _WORD g_flag;
 _BOOL ctldown;					/* ctrl key down ? */ /* referenced by DESKTOP */
 
-_BOOL act3dtxt;					/* look of 3D activator text */
-_BOOL act3dface;				/* selected look of 3D activator */
-_BOOL ind3dtxt;					/* look of 3D indicator text */
-_BOOL ind3dface;				/* selected look of 3D indicators */
-_UWORD gl_indbutcol;			/* indicator button color */
-_UWORD gl_actbutcol;			/* activator button color */
-_UWORD gl_alrtcol;				/* alert background color */
 _WORD crt_error;				/* critical error handler semaphore     */
 
 /* set in jbind.s, checked by dispatcher    */

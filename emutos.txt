@@ -4,3 +4,6 @@ gemobed.c:
     curfld:
        +1 for cursor
     check: load strings from resource
+gemgsxif:
+    vr_recfl MFB param
+    bb_save: pass GRECT to bb_set

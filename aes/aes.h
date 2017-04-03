@@ -3,6 +3,7 @@
 #include <portaes.h>
 #include <portvdi.h>
 #include <string.h>
+
 #include "aesdefs.h"
 #include "struct.h"
 #include "ws.h"
@@ -93,8 +94,6 @@ extern int32_t NUM_TICK;
  */
 extern int32_t CMP_TICK;
 
-extern void *drwaddr;
-
 void set_mouse_to_arrow(void);
 void set_mouse_to_hourglass(void);
 void gr_mouse(_WORD mkind, MFORM *grmaddr);
@@ -118,7 +117,6 @@ void zombie(EVB *e);
  * ratrbp.c
  */
 void drawrat(_WORD newx, _WORD newy);
-void justretf(void);
 
 
 /*
