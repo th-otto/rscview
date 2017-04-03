@@ -228,7 +228,6 @@ static void gsx_wsopen(void)
 		else
 			gl_restype = 6;                               /* 320x480 */
 	}
-	gl_rschange = FALSE;
 	gl_graphic = TRUE;
 }
 

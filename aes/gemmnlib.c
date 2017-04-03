@@ -233,12 +233,12 @@ _WORD mn_do(_WORD *ptitle, _WORD *pitem)
 			break;
 		case OUTITEM:
 			rect = cur_item;
-			buparm = (gsx_button() & 0x0001) ? 0x00010100L : 0x00010101L;
+			buparm = (gsx_button() & 0x0001) ? combine_cms(1, 1, 0) : combine_cms(1, 1, 1);
 			break;
 		}
 		rect_change(tree, &p1mor, rect, flag);
 
-		ev_which = ev_multi(mnu_flags, &p1mor, &p2mor, 0x0L, buparm, 0x0L, &lrets[0]);
+		ev_which = ev_multi(mnu_flags, &p1mor, &p2mor, 0L, buparm, NULL, &lrets[0]);
 
 		if (ev_which & MU_BUTTON)
 		{

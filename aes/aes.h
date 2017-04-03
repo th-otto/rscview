@@ -81,6 +81,7 @@ extern _WORD crt_error;					/* critical error handler semaphore */
 extern _WORD adeskp[3];					/* desktop colors & backgrounds */
 extern OBJECT **aes_rsc_tree;
 extern const char *const *aes_rsc_string;
+extern const BITBLK *const *aes_rsc_bitblk;
 
 /*
  * number of ticks since last sample
@@ -222,6 +223,11 @@ void disp(void);
  */
 extern _WORD gl_dclick;
 extern _WORD gl_ticktime;
+
+/*
+ * combine clicks/mask/state into LONG
+ */
+#define combine_cms(clicks, mask, state) MAKE_ULONG(clicks, (((mask) << 8) | (state)))
 
 _WORD ev_block(_WORD code, intptr_t lvalue);
 _UWORD ev_keybd(void);
@@ -389,8 +395,8 @@ void free_cicon(CICONBLK **carray);
  */
 void gr_inside(GRECT *pt, _WORD th);
 void gr_rect(_UWORD icolor, _UWORD ipattern, GRECT *pt);
-_WORD gr_just(_WORD just, _WORD font, const char *ptext, _WORD w, _WORD h, GRECT *pt);
-void gr_gtext(_WORD just, _WORD font, const char *ptext, GRECT *pt, _WORD tmode);
+_WORD gr_just(_WORD just, _WORD font, const char *ptext, _WORD w, _WORD h, GRECT *pt, _WORD *textout);
+void gr_gtext(_WORD just, _WORD font, const char *ptext, GRECT *pt);
 void gr_crack(_UWORD color, _WORD *pbc, _WORD *ptc, _WORD *pip, _WORD *pic, _WORD *pmd);
 void gr_gicon(_WORD state, _WORD *pmask, _WORD *pdata, const char *ptext, _WORD ch, _WORD chx, _WORD chy, GRECT *pi, GRECT *pt);
 void gr_box(_WORD x, _WORD y, _WORD w, _WORD h, _WORD th);
@@ -426,8 +432,6 @@ _WORD gr_mkstate(_WORD *pmx, _WORD *pmy, _WORD *pmstat, _WORD *pkstat);
 extern _WORD gl_nplanes;					/* number of planes in current res */
 extern _WORD gl_width;
 extern _WORD gl_height;
-extern _WORD gl_nrows;
-extern _WORD gl_ncols;
 extern _WORD gl_wchar;
 extern _WORD gl_hchar;
 extern _WORD gl_wschar;
@@ -438,10 +442,7 @@ extern _WORD gl_wsptschar;
 extern _WORD gl_hsptschar;
 extern _WORD gl_wbox;
 extern _WORD gl_hbox;
-extern _WORD gl_xclip;
-extern _WORD gl_yclip;
-extern _WORD gl_wclip;
-extern _WORD gl_hclip;
+extern GRECT gl_clip;
 extern _WORD gl_handle;
 extern _WORD gl_mode;
 extern _WORD gl_mask; /* unused */

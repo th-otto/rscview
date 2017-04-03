@@ -233,7 +233,7 @@ static _WORD crysbind(AESPB *pb)
 		timeval = 0;
 		if (int_in[0] & MU_TIMER)
 			timeval = MAKE_ULONG(int_in[15], int_in[14]);
-		lbuparm = HW(int_in[1]) | (uint16_t)((int_in[2] << 8) | int_in[3]);
+		lbuparm = combine_cms(int_in[1], int_in[2], int_in[3]);
 		ret = ev_multi(int_in[0], (const MOBLK *)&int_in[4], (const MOBLK *)&int_in[9], timeval, lbuparm, (_WORD *)addr_in[0], &int_out[1]);
 		break;
 

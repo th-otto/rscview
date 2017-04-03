@@ -170,9 +170,10 @@ static _WORD find_pos(const char *str, _WORD pos)
 static void pxl_rect(OBJECT *tree, _WORD obj, _WORD ch_pos, GRECT *pt)
 {
 	GRECT o;
-
+	_WORD wtext[MAX_LEN];
+	
 	ob_actxywh(tree, obj, &o);
-	gr_just(edblk.te_just, edblk.te_font, edblk.te_ptmplt, o.g_w, o.g_h, &o);
+	gr_just(edblk.te_just, edblk.te_font, edblk.te_ptmplt, o.g_w, o.g_h, &o, wtext);
 
 	pt->g_x = o.g_x + (ch_pos * gl_wchar);
 	pt->g_y = o.g_y;

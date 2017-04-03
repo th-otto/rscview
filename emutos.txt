@@ -7,3 +7,5 @@ gemobed.c:
 gemgsxif:
     vr_recfl MFB param
     bb_save: pass GRECT to bb_set
+gemgraf:
+    gsx_bxpts: optimizations

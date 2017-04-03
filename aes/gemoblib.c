@@ -8,6 +8,7 @@ _BOOL ind3dface;				/* selected look of 3D indicators */
 _UWORD gl_indbutcol;			/* indicator button color */
 _UWORD gl_actbutcol;			/* activator button color */
 _UWORD gl_alrtcol;				/* alert background color */
+_BOOL gl_aes3d;
 
 /*****************************************************************/
 /*                   COLOR ICON DECLARATIONS                     */
@@ -464,7 +465,7 @@ static void just_draw(OBJECT *tree, _WORD obj, _WORD sx, _WORD sy)
 	 * BUG: this rejects USERDEFs which draw more than a 3 border outline.
 	 * It also rejects TEDINFOs with an outline thickness of more than 3 pixels.
 	 */
-	if (gl_wclip && gl_hclip)
+	if (gl_clip.g_w && gl_clip.g_h)
 	{
 		rc_copy(pt, &c);
 		if (state & OUTLINED)
@@ -669,17 +670,17 @@ static void just_draw(OBJECT *tree, _WORD obj, _WORD sx, _WORD sy)
 				{
 					pt->g_x -= 1;
 					pt->g_y -= 1;
-					gr_gtext(edblk.te_just, edblk.te_font, edblk.te_ptext, pt, tmode);
+					gr_gtext(edblk.te_just, edblk.te_font, edblk.te_ptext, pt);
 					pt->g_x += 1;
 					pt->g_y += 1;
 				} else
 				{
-					gr_gtext(edblk.te_just, edblk.te_font, edblk.te_ptext, pt, tmode);
+					gr_gtext(edblk.te_just, edblk.te_font, edblk.te_ptext, pt);
 				}
 
 			} else
 			{
-				gr_gtext(edblk.te_just, edblk.te_font, edblk.te_ptext, pt, tmode);
+				gr_gtext(edblk.te_just, edblk.te_font, edblk.te_ptext, pt);
 			}
 			gr_inside(pt, -tmpth);
 			break;
@@ -731,7 +732,9 @@ static void just_draw(OBJECT *tree, _WORD obj, _WORD sx, _WORD sy)
 		obtype == G_TITLE ||
 		obtype == G_BUTTON)
 	{
-		len = (int)strlen(spec.free_string);
+		_WORD wtext[MAX_LEN];
+		
+		len = vdi_str2arrayn(spec.free_string, wtext, MAX_LEN);
 		if (len)
 		{
 			if (gl_aes3d && (state & SELECTED) && obtype == G_BUTTON && chcol)
@@ -758,7 +761,7 @@ static void just_draw(OBJECT *tree, _WORD obj, _WORD sx, _WORD sy)
 				tmpx = pt->g_x;
 			}
 
-			gsx_tblt(IBM, tmpx, tmpy, spec.free_string, len);
+			gsx_tblt(IBM, tmpx, tmpy, wtext, len);
 		}
 	}
 
@@ -812,8 +815,9 @@ static void just_draw(OBJECT *tree, _WORD obj, _WORD sx, _WORD sy)
 
 		if (state & CHECKED)
 		{
+			_WORD ch = 0x08;   /* a check mark */;
 			gsx_attr(TRUE, MD_TRANS, BLACK);
-			gsx_tblt(IBM, pt->g_x + 2, pt->g_y, "\010", 1);  /* a check mark */
+			gsx_tblt(IBM, pt->g_x + 2, pt->g_y, &ch, 1);
 		}
 
 		if (state & CROSSED)
@@ -1480,7 +1484,7 @@ static void convert_mask(_WORD *mask, _WORD *dst_mask, _WORD width, _WORD height
  *	gr_icon().   It has an extra parameter which is the list of color
  *	icons for different resolutions.
  */
-void gr_cicon(_WORD state, _WORD *pmask, _WORD *pdata, const char * ptext, _WORD ch, _WORD chx, _WORD chy, GRECT * pi, GRECT * pt, CICONBLK * cicon)
+void gr_cicon(_WORD state, _WORD *pmask, _WORD *pdata, const char *ptext, _WORD ch, _WORD chx, _WORD chy, GRECT *pi, GRECT *pt, CICONBLK *cicon)
 {
 	register _WORD fgcol, bgcol, tmp;
 	/* crack the color/char definition word */
@@ -1584,13 +1588,10 @@ void gr_cicon(_WORD state, _WORD *pmask, _WORD *pdata, const char * ptext, _WORD
 	gsx_attr(TRUE, MD_TRANS, fgcol);
 	if (ch)
 	{
-		char str[2];
-		
-		str[0] = ch;
-		gsx_tblt(SMALL, pi->g_x + chx, pi->g_y + chy, str, 1);
+		gsx_tblt(SMALL, pi->g_x + chx, pi->g_y + chy, &ch, 1);
 	}
 	/* draw the label */
-	gr_gtext(TE_CNTR, SMALL, ptext, pt, MD_TRANS);
+	gr_gtext(TE_CNTR, SMALL, ptext, pt);
 }
 
 

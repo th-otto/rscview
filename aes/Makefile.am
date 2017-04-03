@@ -13,6 +13,7 @@ libgem_a_SOURCES = \
 	gemevlib.c \
 	gemglobe.c \
 	gemgraf.c \
+	gemgrlib.c \
 	gemgsxif.c \
 	geminit.c \
 	gemmnlib.c \
@@ -22,5 +23,7 @@ libgem_a_SOURCES = \
 	gemsclib.c \
 	gemshlib.c \
 	aesutils.c \
+	\
+	gem_rsc.c gem_rsc.rsc gem_rsc.rso gem_rsc.rsh gem_rsc.h \
 	\
 	$(empty)
