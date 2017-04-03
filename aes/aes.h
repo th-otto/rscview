@@ -201,7 +201,8 @@ void fm_own(_BOOL beg_ownit);
 void akbin(EVB *e);
 void adelay(EVB *e, _LONG c);
 void abutton(EVB *e, _LONG p);
-void amouse(EVB *e, _LONG pmo);
+void amouse(EVB *e, MOBLK *pmo);
+_WORD chk_ctrl(_WORD mx, _WORD my);
 
 
 /*
@@ -292,7 +293,6 @@ extern AESPD *gl_mowner;		/* current mouse owner  */
 extern AESPD *gl_kowner;		/* current keybd owner  */
 extern AESPD *gl_cowner;		/* current control rect. owner */
 extern AESPD *ctl_pd;
-extern GRECT ctrl;
 extern _WORD gl_bclick;
 extern _WORD gl_bpend;
 #if AESVERSION >= 0x330
@@ -316,7 +316,10 @@ _WORD downorup(_WORD newmasks, intptr_t buparm);
 void post_button(AESPD * p, _WORD newmask, _WORD clks);
 void mchange(_LONG fdata);
 void post_mouse(AESPD *p, _WORD grx, _WORD gry);
-_WORD inorout(EVB *e, _WORD rx, _WORD ry);
+void b_click(_WORD state);
+void get_mkown(AESPD **pmown);
+void set_mkown(AESPD *mp, AESPD *kp);
+void wheel_change(_WORD wheel_number, _WORD wheel_amount);
 
 
 /*
