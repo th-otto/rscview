@@ -476,6 +476,40 @@ void    v_get_pixel( _WORD handle, _WORD x, _WORD y, _WORD *pel,
 
 /****** Input definitions **********************************************/
 
+#ifdef OS_ATARI
+/*
+ * type of handler passed to the routine installed by vex_butv.
+ * On atari, this is an interupt routine that gets the
+ * new mouse button mask in d0.
+ */
+typedef void (*VEX_BUTV)(void);
+/*
+ * type of handler passed to the routine installed by vex_curv/vex_motv.
+ * On atari, this is an interupt routine that gets the
+ * new mouse position x/y in d0/d1.
+ */
+typedef void (*VEX_CURV)(void);
+typedef void (*VEX_MOTV)(void);
+/*
+ * type of handler passed to the routine installed by vex_timv.
+ * On atari, this is an interupt routine that gets the
+ * new mouse position x/y in d0/d1.
+ */
+typedef void (*VEX_TIMV)(void);
+/*
+ * type of handler passed to the routine installed by vex_wheelv.
+ * On atari, this is an interupt routine that gets the
+ * wheel number in d0, and the amount in d1.
+ */
+typedef void (*VEX_WHEELV)(void);
+#else
+typedef void (*VEX_BUTV)(_WORD newmask);
+typedef void (*VEX_CURV)(_WORD x, _WORD y);
+typedef void (*VEX_MOTV)(_WORD x, _WORD y);
+typedef void (*VEX_TIMV)(void);
+typedef void (*VEX_WHEELV)(_WORD wheel_number, _WORD wheel_amount);
+#endif
+
 _WORD    vsin_mode( _WORD handle, _WORD dev_type, _WORD mode );
 void    vrq_locator( _WORD handle, _WORD x, _WORD y, _WORD *xout,
                      _WORD *yout, _WORD *term );
@@ -492,14 +526,14 @@ void vrq_string16( _WORD handle, _WORD max_length, _WORD echo_mode, _WORD *echo_
 _WORD vsm_string( _WORD handle, _WORD max_length, _WORD echo_mode, _WORD *echo_xy, char *string );
 _WORD vsm_string16( _WORD handle, _WORD max_length, _WORD echo_mode, _WORD *echo_xy, _WORD *string );
 void    vsc_form( _WORD handle, _WORD *pcur_form );
-void    vex_timv( _WORD handle, void *tim_addr, void **otim_addr, _WORD *tim_conv );
+void    vex_timv( _WORD handle, VEX_TIMV tim_addr, VEX_TIMV *otim_addr, _WORD *tim_conv );
 void    v_show_c( _WORD handle, _WORD reset );
 void    v_hide_c( _WORD handle );
 void    vq_mouse( _WORD handle, _WORD *pstatus, _WORD *x, _WORD *y );
-void    vex_butv( _WORD handle, void *pusrcode, void **psavcode);
-void    vex_motv( _WORD handle, void *pusrcode, void **psavcode);
-void    vex_curv( _WORD handle, void *pusrcode, void **psavcode);
-void    vex_wheelv(VdiHdl handle, void *pusrcode, void **psavcode);
+void    vex_butv( _WORD handle, VEX_BUTV pusrcode, VEX_BUTV *psavcode);
+void    vex_motv( _WORD handle, VEX_MOTV pusrcode, VEX_MOTV *psavcode);
+void    vex_curv( _WORD handle, VEX_CURV pusrcode, VEX_CURV *psavcode);
+void    vex_wheelv(VdiHdl handle, VEX_WHEELV pusrcode, VEX_WHEELV *psavcode);
 void    vq_key_s( _WORD handle, _WORD *pstatus );
 
 

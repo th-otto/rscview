@@ -441,7 +441,7 @@ static _WORD crysbind(AESPB *pb)
 }
 
 
-_WORD aes(AESPB *pb)
+_WORD aestrap(AESPB *pb)
 {
 	return crysbind(pb);
 }

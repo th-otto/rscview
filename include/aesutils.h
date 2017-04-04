@@ -53,7 +53,6 @@ void merge_str(char *pdst, const char *ptmp, va_list parms);
 _WORD wildcmp(const char *pwild, const char *ptest);
 size_t strlcpy(char *dst, size_t len, const char *src);
 unsigned int reverse(int index);
-char *xstrpcpy(const char *ps, char *pd);
 _BOOL streq(const char *p1, const char *p2);
 char *xstrpcat(const char *ps, char *pd);
 _WORD inf_gindex(OBJECT *tree, _UWORD baseobj, _UWORD numobj);
@@ -62,6 +61,37 @@ _WORD inf_what(OBJECT *tree, _WORD ok);
 #undef toupper
 int toupper(int ch);
 
+/*
+ * mul_div - signed integer multiply and divide
+ *
+ * mul_div (m1,m2,d1)
+ *
+ * ( ( m1 * m2 ) / d1 ) + 1/2
+ *
+ * m1 = signed 16 bit integer
+ * m2 = unsigned 15 bit integer
+ * d1 = signed 16 bit integer
+ */
+
+/*
+ * mul_div - signed integer multiply and divide
+ * return ( m1 * m2 ) / d1
+ * While the operands are WORD, the intermediate result is LONG.
+ */
+static INLINE _WORD mul_div(_WORD m1, _WORD m2, _WORD d1)
+{
+#if defined(__mc68000__) && defined(__GNUC__)
+    __asm__ (
+      "muls %1,%0\n\t"
+      "divs %2,%0"
+    : "+d"(m1)
+    : "idm"(m2), "idm"(d1)
+    );
+    return m1;
+#else
+	return ((_LONG) m1 * m2) / d1;
+#endif
+}
 
 EXTERN_C_END
 

@@ -87,10 +87,10 @@ int gl_moff;
 
 static _BOOL gl_graphic;
 static MFDB gl_tmp;
-static PFVOID old_mcode;
-static PFVOID old_bcode;
+static VEX_MOTV old_mcode;
+static VEX_BUTV old_bcode;
 static _LONG gl_mlen;
-PFVOID drwaddr;
+VEX_CURV drwaddr;
 short gl_restype;
 static MFORM gl_cmform;				/* current aes mouse form   */
 static MFORM gl_omform;				/* old aes mouse form       */
@@ -260,10 +260,10 @@ void ratexit(void)
 }
 
 
-static void gsx_setmb(PFVOID boff, PFVOID moff, PFVOID *pdrwaddr)
+static void gsx_setmb(VEX_BUTV boff, VEX_MOTV moff, VEX_CURV *pdrwaddr)
 {
-	__extension__ vex_butv(gl_handle, boff, (void **)&old_bcode);
-	__extension__ vex_motv(gl_handle, moff, (void **)&old_mcode);
+	vex_butv(gl_handle, boff, &old_bcode);
+	vex_motv(gl_handle, moff, &old_mcode);
 #if 0 /* dont' replace cursor draw vector */
 	vex_curv(gl_handle, justretf, pdrwaddr);
 #endif
@@ -274,15 +274,77 @@ static void gsx_setmb(PFVOID boff, PFVOID moff, PFVOID *pdrwaddr)
 
 static void gsx_resetmb(void)
 {
-	PFVOID ignored;
+	VEX_BUTV ignored;
+	VEX_MOTV ignored2;
 	
-	__extension__ vex_butv(gl_handle, old_bcode, (void **)&ignored);
-	__extension__ vex_motv(gl_handle, old_mcode, (void **)&ignored);
+	vex_butv(gl_handle, old_bcode, &ignored);
+	vex_motv(gl_handle, old_mcode, &ignored2);
 #if 0
-	vex_curv(gl_handle, drwaddr, NULL);
+	{
+		VEX_CURV ignored3;
+		vex_curv(gl_handle, drwaddr, &ignored3);
+	}
 #endif
 }
 
+
+#ifndef OS_ATARI
+
+/* AES mouse wheel handler called by the VDI */
+void aes_wheel(_WORD wheel_number, _WORD wheel_amount)
+{
+#if NYI
+	forkq(wheel_change, MAKE_ULONG(wheel_number, wheel_amount));
+#endif
+	(void) wheel_number;
+	(void) wheel_amount;
+}
+
+/* AES button handler called by the VDI */
+void far_bcha(_WORD newmask)
+{
+#if NYI
+	b_click(newmask);
+#endif
+	(void) newmask;
+}
+
+/* AES mouse handler called by the VDI */
+void far_mcha(_WORD x, _WORD y)
+{
+#if NYI
+	forkq(mchange, MAKE_ULONG(x, y));
+#endif
+	(void) x;
+	(void) y;
+}
+
+/* AES timer handler called by the VDI */
+void tikcod(void)
+{
+#if NYI
+	/* bump up the absolute clock */
+	++TICKS;
+	/* are we timing now? */
+	if (CMP_TICK != 0)
+	{
+		++NUM_TICK;
+		if (--CMP_TICK == 0)
+		{
+			/*
+			 * we need to establish a forkq that will
+			 * pick us up
+			 */
+			 if (forkq(tchange, NUM_TICK) == FALSE)
+			 	++CMP_TICK; /* no event recorded, reset the counter */
+		}
+	}
+	b_delay(1);
+	(*tiksav)();
+#endif
+}
+
+#endif
 
 
 void gsx_init(void)
@@ -307,8 +369,8 @@ void gsx_init(void)
 	 */
 	if (!aestrap_intercepted())
 	{
-		PFVOID old_wheelv; /* Ignored */
-		__extension__ vex_wheelv(gl_handle, aes_wheel, (void **)&old_wheelv);
+		VEX_WHEELV old_wheelv; /* Ignored */
+		vex_wheelv(gl_handle, aes_wheel, &old_wheelv);
 	}
 }
 
@@ -396,7 +458,7 @@ void bb_restore(GRECT *pr)
 }
 
 
-_WORD gsx_tick(void *tcode, void **ptsave)
+_WORD gsx_tick(VEX_TIMV tcode, VEX_TIMV *ptsave)
 {
 	_WORD time_conv;
 	

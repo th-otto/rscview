@@ -22,9 +22,8 @@ typedef void (*PFVOID)(void);
 
 extern int gl_moff;
 extern _BOOL gl_mouse;					/* mouse on flag        */
-extern void *tikaddr;
-extern void *tiksav;
-extern PFVOID drwaddr;
+extern VEX_TIMV tiksav;
+extern VEX_CURV drwaddr;
 extern short gl_restype;
 
 
@@ -48,7 +47,7 @@ void bb_restore(GRECT *ps);
 void gsx_mfset(MFORM *pmfnew);
 void gsx_xmfset(MFORM *pmfnew);
 void gsx_mxmy(_WORD *pmx, _WORD *pmy);
-_WORD gsx_tick(void *tcode, void **ptsave);
+_WORD gsx_tick(VEX_TIMV tcode, VEX_TIMV *ptsave);
 _WORD gsx_button(void);
 _WORD gsx_kstate(void);
 void gsx_moff(void);

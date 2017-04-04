@@ -21,11 +21,24 @@
 
 
 /*
+ * aes.c
+ */
+_WORD aestrap(AESPB *pb);
+
+/*
  * dosif.S/jbind.S
  */
+#ifdef OS_ATARI
 void far_bcha(void);
 void far_mcha(void);
 void aes_wheel(void);
+#else
+void far_bcha(_WORD newmask);
+void far_mcha(_WORD x, _WORD y);
+void aes_wheel(_WORD wheel_number, _WORD wheel_amount);
+#endif
+void tikcod(void);
+
 
 void unset_aestrap(void);
 void set_aestrap(void);
@@ -94,6 +107,7 @@ extern int32_t NUM_TICK;
  * sending the first tchange
  */
 extern int32_t CMP_TICK;
+extern int32_t TICKS;
 
 void set_mouse_to_arrow(void);
 void set_mouse_to_hourglass(void);
@@ -129,7 +143,7 @@ extern _WORD gl_recd;
 extern _WORD gl_rlen;
 extern uint32_t *gl_rbuf;
 extern _WORD gl_play;
-extern void *gl_store;
+extern VEX_MOTV gl_store;
 extern _WORD gl_mx;
 extern _WORD gl_my;
 extern _WORD gl_mnpds[NUM_PDS];
@@ -319,7 +333,7 @@ void post_mouse(AESPD *p, _WORD grx, _WORD gry);
 void b_click(_WORD state);
 void get_mkown(AESPD **pmown);
 void set_mkown(AESPD *mp, AESPD *kp);
-void wheel_change(_WORD wheel_number, _WORD wheel_amount);
+void wheel_change(_LONG parm);
 
 
 /*
@@ -448,7 +462,6 @@ extern _WORD gl_hbox;
 extern GRECT gl_clip;
 extern _WORD gl_handle;
 extern _WORD gl_mode;
-extern _WORD gl_mask; /* unused */
 extern _WORD gl_tcolor;
 extern _WORD gl_lcolor;
 extern _WORD gl_fis;

@@ -82,6 +82,8 @@ _WORD gl_button;
  */
 _WORD gl_bdelay;
 
+int32_t TICKS, CMP_TICK, NUM_TICK;
+
 
 #if NYI
 
@@ -153,6 +155,7 @@ _WORD chk_ctrl(_WORD mx, _WORD my)
  */
 void b_click(_WORD state)
 {
+	gl_button = state;
 	/* ignore it unless it represents a change */
 	if (state != gl_btrue)
 	{
@@ -479,11 +482,13 @@ void mchange(_LONG fdata)
 }
 
 
-void wheel_change(_WORD wheel_number, _WORD wheel_amount)
+void wheel_change(_LONG parm)
 {
 	_WORD wh;
 	_WORD type;
-
+	_WORD wheel_number = HIWORD(parm);
+	_WORD wheel_amount = LOWORD(parm);
+	
 	/* Ignore the wheel messages if the menu is active */
 	if (gl_mowner == ctl_pd)
 		return;

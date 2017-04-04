@@ -108,14 +108,6 @@ _BOOL streq(const char *p1, const char *p2)
 }
 
 
-char *xstrpcpy(const char *ps, char *pd)
-{
-	while ((*pd++ = *ps++) != '\0')
-		;
-	return pd;
-}
-
-
 /*	copy the src to destination until we are out of characters
  *	or we get a char match.
  */
@@ -124,16 +116,6 @@ char *strscn(const char *ps, char *pd, char stop)
 	while ((*ps) && (*ps != stop))
 		*pd++ = *ps++;
 	return pd;
-}
-
-
-char *xstrpcat(const char *ps, char *pd)
-{
-	while (*pd)
-		pd++;
-	while ((*pd++ = *ps++) != '\0')
-		;
-	return (pd);
 }
 
 
@@ -463,4 +445,27 @@ size_t n;
         ;
 
     return s-src-1;
+}
+
+
+/* reverses the bits of a word.  Used in get_rgb because the word of pixel-
+ * packed data end up being reversed.  Since, the rgb pixel values are
+ * table-driven and indexed, we must get a reversed index (e.g. the pixel-
+ * packed value 0x8000 is index 0x0001 ).
+ * NOTE: This routine has been optimized into assembly.
+ */
+unsigned int reverse(int index)
+{
+	unsigned int mask, result = 0x0000;
+	long temp;
+	int i;
+
+	for (i = 0; i < 16; i++)
+	{
+		mask = 0x0001 << i;
+		temp = (long) mask & index;
+		if (temp)
+			result |= 0x0001 << (16 - i - 1);
+	}
+	return result;
 }

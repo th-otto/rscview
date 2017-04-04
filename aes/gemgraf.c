@@ -384,7 +384,7 @@ void gsx_start(void)
 	_WORD attrib[10];
 	
 	/* force update */
-	gl_mode = gl_mask = gl_tcolor = gl_lcolor = -1;
+	gl_mode = gl_tcolor = gl_lcolor = -1;
 	gl_fis = gl_patt = gl_font = -1;
 
 	gl_clip.g_x = 0;

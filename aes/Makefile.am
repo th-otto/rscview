@@ -2,9 +2,9 @@ include $(top_srcdir)/config.mk
 
 INCLUDES += -I$(srcdir)
 
-noinst_LIBRARIES = libgem.a
+noinst_LIBRARIES = libaes.a
 
-libgem_a_SOURCES = \
+libaes_a_SOURCES = \
 	aes.c \
 	\
 	gemaplib.c \

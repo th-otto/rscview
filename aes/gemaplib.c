@@ -31,7 +31,7 @@ _WORD gl_recd;
 _WORD gl_rlen;
 uint32_t *gl_rbuf;
 _WORD gl_play;
-void *gl_store;
+VEX_MOTV gl_store;
 _WORD gl_mx;
 _WORD gl_my;
 
@@ -183,8 +183,8 @@ void ap_tplay(const uint32_t *pbuff, _WORD length, _WORD scale)
 			if (!gl_play)
 			{
 				/* disconnect the cursor from VDI until the playing is done */
-				__extension__ vex_curv(gl_handle, (void *)justretf, &drwaddr); /* avoid warning ISO C forbids conversion of function pointer to object pointer type */
-				__extension__ vex_motv(gl_handle, (void *)justretf, &gl_store);
+				vex_curv(gl_handle, (VEX_CURV)justretf, &drwaddr);
+				vex_motv(gl_handle, (VEX_MOTV)justretf, &gl_store);
 			}
 			f.f_code = mchange;
 			gl_play = TRUE;
