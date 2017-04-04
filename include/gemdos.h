@@ -1,0 +1,31 @@
+#include <dta.h>
+
+int dos_sfirst(const char *name, int attrib);
+int dos_snext(void);
+int dos_open(const char *name, int mode);
+int dos_read(int fd, size_t size, void *buf);
+int dos_write(int fd, size_t size, void *buf);
+long dos_lseek(int fd, int whence, long offset);
+int dos_gdir(int drive, char *pdrvpath);
+int dos_mkdir(const char *path, int attr);
+int dos_set(int h, _UWORD time, _UWORD date);
+int dos_label(int drive, const char *name);
+int dos_space(int drive, int32_t *total, int32_t *avail);
+int dos_rename(const char *oldname, const char *newname);
+void *dos_alloc(long size);
+void *dos_alloc_stram(long size);
+size_t dos_avail(void);
+size_t dos_avail_anyram(void);
+void dos_chrout(int c);
+int dos_rawcon(int c);
+int dos_prtchr(int c);
+int dos_sdta(DTA *dta);
+int dos_gdrv(void);
+int dos_close(int fd);
+int dos_chdir(const char *path);
+int dos_sdrv(int drv);
+int dos_chmod(const char *path, int attr);
+int dos_delete(const char *path);
+void dos_free(void *ptr);
+void dos_conws(const char *str, int newline);
+void dos_shrink(void *maddr, long length);

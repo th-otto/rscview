@@ -162,9 +162,7 @@ _BOOL gsx_malloc(void)
 	if (gl_tmp.fd_addr == NULL)
 	{
 		gl_mlen = 0;
-#ifdef __atarist__
-		Cconws("Unable to alloc AES blt buffer!\r\n");
-#endif
+		dos_conws("Unable to alloc AES blt buffer!", TRUE);
 		return FALSE;
 	}
 	return TRUE;

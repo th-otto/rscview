@@ -10,6 +10,7 @@
 #include "gemlib.h"
 #include "gsxdefs.h"
 #include "aesutils.h"
+#include "gemdos.h"
 
 #define	ADJ3DPIX    2	/* pixel adjustment for 3D objects */
 
@@ -625,31 +626,6 @@ _WORD newrect(OBJECT *tree, _WORD wh, _WORD junkx, _WORD junky);
 /*
  * jdos.c
  */
-int dos_sfirst(const char *name, int attrib);
-int dos_snext(void);
-int dos_open(const char *name, int mode);
-int dos_read(int fd, size_t size, void *buf);
-int dos_write(int fd, size_t size, void *buf);
-long dos_lseek(int fd, int whence, long offset);
-int dos_gdir(int drive, char *pdrvpath);
-int dos_mkdir(const char *path, int attr);
-int dos_set(int h, _UWORD time, _UWORD date);
-int dos_label(int drive, const char *name);
-int dos_space(int drive, int32_t *total, int32_t *avail);
-int dos_rename(const char *oldname, const char *newname);
-void *dos_alloc(long size);
-intptr_t dos_avail(void);
-int chrout(int c);
-int rawcon(int c);
-int prt_chr(int c);
-int dos_sdta(DTA *dta);
-int dos_gdrv(void);
-int dos_close(int fd);
-int dos_chdir(const char *path);
-int dos_sdrv(int drv);
-int dos_chmod(const char *path, int attr);
-int dos_delete(const char *path);
-int dos_free(void *ptr);
 int do_cdir(int drv, const char *path);
 uint32_t isdrive(void);
 

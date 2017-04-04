@@ -20,5 +20,5 @@ rscview_SOURCES = \
 	fio_err.c \
 	$(empty)
 
-rscview_LDADD = -L../aes -L../gemlib -laes -lgem -laes -lgem
+rscview_LDADD = -L../aes -L../gemlib -L../util -laes -lgem -laes -lgem -lutil
 rscview_DEPENDENCIES = $(GEMLIBS)

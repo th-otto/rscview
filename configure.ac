@@ -567,6 +567,7 @@ Makefile
 data/Makefile
 gemlib/Makefile
 aes/Makefile
+util/Makefile
 src/Makefile
 ])
 
