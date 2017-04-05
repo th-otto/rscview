@@ -31,8 +31,8 @@
  *
  */
 
-long
-vst_arbpt32 (short handle, long point,
+fix31
+vst_arbpt32 (short handle, fix31 point,
              short *wchar, short *hchar, short *wcell, short *hcell)
 {
 	short vdi_control[VDI_CNTRLMAX]; 

@@ -22,7 +22,6 @@ typedef struct _dialog { int dummy; } DIALOG;
  * The AES extensions of MagiC
  */
 
-/** TODO */
 #ifndef __EVNT
 #define __EVNT
 typedef struct
@@ -48,18 +47,16 @@ typedef struct
  *  @{
  */
 
-/** TODO */
 #ifndef _SCANX
 #define _SCANX
 typedef struct
 {
-	char		scancode;  /**< TODO */
-	char		nclicks;   /**< TODO */
-	_WORD		objnr;     /**< TODO */
+	char		scancode;
+	char		nclicks;
+	_WORD		objnr;
 } SCANX;
 #endif
 
-/** TODO */
 #ifndef _XDO_INF
 #define _XDO_INF
 typedef struct
@@ -76,10 +73,10 @@ typedef struct
  */
 struct POPUP_INIT_args
 {
-	OBJECT *tree;		/**< TODO */
-	_WORD scrollpos;	/**< TODO */
-	_WORD nlines;		/**< TODO */
-	void *param;		/**< TODO */
+	OBJECT *tree;
+	_WORD scrollpos;
+	_WORD nlines;
+	void *param;
 };
 
 _WORD	form_popup 	(OBJECT *tree, _WORD x, _WORD y);
@@ -87,8 +84,8 @@ _WORD	form_wbutton	(OBJECT *fo_btree, _WORD fo_bobject, _WORD fo_bclicks, _WORD 
 _WORD	form_wkeybd	(OBJECT *fo_ktree, _WORD fo_kobject, _WORD fo_kobnext, _WORD fo_kchar, _WORD *fo_knxtobject, _WORD *fo_knxtchar, _WORD whandle);
 _WORD	form_xdial 	(_WORD fo_diflag, _WORD fo_dilittlx, _WORD fo_dilittly, _WORD fo_dilittlw, _WORD fo_dilittlh, _WORD fo_dibigx, _WORD fo_dibigy, _WORD fo_dibigw, _WORD fo_dibigh, void **flydial);
 _WORD	form_xdial_grect (_WORD fo_diflag, const GRECT *fo_dilittl, const GRECT *fo_dibig, void **flydial);
-_WORD	form_xdo		(OBJECT *tree, _WORD startob, _WORD *lastcrsr, XDO_INF *tabs, void *flydial); 
-_WORD	form_xerr	(long errcode, const char *errfile);
+_WORD	form_xdo		(OBJECT *tree, _WORD startob, _WORD *lastcrsr, XDO_INF *tabs, void *flydial);
+_WORD	form_xerr	(_LONG errcode, const char *errfile);
 _WORD	xfrm_popup 	(OBJECT *tree, _WORD x, _WORD y, _WORD firstscrlob, _WORD lastscrlob, _WORD nlines,
 						 void _CDECL (*init)(OBJECT *tree, _WORD scrollpos, _WORD nlines, void *param),
 						 void *param, _WORD *lastscrlpos);
@@ -116,26 +113,24 @@ _WORD	objc_xedit	(OBJECT *tree, _WORD obj, _WORD key, _WORD *xpos, _WORD subfn, 
  *  @{
  */
 
-/** opaque structure (internal management structure) */ 
+/** opaque structure (internal management structure) */
 typedef void *FNT_DIALOG;
 
 /** parameters for UTXT_FN callback functions
  */
 struct UTXT_FN_args
 {
-	_WORD x;			/**< TODO */
-	_WORD y;			/**< TODO */
-	_WORD *clip_rect;	/**< TODO */
-	long id;			/**< TODO */
-	long pt;			/**< TODO */
-	long ratio;			/**< TODO */
-	char *string;		/**< TODO */
+	_WORD x;
+	_WORD y;
+	_WORD *clip_rect;
+	int32_t id;
+	int32_t pt;
+	int32_t ratio;
+	char *string;
 };
 
-/** TODO */
 typedef void _CDECL (*UTXT_FN)(struct UTXT_FN_args);
 
-/** TODO */
 typedef struct _fnts_item FNTS_ITEM;
 
 /** FNTS_ITEM data structure */
@@ -143,7 +138,7 @@ struct _fnts_item
 {
 	FNTS_ITEM	*next;		  /**< Pointer to the next font or 0L (end of the list) */
 	UTXT_FN		display;	  /**< Pointer to the display function for the user fonts */
-	long		id; 		  /**< Font ID, >= 65536 for user fonts */
+	int32_t		id; 		  /**< Font ID, >= 65536 for user fonts */
 	_WORD 		index;		  /**< Must be 0, as not a VDI font */
 	char		mono;		  /**< Flag for mono-spaced font */
 	char		outline;	  /**< Flag for vector font */
@@ -152,7 +147,7 @@ struct _fnts_item
 	char		*family_name; /**< Pointer to the family name */
 	char		*style_name;  /**< Pointer to the style name */
 	char		*pts; 		  /**< Pointer to field with point sizes */
-	long		reserved[4];  /**< Reserved, must be 0 */
+	int32_t		reserved[4];  /**< Reserved, must be 0 */
 };
 
 /* Definition of <font_flags> in fnts_create() */
@@ -179,26 +174,26 @@ struct _fnts_item
 #define FNTS_BMARK		0x4000		/**< Button "Mark" selectable */
 
 /* Definition of <button> in fnts_evnt() */
-#define FNTS_CANCEL		1			/**< TODO */
-#define FNTS_OK			2			/**< TODO */		
-#define FNTS_SET		3			/**< TODO */
-#define FNTS_MARK 		4			/**< TODO */
-#define FNTS_OPT		5			/**< TODO */
+#define FNTS_CANCEL		1
+#define FNTS_OK			2
+#define FNTS_SET		3
+#define FNTS_MARK 		4
+#define FNTS_OPT		5
 #define FNTS_OPTION		FNTS_OPT	/**< see FNTS_OPT */
 
 _WORD		fnts_add			(FNT_DIALOG *fnt_dialog, FNTS_ITEM *user_fonts);
 _WORD		fnts_close		(FNT_DIALOG *fnt_dialog, _WORD *x, _WORD *y);
 FNT_DIALOG *fnts_create		(_WORD vdi_handle, _WORD no_fonts, _WORD font_flags, _WORD dialog_flags, const char *sample, const char *opt_button);
 _WORD		fnts_delete		(FNT_DIALOG *fnt_dialog, _WORD vdi_handle);
-_WORD		fnts_do			(FNT_DIALOG *fnt_dialog, _WORD button_flags, long id_in, long pt_in, long ratio_in, _WORD *check_boxes, long *id, long *pt, long *ratio);
-_WORD		fnts_evnt		(FNT_DIALOG *fnt_dialog, EVNT *events, _WORD *button, _WORD *check_boxes, long *id, long *pt, long *ratio);
-_WORD		fnts_get_info	(FNT_DIALOG *fnt_dialog, long id, _WORD *mono, _WORD *outline);
-_WORD		fnts_get_name	(FNT_DIALOG *fnt_dialog, long id, char *full_name, char *family_name, char *style_name);
-_WORD		fnts_get_no_styles (FNT_DIALOG *fnt_dialog, long id);
-long		fnts_get_style	(FNT_DIALOG *fnt_dialog, long id, _WORD __index);
-_WORD		fnts_open		(FNT_DIALOG *fnt_dialog, _WORD button_flags, _WORD x, _WORD y, long id, long pt, long ratio);
+_WORD		fnts_do			(FNT_DIALOG *fnt_dialog, _WORD button_flags, int32_t id_in, int32_t pt_in, int32_t ratio_in, _WORD *check_boxes, int32_t *id, int32_t *pt, int32_t *ratio);
+_WORD		fnts_evnt		(FNT_DIALOG *fnt_dialog, EVNT *events, _WORD *button, _WORD *check_boxes, int32_t *id, int32_t *pt, int32_t *ratio);
+_WORD		fnts_get_info	(FNT_DIALOG *fnt_dialog, int32_t id, _WORD *mono, _WORD *outline);
+_WORD		fnts_get_name	(FNT_DIALOG *fnt_dialog, int32_t id, char *full_name, char *family_name, char *style_name);
+_WORD		fnts_get_no_styles (FNT_DIALOG *fnt_dialog, int32_t id);
+int32_t		fnts_get_style	(FNT_DIALOG *fnt_dialog, int32_t id, _WORD __index);
+_WORD		fnts_open		(FNT_DIALOG *fnt_dialog, _WORD button_flags, _WORD x, _WORD y, int32_t id, int32_t pt, int32_t ratio);
 void		fnts_remove		(FNT_DIALOG *fnt_dialog);
-_WORD		fnts_update		(FNT_DIALOG *fnt_dialog, _WORD button_flags, long id, long pt, long ratio);
+_WORD		fnts_update		(FNT_DIALOG *fnt_dialog, _WORD button_flags, int32_t id, int32_t pt, int32_t ratio);
 /**@}*/
 
 /*
@@ -220,30 +215,29 @@ _WORD		fnts_update		(FNT_DIALOG *fnt_dialog, _WORD button_flags, long id, long p
  *  @{
  */
 
-/** TODO */
 typedef _WORD _CDECL (*XFSL_FILTER)(char *path, char *name, GEMLIB_XATTR *xattr);
 
 /* Sortiermodi */
-#define SORTBYNAME		0			/**< TODO */
-#define SORTBYDATE		1			/**< TODO */
-#define SORTBYSIZE		2			/**< TODO */
-#define SORTBYTYPE		3			/**< TODO */
-#define SORTBYNONE		4			/**< TODO */
-#define SORTDEFAULT		(-1)		/**< TODO */
+#define SORTBYNAME		0
+#define SORTBYDATE		1
+#define SORTBYSIZE		2
+#define SORTBYTYPE		3
+#define SORTBYNONE		4
+#define SORTDEFAULT		(-1)
 
 /* Flags f�r Dateiauswahl */
-#define DOSMODE			1			/**< TODO */
-#define NFOLLOWSLKS		2			/**< TODO */
-#define GETMULTI		8			/**< TODO */
+#define DOSMODE			1
+#define NFOLLOWSLKS		2
+#define GETMULTI		8
 
 /* fslx_set_flags */
-#define SHOW8P3			1			/**< TODO */
+#define SHOW8P3			1
 
 typedef void *XFSL_DIALOG;
 
 _WORD	fslx_close		(XFSL_DIALOG *fsd);
 XFSL_DIALOG *fslx_do			(const char *title, char *path, _WORD pathlen, char *fname, _WORD fnamelen, char *patterns, XFSL_FILTER filter, char *paths, _WORD *sort_mode, _WORD flags, _WORD *button, _WORD *nfiles, char **pattern);
-_WORD	fslx_evnt		(XFSL_DIALOG *fsd, EVNT *events, char *path, char *fname, _WORD *button, _WORD *nfiles, _WORD *sort_mode, char **pattern); 
+_WORD	fslx_evnt		(XFSL_DIALOG *fsd, EVNT *events, char *path, char *fname, _WORD *button, _WORD *nfiles, _WORD *sort_mode, char **pattern);
 _WORD	fslx_getnxtfile	(XFSL_DIALOG *fsd, char *fname);
 XFSL_DIALOG *fslx_open		(const char *title, _WORD x, _WORD y, _WORD *handle, char *path, _WORD pathlen, char *fname, _WORD fnamelen, const char *patterns, XFSL_FILTER filter, char *paths, _WORD sort_mode, _WORD flags);
 _WORD	fslx_set_flags 	(_WORD flags, _WORD *oldval);
@@ -257,32 +251,31 @@ _WORD	fslx_set_flags 	(_WORD flags, _WORD *oldval);
  *  @{
  */
 
-/** TODO */
 typedef void *PRN_DIALOG;
 
-typedef struct _prn_tray		PRN_TRAY;			/**< TODO */
-typedef struct _media_size		MEDIA_SIZE;			/**< TODO */
-typedef struct _media_type		MEDIA_TYPE;			/**< TODO */
-typedef struct _prn_mode		PRN_MODE;			/**< TODO */
-typedef struct _prn_entry		PRN_ENTRY;			/**< TODO */
-typedef struct _dither_mode 	DITHER_MODE;		/**< TODO */
-typedef struct _drv_entry		DRV_ENTRY;			/**< TODO */
-typedef struct _pdlg_sub		PDLG_SUB;			/**< TODO */
-typedef struct _prn_settings	PRN_SETTINGS;		/**< TODO */
+typedef struct _prn_tray		PRN_TRAY;
+typedef struct _media_size		MEDIA_SIZE;
+typedef struct _media_type		MEDIA_TYPE;
+typedef struct _prn_mode		PRN_MODE;
+typedef struct _prn_entry		PRN_ENTRY;
+typedef struct _dither_mode 	DITHER_MODE;
+typedef struct _drv_entry		DRV_ENTRY;
+typedef struct _pdlg_sub		PDLG_SUB;
+typedef struct _prn_settings	PRN_SETTINGS;
 
 /** Description of a feed/output tray */
 struct _prn_tray
 {
 	PRN_TRAY	*next;		/**< Pointer to next output tray description */
-	long		tray_id; 	/**< Number of the feed or output tray */
+	int32_t		tray_id; 	/**< Number of the feed or output tray */
 	char		name[32];	/**< Name of the tray */
 };
 
 /** Description of a paper format */
-struct _media_size 
+struct _media_size
 {
 	MEDIA_SIZE	*next;		/**< Pointer to next paper format description */
-	long		size_id; 	/**< Paper format size ID */
+	int32_t		size_id; 	/**< Paper format size ID */
 	char		name[32];	/**< Name of the paper format */
 };
 
@@ -290,7 +283,7 @@ struct _media_size
 struct _media_type
 {
 	MEDIA_TYPE	*next;		/**< Pointer to next print medium description */
-	long		type_id; 	/**< Paper format type ID */
+	int32_t		type_id; 	/**< Paper format type ID */
 	char		name[32];	/**< Name of the paper format */
 };
 
@@ -298,16 +291,16 @@ struct _media_type
 struct _prn_mode
 {
 	PRN_MODE	*next; 				/**< Pointer to the next print mode */
-	long		mode_id; 			/**< Mode ID (index within the file) */
+	int32_t		mode_id; 			/**< Mode ID (index within the file) */
 	_WORD 		hdpi; 				/**< Horizontal resolution in dpi */
 	_WORD 		vdpi; 				/**< Vertical resolution in dpi */
-	long		mode_capabilities;	/**< Mode capabilities */
-	long		color_capabilities;	/**< Colour capabilities */
-	long		dither_flags;		/**< Flags specifying whether the
+	int32_t		mode_capabilities;	/**< Mode capabilities */
+	int32_t		color_capabilities;	/**< Colour capabilities */
+	int32_t		dither_flags;		/**< Flags specifying whether the
 	                                     corresponding colour mode is accessible
 										 with or without dithering */
 	MEDIA_TYPE	*paper_types;		/**< Suitable paper types */
-	long		reserved;			/**< Reserved */
+	int32_t		reserved;			/**< Reserved */
 	char		name[32];			/**< Mode name  */
 };
 
@@ -317,21 +310,21 @@ struct _prn_mode
 #define	PRN_QD_SUBS 	0x0004			/**< Standard-Unterdialoge f�r QuickDraw-Drucker */
 
 /** old_printer can also be 0L */
-typedef long _CDECL (*PRN_SWITCH)(DRV_ENTRY *drivers, PRN_SETTINGS *settings, PRN_ENTRY *old_printer, PRN_ENTRY *new_printer);
+typedef int32_t _CDECL (*PRN_SWITCH)(DRV_ENTRY *drivers, PRN_SETTINGS *settings, PRN_ENTRY *old_printer, PRN_ENTRY *new_printer);
 
 /** Device description */
 struct _prn_entry
 {
 	PRN_ENTRY	*next;					/**< Pointer to next device description */
-	long		length; 				/**< Structure length */
-	long		format; 				/**< Data format */
-	long		reserved;				/**< Reserved */
+	int32_t		length; 				/**< Structure length */
+	int32_t		format; 				/**< Data format */
+	int32_t		reserved;				/**< Reserved */
 	_WORD 		driver_id;				/**< Driver ID */
 	_WORD 		driver_type;			/**< Driver type */
-	long		printer_id; 			/**< Printer ID */
-	long		printer_capabilities;	/**< Printer capabilities */
-	long		reserved1;      /**< reserved */
-	long		sub_flags;		/**< TODO */
+	int32_t		printer_id; 			/**< Printer ID */
+	int32_t		printer_capabilities;	/**< Printer capabilities */
+	int32_t		reserved1;      /**< reserved */
+	int32_t		sub_flags;
 	PDLG_SUB	*sub_dialogs;	/**< Pointer to the list of sub-dialogs for this printer */
 	PRN_SWITCH	setup_panel;	/**< Initialise sub-dialog at printer change  */
 	PRN_SWITCH	close_panel;	/**< Close sub-dialog at printer change */
@@ -342,117 +335,111 @@ struct _prn_entry
 	char		name[32];		/**< Name of the printer */
 };
 
-/** TODO */
 struct _dither_mode
 {
-	DITHER_MODE	*next;          /**< TODO */
-	long		length;			/**< Structure length */
-	long		format;			/**< Data format */
-	long		reserved;		/**< Reserved */
-	long		dither_id;		/**< Dither ID */
-	long		color_modes;	/**< Colour depths supported */
-	long		reserved1;		/**< Reserved */
-	long		reserved2;		/**< Reserved */
+	DITHER_MODE	*next;
+	int32_t		length;			/**< Structure length */
+	int32_t		format;			/**< Data format */
+	int32_t		reserved;		/**< Reserved */
+	int32_t		dither_id;		/**< Dither ID */
+	int32_t		color_modes;	/**< Colour depths supported */
+	int32_t		reserved1;		/**< Reserved */
+	int32_t		reserved2;		/**< Reserved */
 	char		name[32];		/**< Name of the dither process */
 };
 
-/** TODO */
 typedef struct
 {
-	long		magic;			/**< 'pdnf' */
-	long		length;			/**< Structure length */
-	long		format;			/**< Data format */
-	long		reserved;		/**< Reserved */
+	int32_t		magic;			/**< 'pdnf' */
+	int32_t		length;			/**< Structure length */
+	int32_t		format;			/**< Data format */
+	int32_t		reserved;		/**< Reserved */
 	_WORD 		driver_id;		/**< Driver number for the VDI */
 	_WORD 		driver_type;	/**< Driver type */
-	long		reserved1;		/**< Reserved */
-	long		reserved2;		/**< Reserved */
-	long		reserved3;		/**< Reserved */
+	int32_t		reserved1;		/**< Reserved */
+	int32_t		reserved2;		/**< Reserved */
+	int32_t		reserved3;		/**< Reserved */
 	PRN_ENTRY	*printers;		/**< List of printers belonging to the driver */
 	DITHER_MODE	*dither_modes; 	/**< List of dither processes supported by the driver */
-	long		reserved4;		/**< Reserved */
-	long		reserved5;		/**< Reserved */
-	long		reserved6;		/**< Reserved */
-	long		reserved7;		/**< Reserved */
-	long		reserved8;		/**< Reserved */
-	long		reserved9;		/**< Reserved */
+	int32_t		reserved4;		/**< Reserved */
+	int32_t		reserved5;		/**< Reserved */
+	int32_t		reserved6;		/**< Reserved */
+	int32_t		reserved7;		/**< Reserved */
+	int32_t		reserved8;		/**< Reserved */
+	int32_t		reserved9;		/**< Reserved */
 	char		device[128];	/**< Printer driver output file */
 } DRV_INFO;
 
-/** TODO */
 struct _drv_entry
 {
-	 DRV_ENTRY	*next; /**< TODO */
+	 DRV_ENTRY	*next;
 };
 
-#define	PDLG_CHG_SUB	0x80000000L 	/**< TODO */
-#define	PDLG_IS_BUTTON	0x40000000L 	/**< TODO */
+#define	PDLG_CHG_SUB	0x80000000L
+#define	PDLG_IS_BUTTON	0x40000000L
 
-#define	PDLG_PREBUTTON	0x20000000L 	/**< TODO */
-#define	PDLG_PB_OK		1 				/**< TODO */
-#define	PDLG_PB_CANCEL	2 				/**< TODO */
-#define	PDLG_PB_DEVICE	3 				/**< TODO */
+#define	PDLG_PREBUTTON	0x20000000L
+#define	PDLG_PB_OK		1
+#define	PDLG_PB_CANCEL	2
+#define	PDLG_PB_DEVICE	3
 
-#define	PDLG_BUT_OK 	(PDLG_PREBUTTON | PDLG_PB_OK) 		/**< TODO */
-#define	PDLG_BUT_CNCL	(PDLG_PREBUTTON | PDLG_PB_CANCEL) 	/**< TODO */
-#define	PDLG_BUT_DEV	(PDLG_PREBUTTON | PDLG_PB_DEVICE) 	/**< TODO */
+#define	PDLG_BUT_OK 	(PDLG_PREBUTTON | PDLG_PB_OK)
+#define	PDLG_BUT_CNCL	(PDLG_PREBUTTON | PDLG_PB_CANCEL)
+#define	PDLG_BUT_DEV	(PDLG_PREBUTTON | PDLG_PB_DEVICE)
 
-/** TODO */
-typedef long _CDECL (*PDLG_INIT)(PRN_SETTINGS *settings, PDLG_SUB *sub);
+typedef int32_t _CDECL (*PDLG_INIT)(PRN_SETTINGS *settings, PDLG_SUB *sub);
 
 /** parameters for PDLG_HNDL callback functions
  */
 struct PDLG_HNDL_args
 {
-	PRN_SETTINGS *settings;	/**< TODO */
-	PDLG_SUB *sub;			/**< TODO */
-	_WORD exit_obj; 		/**< TODO */
+	PRN_SETTINGS *settings;
+	PDLG_SUB *sub;
+	_WORD exit_obj;
 };
 
-/** TODO */
-typedef long _CDECL (*PDLG_HNDL)(struct PDLG_HNDL_args);
+typedef int32_t _CDECL (*PDLG_HNDL)(struct PDLG_HNDL_args);
 
-/** TODO */
-typedef long _CDECL (*PDLG_RESET)(PRN_SETTINGS *settings, PDLG_SUB *sub);
+typedef int32_t _CDECL (*PDLG_RESET)(PRN_SETTINGS *settings, PDLG_SUB *sub);
 
 /** Sub-dialog for setting device */
 struct _pdlg_sub
 {
 	PDLG_SUB	*next; 			/**< Pointer to the successor in the list */
-	long		length;			/**< Structure length */
-	long		format;			/**< Data format */
-	long		reserved;		/**< Reserved */
+	int32_t		length;			/**< Structure length */
+	int32_t		format;			/**< Data format */
+	int32_t		reserved;		/**< Reserved */
 	void		*drivers;		/**< Only for internal dialogs */
 	_WORD 		option_flags;	/**< Flags, inc. PDLG_PRINTING, PDLG_PREFS */
-	_WORD 		sub_id;			/**< Sub-dialog ID, entered for global 
+	_WORD 		sub_id;			/**< Sub-dialog ID, entered for global
                                      sub-dialogs of pdlg_add() */
 	void		*dialog; 		/**< Pointer to the structure of the window
                                      dialog or 0L */
 	OBJECT		*tree;			/**< Pointer to the assembled object tree */
 	_WORD 		index_offset;	/**< Index offset of the sub-dialog */
 	_WORD 		reserved1;		/**< Reserved */
-	long		reserved2;		/**< Reserved */
-	long		reserved3;		/**< Reserved */
-	long		reserved4;		/**< Reserved */
+	int32_t		reserved2;		/**< Reserved */
+	int32_t		reserved3;		/**< Reserved */
+	int32_t		reserved4;		/**< Reserved */
 	PDLG_INIT	init_dlg;		/**< Initialisation function */
 	PDLG_HNDL	do_dlg;			/**< Handling function */
 	PDLG_RESET	reset_dlg;		/**< Reset function */
-	long		reserved5;		/**< Reserved */
+	int32_t		reserved5;		/**< Reserved */
 	OBJECT		*sub_icon;		/**< Pointer to the icon for the list box */
-	OBJECT		*sub_tree;		/**< Pointer to the object tree of the 
+	OBJECT		*sub_tree;		/**< Pointer to the object tree of the
                                      sub-dialog */
-	long		reserved6;		/**< Reserved */
-	long		reserved7;		/**< Reserved */
-	long		private1;		/**< Dialog's private information */
-	long		private2;		/**< Dialog's private information */
-	long		private3;		/**< Dialog's private information */
-	long		private4;		/**< Dialog's private information */
+	int32_t		reserved6;		/**< Reserved */
+	int32_t		reserved7;		/**< Reserved */
+	int32_t		private1;		/**< Dialog's private information */
+	int32_t		private2;		/**< Dialog's private information */
+	int32_t		private3;		/**< Dialog's private information */
+	int32_t		private4;		/**< Dialog's private information */
 };
 
 
-/*----------------------------------------------------------------------------------------*/ 
+/*----------------------------------------------------------------------------------------*/
 /* einstellbare Farbmodi eines Druckermodus																*/
-/*----------------------------------------------------------------------------------------*/ 
+/*----------------------------------------------------------------------------------------*/
 #define	CC_MONO			0x0001		/**< 2 Graut�ne */
 #define	CC_4_GREY		0x0002		/**< 4 Graut�ne */
 #define	CC_8_GREY		0x0004		/**< 8 Graut�ne */
@@ -471,18 +458,18 @@ struct _pdlg_sub
 #define	CC_65K_COLOR	0x4000		/**< 65536 Farben */
 #define	CC_16M_COLOR	0x8000		/**< 16777216 Farben */
 
-#define	NO_CC_BITS		16			/**< TODO */
+#define	NO_CC_BITS		16
 
-/*----------------------------------------------------------------------------------------*/ 
+/*----------------------------------------------------------------------------------------*/
 /* einstellbare Rasterverfahren																				*/
-/*----------------------------------------------------------------------------------------*/ 
+/*----------------------------------------------------------------------------------------*/
 #define	DC_NONE			0			/**< keine Rasterverfahren */
 #define	DC_FLOYD 		1			/**< einfacher Floyd-Steinberg */
-#define	NO_DC_BITS		1			/**< TODO */
+#define	NO_DC_BITS		1
 
-/*----------------------------------------------------------------------------------------*/ 
+/*----------------------------------------------------------------------------------------*/
 /* Druckereigenschaften 																						*/
-/*----------------------------------------------------------------------------------------*/ 
+/*----------------------------------------------------------------------------------------*/
 #define	PC_FILE			0x0001		/**< Drucker kann �ber GEMDOS-Dateien angesprochen werden */
 #define	PC_SERIAL		0x0002		/**< Drucker kann auf der seriellen Schnittstelle angesteuert werden */
 #define	PC_PARALLEL 	0x0004		/**< Drucker kann auf der parallelen Schnittstelle angesteuert werden */
@@ -494,39 +481,39 @@ struct _pdlg_sub
 #define	PC_SCALING		0x0100		/**< Treiber kann Seite skalieren */
 #define	PC_COPIES		0x0200		/**< Treiber kann Kopien einer Seite erstellen */
 
-/*----------------------------------------------------------------------------------------*/ 
+/*----------------------------------------------------------------------------------------*/
 /* Moduseigenschaften																							*/
-/*----------------------------------------------------------------------------------------*/ 
+/*----------------------------------------------------------------------------------------*/
 #define	MC_PORTRAIT 	0x0001		/**< Seite kann im Hochformat ausgegeben werden */
 #define	MC_LANDSCAPE	0x0002		/**< Seite kann im Querformat ausgegeben werden */
 #define	MC_REV_PTRT 	0x0004		/**< Seite kann um 180 Grad gedreht im Hochformat ausgegeben werden */
 #define	MC_REV_LNDSCP	0x0008		/**< Seite kann um 180 Grad gedreht im Querformat ausgegeben werden */
-#define	MC_ORIENTATION	0x000f		/**< TODO */
+#define	MC_ORIENTATION	0x000f
 
 #define	MC_SLCT_CMYK	0x0400		/**< Treiber kann bestimmte Farbebenen ausgeben */
 #define	MC_CTRST_BRGHT	0x0800		/**< Treiber kann Kontrast und Helligkeit ver�ndern */
 
-/*----------------------------------------------------------------------------------------*/ 
+/*----------------------------------------------------------------------------------------*/
 /* plane_flags 																									*/
-/*----------------------------------------------------------------------------------------*/ 
-#define	PLANE_BLACK 	0x0001		/**< TODO */
-#define	PLANE_YELLOW	0x0002		/**< TODO */
-#define	PLANE_MAGENTA	0x0004		/**< TODO */
-#define	PLANE_CYAN		0x0008		/**< TODO */
+/*----------------------------------------------------------------------------------------*/
+#define	PLANE_BLACK 	0x0001
+#define	PLANE_YELLOW	0x0002
+#define	PLANE_MAGENTA	0x0004
+#define	PLANE_CYAN		0x0008
 
 
 /* <driver_mode> */
 #define	DM_BG_PRINTING	0x0001		/**< Flag f�r Hintergrunddruck */
 
-/*----------------------------------------------------------------------------------------*/ 
+/*----------------------------------------------------------------------------------------*/
 
 /* <page_flags> */
 #define  PG_EVEN_PAGES  0x0001  	/**< Only output pages with even page numbers */
 #define  PG_ODD_PAGES   0x0002  	/**< Only output pages with odd page numbers */
 
 /* <first_page/last_page> */
-#define	PG_MIN_PAGE 	1			/**< TODO */
-#define	PG_MAX_PAGE 	9999		/**< TODO */
+#define	PG_MIN_PAGE 	1
+#define	PG_MAX_PAGE 	9999
 
 /* <orientation> */
 #define  PG_UNKNOWN     0x0000  	/**< Orientation unknown and not adjustable */
@@ -534,7 +521,7 @@ struct _pdlg_sub
 #define  PG_LANDSCAPE   0x0002  	/**< Output page in landscape format */
 
 /** printer settings
- * 
+ *
  *  The following structure items can be read by the application:
  *  - length
  *  - page_flags
@@ -545,68 +532,68 @@ struct _pdlg_sub
  *  - scale
  *  - driver_id
  *  .
- *  All other entries should not be accessed. Data such as the printer 
- *  resolution or colour planes, for instance, should not be taken from the 
- *  settings structure but requested from the printer at the start of printing 
- *  (it is possible, for instance, that the printer driver is forced by a 
- *  shortage of memory to reduce the print resolution below the value entered 
+ *  All other entries should not be accessed. Data such as the printer
+ *  resolution or colour planes, for instance, should not be taken from the
+ *  settings structure but requested from the printer at the start of printing
+ *  (it is possible, for instance, that the printer driver is forced by a
+ *  shortage of memory to reduce the print resolution below the value entered
  *  in PRN_SETTINGS).
  */
 struct _prn_settings
 {
-	long		magic;			/**< 'pset' */
-	long		length;			/**< Structure length */
-	long		format;			/**< Structure type */
-	long		reserved;		/**< TODO */
+	int32_t		magic;			/**< 'pset' */
+	int32_t		length;			/**< Structure length */
+	int32_t		format;			/**< Structure type */
+	int32_t		reserved;
 
-	long		page_flags; 	/**< Flags, inc. even pages, odd pages */
+	int32_t		page_flags; 	/**< Flags, inc. even pages, odd pages */
 	_WORD		first_page; 	/**< First page to be printed */
 	_WORD		last_page;		/**< Last page to be printed */
 	_WORD		no_copies;		/**< Number of copies */
 	_WORD		orientation;	/**< Orientation */
-	long		scale;			/**< Scaling: 0x10000L corresponds to 100%  */
+	int32_t		scale;			/**< Scaling: 0x10000L corresponds to 100%  */
 
 	_WORD		driver_id;		/**< VDI device number */
 	_WORD		driver_type;	/**< Type of driver set */
-	long		driver_mode;	/**< Flags, inc. for background printing */
-	long		reserved1;		/**< Reserved */
-	long		reserved2;		/**< Reserved */
-	
-	long		printer_id; 	/**< Printer number */
-	long		mode_id; 		/**< Mode number */
+	int32_t		driver_mode;	/**< Flags, inc. for background printing */
+	int32_t		reserved1;		/**< Reserved */
+	int32_t		reserved2;		/**< Reserved */
+
+	int32_t		printer_id; 	/**< Printer number */
+	int32_t		mode_id; 		/**< Mode number */
 	_WORD		mode_hdpi;		/**< Horizontal resolution in dpi */
 	_WORD		mode_vdpi;		/**< Vertical resolution in dpi */
-	long		quality_id; 	/**< Print mode (hardware-dependent quality,
+	int32_t		quality_id; 	/**< Print mode (hardware-dependent quality,
                                      e.g. Microweave or Econofast) */
 
-	long		color_mode; 	/**< Colour mode */
-	long		plane_flags;	/**< Flags for colour planes to be output
+	int32_t		color_mode; 	/**< Colour mode */
+	int32_t		plane_flags;	/**< Flags for colour planes to be output
                                      (e.g. cyan only) */
-	long		dither_mode;	/**< Dither process */
-	long		dither_value;	/**< Parameter for the dither process */
+	int32_t		dither_mode;	/**< Dither process */
+	int32_t		dither_value;	/**< Parameter for the dither process */
 
-	long		size_id; 		/**< Paper format */
-	long		type_id; 		/**< Paper type (normal, glossy) */
-	long		input_id;		/**< Paper feed channel */
-	long		output_id;		/**< Paper output channel */
+	int32_t		size_id; 		/**< Paper format */
+	int32_t		type_id; 		/**< Paper type (normal, glossy) */
+	int32_t		input_id;		/**< Paper feed channel */
+	int32_t		output_id;		/**< Paper output channel */
 
-	long		contrast;		/**< Contrast: 0x10000L corresponds to the
+	int32_t		contrast;		/**< Contrast: 0x10000L corresponds to the
                                      normal setting */
-	long		brightness; 	/**< Brightness: 0x1000L corresponds to the
+	int32_t		brightness; 	/**< Brightness: 0x1000L corresponds to the
                                      normal setting */
-	long		reserved3;		/**< Reserved */
-	long		reserved4;		/**< Reserved */
+	int32_t		reserved3;		/**< Reserved */
+	int32_t		reserved4;		/**< Reserved */
 
-	long		reserved5;		/**< Reserved */
-	long		reserved6;		/**< Reserved */
-	long		reserved7;		/**< Reserved */
-	long		reserved8;		/**< Reserved */
+	int32_t		reserved5;		/**< Reserved */
+	int32_t		reserved6;		/**< Reserved */
+	int32_t		reserved7;		/**< Reserved */
+	int32_t		reserved8;		/**< Reserved */
 
 	char		device[128];	/**< File name to be printed  */
 
 	struct	             		/**< Settings of the Mac printer driver */
 	{
-		char	inside[120];	/**< TODO */
+		char	inside[120];
 	} mac_settings;             /**< Settings of the Mac printer driver */
 };
 
@@ -637,8 +624,8 @@ _WORD		   pdlg_dflt_settings    	(PRN_DIALOG *prn_dialog, PRN_SETTINGS *settings
 _WORD		   pdlg_do			    	(PRN_DIALOG *prn_dialog, PRN_SETTINGS *settings, const char *document_name, _WORD option_flags);
 _WORD		   pdlg_evnt 		    	(PRN_DIALOG *prn_dialog, PRN_SETTINGS *settings, EVNT *events, _WORD *button);
 _WORD		   pdlg_free_settings    	(PRN_SETTINGS *settings);
-long		   pdlg_get_setsize      	(_WORD *global);
-PRN_SETTINGS * pdlg_new_settings			(PRN_DIALOG *prn_dialog);
+int32_t		   pdlg_get_setsize      	(_WORD *global);
+PRN_SETTINGS * pdlg_new_settings		(PRN_DIALOG *prn_dialog);
 _WORD		   pdlg_open 			    (PRN_DIALOG *prn_dialog, PRN_SETTINGS *settings, const char *document_name, _WORD option_flags, _WORD x, _WORD y);
 _WORD		   pdlg_remove_printers      (PRN_DIALOG *prn_dialog);
 _WORD		   pdlg_remove_sub_dialogs   (PRN_DIALOG *prn_dialog);
@@ -656,13 +643,12 @@ _WORD		   pdlg_validate_settings    (PRN_DIALOG *prn_dialog, PRN_SETTINGS *setti
 /** @addtogroup x_lbox
  *  @{
  */
- 
+
  /** opaque structure */
 typedef void * LIST_BOX;
 
-typedef struct lbox_item LBOX_ITEM;		/**< TODO */
+typedef struct lbox_item LBOX_ITEM;
 
-/** TODO */
 struct lbox_item
 {
 	LBOX_ITEM	*next;		/**< Pointer to the next entry in the list */
@@ -677,28 +663,28 @@ struct lbox_item
 /** parameters for SLCT_ITEM callback function */
 struct SLCT_ITEM_args
 {
-	LIST_BOX *box;			/**< TODO */
-	OBJECT *tree;			/**< TODO */
-	struct lbox_item *item;	/**< TODO */
-	void *user_data;		/**< TODO */
-	_WORD obj_index;		/**< TODO */
-	_WORD last_state;		/**< TODO */
+	LIST_BOX *box;
+	OBJECT *tree;
+	struct lbox_item *item;
+	void *user_data;
+	_WORD obj_index;
+	_WORD last_state;
 };
 
 /** parameters for SET_ITEM callback function */
 struct SET_ITEM_args
 {
-	LIST_BOX *box;			/**< TODO */
-	OBJECT *tree;			/**< TODO */
-	struct lbox_item *item;	/**< TODO */
-	_WORD obj_index;		/**< TODO */
-	void *user_data;		/**< TODO */
-	GRECT *rect;			/**< TODO */
-	_WORD first;			/**< TODO */
+	LIST_BOX *box;
+	OBJECT *tree;
+	struct lbox_item *item;
+	_WORD obj_index;
+	void *user_data;
+	GRECT *rect;
+	_WORD first;
 };
 
-typedef void  _CDECL (*SLCT_ITEM)(struct SLCT_ITEM_args);		/**< TODO */
-typedef _WORD _CDECL (*SET_ITEM)(struct SET_ITEM_args);		/**< TODO */
+typedef void  _CDECL (*SLCT_ITEM)(struct SLCT_ITEM_args);
+typedef _WORD _CDECL (*SET_ITEM)(struct SET_ITEM_args);
 
 #define	LBOX_VERT		1	/**< Listbox with vertical slider */
 #define	LBOX_AUTO		2	/**< Auto-scrolling */
@@ -757,31 +743,31 @@ void		lbox_bscroll_to (LIST_BOX *box, _WORD first, GRECT *box_rect,
  *  @{
  */
 
-/** an opaque structure. One should not access the 
+/** an opaque structure. One should not access the
     structure directly. The wdlg_xx functions should be used! */
 
 /** parameters of HNDL_OBJ callback functions */
-struct HNDL_OBJ_args 
+struct HNDL_OBJ_args
 {
-	DIALOG *dialog;	/**< TODO */
-	EVNT *events;	/**< TODO */
-	_WORD obj;		/**< TODO */
-	_WORD clicks;	/**< TODO */
-	void *data;		/**< TODO */
+	DIALOG *dialog;
+	EVNT *events;
+	_WORD obj;
+	_WORD clicks;
+	void *data;
 };
 
 /** service routine that is called, among others, by wdlg_evnt().
  *
- *  This function may be called if an exit or touchexit 
- *  object was clicked on (in that case \p obj is a positive object number) 
- *  or when an event has occurred that affects the dialog (in that case 
- *  \p obj is negative and contains a corresponding function number such as 
+ *  This function may be called if an exit or touchexit
+ *  object was clicked on (in that case \p obj is a positive object number)
+ *  or when an event has occurred that affects the dialog (in that case
+ *  \p obj is negative and contains a corresponding function number such as
  *  HNDL_CLSD, for instance).
- *  
- *  If \p obj is an object number (>= 0), then \p events points to 
+ *
+ *  If \p obj is an object number (>= 0), then \p events points to
  *  the EVNT structure that was passed by wdlg_evnt().
  *  Otherwise \p events is basically 0L and can  not be used for addressing.
- *  
+ *
  *  \p clicks contains then number of mouse clicks (if \p obj is an object number)
  *
  *  Here is a list of event (value given in the \p obj parameter):
@@ -797,7 +783,7 @@ struct HNDL_OBJ_args
  *    \p data is \p user_data. If handle_exit() returns 0,
  *    the dialog will be closed -- wdlg_evnt() returns 0
  *    \p events points to the EVNT structure passed by
- *    wdlg_evnt(). 
+ *    wdlg_evnt().
  *  - HNDL_MOVE (-9) : \n
  *    \p data is \p user_data. If handle_exit() returns 0,
  *    the dialog will be closed -- wdlg_evnt() returns 0.
@@ -806,19 +792,19 @@ struct HNDL_OBJ_args
  *  - HNDL_TOPW (-10) : \n
  *    \p data is \p user_data. If handle_exit() returns 0,
  *    the dialog will be closed -- wdlg_evnt() returns 0.
- *    \p events points to the EVNT structure passed by 
+ *    \p events points to the EVNT structure passed by
  *    wdlg_evnt().
  *  - HNDL_UNTP (-11) : \n
  *    \p data is \p user_data. If handle_exit() returns 0,
  *    the dialog will be closed -- wdlg_evnt() returns 0.
- *    \p events points to the EVNT structure passed by 
+ *    \p events points to the EVNT structure passed by
  *    wdlg_evnt().
  *  - HNDL_EDIT (-6) : \n
  *    \p data points to a word with the key code.
  *    If handle_exit() returns 1, the key press will be
  *    evaluated, if 0 ignored.
  *    \p events points to the EVNT structure passed by
- *    wdlg_evnt().  
+ *    wdlg_evnt().
  *  - HNDL_EDDN (-7) : \n
  *    \p data points to a word with the key code.
  *    \p events points to the EVNT structure passed by
@@ -836,15 +822,15 @@ struct HNDL_OBJ_args
  *    opcodes.
  *    Is required for iconification, for instance.\n
  *    Warning: This opcode is only present from MagiC 4.5
- *    of 18.4.96 
+ *    of 18.4.96
  *  .
- *  Of these function numbers one only has to react to HNDL_CLSD. All other 
+ *  Of these function numbers one only has to react to HNDL_CLSD. All other
  *  events need only be paid attention to when needed.\n
- *  If handle_exit is called with an unknown function number in \p obj, or 
- *  one of the above function numbers is to be ignored, then 1 has to be 
+ *  If handle_exit is called with an unknown function number in \p obj, or
+ *  one of the above function numbers is to be ignored, then 1 has to be
  *  returned.
- * 
- *  The parameters are passed via the stack and the routine may alter 
+ *
+ *  The parameters are passed via the stack and the routine may alter
  *  registers d0-d2/a0-a2.
  */
 typedef _WORD _CDECL (*HNDL_OBJ)(struct HNDL_OBJ_args);
@@ -882,7 +868,7 @@ void	 wdlg_redraw			(DIALOG *dialog, GRECT *rect, _WORD obj, _WORD depth);
 /**@}*/
 
 
-/* 
+/*
  *    Editor extensions for Magic
  */
 
@@ -952,7 +938,7 @@ _WORD 	v_bez_qual	(_WORD handle, _WORD percent, _WORD *actual);
 #define __XFNT_INFO
 typedef struct
 {
-	long		size;				/**< length of the structure, initialize this entry before
+	int32_t		size;				/**< length of the structure, initialize this entry before
 	                                     calling vqt_xfntinfo() */
 	_WORD		format;				/**< font format, e.g. 4 for TrueType */
 	_WORD		id;					/**< font ID, e.g. 6059 */
@@ -1025,7 +1011,7 @@ _WORD vst_name 	(VdiHdl, _WORD font_format, char *font_name, char *ret_name);
 _WORD vst_setsize 	(VdiHdl, _WORD point, _WORD *wchar, _WORD *hchar, _WORD *wcell, _WORD *hcell);
 fix31  vst_setsize32 	(VdiHdl, fix31 point, _WORD *wchar, _WORD *hchar, _WORD *wcell, _WORD *hcell);
 _WORD vst_skew 	(VdiHdl, _WORD skew);
-void  vst_track_offset(VdiHdl, long offset, _WORD pairmode, _WORD *tracks, _WORD *pairs);
+void  vst_track_offset(VdiHdl, fix31 offset, _WORD pairmode, _WORD *tracks, _WORD *pairs);
 /* another name for vst_track_offset */
 #define vst_kern_info vst_track_offset
 void  vst_width	(VdiHdl, _WORD width, _WORD *char_width, _WORD *char_height, _WORD *cell_width, _WORD *cell_height);
@@ -1044,7 +1030,7 @@ _WORD vst_map_mode   (_WORD handle, _WORD mode);
 /*
  * The following functions requires NVDI version 5.x or higher
  */
- 
+
 /*----------------------------------------------------------------------------------------*/
 /* Function witch use for the printer dialog from WDialog											*/
 /*----------------------------------------------------------------------------------------*/
@@ -1055,67 +1041,67 @@ _WORD v_read_default_settings( _WORD handle, PRN_SETTINGS *settings );
 _WORD v_write_default_settings( _WORD handle, PRN_SETTINGS *settings );
 
 
-long		v_color2nearest		(_WORD handle, long color_space, COLOR_ENTRY *color, COLOR_ENTRY *nearest_color);
-unsigned long	v_color2value		(_WORD handle, long color_space, COLOR_ENTRY *color);
-COLOR_TAB *	v_create_ctab		(_WORD handle, long color_space, unsigned long px_format);
+int32_t		v_color2nearest		(_WORD handle, int32_t color_space, COLOR_ENTRY *color, COLOR_ENTRY *nearest_color);
+uint32_t	v_color2value		(_WORD handle, int32_t color_space, COLOR_ENTRY *color);
+COLOR_TAB *	v_create_ctab		(_WORD handle, int32_t color_space, uint32_t px_format);
 ITAB_REF	v_create_itab		(_WORD handle, COLOR_TAB *ctab, _WORD bits );
-unsigned long	v_ctab_idx2value	(_WORD handle, _WORD __index );
+uint32_t	v_ctab_idx2value	(_WORD handle, _WORD __index );
 _WORD		v_ctab_idx2vdi		(_WORD handle, _WORD __index);
 _WORD		v_ctab_vdi2idx		(_WORD handle, _WORD vdi_index);
 _WORD		v_delete_ctab		(_WORD handle, COLOR_TAB *ctab);
 _WORD		v_delete_itab		(_WORD handle, ITAB_REF itab);
-long		v_get_ctab_id		(_WORD handle);
+int32_t		v_get_ctab_id		(_WORD handle);
 _WORD		v_get_outline		(_WORD handle, _WORD __index, _WORD x_offset, _WORD y_offset, _WORD *pts, char *flags, _WORD max_pts);
 _WORD		v_opnprn		(_WORD aes_handle, PRN_SETTINGS *settings, _WORD work_out[]);
 _WORD		v_open_bm		(_WORD base_handle, GCBITMAP *bitmap, _WORD color_flags, _WORD unit_flags, _WORD pixel_width, _WORD pixel_height);
-_WORD		v_resize_bm		(_WORD handle, _WORD width, _WORD height, long b_width, unsigned char *addr);
+_WORD		v_resize_bm		(_WORD handle, _WORD width, _WORD height, int32_t b_width, unsigned char *addr);
 void		v_setrgb		(_WORD handle, _WORD type, _WORD r, _WORD g, _WORD b);
-long		v_value2color		(_WORD handle, unsigned long value, COLOR_ENTRY *color);
-_WORD		vq_ctab			(_WORD handle, long ctab_length, COLOR_TAB *ctab);
-long		vq_ctab_entry		(_WORD handle, _WORD __index, COLOR_ENTRY *color);
-long		vq_ctab_id		(_WORD handle);
-_WORD		vq_dflt_ctab		(_WORD handle, long ctab_length, COLOR_TAB *ctab);
-long		vq_hilite_color		(_WORD handle, COLOR_ENTRY *hilite_color);
+int32_t		v_value2color		(_WORD handle, uint32_t value, COLOR_ENTRY *color);
+_WORD		vq_ctab			(_WORD handle, int32_t ctab_length, COLOR_TAB *ctab);
+int32_t		vq_ctab_entry		(_WORD handle, _WORD __index, COLOR_ENTRY *color);
+int32_t		vq_ctab_id		(_WORD handle);
+_WORD		vq_dflt_ctab		(_WORD handle, int32_t ctab_length, COLOR_TAB *ctab);
+int32_t		vq_hilite_color		(_WORD handle, COLOR_ENTRY *hilite_color);
 _WORD		vq_margins		(_WORD handle, _WORD *top_margin, _WORD *bottom_margin, _WORD *left_margin, _WORD *right_margin, _WORD *hdpi, _WORD *vdpi);
-long		vq_max_color		(_WORD handle, COLOR_ENTRY *hilite_color);
-long		vq_min_color		(_WORD handle, COLOR_ENTRY *hilite_color);
-long		vq_prn_scaling		(_WORD handle);
-long		vq_px_format		(_WORD handle, unsigned long *px_format);
-long		vq_weight_color		(_WORD handle, COLOR_ENTRY *hilite_color);
-long		vqf_bg_color		(_WORD handle, COLOR_ENTRY *fg_color);
-long		vqf_fg_color		(_WORD handle, COLOR_ENTRY *fg_color);
-long		vql_bg_color		(_WORD handle, COLOR_ENTRY *fg_color);
-long		vql_fg_color		(_WORD handle, COLOR_ENTRY *fg_color);
-long		vqm_bg_color		(_WORD handle, COLOR_ENTRY *fg_color);
-long		vqm_fg_color		(_WORD handle, COLOR_ENTRY *fg_color);
-long		vqr_bg_color		(_WORD handle, COLOR_ENTRY *fg_color);
-long		vqr_fg_color		(_WORD handle, COLOR_ENTRY *fg_color);
-long		vqt_bg_color		(_WORD handle, COLOR_ENTRY *fg_color);
-long		vqt_fg_color		(_WORD handle, COLOR_ENTRY *fg_color);
+int32_t		vq_max_color		(_WORD handle, COLOR_ENTRY *hilite_color);
+int32_t		vq_min_color		(_WORD handle, COLOR_ENTRY *hilite_color);
+int32_t		vq_prn_scaling		(_WORD handle);
+int32_t		vq_px_format		(_WORD handle, uint32_t *px_format);
+int32_t		vq_weight_color		(_WORD handle, COLOR_ENTRY *hilite_color);
+int32_t		vqf_bg_color		(_WORD handle, COLOR_ENTRY *fg_color);
+int32_t		vqf_fg_color		(_WORD handle, COLOR_ENTRY *fg_color);
+int32_t		vql_bg_color		(_WORD handle, COLOR_ENTRY *fg_color);
+int32_t		vql_fg_color		(_WORD handle, COLOR_ENTRY *fg_color);
+int32_t		vqm_bg_color		(_WORD handle, COLOR_ENTRY *fg_color);
+int32_t		vqm_fg_color		(_WORD handle, COLOR_ENTRY *fg_color);
+int32_t		vqr_bg_color		(_WORD handle, COLOR_ENTRY *fg_color);
+int32_t		vqr_fg_color		(_WORD handle, COLOR_ENTRY *fg_color);
+int32_t		vqt_bg_color		(_WORD handle, COLOR_ENTRY *fg_color);
+int32_t		vqt_fg_color		(_WORD handle, COLOR_ENTRY *fg_color);
 void		vr_transfer_bits	(_WORD handle, GCBITMAP *src_bm, GCBITMAP *dst_bm, const RECT16 *src_rect, const RECT16 *dst_rect, _WORD mode);
 _WORD		vs_ctab			(_WORD handle, COLOR_TAB *ctab);
-_WORD		vs_ctab_entry		(_WORD handle, _WORD __index, long color_space, COLOR_ENTRY *color);
+_WORD		vs_ctab_entry		(_WORD handle, _WORD __index, int32_t color_space, COLOR_ENTRY *color);
 _WORD		vs_dflt_ctab		(_WORD handle);
 _WORD		vs_document_info	(_WORD vdi_handle, _WORD type, const char *s, _WORD wchar);
-_WORD		vs_hilite_color		(_WORD handle, long color_space, COLOR_ENTRY *hilite_color);
-_WORD		vs_max_color		(_WORD handle, long color_space, COLOR_ENTRY *min_color);
-_WORD		vs_min_color		(_WORD handle, long color_space, COLOR_ENTRY *min_color);
-_WORD		vs_weight_color		(_WORD handle, long color_space, COLOR_ENTRY *weight_color);
-_WORD		vsf_bg_color		(_WORD handle, long color_space, COLOR_ENTRY *bg_color);
-_WORD		vsf_fg_color		(_WORD handle, long color_space, COLOR_ENTRY *fg_color);
-_WORD		vsl_bg_color		(_WORD handle, long color_space, COLOR_ENTRY *bg_color);
-_WORD		vsl_fg_color		(_WORD handle, long color_space, COLOR_ENTRY *fg_color);
-_WORD		vsm_bg_color		(_WORD handle, long color_space, COLOR_ENTRY *bg_color);
-_WORD		vsm_fg_color		(_WORD handle, long color_space, COLOR_ENTRY *fg_color);
-_WORD		vsr_bg_color		(_WORD handle, long color_space, COLOR_ENTRY *bg_color);
-_WORD		vsr_fg_color		(_WORD handle, long color_space, COLOR_ENTRY *fg_color);
-_WORD		vst_bg_color		(_WORD handle, long color_space, COLOR_ENTRY *bg_color);
-_WORD		vst_fg_color		(_WORD handle, long color_space, COLOR_ENTRY *fg_color);
+_WORD		vs_hilite_color		(_WORD handle, int32_t color_space, COLOR_ENTRY *hilite_color);
+_WORD		vs_max_color		(_WORD handle, int32_t color_space, COLOR_ENTRY *min_color);
+_WORD		vs_min_color		(_WORD handle, int32_t color_space, COLOR_ENTRY *min_color);
+_WORD		vs_weight_color		(_WORD handle, int32_t color_space, COLOR_ENTRY *weight_color);
+_WORD		vsf_bg_color		(_WORD handle, int32_t color_space, COLOR_ENTRY *bg_color);
+_WORD		vsf_fg_color		(_WORD handle, int32_t color_space, COLOR_ENTRY *fg_color);
+_WORD		vsl_bg_color		(_WORD handle, int32_t color_space, COLOR_ENTRY *bg_color);
+_WORD		vsl_fg_color		(_WORD handle, int32_t color_space, COLOR_ENTRY *fg_color);
+_WORD		vsm_bg_color		(_WORD handle, int32_t color_space, COLOR_ENTRY *bg_color);
+_WORD		vsm_fg_color		(_WORD handle, int32_t color_space, COLOR_ENTRY *fg_color);
+_WORD		vsr_bg_color		(_WORD handle, int32_t color_space, COLOR_ENTRY *bg_color);
+_WORD		vsr_fg_color		(_WORD handle, int32_t color_space, COLOR_ENTRY *fg_color);
+_WORD		vst_bg_color		(_WORD handle, int32_t color_space, COLOR_ENTRY *bg_color);
+_WORD		vst_fg_color		(_WORD handle, int32_t color_space, COLOR_ENTRY *fg_color);
 
-_WORD vr_clip_rects_by_src ( _WORD handle, const RECT16 *src_clip_rect, const RECT16 *src_rect, const RECT16 *dst_rect, RECT16 *clipped_src_rect, RECT16 *clipped_dst_rect ); 
-_WORD vr_clip_rects_by_dst ( _WORD handle, const RECT16 *src_clip_rect, const RECT16 *src_rect, const RECT16 *dst_rect, RECT16 *clipped_src_rect, RECT16 *clipped_dst_rect ); 
-_WORD vr_clip_rects32_by_src ( _WORD handle, const RECT32 *src_clip_rect, const RECT32 *src_rect, const RECT32 *dst_rect, RECT32 *clipped_src_rect, RECT32 *clipped_dst_rect ); 
-_WORD vr_clip_rects32_by_dst ( _WORD handle, const RECT32 *src_clip_rect, const RECT32 *src_rect, const RECT32 *dst_rect, RECT32 *clipped_src_rect, RECT32 *clipped_dst_rect ); 
+_WORD vr_clip_rects_by_src ( _WORD handle, const RECT16 *src_clip_rect, const RECT16 *src_rect, const RECT16 *dst_rect, RECT16 *clipped_src_rect, RECT16 *clipped_dst_rect );
+_WORD vr_clip_rects_by_dst ( _WORD handle, const RECT16 *src_clip_rect, const RECT16 *src_rect, const RECT16 *dst_rect, RECT16 *clipped_src_rect, RECT16 *clipped_dst_rect );
+_WORD vr_clip_rects32_by_src ( _WORD handle, const RECT32 *src_clip_rect, const RECT32 *src_rect, const RECT32 *dst_rect, RECT32 *clipped_src_rect, RECT32 *clipped_dst_rect );
+_WORD vr_clip_rects32_by_dst ( _WORD handle, const RECT32 *src_clip_rect, const RECT32 *src_rect, const RECT32 *dst_rect, RECT32 *clipped_src_rect, RECT32 *clipped_dst_rect );
 
 EXTERN_C_END
 

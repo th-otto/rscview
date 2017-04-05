@@ -1,7 +1,3 @@
-/*
- *  $Id: n_v_value2color.c,v 1.7 2003/08/07 06:36:09 a_bercegeay Exp $
- */
-
 #include "gem_vdiP.h"
 #include "mt_gemx.h"
 
@@ -20,13 +16,14 @@
  *
  */
 
-long
-v_value2color (short handle, unsigned long value, COLOR_ENTRY * color)
+int32_t v_value2color (short handle, uint32_t value, COLOR_ENTRY * color)
 {
 	short vdi_control[VDI_CNTRLMAX]; 
 	short vdi_intout[6]; 
-
-	VDI_PARAMS(vdi_control, (short*)&value, 0L, vdi_intout, vdi_dummy);
+	short vdi_intin[2];
+	
+	VDI_PARAMS(vdi_control, vdi_intin, 0L, vdi_intout, vdi_dummy);
+	vdi_intin_long(0) = value;
 	
 	VDI_TRAP_ESC (vdi_params, handle, 204,1, 0,2);
 

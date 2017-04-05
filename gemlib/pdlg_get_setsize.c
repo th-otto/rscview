@@ -15,20 +15,16 @@
  *
  */
 
-long
+int32_t
 mt_pdlg_get_setsize(short *global_aes)
 {
-	long	l;
-	
 	AES_PARAMS(204,1,2,0,0);
 
 	aes_intin[0] = 0;
 
 	AES_TRAP(aes_params);
 
-	l = aes_intout_long(0);
-	
-	return l;
+	return aes_intout_long(0);
 }
 
 

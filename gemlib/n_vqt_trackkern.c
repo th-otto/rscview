@@ -18,7 +18,7 @@
  */
 
 void
-vqt_trackkern (short handle, long *x, long *y)
+vqt_trackkern (short handle, fix31 *x, fix31 *y)
 {
 	short vdi_control[VDI_CNTRLMAX]; 
 	short vdi_intout[4]; 

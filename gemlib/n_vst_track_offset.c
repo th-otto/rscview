@@ -20,7 +20,7 @@
  */
 
 void
-vst_track_offset (short handle, long offset, short pairmode,
+vst_track_offset (short handle, fix31 offset, short pairmode,
                   short *tracks, short *pairs)
 {
 	short vdi_control[VDI_CNTRLMAX]; 

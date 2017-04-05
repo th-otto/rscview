@@ -19,8 +19,8 @@
  *
  */
 
-long
-vq_px_format (short handle, unsigned long *px_format)
+int32_t
+vq_px_format (short handle, uint32_t *px_format)
 {
 	short vdi_control[VDI_CNTRLMAX]; 
 	short vdi_intout[4]; 
@@ -33,8 +33,7 @@ vq_px_format (short handle, unsigned long *px_format)
 	if (px_format)
 #endif
 	{
-		unsigned long *p = (unsigned long *)&vdi_intout[2];
-		*px_format = *p;
+		*px_format = vdi_intout_long(2);
 	}
 	
 	return vdi_intout_long(0);

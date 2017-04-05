@@ -21,19 +21,17 @@
  */
 
 short
-vs_ctab_entry (short handle, short index, long color_space, COLOR_ENTRY * color)
+vs_ctab_entry (short handle, short index, int32_t color_space, COLOR_ENTRY * color)
 {
 	short vdi_control[VDI_CNTRLMAX]; 
 	short vdi_intin[7];   
 	short vdi_intout[1]; 
-	long *p;
 	COLOR_ENTRY *ent;
 	
 	VDI_PARAMS(vdi_control, vdi_intin, 0L, vdi_intout, vdi_dummy);
 	
 	vdi_intin                [0] = index;
-	p = (long*)       &vdi_intin[1];
-	*p = color_space;
+	vdi_intin_long(1) = color_space;
 	ent = (COLOR_ENTRY*)&vdi_intin[3];
 	*ent = *color;
 

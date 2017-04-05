@@ -1,7 +1,3 @@
-/*
- *  $Id: n_v_resize_bm.c,v 1.6 2003/08/07 06:33:49 a_bercegeay Exp $
- */
-
 #include "gem_vdiP.h"
 #include "mt_gemx.h"
 
@@ -19,9 +15,7 @@
  *
  */
 
-short
-v_resize_bm (short handle, short width, short height, long byte_width,
-             unsigned char *addr)
+short v_resize_bm (short handle, short width, short height, int32_t byte_width, unsigned char *addr)
 {
 	short vdi_control[VDI_CNTRLMAX]; 
 	short vdi_intin[4 + VDI_NPTRINTS];

@@ -1,7 +1,3 @@
-/*
- *  $Id: n_v_ctab_idx2value.c,v 1.6 2003/08/07 06:28:22 a_bercegeay Exp $
- */
-
 #include "gem_vdiP.h"
 #include "mt_gemx.h"
 
@@ -18,8 +14,7 @@
  *
  */
 
-unsigned long
-v_ctab_idx2value (short handle, short index)
+uint32_t v_ctab_idx2value (short handle, short index)
 {
 	short vdi_control[VDI_CNTRLMAX]; 
 	short vdi_intout[2]; 

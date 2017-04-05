@@ -1,7 +1,3 @@
-/*
- *  $Id: n_vqt_pairkern.c,v 1.7 2003/08/07 06:46:22 a_bercegeay Exp $
- */
-
 #include "gem_vdiP.h"
 #include "mt_gemx.h"
 
@@ -20,7 +16,7 @@
  */
 
 void
-vqt_pairkern (short handle, short ch1, short ch2, long *x, long *y)
+vqt_pairkern (short handle, short ch1, short ch2, fix31 *x, fix31 *y)
 {
 	short vdi_control[VDI_CNTRLMAX]; 
 	short vdi_intin[2];   

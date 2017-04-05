@@ -20,7 +20,7 @@
  */
 
 short
-vsl_bg_color (short handle, long color_space, COLOR_ENTRY * bg_color)
+vsl_bg_color (short handle, int32_t color_space, COLOR_ENTRY * bg_color)
 {
 	short vdi_control[VDI_CNTRLMAX]; 
 	short vdi_intin[6];   

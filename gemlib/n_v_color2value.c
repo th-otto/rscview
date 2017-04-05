@@ -1,7 +1,3 @@
-/*
- *  $Id: n_v_color2value.c,v 1.6 2003/08/07 06:26:01 a_bercegeay Exp $
- */
-
 #include "gem_vdiP.h"
 #include "mt_gemx.h"
 
@@ -19,8 +15,7 @@
  *
  */
 
-unsigned long
-v_color2value (short handle, long color_space, COLOR_ENTRY * color)
+uint32_t v_color2value (short handle, int32_t color_space, COLOR_ENTRY * color)
 {
 	short vdi_control[VDI_CNTRLMAX]; 
 	short vdi_intin[6];   

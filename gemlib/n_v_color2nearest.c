@@ -21,8 +21,8 @@
  *
  */
 
-long
-v_color2nearest (short handle, long color_space, COLOR_ENTRY * color,
+int32_t
+v_color2nearest (short handle, int32_t color_space, COLOR_ENTRY * color,
                  COLOR_ENTRY * nearest_color)
 {
 	short vdi_control[VDI_CNTRLMAX]; 

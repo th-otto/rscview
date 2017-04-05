@@ -1,7 +1,3 @@
-/*
- *  $Id: n_vq_min_color.c,v 1.7 2003/08/07 06:38:20 a_bercegeay Exp $
- */
-
 #include "gem_vdiP.h"
 #include "mt_gemx.h"
 
@@ -19,7 +15,7 @@
  *
  */
 
-long
+int32_t
 vq_min_color (short handle, COLOR_ENTRY * hilite_color)
 {
 	short vdi_control[VDI_CNTRLMAX]; 

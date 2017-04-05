@@ -19,7 +19,7 @@
  *
  */
 
-long
+int32_t
 vqm_bg_color (short handle, COLOR_ENTRY * bg_color)
 {
 	short vdi_control[VDI_CNTRLMAX]; 

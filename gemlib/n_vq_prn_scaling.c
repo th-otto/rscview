@@ -1,7 +1,3 @@
-/*
- *  $Id: n_vq_prn_scaling.c,v 1.6 2003/08/07 06:38:20 a_bercegeay Exp $
- */
-
 #include "gem_vdiP.h"
 #include "mt_gemx.h"
 
@@ -17,7 +13,7 @@
  *
  */
 
-long
+int32_t
 vq_prn_scaling (short handle)
 {
 	short vdi_control[VDI_CNTRLMAX]; 

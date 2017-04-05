@@ -17,7 +17,7 @@
  *
  */
 
-long
+int32_t
 vq_ctab_id (short handle)
 {
 	short vdi_control[VDI_CNTRLMAX]; 

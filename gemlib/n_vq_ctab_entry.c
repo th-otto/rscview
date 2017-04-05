@@ -20,7 +20,7 @@
  *
  */
 
-long
+int32_t
 vq_ctab_entry (short handle, short index, COLOR_ENTRY * color)
 {
 	short vdi_control[VDI_CNTRLMAX]; 

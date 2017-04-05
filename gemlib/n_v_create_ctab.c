@@ -1,7 +1,3 @@
-/*
- *  $Id: n_v_create_ctab.c,v 1.6 2003/08/07 06:28:22 a_bercegeay Exp $
- */
-
 #include "gem_vdiP.h"
 #include "mt_gemx.h"
 
@@ -19,8 +15,7 @@
  *
  */
 
-COLOR_TAB *
-v_create_ctab (short handle, long color_space, unsigned long px_format)
+COLOR_TAB *v_create_ctab (short handle, int32_t color_space, uint32_t px_format)
 {
 	short vdi_control[VDI_CNTRLMAX]; 
 	short vdi_intin[4];   

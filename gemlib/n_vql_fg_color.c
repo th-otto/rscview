@@ -19,7 +19,7 @@
  *
  */
 
-long
+int32_t
 vql_fg_color (short handle, COLOR_ENTRY * fg_color)
 {
 	short vdi_control[VDI_CNTRLMAX]; 

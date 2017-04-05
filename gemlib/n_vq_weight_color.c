@@ -19,7 +19,7 @@
  *
  */
 
-long
+int32_t
 vq_weight_color (short handle, COLOR_ENTRY * hilite_color)
 {
 	short vdi_control[VDI_CNTRLMAX]; 

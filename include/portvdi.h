@@ -4,6 +4,7 @@
 #ifndef __PORTAB_H__
 #include <portab.h>
 #endif
+#include <stdint.h>
 
 EXTERN_C_BEG
 
@@ -39,11 +40,7 @@ typedef struct rgb_1000
 
 extern VDIPB _VdiParBlk;
 
-#ifdef OS_ATARI /* stdint.h maybe not included */
-typedef long fix31;
-#else
 typedef int32_t fix31;
-#endif
 
 #define fix31_to_point(a) ((_WORD)((((a) + 32768L) >> 16)))
 #define point_to_fix31(a) (((fix31)(a)) << 16)
@@ -778,7 +775,7 @@ void vqt_real_extentn(_WORD handle, _WORD x, _WORD y, const char *string, _WORD 
 #define __XFNT_INFO
 typedef struct
 {
-	_LONG		size;				/* length of the structure, initialize this entry before
+	int32_t		size;				/* length of the structure, initialize this entry before
 	                                     calling vqt_xfntinfo() */
 	_WORD		format;				/* font format, e.g. 4 for TrueType */
 	_WORD		id;					/* font ID, e.g. 6059 */
@@ -808,7 +805,7 @@ _WORD	vqt_ext_name    (VdiHdl, _WORD __index, char *name, _WORD *font_format, _W
 _WORD	vqt_name_and_id (VdiHdl, _WORD font_format, char *font_name, char *ret_name);
 _WORD	vqt_xfntinfo    (VdiHdl, _WORD flags, _WORD id, _WORD __index, XFNT_INFO *info);
 _WORD vst_name 	(VdiHdl, _WORD font_format, char *font_name, char *ret_name);
-void  vst_track_offset(VdiHdl, _LONG offset, _WORD pairmode, _WORD *tracks, _WORD *pairs);
+void  vst_track_offset(VdiHdl, fix31 offset, _WORD pairmode, _WORD *tracks, _WORD *pairs);
 /* another name for vst_track_offset */
 #define vst_kern_info vst_track_offset
 void  vst_width	(VdiHdl, _WORD width, _WORD *char_width, _WORD *char_height, _WORD *cell_width, _WORD *cell_height);
@@ -969,20 +966,20 @@ typedef union
 
 typedef struct
 {
-	_LONG		magic;				/* 'ctab' */
-	_LONG		length;
-	_LONG		format;
-	_LONG		reserved;
+	int32_t		magic;				/* 'ctab' */
+	int32_t		length;
+	int32_t		format;
+	int32_t		reserved;
 
-	_LONG		map_id;
-	_LONG		color_space;
-	_LONG		flags;
-	_LONG		no_colors;
+	int32_t		map_id;
+	int32_t		color_space;
+	int32_t		flags;
+	int32_t		no_colors;
 
-	_LONG		reserved1;
-	_LONG		reserved2;
-	_LONG		reserved3;
-	_LONG		reserved4;
+	int32_t		reserved1;
+	int32_t		reserved2;
+	int32_t		reserved3;
+	int32_t		reserved4;
 
 	COLOR_ENTRY	colors[1];
 } COLOR_TAB;
@@ -997,25 +994,25 @@ typedef INVERSE_CTAB *ITAB_REF;
 typedef struct _gcbitmap GCBITMAP;
 struct _gcbitmap
 {
-	_LONG		magic;
-	_LONG		length;
-	_LONG		format;
-	_LONG		reserved;
+	int32_t		magic;
+	int32_t		length;
+	int32_t		format;
+	int32_t		reserved;
 
 	unsigned char	*addr;
-	_LONG		width;
-	_LONG		bits;
-	unsigned long	px_format;
+	int32_t		width;
+	int32_t		bits;
+	uint32_t	px_format;
 
-	_LONG		xmin;
-	_LONG		ymin;
-	_LONG		xmax;
-	_LONG		ymax;
+	int32_t		xmin;
+	int32_t		ymin;
+	int32_t		xmax;
+	int32_t		ymax;
 
 	CTAB_REF	ctab;
 	ITAB_REF 	itab;
-	_LONG		reserved0;
-	_LONG		reserved1;
+	int32_t		reserved0;
+	int32_t		reserved1;
 };
 
 /*----------------------------------------------------------------------------------------*/
@@ -1066,68 +1063,68 @@ typedef struct			/* Rechteck fr 16-Bit-Koordinaten */
 
 typedef struct			/* Rechteck fr 32-Bit-Koordinaten */
 {
-	_LONG	x1;
-	_LONG	y1;
-	_LONG	x2;
-	_LONG	y2;
+	int32_t	x1;
+	int32_t	y1;
+	int32_t	x2;
+	int32_t	y2;
 } RECT32;
 
 
-_LONG		v_color2nearest		(_WORD handle, _LONG color_space, COLOR_ENTRY *color, COLOR_ENTRY *nearest_color);
-_ULONG	v_color2value		(_WORD handle, _LONG color_space, COLOR_ENTRY *color);
-COLOR_TAB *	v_create_ctab		(_WORD handle, _LONG color_space, _ULONG px_format);
+int32_t		v_color2nearest		(_WORD handle, int32_t color_space, COLOR_ENTRY *color, COLOR_ENTRY *nearest_color);
+uint32_t	v_color2value		(_WORD handle, int32_t color_space, COLOR_ENTRY *color);
+COLOR_TAB *	v_create_ctab		(_WORD handle, int32_t color_space, uint32_t px_format);
 ITAB_REF	v_create_itab		(_WORD handle, COLOR_TAB *ctab, _WORD bits );
-_ULONG	v_ctab_idx2value	(_WORD handle, _WORD __index );
+uint32_t	v_ctab_idx2value	(_WORD handle, _WORD __index );
 _WORD		v_ctab_idx2vdi		(_WORD handle, _WORD __index);
 _WORD		v_ctab_vdi2idx		(_WORD handle, _WORD vdi_index);
 _WORD		v_delete_ctab		(_WORD handle, COLOR_TAB *ctab);
 _WORD		v_delete_itab		(_WORD handle, ITAB_REF itab);
-_LONG		v_get_ctab_id		(_WORD handle);
+int32_t		v_get_ctab_id		(_WORD handle);
 _WORD		v_get_outline		(_WORD handle, _WORD __index, _WORD x_offset, _WORD y_offset, _WORD *pts, char *flags, _WORD max_pts);
 _WORD		v_open_bm		(_WORD base_handle, GCBITMAP *bitmap, _WORD color_flags, _WORD unit_flags, _WORD pixel_width, _WORD pixel_height);
-_WORD		v_resize_bm		(_WORD handle, _WORD width, _WORD height, _LONG b_width, unsigned char *addr);
+_WORD		v_resize_bm		(_WORD handle, _WORD width, _WORD height, int32_t b_width, unsigned char *addr);
 void		v_setrgb		(_WORD handle, _WORD type, _WORD r, _WORD g, _WORD b);
-_LONG		v_value2color		(_WORD handle, _ULONG value, COLOR_ENTRY *color);
-_WORD		vq_ctab			(_WORD handle, _LONG ctab_length, COLOR_TAB *ctab);
-_LONG		vq_ctab_entry		(_WORD handle, _WORD __index, COLOR_ENTRY *color);
-_LONG		vq_ctab_id		(_WORD handle);
-_WORD		vq_dflt_ctab		(_WORD handle, _LONG ctab_length, COLOR_TAB *ctab);
-_LONG		vq_hilite_color		(_WORD handle, COLOR_ENTRY *hilite_color);
+int32_t		v_value2color		(_WORD handle, uint32_t value, COLOR_ENTRY *color);
+_WORD		vq_ctab			(_WORD handle, int32_t ctab_length, COLOR_TAB *ctab);
+int32_t		vq_ctab_entry		(_WORD handle, _WORD __index, COLOR_ENTRY *color);
+int32_t		vq_ctab_id		(_WORD handle);
+_WORD		vq_dflt_ctab		(_WORD handle, int32_t ctab_length, COLOR_TAB *ctab);
+int32_t		vq_hilite_color		(_WORD handle, COLOR_ENTRY *hilite_color);
 _WORD		vq_margins		(_WORD handle, _WORD *top_margin, _WORD *bottom_margin, _WORD *left_margin, _WORD *right_margin, _WORD *hdpi, _WORD *vdpi);
-_LONG		vq_max_color		(_WORD handle, COLOR_ENTRY *hilite_color);
-_LONG		vq_min_color		(_WORD handle, COLOR_ENTRY *hilite_color);
-_LONG		vq_prn_scaling		(_WORD handle);
-_LONG		vq_px_format		(_WORD handle, _ULONG *px_format);
-_LONG		vq_weight_color		(_WORD handle, COLOR_ENTRY *hilite_color);
-_LONG		vqf_bg_color		(_WORD handle, COLOR_ENTRY *fg_color);
-_LONG		vqf_fg_color		(_WORD handle, COLOR_ENTRY *fg_color);
-_LONG		vql_bg_color		(_WORD handle, COLOR_ENTRY *fg_color);
-_LONG		vql_fg_color		(_WORD handle, COLOR_ENTRY *fg_color);
-_LONG		vqm_bg_color		(_WORD handle, COLOR_ENTRY *fg_color);
-_LONG		vqm_fg_color		(_WORD handle, COLOR_ENTRY *fg_color);
-_LONG		vqr_bg_color		(_WORD handle, COLOR_ENTRY *fg_color);
-_LONG		vqr_fg_color		(_WORD handle, COLOR_ENTRY *fg_color);
-_LONG		vqt_bg_color		(_WORD handle, COLOR_ENTRY *fg_color);
-_LONG		vqt_fg_color		(_WORD handle, COLOR_ENTRY *fg_color);
+int32_t		vq_max_color		(_WORD handle, COLOR_ENTRY *hilite_color);
+int32_t		vq_min_color		(_WORD handle, COLOR_ENTRY *hilite_color);
+int32_t		vq_prn_scaling		(_WORD handle);
+int32_t		vq_px_format		(_WORD handle, uint32_t *px_format);
+int32_t		vq_weight_color		(_WORD handle, COLOR_ENTRY *hilite_color);
+int32_t		vqf_bg_color		(_WORD handle, COLOR_ENTRY *fg_color);
+int32_t		vqf_fg_color		(_WORD handle, COLOR_ENTRY *fg_color);
+int32_t		vql_bg_color		(_WORD handle, COLOR_ENTRY *fg_color);
+int32_t		vql_fg_color		(_WORD handle, COLOR_ENTRY *fg_color);
+int32_t		vqm_bg_color		(_WORD handle, COLOR_ENTRY *fg_color);
+int32_t		vqm_fg_color		(_WORD handle, COLOR_ENTRY *fg_color);
+int32_t		vqr_bg_color		(_WORD handle, COLOR_ENTRY *fg_color);
+int32_t		vqr_fg_color		(_WORD handle, COLOR_ENTRY *fg_color);
+int32_t		vqt_bg_color		(_WORD handle, COLOR_ENTRY *fg_color);
+int32_t		vqt_fg_color		(_WORD handle, COLOR_ENTRY *fg_color);
 void		vr_transfer_bits	(_WORD handle, GCBITMAP *src_bm, GCBITMAP *dst_bm, const RECT16 *src_rect, const RECT16 *dst_rect, _WORD mode);
 _WORD		vs_ctab			(_WORD handle, COLOR_TAB *ctab);
-_WORD		vs_ctab_entry		(_WORD handle, _WORD __index, _LONG color_space, COLOR_ENTRY *color);
+_WORD		vs_ctab_entry		(_WORD handle, _WORD __index, int32_t color_space, COLOR_ENTRY *color);
 _WORD		vs_dflt_ctab		(_WORD handle);
 _WORD		vs_document_info	(_WORD vdi_handle, _WORD type, const char *s, _WORD wchar);
-_WORD		vs_hilite_color		(_WORD handle, _LONG color_space, COLOR_ENTRY *hilite_color);
-_WORD		vs_max_color		(_WORD handle, _LONG color_space, COLOR_ENTRY *min_color);
-_WORD		vs_min_color		(_WORD handle, _LONG color_space, COLOR_ENTRY *min_color);
-_WORD		vs_weight_color		(_WORD handle, _LONG color_space, COLOR_ENTRY *weight_color);
-_WORD		vsf_bg_color		(_WORD handle, _LONG color_space, COLOR_ENTRY *bg_color);
-_WORD		vsf_fg_color		(_WORD handle, _LONG color_space, COLOR_ENTRY *fg_color);
-_WORD		vsl_bg_color		(_WORD handle, _LONG color_space, COLOR_ENTRY *bg_color);
-_WORD		vsl_fg_color		(_WORD handle, _LONG color_space, COLOR_ENTRY *fg_color);
-_WORD		vsm_bg_color		(_WORD handle, _LONG color_space, COLOR_ENTRY *bg_color);
-_WORD		vsm_fg_color		(_WORD handle, _LONG color_space, COLOR_ENTRY *fg_color);
-_WORD		vsr_bg_color		(_WORD handle, _LONG color_space, COLOR_ENTRY *bg_color);
-_WORD		vsr_fg_color		(_WORD handle, _LONG color_space, COLOR_ENTRY *fg_color);
-_WORD		vst_bg_color		(_WORD handle, _LONG color_space, COLOR_ENTRY *bg_color);
-_WORD		vst_fg_color		(_WORD handle, _LONG color_space, COLOR_ENTRY *fg_color);
+_WORD		vs_hilite_color		(_WORD handle, int32_t color_space, COLOR_ENTRY *hilite_color);
+_WORD		vs_max_color		(_WORD handle, int32_t color_space, COLOR_ENTRY *min_color);
+_WORD		vs_min_color		(_WORD handle, int32_t color_space, COLOR_ENTRY *min_color);
+_WORD		vs_weight_color		(_WORD handle, int32_t color_space, COLOR_ENTRY *weight_color);
+_WORD		vsf_bg_color		(_WORD handle, int32_t color_space, COLOR_ENTRY *bg_color);
+_WORD		vsf_fg_color		(_WORD handle, int32_t color_space, COLOR_ENTRY *fg_color);
+_WORD		vsl_bg_color		(_WORD handle, int32_t color_space, COLOR_ENTRY *bg_color);
+_WORD		vsl_fg_color		(_WORD handle, int32_t color_space, COLOR_ENTRY *fg_color);
+_WORD		vsm_bg_color		(_WORD handle, int32_t color_space, COLOR_ENTRY *bg_color);
+_WORD		vsm_fg_color		(_WORD handle, int32_t color_space, COLOR_ENTRY *fg_color);
+_WORD		vsr_bg_color		(_WORD handle, int32_t color_space, COLOR_ENTRY *bg_color);
+_WORD		vsr_fg_color		(_WORD handle, int32_t color_space, COLOR_ENTRY *fg_color);
+_WORD		vst_bg_color		(_WORD handle, int32_t color_space, COLOR_ENTRY *bg_color);
+_WORD		vst_fg_color		(_WORD handle, int32_t color_space, COLOR_ENTRY *fg_color);
 
 
 /*

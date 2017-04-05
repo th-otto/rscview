@@ -1,7 +1,3 @@
-/*
- *  $Id: n_v_get_ctab_id.c,v 1.6 2003/08/07 06:31:13 a_bercegeay Exp $
- */
-
 #include "gem_vdiP.h"
 #include "mt_gemx.h"
 
@@ -17,8 +13,7 @@
  *
  */
 
-long
-v_get_ctab_id (short handle)
+int32_t v_get_ctab_id (short handle)
 {
 	short vdi_control[VDI_CNTRLMAX]; 
 	short vdi_intout[2]; 
