@@ -88,10 +88,10 @@ vq_devinfo (short handle, short device,
 	 * the device_name). It's seems that this value "13" (written in vdi_control[1]) has missed
 	 * its target (vdi_control[2]). So, here is a workaround:
 	 */
-	if (VDI_N_INTOUT == 1 && (vdi_control[1] > 0)) {
-		len = vdi_control[1] *2;
+	if (VDI_N_INTOUT == 1 && VDI_N_PTSIN > 0) {
+		len = VDI_N_PTSIN * 2;
 	} else {
-		len = (vdi_control[2] - 1) *2;
+		len = (VDI_N_PTSOUT - 1) * 2;
 	}
 	memcpy (device_name, vdi_ptsout +1, len);
 	device_name[len] = '\0';

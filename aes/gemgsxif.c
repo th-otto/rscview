@@ -162,7 +162,7 @@ _BOOL gsx_malloc(void)
 	if (gl_tmp.fd_addr == NULL)
 	{
 		gl_mlen = 0;
-		dos_conws("Unable to alloc AES blt buffer!", TRUE);
+		dos_conws("Unable to alloc AES blt buffer!\r\n");
 		return FALSE;
 	}
 	return TRUE;
@@ -306,6 +306,7 @@ void far_bcha(_WORD newmask)
 #endif
 	(void) newmask;
 }
+
 
 /* AES mouse handler called by the VDI */
 void far_mcha(_WORD x, _WORD y)
@@ -542,7 +543,6 @@ _WORD gsx_char(void)
 	
 	return achar;
 }
-
 
 
 /* Get the number of planes (or bit depth) of the current screen */

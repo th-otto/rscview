@@ -45,8 +45,8 @@
  */
 
 void
-v_getbitmap_info (short handle, short ch, long *advancex, long *advancey,
-                  long *xoffset, long *yoffset, short *width, short *height,
+v_getbitmap_info (short handle, short ch, fix31 *advancex, fix31 *advancey,
+                  fix31 *xoffset, fix31 *yoffset, short *width, short *height,
                   short **bitmap)
 {
 	short vdi_control[VDI_CNTRLMAX]; 

@@ -48,13 +48,13 @@ vqt_ext_name (short handle, short index,
 	VDI_TRAP_ESC (vdi_params, handle, 130,1, 0,2);
 
 	vdi_array2str (vdi_intout + 1, name, 32);
-	if (vdi_control[4] > 34)
+	if (VDI_N_INTOUT > 34)
 	{
 		name[32]     = vdi_intout[33];
 		*flags       = (vdi_intout[34] >> 8) & 0xff;
 		*font_format = vdi_intout[34] & 0xff;
 	}
-	else if (vdi_control[4] > 33 )
+	else if (VDI_N_INTOUT > 33 )
 	{
 		name[32]	 = vdi_intout[33];
 		*flags		 = 0;

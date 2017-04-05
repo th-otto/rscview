@@ -40,5 +40,5 @@ vsm_locator (short handle, short x, short y,
 	*xout = vdi_ptsout[0];
 	*yout = vdi_ptsout[1];
 
-	return ((vdi_control[4] << 1) | vdi_control[2]);
+	return ((VDI_N_INTOUT << 1) | VDI_N_PTSOUT);
 }

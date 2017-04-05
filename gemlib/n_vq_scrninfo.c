@@ -262,5 +262,5 @@ vq_scrninfo (short handle, short *work_out)
 	VDI_PARAMS(vdi_control, vdi_intin, 0L, work_out, vdi_dummy);
 	
 	VDI_TRAP_ESC (vdi_params, handle, 102,1, 0,1);
-	return vdi_control[4];
+	return VDI_N_INTOUT;
 }

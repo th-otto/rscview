@@ -36,5 +36,5 @@ vsm_string16 (short handle, short len, short echo, short echoxy[], short *str)
 	
 	VDI_TRAP (vdi_params, handle, 31, 1,2);
 	
-	return vdi_control[4];
+	return VDI_N_INTOUT;
 }

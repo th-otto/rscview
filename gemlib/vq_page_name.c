@@ -39,7 +39,7 @@ vq_page_name (short handle, short page_id, char *page_name,
 	
 	VDI_TRAP_ESC (vdi_params, handle, 5,38, 0, 1 + VDI_NPTRINTS);
 	
-	if (vdi_control[4] == 0) /* function not supported by the driver */
+	if (VDI_N_INTOUT == 0) /* function not supported by the driver */
 		return -1;
 	
 #if CHECK_NULLPTR

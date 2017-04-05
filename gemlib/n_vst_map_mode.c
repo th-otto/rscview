@@ -42,5 +42,5 @@ vst_map_mode (short handle, short mode)
 
 	VDI_TRAP (vdi_params, handle, 236, 0,2);
 
-	return (vdi_control[4] ? vdi_intout[0] : -1);
+	return VDI_N_INTOUT ? vdi_intout[0] : -1;
 }

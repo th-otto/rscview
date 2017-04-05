@@ -28,5 +28,5 @@ vq_ctab (short handle, long ctab_length, COLOR_TAB * ctab)
 	
 	VDI_TRAP (vdi_params, handle, 206, 0,2);
 
-	return (vdi_control[4] ? 1 : 0);
+	return VDI_N_INTOUT ? 1 : 0;
 }

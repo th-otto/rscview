@@ -35,7 +35,7 @@ vq_tray_names (short handle, char *input_name, char *output_name,
 	
 	VDI_TRAP_ESC (vdi_params, handle, 5,36, 0, 2 * VDI_NPTRINTS);
 	
-	if (vdi_control[4]) /* function supported by the driver */
+	if (VDI_N_INTOUT) /* function supported by the driver */
 	{
 		*input  = vdi_intout[0];
 		*output = vdi_intout[1];
@@ -47,5 +47,5 @@ vq_tray_names (short handle, char *input_name, char *output_name,
 		if (output_name) *output_name=0;
 	}
 	
-	return vdi_control[4];
+	return VDI_N_INTOUT;
 }

@@ -68,5 +68,5 @@ v_opnbm (short *work_in, MFDB *bitmap, short *handle, short *work_out)
 
 	VDI_TRAP_ESC (vdi_params, *handle, 100,1, 0,20);
 	
-	*handle = vdi_control[6];
+	*handle = VDI_HANDLE;
 }

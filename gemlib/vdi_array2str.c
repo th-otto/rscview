@@ -1,7 +1,3 @@
-/*
- *  $Id: vdi_array2str.c,v 1.4 2003/02/28 20:46:42 a_bercegeay Exp $
- */
-
 #include "gem_vdiP.h"
 
 /** transform VDI-string (each character is 16-bit wide, the string is not

@@ -37,5 +37,5 @@ v_opnprn (short aes_handle, PRN_SETTINGS *settings, short work_out[])
 
 	VDI_TRAP (vdi_params, aes_handle, 1, 0, 12 + 2 * VDI_NPTRINTS);
 	
-	return vdi_control[6];
+	return VDI_HANDLE;
 }

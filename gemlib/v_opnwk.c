@@ -132,6 +132,6 @@ v_opnwk (short work_in[], short *handle, short work_out[])
 	
 	VDI_TRAP (vdi_params, *handle, 1, 0,11);
 
-	*handle = vdi_control[6];
+	*handle = VDI_HANDLE;
 }
 

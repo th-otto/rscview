@@ -27,5 +27,5 @@ int dos_sdrv(int drv);
 int dos_chmod(const char *path, int attr);
 int dos_delete(const char *path);
 void dos_free(void *ptr);
-void dos_conws(const char *str, int newline);
+void dos_conws(const char *str);
 void dos_shrink(void *maddr, long length);

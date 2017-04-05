@@ -7,11 +7,15 @@ void dos_chrout(int c)
     putc(c, stdout);
 }
 
-void dos_conws(const char *str, int newline)
+void dos_conws(const char *str)
 {
-    fputs(str, stdout);
-    if (newline)
-    	fputc('\n', stdout);
+	while (*str)
+	{
+		if (*str != '\r')
+			fputc(*str, stdout);
+		str++;
+	}
+	fflush(stdout);
 }
 
 

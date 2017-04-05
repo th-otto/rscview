@@ -12,7 +12,7 @@ short vqp_films (short handle, char * name)
 		
 	VDI_TRAP_ESC (vdi_params, handle, 5,91, 0,0);
 	
-	vdi_array2str( vdi_intout, name, vdi_control[4]);
+	vdi_array2str( vdi_intout, name, VDI_N_INTOUT);
 	
-	return vdi_control[4];
+	return VDI_N_INTOUT;
 }

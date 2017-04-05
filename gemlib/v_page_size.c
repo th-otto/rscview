@@ -41,7 +41,7 @@ v_page_size (short handle, short page_id)
 		
 	VDI_TRAP_ESC (vdi_params, handle, 5,37, 0,1);
 	
-	if (vdi_control[4]) /* function supported */
+	if (VDI_N_INTOUT) /* function supported */
 		return vdi_intout[0];
 	
 	/* the driver doesn't support this function */

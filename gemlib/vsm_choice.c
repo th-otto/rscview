@@ -24,5 +24,5 @@ vsm_choice (short handle, short *choice)
 	
 	VDI_TRAP_00 (vdi_params, handle, 30);
 	
-	return vdi_control[4];
+	return VDI_N_INTOUT;
 }

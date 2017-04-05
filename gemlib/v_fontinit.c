@@ -21,8 +21,10 @@ void
 v_fontinit (short handle, const void * font_header)
 {
 	short vdi_control[VDI_CNTRLMAX]; 
-
-	VDI_PARAMS(vdi_control, (short*)&font_header, 0L, vdi_dummy, vdi_dummy );
+	short vdi_intin[VDI_NPTRINTS];
+	
+	VDI_PARAMS(vdi_control, vdi_intin, 0L, vdi_dummy, vdi_dummy );
+	vdi_intin_ptr(0, void *) = NO_CONST(font_header);
 		
-	VDI_TRAP_ESC (vdi_params, handle, 5,102, 0,sizeof(void *)/sizeof(short));
+	VDI_TRAP_ESC (vdi_params, handle, 5,102, 0,VDI_NPTRINTS);
 }

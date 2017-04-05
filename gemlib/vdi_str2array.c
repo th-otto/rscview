@@ -1,7 +1,3 @@
-/*
- *  $Id: vdi_str2array.c,v 1.4 2003/02/28 20:46:43 a_bercegeay Exp $
- */
-
 #include "gem_vdiP.h"
 
 /** 

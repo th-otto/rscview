@@ -55,7 +55,6 @@ char gl_logdrv;
 #define Blitmode(on) trp14(64, on)
 #define VcheckMode(mode) trp14(95, mode)
 
-#define Cconws(x) trap(9, x)
 #define Kbshift(a) bios(11, a)
 
 

@@ -41,11 +41,11 @@ vqt_name_and_id (short handle, short font_format, char *font_name, char *ret_nam
 	/* set the 0 as return value in case NVDI is not present */
 	vdi_intout[0] = 0;
 	/* set the length to 0 for the same case */
-	vdi_control[4] = 0;
+	VDI_N_INTOUT = 0;
 	
 	VDI_TRAP_ESC (vdi_params, handle, 230,100, 0,n);
 	
-	vdi_array2str (vdi_intout+1, ret_name, vdi_control[4]-1);
+	vdi_array2str(vdi_intout+1, ret_name, VDI_N_INTOUT - 1);
 	
 	return vdi_intout[0];
 }

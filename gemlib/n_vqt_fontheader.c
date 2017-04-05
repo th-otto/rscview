@@ -57,5 +57,5 @@ vqt_fontheader (short handle, char *buffer, char *pathname)
 		
 	VDI_TRAP (vdi_params, handle, 232, 0,2);
 	
-	vdi_array2str (vdi_intout, pathname, vdi_control[4]);
+	vdi_array2str (vdi_intout, pathname, VDI_N_INTOUT);
 }

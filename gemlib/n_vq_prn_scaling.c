@@ -28,5 +28,5 @@ vq_prn_scaling (short handle)
 	
 	VDI_TRAP_ESC (vdi_params, handle, 5,39, 0,2);
 
-	return (vdi_control[4] == 2 ? vdi_intout_long(0) : -1L);
+	return VDI_N_INTOUT == 2 ? vdi_intout_long(0) : -1L;
 }

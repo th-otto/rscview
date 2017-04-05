@@ -48,7 +48,7 @@ v_trays (short handle, short input, short output,
 	
 	VDI_TRAP_ESC (vdi_params, handle, 5,29, 0,2);
 	
-	if (vdi_control[4]) /* function supported by the driver */
+	if (VDI_N_INTOUT) /* function supported by the driver */
 	{
 #if CHECK_NULLPTR
 	if (set_input)
@@ -71,5 +71,5 @@ v_trays (short handle, short input, short output,
 		*set_output = 0;
 	}
 	
-	return vdi_control[4];
+	return VDI_N_INTOUT;
 }

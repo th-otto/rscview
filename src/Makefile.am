@@ -2,7 +2,7 @@ include $(top_srcdir)/config.mk
 
 INCLUDES += -I$(srcdir)
 
-GEMLIBS = ../aes/libaes.a ../gemlib/libgem.a
+GEMLIBS = ../aes/libaes.a ../vdi/libvdi.a ../gemlib/libgem.a ../util/libutil.a
 
 bin_PROGRAMS = rscview
 
@@ -20,5 +20,5 @@ rscview_SOURCES = \
 	fio_err.c \
 	$(empty)
 
-rscview_LDADD = -L../aes -L../gemlib -L../util -laes -lgem -laes -lgem -lutil
+rscview_LDADD = -L../aes -L../vdi -L../gemlib -L../util -laes -lgem -lvdi -laes -lgem -lvdi -lutil
 rscview_DEPENDENCIES = $(GEMLIBS)

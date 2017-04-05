@@ -39,7 +39,11 @@ typedef struct rgb_1000
 
 extern VDIPB _VdiParBlk;
 
+#ifdef OS_ATARI /* stdint.h maybe not included */
 typedef long fix31;
+#else
+typedef int32_t fix31;
+#endif
 
 #define fix31_to_point(a) ((_WORD)((((a) + 32768L) >> 16)))
 #define point_to_fix31(a) (((fix31)(a)) << 16)
@@ -137,23 +141,38 @@ void    v_justified( _WORD handle, _WORD x, _WORD y, const char *string,
 
 /* bit blt rules */
 
-#define ALL_WHITE        0
-#define S_AND_D          1
-#define S_AND_NOTD       2
-#define S_ONLY           3
-#define NOTS_AND_D       4
-#define D_ONLY           5
-#define S_XOR_D          6
-#define S_OR_D           7
-#define NOT_SORD         8
-#define NOT_SXORD        9
-#define D_INVERT        10
-#define NOT_D			10
-#define S_OR_NOTD		11
-#define NOT_S			12
-#define NOTS_OR_D       13
-#define NOT_SANDD       14
-#define ALL_BLACK       15
+#define ALL_WHITE        0		/* D := 0 */
+#define S_AND_D          1		/* D := S AND D */
+#define S_AND_NOTD       2		/* D := S AND (NOT D) */
+#define S_ONLY           3		/* D := S */
+#define NOTS_AND_D       4		/* D := (NOT S) AND D */
+#define D_ONLY           5		/* D := D */
+#define S_XOR_D          6		/* D := S XOR D */
+#define S_OR_D           7		/* D := S OR D */
+#define NOT_SORD         8		/* D := NOT (S OR D) */
+#define NOT_SXORD        9		/* D := NOT (S XOR D) */
+#define D_INVERT        10		/* D := NOT D */
+/*
+ * There seems to be mismatch with the following 3 definitions (10-12)
+ * - in all Atari-related sources i have seen, they are defined as
+ *   NOT_D       == 10 (same as D_INVERT)
+ *   S_OR_NOTD   == 11
+ *   NOT_S       == 12
+ * - PC-GEM defines them as
+ *   S_OR_NOTD   == 11
+ *   NOT_D       == 12
+ *   NOT_S not defined
+ * - The Atari VDI actually performs:
+ *   10          == D := NOT D
+ *   11          == D := S OR (NOT D)
+ *   12          == D := NOT S
+ */
+#define NOT_D			10		/* D := NOT D */
+#define S_OR_NOTD		11		/* D := S OR (NOT D) */
+#define NOT_S			12		/* D := NOT S */
+#define NOTS_OR_D       13		/* D := (NOT S) OR D */
+#define NOT_SANDD       14		/* D := NOT (S AND D) */
+#define ALL_BLACK       15		/* D := 1 */
 
 
 /* v_bez modes */
@@ -755,6 +774,8 @@ void vqt_real_extentn(_WORD handle, _WORD x, _WORD y, const char *string, _WORD 
  */
 
 /** structure to store information about a font */
+#ifndef __XFNT_INFO
+#define __XFNT_INFO
 typedef struct
 {
 	_LONG		size;				/* length of the structure, initialize this entry before
@@ -774,6 +795,7 @@ typedef struct
 	_WORD		pt_sizes[64];		/* available point sizes,
                                          e.g. { 8, 9, 10, 11, 12, 14, 18, 24, 36, 48 } */
 } XFNT_INFO;
+#endif
 
 void    v_ftext( _WORD handle, _WORD x, _WORD y, const char *string );
 void	v_ftext_offset(_WORD handle, _WORD x, _WORD y, const char *sstr, const _WORD *offset);
@@ -943,7 +965,7 @@ typedef union
 	COLOR_CMYK	cmyk;
 } COLOR_ENTRY;
 
-#define	COLOR_TAB_MAGIC	'ctab'
+#define	COLOR_TAB_MAGIC	0x63746162L /* 'ctab' */
 
 typedef struct
 {
@@ -997,7 +1019,7 @@ struct _gcbitmap
 };
 
 /*----------------------------------------------------------------------------------------*/
-/* Transfermodi fr Bitmaps																					*/
+/* Transfermodes for Bitmaps															  */
 /*----------------------------------------------------------------------------------------*/
 
 /* Moduskonstanten */
@@ -1091,7 +1113,7 @@ void		vr_transfer_bits	(_WORD handle, GCBITMAP *src_bm, GCBITMAP *dst_bm, const 
 _WORD		vs_ctab			(_WORD handle, COLOR_TAB *ctab);
 _WORD		vs_ctab_entry		(_WORD handle, _WORD __index, _LONG color_space, COLOR_ENTRY *color);
 _WORD		vs_dflt_ctab		(_WORD handle);
-_WORD		vs_document_info	(_WORD vdi_handle, _WORD type, char *s, _WORD wchar);
+_WORD		vs_document_info	(_WORD vdi_handle, _WORD type, const char *s, _WORD wchar);
 _WORD		vs_hilite_color		(_WORD handle, _LONG color_space, COLOR_ENTRY *hilite_color);
 _WORD		vs_max_color		(_WORD handle, _LONG color_space, COLOR_ENTRY *min_color);
 _WORD		vs_min_color		(_WORD handle, _LONG color_space, COLOR_ENTRY *min_color);

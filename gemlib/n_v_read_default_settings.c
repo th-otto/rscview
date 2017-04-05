@@ -30,7 +30,7 @@ short v_read_default_settings( short handle, PRN_SETTINGS *settings )
 	
 	VDI_TRAP (vdi_params, handle, 182, 0, VDI_NPTRINTS);
 
-	if ( vdi_control[4] >= 1 )
+	if (VDI_N_INTOUT >= 1)
 		return vdi_intout[0];
 
 	return 0;

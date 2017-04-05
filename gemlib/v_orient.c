@@ -38,7 +38,7 @@ v_orient (short handle, short orientation)
 		
 	VDI_TRAP_ESC (vdi_params, handle, 5,27, 0,1);
 	
-	if (vdi_control[4])  /* function supported */
+	if (VDI_N_INTOUT)  /* function supported */
 		return vdi_intout[0];
 	
 	/* function not supported by the driver */

@@ -1,7 +1,3 @@
-/*
- *  $Id: n_vqt_devinfo.c,v 1.1 2003/07/14 08:06:18 a_bercegeay Exp $
- */
-
 #include "mt_gemx.h"
 
 /** reports back, if a driver exists and if he has been opened.

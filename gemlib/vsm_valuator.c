@@ -43,5 +43,5 @@ vsm_valuator (short handle, short in, short *out, short *term, short *status)
 	
 	*out    = vdi_intout[0];
 	*term   = vdi_intout[1];
-	*status = vdi_control[4];
+	*status = VDI_N_INTOUT;
 }

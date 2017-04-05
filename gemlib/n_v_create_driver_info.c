@@ -27,8 +27,8 @@ DRV_INFO *v_create_driver_info( short handle, short driver_id )
 	
 	VDI_TRAP (vdi_params, handle, 180, 0,1);
 
-	if ( vdi_control[4] >= 2 )
-		return (DRV_INFO *) vdi_intout_long(0);
+	if (VDI_N_INTOUT >= VDI_NPTRINTS)
+		return vdi_intout_ptr(0, DRV_INFO *);
 
-	return 0L;
+	return NULL;
 }
