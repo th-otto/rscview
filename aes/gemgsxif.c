@@ -47,6 +47,7 @@
 #ifdef __atarist__
 #include <osbind.h>
 #endif
+#include "s_endian.h"
 
 #define aestrap_intercepted() 0
 
@@ -474,12 +475,27 @@ void gsx_xmfset(MFORM *pmfnew)
 }
 
 
-void gsx_mfset(MFORM *pmfnew)
+void gsx_mfset(MFORM *pmfnew, _BOOL from_bitblk)
 {
 	gsx_moff();
 	gl_omform = gl_cmform;
-	vsc_form(gl_handle, &pmfnew->mf_xhot);
 	gl_cmform = *pmfnew;
+	/*
+	 * temporary workaround for mouse forms stored in BITBLKs
+	 * compiled into the executable:
+	 * the data is stored "as is", that is, like in big-endian
+	 * format, but the first 5 words must be swapped
+	 * on little-endian hosts
+	 */
+	if (from_bitblk)
+	{
+		gl_cmform.mf_xhot = n2hs(gl_cmform.mf_xhot);
+		gl_cmform.mf_yhot = n2hs(gl_cmform.mf_yhot);
+		gl_cmform.mf_nplanes = n2hs(gl_cmform.mf_nplanes);
+		gl_cmform.mf_fg = n2hs(gl_cmform.mf_fg);
+		gl_cmform.mf_bg = n2hs(gl_cmform.mf_bg);
+	}
+	vsc_form(gl_handle, &gl_cmform.mf_xhot);
 	gsx_mon();
 }
 

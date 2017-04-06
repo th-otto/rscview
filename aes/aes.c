@@ -72,6 +72,8 @@ static _WORD crysbind(AESPB *pb)
 		AES_PARAMS(10,0,1,0,0);
         /* reset dispatcher count to let the app run a while */
         dspcnt = 0;
+        if (rlr == NULL)
+        	aes_init();
         ret = ap_init(pglobal);
         break;
 

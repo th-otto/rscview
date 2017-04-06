@@ -1,5 +1,5 @@
 /*
- * This is an implemtentaion of a VDI driver screen that actually draws
+ * This is an implementation of a VDI driver screen that actually draws
  * to an offscreen framebuffer.
  *
  * KNOWN BUGS:
@@ -11,7 +11,7 @@
  *
  * - text effects italics and outlined are not yet supported
  *
- * - vro_cpyfm is too slow except for screen->screen transfers
+ * - vro_cpyfm is only supported from memory to screen
  *
  * - NDC coordinates are not supported
  */
@@ -580,7 +580,7 @@ struct alpha_info {
 
 typedef struct _vdi_rectangle {
 	int x, y;
-	unsigned int width, height;
+	int width, height;
 } vdi_rectangle;
 
 struct bezier {
@@ -599,8 +599,8 @@ struct _vwk
 	int planes;
 	int form_id;						/* INTERLEAVED/STANDARD/PIXPACKED */
 	int bit_order;
-	unsigned char *bitmap_addr;
-	unsigned char *to_free;
+	void *bitmap_addr;
+	void *to_free;
 	gboolean can_clip;
 	_WORD xfm_mode;
 	_WORD driver_id;
@@ -743,6 +743,22 @@ typedef struct {
 #define VDI_FONT_TRUETYPE 2
 #define VDI_FONT_TYPE1    3
 
+typedef struct
+{
+	uint8_t height;
+	uint8_t cellheight;
+	uint8_t top;
+	uint8_t ascent;
+	uint8_t half;
+	uint8_t descent;
+	uint8_t bottom;
+	uint8_t width;
+	uint8_t cellwidth;
+	uint8_t left_offset;
+	uint8_t right_offset;
+	uint8_t point;
+} sysfontinfo;
+
 typedef struct _font_desc {
 	char name[VDI_FONTNAMESIZE];
 	int charset;
@@ -777,7 +793,7 @@ typedef struct _font_desc {
 
 
 #ifndef TRACE_VDI
-#define TRACE_VDI 0
+#define TRACE_VDI 1
 #endif
 
 /* call was done completly native; dont pass to ROM */
@@ -787,7 +803,7 @@ typedef struct _font_desc {
 
 #if TRACE_VDI
 #include "debug.h"
-#define V(fmt, ...) debug("VDI: " fmt, ## __VA_ARGS__)
+#define V(fmt, ...) nf_debugprintf("VDI: " fmt "\n", ## __VA_ARGS__)
 #else
 #define V(fmt, ...)
 #endif

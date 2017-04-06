@@ -402,10 +402,10 @@ void gsx_start(void)
 	 * 320 pels in x, when it will be the 40 column font.
 	 */
 	vqt_attributes(gl_handle, attrib);
-	gl_wptschar = attrib[0];
-	gl_ws.ws_chmaxh = gl_hptschar = attrib[1];
-	gl_wchar = attrib[2];
-	gl_hchar = attrib[3];
+	gl_wptschar = attrib[6];
+	gl_ws.ws_chmaxh = gl_hptschar = attrib[7];
+	gl_wchar = attrib[8];
+	gl_hchar = attrib[9];
 	
 	vst_height(gl_handle, gl_ws.ws_chminh, &gl_wsptschar, &gl_hsptschar, &gl_wschar, &gl_hschar);
 	vst_height(gl_handle, gl_ws.ws_chmaxh, &dummy, &dummy, &dummy, &dummy);

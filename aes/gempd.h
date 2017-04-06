@@ -24,7 +24,7 @@ void p_nameit(AESPD *p, const char *pname);
 /* set the application directory of an AESPD */
 void p_setappdir(AESPD *p, char *pfilespec);
 
-AESPD *pstart(PFVOID pcode, const char *pfilespec, void *ldaddr);
+AESPD *pstart(PFVOID pcode, const char *pfilespec, intptr_t ldaddr);
 
 /* insert the process pi at the end of the process list pointed to by root */
 void insert_process(AESPD *pi, AESPD **root);

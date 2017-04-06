@@ -122,7 +122,7 @@ struct aespd {
 	EVB 	*p_evlist;		/* 28 */
 	EVB 	*p_qdq; 		/* 2C */
 	EVB 	*p_qnq; 		/* 30 */
-	QPB		*p_qaddr;		/* 34 */
+	char	*p_qaddr;		/* 34 */
 	_WORD	p_qindex;		/* 38 */
 	char	p_queue[QUEUE_SIZE];   /* 3A */
 	char	p_appdir[LEN_ZPATH+2];	/* directory containing the executable */

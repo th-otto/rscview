@@ -30,17 +30,8 @@
 #define STATIC
 
 
-#if AESVERSION >= 0x330
 _BOOL do_once;
-#endif
-int32_t gl_vdo;
-char **aes_rsc_frstr;
-OBJECT **aes_rsc_tree;
-intptr_t drawstk;
-_BOOL autoexec;					/* autoexec a file ?    */
-STATIC char g_autoboot[CMDLEN];
 STATIC _WORD g_flag;
-_BOOL ctldown;					/* ctrl key down ? */ /* referenced by DESKTOP */
 
 _WORD crt_error;				/* critical error handler semaphore     */
 
@@ -49,13 +40,8 @@ _WORD adeskp[3];				/* desktop colors & backgrounds */
 STATIC _WORD awinp[3];			/* window colors & backgrounds */
 _UWORD d_rezword;				/* default resolution for sparrow */
 char gl_logdrv;
-
-
-#define Getrez() trp14(4)
-#define Blitmode(on) trp14(64, on)
-#define VcheckMode(mode) trp14(95, mode)
-
-#define Kbshift(a) bios(11, a)
+VEX_TIMV tiksav;
+_BOOL gl_rschange;
 
 
 STATIC char aautopath[CMDLEN];
@@ -68,3 +54,177 @@ void sh_deskf(_WORD obj, aes_private *priv)
 	tree = aes_rsc_tree[DESKTOP];
 	priv->l = tree[obj].ob_spec.index;
 }
+
+
+void aes_init(void)
+{
+	register _WORD i;
+	OBJECT *tree;
+
+	/****************************************/
+
+	/* init event recorder  */
+	gl_recd = FALSE;
+	gl_rlen = 0;
+	gl_rbuf = 0;
+
+	/* link up all the evb's to the event unused list */
+	eul = 0;
+	for (i = 0; i < NUM_EVBS; i++)
+	{
+		D.g_evb[i].e_nextp = eul;
+		eul = &D.g_evb[i];
+	}
+	/* initialize list and unused lists   */
+
+	drl = 0;
+	nrl = 0;
+	zlr = 0;
+	dlr = 0;
+	fpcnt = 0;
+	fpt = 0;
+	fph = 0;
+	crt_error = FALSE;
+
+	/* initialize sync blocks */
+	wind_spb.sy_tas = 0;
+	wind_spb.sy_owner = 0;
+	wind_spb.sy_wait = 0;
+
+	gl_btrue = 0x0;
+	gl_bdesired = 0x0;
+	gl_bdelay = 0x0;
+	gl_bclick = 0x0;
+
+	/* init initial process */
+	for (i = 0; i < NUM_PDS; i++)
+		pinit(&D.g_pd[i], &D.g_cda[i]);
+
+	D.g_pd[0].p_uda = &D.g_uda;
+	D.g_pd[1].p_uda = (UDA *)&D.g_2uda;
+	D.g_pd[2].p_uda = (UDA *)&D.g_3uda;
+	
+	/* if not rlr then initialize his stack pointer */
+	D.g_2uda.u_spsuper = &D.g_2uda.u_supstk;
+	D.g_3uda.u_spsuper = &D.g_3uda.u_supstk;
+
+	curpid = 0;
+
+	rlr = &D.g_pd[curpid];
+	rlr->p_pid = curpid++;
+	rlr->p_link = 0;
+	rlr->p_stat = PS_RUN;
+	cda = rlr->p_cda;
+
+	/* 
+	 * screen manager process init.
+	 * This process starts out owning the mouse
+	 * and the keyboard. it has a pid == 1
+	 */
+	gl_mowner = gl_kowner = ctl_pd = ictlmgr(rlr->p_pid);
+
+	rsc_read();							/* read in resource */
+
+#if 0
+	pred_dinf();						/* pre read the inf */
+#endif
+
+	/* get the resolution and the auto boot name         */
+
+	/* do gsx open work station */
+	gsx_init();
+	gl_rschange = FALSE;
+
+	/* Init 3D-look of indicators and activators */
+	act3dtxt = TRUE;					/* don't move text for activators */
+	act3dface = FALSE;					/* no color change when activator is selected */
+	ind3dtxt = FALSE;					/* move text for indicators */
+	ind3dface = TRUE;					/* change color when indicator is selected */
+
+	if (gl_ws.ws_ncolors <= LWHITE)
+	{									/* init button color */
+		gl_actbutcol = gl_indbutcol = WHITE;
+		gl_alrtcol = WHITE;				/* init alert background color */
+	} else
+	{
+		gl_actbutcol = gl_indbutcol = LWHITE;
+		gl_alrtcol = LWHITE;			/* init alert background color */
+	}
+
+	gsx_mfset((MFORM *)aes_rsc_bitblk[MICE02]->bi_pdata, TRUE);
+
+	/* fix up icons */
+	for (i = 0; i < 3; i++)
+	{
+		BITBLK bi;
+
+		bi = *aes_rsc_bitblk[i];
+		gsx_trans(bi.bi_pdata, bi.bi_wb, bi.bi_pdata, bi.bi_wb, bi.bi_hl, BLACK, WHITE);
+	}
+	
+	sh_tographic();						/* go into graphic mode */
+	gl_shgem = TRUE;
+
+	/* take the tick int. */
+	gl_ticktime = gsx_tick(tikcod, &tiksav);
+
+	/* set init. click rate */
+	ev_dclick(3, TRUE);
+
+	/* get st_desk ptr */
+	tree = aes_rsc_tree[DESKTOP];
+
+	/* fix up the GEM rsc. file now that we have an open WS    */
+	/* This code is also in gemshlib, but it belongs here so that the correct
+	 * default GEM backdrop pattern is set for accessories and autoboot app.
+	 */
+	if (gl_ws.ws_ncolors > 2)				/* set solid pattern in color modes */
+		tree[ROOT].ob_spec.index = 0x00001173L;
+	else
+		tree[ROOT].ob_spec.index = 0x00001143L;
+
+	for (i = 0; i < 3; i++)
+		tree[i].ob_width = gl_width;
+
+	tree[ROOT].ob_height = gl_height;
+	tree[1].ob_height = gl_hchar + 2;
+	tree[2].ob_height = gl_hchar + 3;
+
+	indisp = FALSE;						/* init in dispatch semaphore to not indisp        */
+
+	/* off we go !!! */
+	do_once = FALSE;					/* desktop do it once flag */ /* why the hell is that set here? */
+}
+
+
+void aes_exit(void)
+{
+	rsc_free();							/* free up resource */
+
+	gsx_mfree();
+#if SUBMENUS
+	mn_new();
+#endif
+
+	/* give back the tick */
+	gl_ticktime = gsx_tick(tiksav, &tiksav);
+
+	v_exit_cur(gl_handle);						/* exit alpha mode */
+
+	/* close workstation */
+	gsx_wsclose();
+}
+
+
+/*
+ * process init
+ */
+void pinit(AESPD *ppd, CDA *pcda)
+{
+	ppd->p_cda = pcda;
+	ppd->p_qaddr = ppd->p_queue;
+	ppd->p_qindex = 0;
+	memset(ppd->p_name, ' ', AP_NAMELEN);
+}
+
+

@@ -4,6 +4,8 @@
 #include "gemdos.h"
 #include "ro_mem.h"
 #include <math.h>
+#include "fonthdr.h"
+#include "maptab.h"
 
 /*
  * our "screen" format
@@ -13,6 +15,17 @@
 #define vdi_form_id 3 /* pixel-packed */
 #define vdi_bit_order 1
 #define vdi_planes 8
+
+#if vdi_planes > 32
+you loose
+#elif vdi_planes > 16
+typedef uint32_t pel;
+#elif vdi_planes > 8
+typedef uint16_t pel;
+#else
+typedef uint8_t pel;
+#endif
+
 
 
 static VEX_BUTV user_but;
@@ -39,15 +52,22 @@ static VEX_WHEELV user_wheel;
 
 
 #ifdef OS_ATARI
-#define SCREEN_BASE (*((void **)0x44e)) /* should that be rather vbase? */
+#define SCREEN_BASE (*((void **)0x44e))
 #else
 #define SCREEN_BASE 0
 #endif
 
 static VWK *vwk[MAX_VWK];
-static unsigned char vbase[(vdi_w * vdi_h * vdi_planes) / 8];
+
+static pel framebuffer[vdi_w * vdi_h];
+#define pixel(x, y) framebuffer[(y) * v->width + (x)]
+
+#include "../data/font_6x8.c"
+#include "../data/font_8x8.c"
+#include "../data/font_8x16.c"
 
 static FONT_DESC sysfont[SYSFONTS];
+static const FONT_HDR *const sysfonthdrs[SYSFONTS] = { &fnt_st_6x8, &fnt_st_8x8, &fnt_st_8x16 };
 
 static int xvdi_debug;
 
@@ -159,7 +179,137 @@ static const struct driverinfo *get_devinfo(_WORD id)
 /* -------------------------------------------------------------------------- */
 /******************************************************************************/
 
-#define vdi_draw_lines(gc, points, n) 
+#define roll(pattern) ((pattern) & 0x8000) ? (((pattern) << 1) | 0x0001) : ((pattern) << 1)
+
+static void vdi_put_pixel(VWK *v, int x, int y, pel color)
+{
+	if (x < 0 || x >= v->width || y < 0 || y >= v->height)
+		return;
+	if (v->clipping)
+	{
+		if (x < v->clipr.x || x >= v->clipr.x + v->clipr.width)
+			return;
+		if (y < v->clipr.y || x >= v->clipr.y + v->clipr.height)
+			return;
+	}
+	pixel(x, y) = color;
+}
+
+
+static pel vdi_get_pixel(VWK *v, int x, int y)
+{
+	if (x < 0 || x >= v->width || y < 0 || y >= v->height)
+		return 0;
+	if (v->clipping)
+	{
+		if (x < v->clipr.x || x >= v->clipr.x + v->clipr.width)
+			return 0;
+		if (y < v->clipr.y || x >= v->clipr.y + v->clipr.height)
+			return 0;
+	}
+	return pixel(x, y);
+}
+
+
+static void gfx_put_pixel(VWK *v, int x, int y, _UWORD pattern, int op, pel fg, pel bg)
+{
+	switch (op)
+	{
+	case MD_REPLACE:
+		vdi_put_pixel(v, x, y, pattern & 0x8000 ? fg : bg);
+		break;
+	case MD_TRANS:
+		if (pattern & 0x8000)
+			vdi_put_pixel(v, x, y, fg);
+		break;
+	case MD_XOR:
+		if (pattern & 0x8000)
+			vdi_put_pixel(v, x, y, ~vdi_get_pixel(v, x, y));
+		break;
+	case MD_ERASE:
+		if (!(pattern & 0x8000))
+			vdi_put_pixel(v, x, y, fg);
+		break;
+	}
+}
+
+
+static void vdi_draw_hline(VWK *v, int x1, int x2, int y, _UWORD pattern, int op, pel fg, pel bg)
+{
+	int x;
+	
+	for (x = x1; x <= x2; x++)
+	{
+		gfx_put_pixel(v, x, y, pattern, op, fg, bg);
+		pattern = roll(pattern);
+	}
+}
+
+
+static void vdi_draw_vline(VWK *v, int x, int y1, int y2, _UWORD pattern, int op, pel fg, pel bg)
+{
+	int y;
+	
+	for (y = y1; y <= y2; y++)
+	{
+		gfx_put_pixel(v, x, y, pattern, op, fg, bg);
+		pattern = roll(pattern);
+	}
+}
+
+
+static void vdi_draw_line(VWK *v, int x1, int y1, int x2, int y2, _UWORD pattern, int op, pel fg, pel bg)
+{
+	/* Test for special cases of straight lines or single point */
+	if (x1 == x2)
+	{
+		if (y1 < y2)
+		{
+			vdi_draw_vline(v, x1, y1, y2, pattern, op, fg, bg);
+		} else if (y1 > y2)
+		{
+			vdi_draw_vline(v, x1, y2, y1, pattern, op, fg, bg);
+		} else
+		{
+			gfx_put_pixel(v, x1, y1, pattern, op, fg, bg);
+		}
+		return;
+	}
+	if (y1 == y2)
+	{
+		if (x1 < x2)
+		{
+			vdi_draw_hline(v, x1, x2, y1, pattern, fg, bg, op);
+		} else if (x1 > x2)
+		{
+			vdi_draw_hline(v, x2, x1, y1, pattern, fg, bg, op);
+		} else
+		{
+			/* x1 == x2; already catched above */
+		}
+		return;
+	}
+	/* else diagonal line; TODO */
+}
+
+
+static void vdi_draw_lines(VWK *v, VDI_POINT *points, int n, _UWORD pattern, int op, pel fg, pel bg)
+{
+	int x1, y1, x2, y2;
+	
+	x1 = points->x;
+	y1 = points->y;
+	points++;
+	while (--n > 0)
+	{
+		x2 = points->x;
+		y2 = points->y;
+		points++;
+		vdi_draw_line(v, x1, y1, x2, y2, pattern, op, fg, bg);
+		x1 = x2;
+		y1 = y1;
+	}
+}
 
 
 static void destroy_image(void)
@@ -260,19 +410,12 @@ static void create_pattern_pixmap(const unsigned char *data, unsigned char *mask
 
 static void change_mode(void)
 {
-	int i, k;
-
-	for (i = 0, k = 0; i < 5; i++)
-	{
-		fillpat[i] = &allpatterns[k];
-		k += patnum[i];
-	}
 }
 
 
 static void clear_window(VWK *v)
 {
-	fill_rectangle_color(v, 0, 0, vdi_w, vdi_h, WHITE);
+	fill_rectangle_color(v, 0, 0, v->width, v->height, WHITE);
 }
 
 
@@ -290,12 +433,6 @@ static void v_reset_alpha_cursor(VWK *v)
 	vt52->cursor_inverse = FALSE;
 	vt52->blink_count = vt52->blink_rate;
 }
-
-
-#define BEGIN_DRAW(v)
-#define BEGIN_ALPHA_DRAW(v)
-#define END_DRAW(v)
-
 
 
 static void v_show_alpha_cursor(VWK *v)
@@ -338,7 +475,7 @@ static void init_wk(VWK *v, int width, int height, int planes)
 	v->planes = planes;
 	v->form_id = vdi_form_id;
 	v->bit_order = vdi_bit_order;
-	v->bitmap_addr = vbase;
+	v->bitmap_addr = framebuffer;
 	v->to_free = 0;
 	
 	v->dev_tab.max_x = v->width - 1;
@@ -474,21 +611,6 @@ static void set_clipping(VWK *v)
 {
 	if (v->can_clip)
 	{
-#ifdef VDI_DRIVER_X
-		if (v->clipping)
-		{
-			XRectangle r;
-			
-			r.x = v->clipr.x;
-			r.y = v->clipr.y;
-			r.width = v->clipr.width;
-			r.height = v->clipr.height;
-			XSetClipRectangles(x_display, v->gc, 0, 0, &r, 1, Unsorted);
-		} else
-		{
-			XSetClipMask(x_display, v->gc, None);
-		}
-#endif
 	}
 }
 
@@ -506,7 +628,7 @@ static int make_rectangle(VWK *v, int x1, int y1, int x2, int y2, vdi_rectangle 
 	}
 	if (r->x < 0)
 	{
-		if ((unsigned)-(r->x) >= r->width)
+		if (-(r->x) >= r->width)
 			r->width = 0;
 		else
 			r->width += r->x;
@@ -536,7 +658,7 @@ static int make_rectangle(VWK *v, int x1, int y1, int x2, int y2, vdi_rectangle 
 	}
 	if (r->y < 0)
 	{
-		if ((unsigned)-(r->y) >= r->height)
+		if (-(r->y) >= r->height)
 			r->height = 0;
 		else
 			r->height += r->y;
@@ -1448,7 +1570,7 @@ static int vdi_vrq_choice(VWK *v, VDIPB *pb)
 	_UWORD term_ch;
 	_WORD i;
 	
-	V("v%s_choice[%d]: (%d)", v->input_mode[DEV_CHOICE] == MODE_REQUEST ? "rq" : "sm", v->handle, PV_INTIN(pb));
+	V("v%s_choice[%d]: (%d)", v->input_mode[DEV_CHOICE] == MODE_REQUEST ? "rq" : "sm", v->handle, *PV_INTIN(pb));
 
 	if (!IS_SCREEN_V(v))
 	{
@@ -1525,12 +1647,6 @@ static char *ascii_text(int nchars, _WORD *string)
 
 static int text_width(FONT_DESC *xf, _WORD *items, int n)
 {
-#ifdef VDI_DRIVER_X
-	XCharStruct overall;
-	int ascent, descent, direction;
-	XTextExtents16(xf->xfont, (XChar2b *)items, n, &direction, &ascent, &descent, &overall);
-	return overall.width;
-#endif
 	/* TODO */
 	(void) xf;
 	(void) items;
@@ -1617,9 +1733,6 @@ static void set_font_align(VWK *v, _WORD *items, int n, gboolean justified)
 		v->font_xoff += d1 + d2;
 		break;
 	}
-#ifdef VDI_DRIVER_X
-	v->font_yoff -= sysfont[v->font_index].xfont->ascent;
-#endif
 }
 
 /******************************************************************************/
@@ -1633,26 +1746,6 @@ static void init_font(VWK *v, _WORD *items, int n, gboolean justified)
 
 static void draw_string(VWK *v, int x, int y, _WORD *items, int n)
 {
-#ifdef VDI_DRIVER_X
-	if (v->wrmode == MD_XOR)
-	{
-		XBUF(XDrawString16, v->gc, x, y, (XChar2b *) items, n);
-	} else if (v->wrmode != MD_TRANS)
-	{
-		XBUF(XDrawImageString16, v->gc, x, y, (XChar2b *) items, n);
-	} else
-	{
-		XSetFunction(x_display, v->gc, GXcopy);
-		XBUF(XDrawString16, v->gc, x, y, (XChar2b *) items, n);
-	}
-	if (v->text_style & TXT_THICKENED)
-	{
-		XSetFunction(x_display, v->gc, FIX_COLOR(v->text_color) == 0 ? GXand : GXor);
-		XSetForeground(x_display, v->gc, FIX_COLOR(v->text_color));
-		XSetBackground(x_display, v->gc, FIX_COLOR(v->bg_color));
-		XBUF(XDrawString16, v->gc, x + 1, y, (XChar2b *) items, n);
-	}
-#endif
 	/* TODO */
 	(void) v;
 	(void) x;
@@ -1665,17 +1758,10 @@ static void draw_string(VWK *v, int x, int y, _WORD *items, int n)
 
 static void underline_text(VWK *v, int x, int y, int len)
 {
-#ifdef VDI_DRIVER_X
 	int ly;
 	
-	ly = y - sysfont[v->font_index].xfont->ascent + sysfont[v->font_index].top + v->underline_size + sysfont[v->font_index].underline_size;
-	XBUF(XDrawLine, v->gc, x, ly, x + len, ly);
-#endif
-	/* TODO */
-	(void) v;
-	(void) x;
-	(void) y;
-	(void) len;
+	ly = y - sysfont[v->font_index].top + v->underline_size + sysfont[v->font_index].underline_size;
+	vdi_draw_hline(v, x, x + len - 1, ly, 0xffff, v->wrmode, FIX_COLOR(v->text_color), FIX_COLOR(v->bg_color));
 }
 
 /******************************************************************************/
@@ -1700,9 +1786,6 @@ static void change_font(VWK *v, int i)
 {
 	if (IS_SCREEN_V(v))
 	{
-#ifdef VDI_DRIVER_X
-		XSetFont(x_display, v->gc, sysfont[i].xfont->fid);
-#endif
 	}
 	v->font_index = i;
 }
@@ -1717,13 +1800,11 @@ static int vdi_v_gtext(VWK *v, VDIPB *pb)
 	int x = V_PTSINX(pb, 0);
 	int y = V_PTSINY(pb, 0);
 	int n = V_NINTIN(pb);
-	BEGIN_DRAW(v);
 	
-	V("v_gtext[%d]: (%d,%d) '%s'", v->handle, x, y, ascii_text(n, V_INTIN(pb, 0)));
+	V("v_gtext[%d]: (%d,%d) '%s'", v->handle, x, y, ascii_text(n, &V_INTIN(pb, 0)));
 
 	draw_text(v, x, y, &V_INTIN(pb, 0), n);
 	
-	END_DRAW(v);
 	V_NINTOUT(pb, 0);
 	V_NPTSOUT(pb, 0);
 	return VDI_DONE;
@@ -1742,9 +1823,8 @@ static int vdi_v_justified(VWK *v, VDIPB *pb)
 	double s, off = 0.0;
 	FONT_DESC *sf;
 	int cw;
-	BEGIN_DRAW(v);
 	
-	V("v_justified[%d]: (%d,%d), '%s', %d,%d,%d", v->handle, V_PTSINX(pb, 0), V_PTSINY(pb, 0), ascii_text(V_NINTIN(pb) - 2, V_INTIN(pb, 2)), V_PTSINX(pb, 1), V_INTIN(pb, 0), V_INTIN(pb, 1));
+	V("v_justified[%d]: (%d,%d), '%s', %d,%d,%d", v->handle, V_PTSINX(pb, 0), V_PTSINY(pb, 0), ascii_text(V_NINTIN(pb) - 2, &V_INTIN(pb, 2)), V_PTSINX(pb, 1), V_INTIN(pb, 0), V_INTIN(pb, 1));
 
 	len = V_PTSIN(pb, 2);
 	word_space = V_INTIN(pb, 0);
@@ -1773,7 +1853,6 @@ static int vdi_v_justified(VWK *v, VDIPB *pb)
 	}
 	if (v->text_style & TXT_UNDERLINED)
 		underline_text(v, x, y, (int)off);
-	END_DRAW(v);
 	
 	if (!(word_space & 0x8000))
 		n = 0;
@@ -1790,7 +1869,7 @@ static int vdi_vst_font(VWK *v, VDIPB *pb)
 	_WORD *intout = PV_INTOUT(pb);
 
 	UNUSED(v);
-	V("vst_font[%d]: %d", v->handle, PV_INTIN(pb));
+	V("vst_font[%d]: %d", v->handle, *PV_INTIN(pb));
 
 	V_INTOUT(pb, 0) = SYSTEM_FONT_ID;
 	V_NINTOUT(pb, 1);
@@ -2005,9 +2084,9 @@ static int vdi_vqt_attributes(VWK *v, VDIPB *pb)
 	_WORD *ptsout = PV_PTSOUT(pb);
 	const FONT_DESC *sf;
 
-	V("vqt_attributes[%d]", v->handle);
-
 	sf = &sysfont[v->font_index];
+	V("vqt_attributes[%d] -> %dx%d", v->handle, sf->cellwidth, sf->cellheight);
+
 	V_INTOUT(pb, 0) = SYSTEM_FONT_ID;
 	V_INTOUT(pb, 1) = v->text_color;
 	V_INTOUT(pb, 2) = v->text_rotation;
@@ -2079,7 +2158,7 @@ static int vdi_vqt_name(VWK *v, VDIPB *pb)
 	int i;
 	
 	UNUSED(v);
-	V("vqt_name[%d]: %d", v->handle, PV_INTIN(pb));
+	V("vqt_name[%d]: %d", v->handle, *PV_INTIN(pb));
 
 	V_INTOUT(pb, 0) = SYSTEM_FONT_ID;
 	s = SYSTEM_FONT_NAME;
@@ -2146,7 +2225,7 @@ static int vdi_vst_skew(VWK *v, VDIPB *pb)
 /******************************************************************************/
 
 /* findpixelindex: Searches for a CLUT entry for the pixel at address pptr */
-static int findpixelindex(unsigned long pixelcol)
+static int findpixelindex(pel pixelcol)
 {
 	return st_revtab[pixelcol];
 }
@@ -2187,10 +2266,10 @@ static void vro_cpy_from_screen(VWK *v, int x, int y, int w, int h, MFDB *d, int
 
 	if (v->planes == 1)
 	{
-		V("  vro_cpy_from_screen(%d->%d, [%d,%d,%d,%d]->[%d,%d] MFDB[0x%08x,%d,%d,wd=%d,std=%d]", v->planes, d->fd_nplanes, x, y, w, h, dx, dy, da, d->fd_w, d->fd_h, d->fd_wdwidth, d->fd_stand);
+		V("  vro_cpy_from_screen(%d->%d, [%d,%d,%d,%d]->[%d,%d] MFDB[0x%p,%d,%d,wd=%d,std=%d]", v->planes, d->fd_nplanes, x, y, w, h, dx, dy, d->fd_addr, d->fd_w, d->fd_h, d->fd_wdwidth, d->fd_stand);
 	} else								/* Not a monochrome raster: */
 	{
-		V("  vro_cpy_from_screen(%d->%d, [%d,%d,%d,%d]->[%d,%d] MFDB[0x%08x,%d,%d,wd=%d,std=%d]", v->planes, planes, x, y, w, h, dx, dy, da, d->fd_w, d->fd_h, words, d->fd_stand);
+		V("  vro_cpy_from_screen(%d->%d, [%d,%d,%d,%d]->[%d,%d] MFDB[0x%p,%d,%d,wd=%d,std=%d]", v->planes, d->fd_nplanes, x, y, w, h, dx, dy, d->fd_addr, d->fd_w, d->fd_h, d->fd_wdwidth, d->fd_stand);
 	}
 }
 
@@ -2227,7 +2306,7 @@ static void vro_cpy_to_screen(VWK *v, int mode, int x, int y, int w, int h, MFDB
 		V("  vro_cpy_to_screen(%d->%d, [%d,%d,%d,%d]->[%d,%d]", s->fd_nplanes, v->planes, x, y, w, h, dx, dy);
 	} else								/* A color raster: */
 	{
-		V("  vro_cpy_to_screen(%d->%d, [%d,%d,%d,%d]->[%d,%d] MFDB[0x%08x,%d,%d,wd=%d,std=%d]", planes, v->planes, x, y, w, h, dx, dy, sa, s->fd_w, s->fd_h, words, s->fd_stand);
+		V("  vro_cpy_to_screen(%d->%d, [%d,%d,%d,%d]->[%d,%d] MFDB[0x%p,%d,%d,wd=%d,std=%d]", s->fd_nplanes, v->planes, x, y, w, h, dx, dy, s->fd_addr, s->fd_w, s->fd_h, s->fd_wdwidth, s->fd_stand);
 	}
 }
 
@@ -2290,9 +2369,6 @@ static gboolean do_copy_raster(VWK *v, _WORD *ptsin, int mode, MFDB *s, MFDB *d)
 			{
 				if (make_rectangle(v, sx1, sy1, sx2, sy2, &sr, v->width, v->height))
 				{
-#ifdef VDI_DRIVER_X
-					XBUFCOPY(v->gc, sr.x, sr.y, sr.width, sr.height, dx1, dy1);
-#endif
 				}
 			} else
 			{
@@ -2319,9 +2395,6 @@ static gboolean do_copy_raster(VWK *v, _WORD *ptsin, int mode, MFDB *s, MFDB *d)
 			 */
 			if (v->clipping)
 			{
-#ifdef VDI_DRIVER_X
-				XSetClipMask(x_display, v->gc, None);
-#endif
 			}
 			if (fr_s)
 			{
@@ -2361,14 +2434,12 @@ static int vdi_vro_cpyfm(VWK *v, VDIPB *pb)
 	MFDB *d = vdi_control_ptr(1, MFDB *);
 	int mode;
 	int ret;
-	BEGIN_DRAW(v);
 	
 	/* we dont support raster scaling, disable scaling bit of mode */
 	mode = V_INTIN(pb, 0) & 0x0f;
 	
 	ret = do_copy_raster(v, ptsin, mode, s, d);
 	
-	END_DRAW(v);
 	V_NINTOUT(pb, 0);
 	V_NPTSOUT(pb, 0);
 	return ret;
@@ -2497,14 +2568,12 @@ static int vdi_vrt_cpyfm(VWK *v, VDIPB *pb)
 	MFDB *d = vdi_control_ptr(1, MFDB *);
 	int mode;
 	gboolean ret;
-	BEGIN_DRAW(v);
 	
 	/* we dont support raster scaling, disable scaling bit of mode */
 	mode = V_INTIN(pb, 0) & 0x0f;
 	
 	ret = do_copy_transparent(v, intin, ptsin, mode, s, d);
 	
-	END_DRAW(v);
 	V_NINTOUT(pb, 0);
 	V_NPTSOUT(pb, 0);
 	return ret;
@@ -2609,7 +2678,7 @@ static int vdi_vr_trnfm(VWK *v, VDIPB *pb)
 	
 	V("vr_trnfm[%d]: [%d] S: 0x%lx (0x%lx[%d]), D: 0x%lx (0x%lx[%d]) {%d,%d,%d}",
 	   v->handle, 
-	   s->fd_planes,
+	   s->fd_nplanes,
 	   (long) s, (long)(s ? s->fd_addr : 0), s->fd_stand,
 	   (long) d, (long)(d ? d->fd_addr : 0), d->fd_stand,
 	   s->fd_w, s->fd_h, s->fd_wdwidth);
@@ -2644,16 +2713,14 @@ static int vdi_v_get_pixel(VWK *v, VDIPB *pb)
 	_WORD *ptsin = PV_PTSIN(pb);
 	int x = V_PTSINX(pb, 0);
 	int y = V_PTSINY(pb, 0);
-	unsigned long pixelcol = 0;
+	pel pixelcol = 0;
 	int i;
 	
 	V("v_get_pixel[%d]: (%d,%d)", v->handle, x, y);
 
 	if (x >= 0 && y >= 0 && x < v->width && y < v->height)
 	{
-#ifdef VDI_DRIVER_X
-		TODO
-#endif
+		/* TODO */
 	}
 	if (v->planes >= 15)
 	{
@@ -2754,9 +2821,7 @@ static void output_raw_char(VWK *v, char c)
 	if (vt52 == NULL)
 		return;
 	{
-	BEGIN_ALPHA_DRAW(v);
 	output_raw_char_dc(v, vt52, c);
-	END_DRAW(v);
 	}
 }
 
@@ -2770,7 +2835,7 @@ int vdi_output_c(_WORD dev, unsigned char c)
 	VWK *v;
 	struct alpha_info *vt52;
 	
-	if (!VALID_S_HANDLE(h) || vbase == 0)
+	if (!VALID_S_HANDLE(h) || framebuffer == NULL)
 	{
 		return VDI_PASS;
 	}
@@ -2786,7 +2851,6 @@ int vdi_output_c(_WORD dev, unsigned char c)
 		return VDI_DONE;
 	}
 	{
-		BEGIN_ALPHA_DRAW(v);
 		if (vt52->start_esc)
 		{
 			if (vt52->start_esc == 2)
@@ -3057,7 +3121,6 @@ int vdi_output_c(_WORD dev, unsigned char c)
 				break;
 			}
 		}
-		END_DRAW(v);
 	}
 	return VDI_DONE;
 }
@@ -3123,11 +3186,9 @@ static int vdi_v_exit_cur(VWK *v, VDIPB *pb)
 	vt52 = v->vt52;
 	if (vt52 != NULL)
 	{
-		BEGIN_ALPHA_DRAW(v);
 		v_disable_alpha_cursor(v);
 		v_reset_alpha_cursor(v);
 		fill_rectangle_color(v, 0, 0, v->width, v->height, vt52->abg);
-		END_DRAW(v);
 	}
 	return VDI_DONE;
 }
@@ -3156,19 +3217,17 @@ static int vdi_v_enter_cur(VWK *v, VDIPB *pb)
 	vt52 = v->vt52;
 	if (vt52 != NULL)
 	{
-		v->clipping = FALSE;
+		v->clipping = v->inq_tab.clipping = FALSE;
 		set_clipping(v);
 		v->wrmode = MD_REPLACE;
 		vt52->rev_on = FALSE;
 		vt52->ax = vt52->ay = 0;
 		vt52->asavex = vt52->asavey = 0;
 		{
-			BEGIN_ALPHA_DRAW(v);
 			v_reset_alpha_cursor(v);
 			v_enable_alpha_cursor(v);
 			fill_rectangle_color(v, 0, 0, v->width, v->height, vt52->abg);
 			v_show_alpha_cursor(v);
-			END_DRAW(v);
 		}
 	}
 	return VDI_DONE;
@@ -3193,11 +3252,9 @@ static int vdi_v_curup(VWK *v, VDIPB *pb)
 		/* unlike VT52 cursor up, this does not scroll screen down when at top */
 		if (vt52->ay > 0)
 		{
-			BEGIN_ALPHA_DRAW(v);
 			v_hide_alpha_cursor(v);
 			vt52->ay--;
 			v_show_alpha_cursor(v);
-			END_DRAW(v);
 		}
 	}
 		
@@ -3223,11 +3280,9 @@ static int vdi_v_curdown(VWK *v, VDIPB *pb)
 		/* unlike VT52 cursor down, this does not scroll screen up when at bottom */
 		if (vt52->ay < vt52->ah - 1)
 		{
-			BEGIN_ALPHA_DRAW(v);
 			v_hide_alpha_cursor(v);
 			vt52->ay++;
 			v_show_alpha_cursor(v);
-			END_DRAW(v);
 		}
 	}
 	
@@ -3252,11 +3307,9 @@ static int vdi_v_curright(VWK *v, VDIPB *pb)
 	{
 		if (vt52->ax < vt52->aw - 1)
 		{
-			BEGIN_ALPHA_DRAW(v);
 			v_hide_alpha_cursor(v);
 			vt52->ax++;
 			v_show_alpha_cursor(v);
-			END_DRAW(v);
 		}
 	}
 	
@@ -3281,11 +3334,9 @@ static int vdi_v_curleft(VWK *v, VDIPB *pb)
 	{
 		if (vt52->ax > 0)
 		{
-			BEGIN_ALPHA_DRAW(v);
 			v_hide_alpha_cursor(v);
 			vt52->ax--;
 			v_show_alpha_cursor(v);
-			END_DRAW(v);
 		}
 	}
 		
@@ -3308,11 +3359,9 @@ static int vdi_v_curhome(VWK *v, VDIPB *pb)
 	vt52 = v->vt52;
 	if (vt52 != NULL)
 	{
-		BEGIN_ALPHA_DRAW(v);
 		v_hide_alpha_cursor(v);
 		vt52->ax = vt52->ay = 0;
 		v_show_alpha_cursor(v);
-		END_DRAW(v);
 	}
 	
 	return VDI_DONE;
@@ -3334,7 +3383,6 @@ static int vdi_v_eeos(VWK *v, VDIPB *pb)
 	vt52 = v->vt52;
 	if (vt52 != NULL)
 	{
-		BEGIN_ALPHA_DRAW(v);
 		v_reset_alpha_cursor(v);
 		if (vt52->ax == 0)
 		{
@@ -3348,7 +3396,6 @@ static int vdi_v_eeos(VWK *v, VDIPB *pb)
 			}
 		}
 		v_show_alpha_cursor(v);
-		END_DRAW(v);
 	}
 	
 	return VDI_DONE;
@@ -3370,11 +3417,9 @@ static int vdi_v_eeol(VWK *v, VDIPB *pb)
 	vt52 = v->vt52;
 	if (vt52 != NULL)
 	{
-		BEGIN_ALPHA_DRAW(v);
 		v_reset_alpha_cursor(v);
 		fill_rectangle_color(v, vt52->ax * vt52->acw, vt52->ay * vt52->ach, v->width - vt52->ax * vt52->acw, vt52->ach, vt52->abg);
 		v_show_alpha_cursor(v);
-		END_DRAW(v);
 	}
 	
 	return VDI_DONE;
@@ -3397,13 +3442,11 @@ static int vdi_vs_curaddress(VWK *v, VDIPB *pb)
 	vt52 = v->vt52;
 	if (vt52 != NULL)
 	{
-		BEGIN_ALPHA_DRAW(v);
 		v_hide_alpha_cursor(v);
 		/* strange, but coordinates are base-1 here */
 		vt52->ay = MAX(0, MIN(vt52->ah - 1, V_INTIN(pb, 0) - 1));
 		vt52->ax = MAX(0, MIN(vt52->aw - 1, V_INTIN(pb, 1) - 1));
 		v_show_alpha_cursor(v);
-		END_DRAW(v);
 	}
 	
 	return VDI_DONE;
@@ -3420,7 +3463,7 @@ static int vdi_v_curtext(VWK *v, VDIPB *pb)
 	int n;
 	_WORD *items;
 	
-	V("v_curtext[%d]: '%s'", v->handle, ascii_text(V_NINTIN(pb), V_INTIN(pb, 0)));
+	V("v_curtext[%d]: '%s'", v->handle, ascii_text(V_NINTIN(pb), &V_INTIN(pb, 0)));
 
 	V_NPTSOUT(pb, 0);
 	V_NINTOUT(pb, 0);
@@ -3434,8 +3477,7 @@ static int vdi_v_curtext(VWK *v, VDIPB *pb)
 		n = V_NINTIN(pb);
 		items = (_WORD *)&V_INTIN(pb, 0);
 		{
-			unsigned int fg, bg;
-			BEGIN_ALPHA_DRAW(v);
+			pel fg, bg;
 			
 			v_reset_alpha_cursor(v);
 			if (vt52->rev_on)
@@ -3449,7 +3491,6 @@ static int vdi_v_curtext(VWK *v, VDIPB *pb)
 			}
 			XBUF(XDrawImageString16, x, y, (XChar2b *)items, n);
 			v_show_alpha_cursor(v);
-			END_DRAW(v);
 		}
 	}
 	
@@ -3714,11 +3755,9 @@ static int vdi_v_offset(VWK *v, VDIPB *pb)
 		vt52 = v->vt52;
 		if (vt52 != NULL)
 		{
-			BEGIN_ALPHA_DRAW(v);
 			v_hide_alpha_cursor(v);
 			v_disable_alpha_cursor(v);
 			vt52->v_cur_of = V_INTIN(pb, 0);
-			END_DRAW(v);
 		}
 	} else
 	{
@@ -3729,17 +3768,6 @@ static int vdi_v_offset(VWK *v, VDIPB *pb)
 
 /******************************************************************************/
 /* Line Functions                                                             */
-/******************************************************************************/
-
-static void init_line(VWK *v)
-{
-	if (!IS_SCREEN_V(v))
-		return;
-}
-
-#define INIT_LINE(v) init_line(v)
-#define EXIT_LINE(v)
-
 /******************************************************************************/
 
 static int vdi_vsl_udsty(VWK *v, VDIPB *pb)
@@ -3954,13 +3982,43 @@ static void do_arrow(VWK *v, VDI_POINT *xy, int npoints)
 }
 
 
+static _UWORD get_line_pattern(VWK *v)
+{
+	_UWORD line_pattern;
+	
+	switch (v->line_type)
+	{
+	case SOLID:
+		line_pattern = 0xffff;
+		break;
+	case LONGDASH:
+		line_pattern = 0xfff0;
+		break;
+	case DOT:
+		line_pattern = 0xc0c0;
+		break;
+	case DASHDOT:
+		line_pattern = 0xff18;
+		break;
+	case DASH:
+		line_pattern = 0xff00;
+		break;
+	case DASH2DOT:
+		line_pattern = 0xf191;
+		break;
+	case USERLINE:
+		line_pattern = v->ud_linepat;
+		break;
+	default:
+		line_pattern = 0xffff;
+		break;
+	}
+	return line_pattern;
+}
+
 static void draw_pline(VWK *v, VDI_POINT *points, int n)
 {
-	/* TODO */
-	(void) v;
-	(void) points;
-	(void) n;
-	vdi_draw_lines(v->gc, points, n);
+	vdi_draw_lines(v, points, n, get_line_pattern(v), v->wrmode, FIX_COLOR(v->line_color), FIX_COLOR(v->bg_color));
 }
 
 #define IS_BEZ(f) (((f) & BEZIER_START) != 0)
@@ -3968,34 +4026,25 @@ static void draw_pline(VWK *v, VDI_POINT *points, int n)
 
 static void do_pline(VWK *v, VDI_POINT *points, int n)
 {
-	BEGIN_DRAW(v);
-	
 	if (v->line_width > 1 && (v->line_ends & (ARROWED | (ARROWED << 2))))
 		do_arrow(v, points, n);
 	
 	{
-		INIT_LINE(v);
 		draw_pline(v, points, n);
-		EXIT_LINE(v);
 	}
 	
 	if (v->line_width <= 1 && (v->line_ends & (ARROWED | (ARROWED << 2))))
 		do_arrow(v, points, n);
-	
-	END_DRAW(v);
 }
 
 
 static void do_fillarea(VWK *v, VDI_POINT *points, int n)
 {
-	BEGIN_DRAW(v);
-
 	init_filled(v);
 	/* TODO */
 	(void) points;
 	(void) n;
 	vdi_draw_polygons(v->gc, points, n);
-	END_DRAW(v);
 }
 
 
@@ -4441,15 +4490,6 @@ static int vdi_vsl_ends(VWK *v, VDIPB *pb)
 /* Marker Functions                                                           */
 /******************************************************************************/
 
-static void init_marker(VWK *v)
-{
-	(void) v;
-}
-#define INIT_MARKER(v) init_marker(v)
-#define EXIT_MARKER(v)
-
-/******************************************************************************/
-
 static void calc_marker_scale(VWK *v)
 {
 	v->marker_scale = (v->marker_height + MIN_MKHT / 2) / MIN_MKHT;
@@ -4555,24 +4595,19 @@ static int vdi_v_pmarker(VWK *v, VDIPB *pb)
 	int n = V_NPTSIN(pb);
 	VDI_POINT points[MAX_POINTS];
 	int x, y;
-	BEGIN_DRAW(v);
 	
 	V("v_pmarker[%d]: %d", v->handle, n);
 
 	{
-		INIT_MARKER(v);
-	
 		switch (v->marker_type)
 		{
 		case PM_DOT:
-			for (i = 0; i < n && i < MAX_POINTS; i++)
+			for (i = 0; i < n; i++)
 			{
-				VDI_SET_POINT(points[i], V_PTSINX(pb, i), V_PTSINY(pb, i));
+				x = V_PTSINX(pb, i);
+				y = V_PTSINY(pb, i);
+				gfx_put_pixel(v, x, y, 0xffff, v->wrmode, FIX_COLOR(v->marker_color), FIX_COLOR(v->bg_color));
 			}
-			n = i;
-#ifdef VDI_DRIVER_X
-			XBUF(XDrawPoints, v->gc, points, n, CoordModeOrigin);
-#endif
 			break;
 		case PM_PLUS:
 			for (i = 0; i < n; i++)
@@ -4583,12 +4618,12 @@ static int vdi_v_pmarker(VWK *v, VDIPB *pb)
 				points[0].y = y - 3 * v->marker_scale;
 				points[1].x = x;
 				points[1].y = y + 3 * v->marker_scale;
-				vdi_draw_lines(v->gc, points, 2);
+				vdi_draw_lines(v, points, 2, 0xffff, v->wrmode, FIX_COLOR(v->marker_color), FIX_COLOR(v->bg_color));
 				points[0].x = x - 4 * v->marker_scale;
 				points[0].y = y;
 				points[1].x = x + 4 * v->marker_scale;
 				points[1].y = y;
-				vdi_draw_lines(v->gc, points, 2);
+				vdi_draw_lines(v, points, 2, 0xffff, v->wrmode, FIX_COLOR(v->marker_color), FIX_COLOR(v->bg_color));
 			}
 			break;
 		case PM_ASTERISK:
@@ -4600,17 +4635,17 @@ static int vdi_v_pmarker(VWK *v, VDIPB *pb)
 				points[0].y = y - 3 * v->marker_scale;
 				points[1].x = x;
 				points[1].y = y + 3 * v->marker_scale;
-				vdi_draw_lines(v->gc, points, 2);
+				vdi_draw_lines(v, points, 2, 0xffff, v->wrmode, FIX_COLOR(v->marker_color), FIX_COLOR(v->bg_color));
 				points[0].x = x + 3 * v->marker_scale;
 				points[0].y = y + 2 * v->marker_scale;
 				points[1].x = x - 3 * v->marker_scale;
 				points[1].y = y - 2 * v->marker_scale;
-				vdi_draw_lines(v->gc, points, 2);
+				vdi_draw_lines(v, points, 2, 0xffff, v->wrmode, FIX_COLOR(v->marker_color), FIX_COLOR(v->bg_color));
 				points[0].x = x + 3 * v->marker_scale;
 				points[0].y = y - 2 * v->marker_scale;
 				points[1].x = x - 3 * v->marker_scale;
 				points[1].y = y + 2 * v->marker_scale;
-				vdi_draw_lines(v->gc, points, 2);
+				vdi_draw_lines(v, points, 2, 0xffff, v->wrmode, FIX_COLOR(v->marker_color), FIX_COLOR(v->bg_color));
 			}
 			break;
 		case PM_SQUARE:
@@ -4628,7 +4663,7 @@ static int vdi_v_pmarker(VWK *v, VDIPB *pb)
 				points[3].y = y + 3 * v->marker_scale;
 				points[4].x = points[0].x;
 				points[4].y = points[0].y;
-				vdi_draw_lines(v->gc, points, 5);
+				vdi_draw_lines(v, points, 5, 0xffff, v->wrmode, FIX_COLOR(v->marker_color), FIX_COLOR(v->bg_color));
 			}
 			break;
 		case PM_DIAGCROSS:
@@ -4640,12 +4675,12 @@ static int vdi_v_pmarker(VWK *v, VDIPB *pb)
 				points[0].y = y - 3 * v->marker_scale;
 				points[1].x = x + 4 * v->marker_scale;
 				points[1].y = y + 3 * v->marker_scale;
-				vdi_draw_lines(v->gc, points, 2);
+				vdi_draw_lines(v, points, 2, 0xffff, v->wrmode, FIX_COLOR(v->marker_color), FIX_COLOR(v->bg_color));
 				points[0].x = x - 4 * v->marker_scale;
 				points[0].y = y + 3 * v->marker_scale;
 				points[1].x = x + 4 * v->marker_scale;
 				points[1].y = y - 3 * v->marker_scale;
-				vdi_draw_lines(v->gc, points, 2);
+				vdi_draw_lines(v, points, 2, 0xffff, v->wrmode, FIX_COLOR(v->marker_color), FIX_COLOR(v->bg_color));
 			}
 			break;
 		case PM_DIAMOND:
@@ -4663,13 +4698,11 @@ static int vdi_v_pmarker(VWK *v, VDIPB *pb)
 				points[3].y = y + 3 * v->marker_scale;
 				points[4].x = points[0].x;
 				points[4].y = points[0].y;
-				vdi_draw_lines(v->gc, points, 5);
+				vdi_draw_lines(v, points, 5, 0xffff, v->wrmode, FIX_COLOR(v->marker_color), FIX_COLOR(v->bg_color));
 			}
 			break;
 		}
-		EXIT_MARKER(v);
 	}
- 	END_DRAW(v);
 	V_NINTOUT(pb, 0);
 	V_NPTSOUT(pb, 0);
 	return VDI_DONE;
@@ -4995,9 +5028,7 @@ static int vdi_vr_recfl(VWK *v, VDIPB *pb)
 
 	if (make_rectangle(v, V_PTSIN(pb, 0), V_PTSIN(pb, 1), V_PTSIN(pb, 2), V_PTSIN(pb, 3), &r, v->width, v->height))
 	{
-		BEGIN_DRAW(v);
 		fill_rectangle_brush(v, r.x, r.y, r.width, r.height);
-		END_DRAW(v);
 	}
 	V_NINTOUT(pb, 0);
 	V_NPTSOUT(pb, 0);
@@ -5006,15 +5037,6 @@ static int vdi_vr_recfl(VWK *v, VDIPB *pb)
 
 /******************************************************************************/
 /* GDP functions                                                              */
-/******************************************************************************/
-
-static void init_perimeter(VWK *v)
-{
-	(void) v;
-}
-#define INIT_PERIMETER(v) init_perimeter(v)
-#define EXIT_PERIMETER(v)
-
 /******************************************************************************/
 
 static int vdi_v_bar(VWK *v, VDIPB *pb)
@@ -5043,18 +5065,17 @@ static int vdi_v_bar(VWK *v, VDIPB *pb)
 	}
 	if (make_rectangle(v, x1, y1, x2, y2, &r, v->width, v->height))
 	{
-		BEGIN_DRAW(v);
 		fill_rectangle_brush(v, r.x, r.y, r.width, r.height);
 		if (v->fill_perimeter)
 		{
-			INIT_PERIMETER(v);
+			int color = v->fill_perimeter_whichcolor == 0 ? v->fill_color : v->line_color;
 			if (x1 == r.x)
 			{
 				p[0].x = r.x;
 				p[0].y = r.y;
 				p[1].x = p[0].x;
 				p[1].y = r.y + r.height - 1;
-				vdi_draw_lines(v->gc, p, 2);
+				vdi_draw_lines(v, p, 2, 0xffff, v->wrmode, FIX_COLOR(color), FIX_COLOR(v->bg_color));
 			}
 			if (y2 == (int)(r.y + r.height - 1))
 			{
@@ -5062,7 +5083,7 @@ static int vdi_v_bar(VWK *v, VDIPB *pb)
 				p[0].y = y2;
 				p[1].x = r.x + r.width - 1;
 				p[1].y = p[0].y;
-				vdi_draw_lines(v->gc, p, 2);
+				vdi_draw_lines(v, p, 2, 0xffff, v->wrmode, FIX_COLOR(color), FIX_COLOR(v->bg_color));
 			}
 			if (x2 == (int)(r.x + r.width - 1))
 			{
@@ -5070,7 +5091,7 @@ static int vdi_v_bar(VWK *v, VDIPB *pb)
 				p[0].y = r.y;
 				p[1].x = p[0].x;
 				p[1].y = r.y + r.height - 2;
-				vdi_draw_lines(v->gc, p, 2);
+				vdi_draw_lines(v, p, 2, 0xffff, v->wrmode, FIX_COLOR(color), FIX_COLOR(v->bg_color));
 			}
 			if (y1 == r.y)
 			{
@@ -5078,11 +5099,9 @@ static int vdi_v_bar(VWK *v, VDIPB *pb)
 				p[0].y = r.y;
 				p[1].x = r.x + r.width - 2;
 				p[1].y = p[0].y;
-				vdi_draw_lines(v->gc, p, 2);
+				vdi_draw_lines(v, p, 2, 0xffff, v->wrmode, FIX_COLOR(color), FIX_COLOR(v->bg_color));
 			}
-			EXIT_PERIMETER(v);
 		}
-		END_DRAW(v);
 	}
 	V_NINTOUT(pb, 0);
 	V_NPTSOUT(pb, 0);
@@ -5091,16 +5110,19 @@ static int vdi_v_bar(VWK *v, VDIPB *pb)
 
 /******************************************************************************/
 
-static void draw_arc(VWK *v, int x, int y, int xradius, int yradius, int beg_angle, int end_angle)
+static void draw_arc(VWK *v, int x, int y, int xradius, int yradius, int beg_angle, int end_angle, int color)
 {
+	_UWORD line_pattern = get_line_pattern(v);
+
 	beg_angle = beg_angle * 64 / 10;
 	end_angle = end_angle * 64 / 10 - beg_angle;
-	INIT_LINE(v);
 	/* TODO */
 	(void) x;
 	(void) y;
 	(void) xradius;
 	(void) yradius;
+	(void) color;
+	(void) line_pattern;
 	XBUF(XDrawArc, v->gc, x - xradius, y - yradius, xradius * 2, yradius * 2, beg_angle, end_angle);
 }
 
@@ -5120,7 +5142,7 @@ static int vdi_v_arc(VWK *v, VDIPB *pb)
 	radius = V_PTSIN(pb, 6);
 	beg_angle = V_INTIN(pb, 0);
 	end_angle = V_INTIN(pb, 1);
-	draw_arc(v, x, y, radius, radius, beg_angle, end_angle);
+	draw_arc(v, x, y, radius, radius, beg_angle, end_angle, v->line_color);
 	
 	V_NINTOUT(pb, 0);
 	V_NPTSOUT(pb, 0);
@@ -5133,19 +5155,12 @@ static int vdi_v_arc(VWK *v, VDIPB *pb)
 static void filled_ellpie(VWK *v, int x, int y, int xradius, int yradius, int beg_angle, int end_angle)
 {
 	init_filled(v);
-	beg_angle = beg_angle * 64 / 10;
-	end_angle = end_angle * 64 / 10 - beg_angle;
 	/* TODO */
-	(void) x;
-	(void) y;
-	(void) xradius;
-	(void) yradius;
 	XBUF(XFillArc, v->gc, x - xradius, y - yradius, 2 * xradius, 2 * yradius, beg_angle, end_angle);
 	if (v->fill_perimeter)
 	{
-		INIT_PERIMETER(v);
-		XBUF(XDrawArc, v->gc, x - xradius, y - yradius, 2 * xradius, 2 * yradius, beg_angle, end_angle);
-		EXIT_PERIMETER(v);
+		int color = v->fill_perimeter_whichcolor == 0 ? v->fill_color : v->line_color;
+		draw_arc(v, x, y, xradius, yradius, beg_angle, end_angle, color);
 	}
 }
 
@@ -5161,14 +5176,12 @@ static int vdi_v_pieslice(VWK *v, VDIPB *pb)
 	V("v_piesclice[%d]: %d, %d, %d, %d, %d)", v->handle, V_PTSIN(pb, 0), V_PTSIN(pb, 1), V_PTSIN(pb, 6), V_INTIN(pb, 0), V_INTIN(pb, 1));
 
 	{
-		BEGIN_DRAW(v);
 		x = V_PTSIN(pb, 0);
 		y = V_PTSIN(pb, 1);
 		radius = V_PTSIN(pb, 6);
 		beg_angle = V_INTIN(pb, 0);
 		end_angle = V_INTIN(pb, 1);
 		filled_ellpie(v, x, y, radius, radius, beg_angle, end_angle);
-		END_DRAW(v);
 	}
 	
 	V_NINTOUT(pb, 0);
@@ -5190,9 +5203,8 @@ static void filled_ellipse(VWK *v, int x, int y, int xradius, int yradius)
 	(void) yradius;
 	if (v->fill_perimeter)
 	{
-		INIT_PERIMETER(v);
-		XBUF(XDrawArc, v->gc, x - xradius, y - yradius, xradius * 2, yradius * 2, 0, 360 * 64);
-		EXIT_PERIMETER(v);
+		int color = v->fill_perimeter_whichcolor == 0 ? v->fill_color : v->line_color;
+		draw_arc(v, x, y, xradius, yradius, 0, 360 * 64, color);
 	}
 }
 
@@ -5206,12 +5218,10 @@ static int vdi_v_circle(VWK *v, VDIPB *pb)
 	V("v_circle[%d]: %d, %d, %d", v->handle, V_PTSIN(pb, 0), V_PTSIN(pb, 1), V_PTSIN(pb, 4));
 
 	{
-		BEGIN_DRAW(v);
 		x = V_PTSIN(pb, 0);
 		y = V_PTSIN(pb, 1);
 		radius = V_PTSIN(pb, 4);
 		filled_ellipse(v, x, y, radius, radius);
-		END_DRAW(v);
 	}
 		
 	V_NINTOUT(pb, 0);
@@ -5232,13 +5242,11 @@ static int vdi_v_ellipse(VWK *v, VDIPB *pb)
 	V("v_ellipse[%d]: %d, %d, %d, %d", v->handle, V_PTSIN(pb, 0), V_PTSIN(pb, 1), V_PTSIN(pb, 2), V_PTSIN(pb, 3));
 
 	{
-		BEGIN_DRAW(v);
 		x = V_PTSIN(pb, 0);
 		y = V_PTSIN(pb, 1);
 		xradius = V_PTSIN(pb, 2);
 		yradius = V_PTSIN(pb, 3);
 		filled_ellipse(v, x, y, xradius, yradius);
-		END_DRAW(v);
 	}
 	
 	V_NINTOUT(pb, 0);
@@ -5266,7 +5274,7 @@ static int vdi_v_ellarc(VWK *v, VDIPB *pb)
 		yradius = V_PTSIN(pb, 3);
 		beg_angle = V_INTIN(pb, 0);
 		end_angle = V_INTIN(pb, 1);
-		draw_arc(v, x, y, xradius, yradius, beg_angle, end_angle);
+		draw_arc(v, x, y, xradius, yradius, beg_angle, end_angle, v->line_color);
 	}
 	
 	V_NINTOUT(pb, 0);
@@ -5289,7 +5297,6 @@ static int vdi_v_ellpie(VWK *v, VDIPB *pb)
 	V("v_ellpie[%d]: %d, %d, %d, %d, %d, %d)", v->handle, V_PTSIN(pb, 0), V_PTSIN(pb, 1), V_PTSIN(pb, 2), V_PTSIN(pb, 3), V_INTIN(pb, 0), V_INTIN(pb, 1));
 
 	{
-		BEGIN_DRAW(v);
 		x = V_PTSIN(pb, 0);
 		y = V_PTSIN(pb, 1);
 		xradius = V_PTSIN(pb, 2);
@@ -5297,7 +5304,6 @@ static int vdi_v_ellpie(VWK *v, VDIPB *pb)
 		beg_angle = V_INTIN(pb, 0);
 		end_angle = V_INTIN(pb, 1);
 		filled_ellpie(v, x, y, xradius, yradius, beg_angle, end_angle);
-		END_DRAW(v);
 	}
 	
 	V_NINTOUT(pb, 0);
@@ -5431,8 +5437,6 @@ static void rounded_box(VWK *v, VDIPB *pb, int filled)
 	
 	if (make_rectangle(v, V_PTSIN(pb, 0), V_PTSIN(pb, 1), V_PTSIN(pb, 2), V_PTSIN(pb, 3), &r, v->width, v->height))
 	{
-		BEGIN_DRAW(v);
-		
 		x1 = V_PTSIN(pb, 0);
 		y1 = V_PTSIN(pb, 1);
 		if (x1 <= V_PTSIN(pb, 2))
@@ -5506,22 +5510,17 @@ static void rounded_box(VWK *v, VDIPB *pb, int filled)
 
 		if (filled)
 		{
-#ifdef VDI_DRIVER_X
 			init_filled(v);
 			vdi_draw_polygons(v->gc, points, 21);
 			if (v->fill_perimeter)
 			{
-				init_perimeter(v);
-				vdi_draw_lines(v->gc, points, 21);
+				int color = v->fill_perimeter_whichcolor == 0 ? v->fill_color : v->line_color;
+				vdi_draw_lines(v, points, 21, 0xffff, v->wrmode, FIX_COLOR(color), FIX_COLOR(v->bg_color));
 			}
-#endif
 		} else
 		{
-			INIT_LINE(v);
-			vdi_draw_lines(v->gc, points, 21);
-			EXIT_LINE(v);
+			draw_pline(v, points, 21);
 		}
-		END_DRAW(v);
 	}
 }
 
@@ -5714,12 +5713,6 @@ void vdi_clswk(VWK *v)
 	
 	if (v != NULL)
 	{
-#ifdef VDI_DRIVER_X
-		if (v->ud_fill_pattern != None)
-			XFreePixmap(x_display, v->ud_fill_pattern);
-		if (v->gc != NULL)
-			XFreeGC(x_display, v->gc);
-#endif
 		if (v->to_free)
 			dos_free(v->to_free);
 		if (v->req_col != &screen_pal && v->req_col != &dummy_pal)
@@ -5733,14 +5726,89 @@ void vdi_clswk(VWK *v)
 
 /* -------------------------------------------------------------------------- */
 
+static void chomp(char *dst, const char *src, size_t maxlen)
+{
+	size_t len;
+	
+	strncpy(dst, src, maxlen);
+	dst[maxlen - 1] = '\0';
+	len = strlen(dst);
+	while (len > 0 && dst[len - 1] == ' ')
+		dst[--len] = '\0';
+}
+
+static void x_get_font_props(FONT_DESC *sf, const FONT_HDR *h)
+{
+	sf->top = h->top;
+	sf->height = h->top;
+	sf->cellheight = h->form_height;
+	sf->descent = sf->bottom = sf->cellheight - sf->top - 1;
+	sf->per_char = NULL;
+	sf->scaled = 0;
+	sf->first_char = h->first_ade;
+	sf->last_char = h->last_ade;
+	sf->cellwidth = h->max_cell_width;
+	sf->width = h->max_cell_width - 1;
+	sf->left_offset = 0;
+	sf->right_offset = sf->width - h->right_offset;
+	sf->all_chars_exist = sf->first_char == 0 && sf->last_char == 255;
+	chomp(sf->name, h->name, VDI_FONTNAMESIZE);
+	sf->charset = 255; /* OEM */
+	sf->pointsize = h->point;
+	sf->half = h->half;
+	sf->ascent = h->ascent;
+	sf->monospaced = h->hor_table == NULL;
+	
+#if 0
+	{
+	int number = sf - sysfont;
+
+	static sysfontinfo const sfinfo[4] = {
+		{  4,  6,  4,  4,  3, 1, 1,  5,  6, 0, 0,  8 },
+		{  6,  8,  6,  6,  4, 1, 1,  7,  8, 0, 0,  9 },
+		{ 13, 16, 13, 11,  8, 2, 2,  7,  8, 0, 0, 10 },
+		{ 26, 32, 26, 21, 15, 5, 5, 16, 16, 0, 0, 20 }
+	};
+
+	printf("font %d %s:\n", number, sf->name);
+	printf(" height      : %d %d\n", sf->height, sfinfo[number].height);
+	printf(" cellheight  : %d %d\n", sf->cellheight, sfinfo[number].cellheight);
+	printf(" top         : %d %d\n", sf->top, sfinfo[number].top);
+	printf(" ascent      : %d %d\n", sf->ascent, sfinfo[number].ascent);
+	printf(" half        : %d %d\n", sf->half, sfinfo[number].half);
+	printf(" descent     : %d %d\n", sf->descent, sfinfo[number].descent);
+	printf(" bottom      : %d %d\n", sf->bottom, sfinfo[number].bottom);
+	printf(" width       : %d %d\n", sf->width, sfinfo[number].width);
+	printf(" cellwidth   : %d %d\n", sf->cellwidth, sfinfo[number].cellwidth);
+	printf(" left_offset : %d %d\n", sf->left_offset, sfinfo[number].left_offset);
+	printf(" right_offset: %d %d\n", sf->left_offset, sfinfo[number].right_offset);
+	printf(" point       : %d %d\n", sf->pointsize, sfinfo[number].point);
+	}
+#endif
+}
+
 static void vdi_reset_vars(void)
 {
+	int i, k;
+
 	phys_handle = -1;
 	user_but = 0;
 	user_tim = 0;
 	user_mot = 0;
 	user_cur = 0;
 	user_wheel = 0;
+
+	for (i = 0, k = 0; i < 5; i++)
+	{
+		fillpat[i] = &allpatterns[k];
+		k += patnum[i];
+	}
+
+	/* Now load the system font: */
+	for (i = 0; i < SYSFONTS; i++)
+	{
+		x_get_font_props(&sysfont[i], sysfonthdrs[i]);
+	}
 }
 
 /* -------------------------------------------------------------------------- */
@@ -5854,18 +5922,6 @@ static VWK *init_vwk(VDIPB *pb, int h, int phys_wk, int width, int height, int p
 	v->phys_wk = phys_wk;
 	v->can_clip = phys_wk == phys_handle;
 	
-#ifdef VDI_DRIVER_X
-	if (v->gc == 0)
-	{
-		XGCValues gv;
-	
-		gv.plane_mask = AllPlanes;			/* 1 */
-		gv.graphics_exposures = False;
-		gv.fill_rule = EvenOddRule;
-		v->gc = XCreateGC(x_display, vdiwin, GCPlaneMask | GCGraphicsExposures | GCFillRule, &gv);
-	}
-#endif
-
 	v->wrmode = MD_REPLACE;
 	v->clipping = FALSE;
 	v->clipr.x = 0;
@@ -5896,7 +5952,6 @@ static VWK *init_vwk(VDIPB *pb, int h, int phys_wk, int width, int height, int p
 	v->ud_linepat = 0xffff;
 	v->line_width = 1;
 	v->line_ends = SQUARED | (SQUARED << 2);
-	init_line(v);
 	
 	m = V_INTIN(pb, 3);
 	if (m < 1 || m > PM_MAX)
@@ -6018,11 +6073,9 @@ static int vdi_v_clrwk(VWK *v, VDIPB *pb)
 	V_NPTSOUT(pb, 0);
 	if (v->handle == phys_handle)
 	{
-		BEGIN_ALPHA_DRAW(v);
 		v_reset_alpha_cursor(v);
 		clear_window(v);
 		v_show_alpha_cursor(v);
-		END_DRAW(v);
 	}
 	return VDI_DONE;
 }
@@ -6326,7 +6379,7 @@ static int vdi_vq_ext_devinfo(VDIPB *pb)
 		const struct driverinfo *info = get_devinfo(device);
 		int l;
 		
-		V("vq_ext_devinfo[%d] %d,$%x,$%x,$%x", V_HANDLE(pb), device, file_path, file_name, name);
+		V("vq_ext_devinfo[%d] %d,$%p,$%p,$%p", V_HANDLE(pb), device, file_path, file_name, name);
 		if (file_path)
 		{
 			const char *path = "C:\\GEMSYS\\"; /* FIXME */
@@ -6362,7 +6415,7 @@ static int vdi_vq_ext_devinfo(VDIPB *pb)
 
 gboolean vdi_vq_vgdos(void)
 {
-	V("vq_vgdos: %x", GDOS_VERSION);
+	V("vq_vgdos: %lx", GDOS_VERSION);
 #if SUPPORT_GDOS
 	return GDOS_VERSION;
 #else
@@ -6438,7 +6491,7 @@ static int vdi_v_fontinit(VWK *v, VDIPB *pb)
 	UNUSED(v);
 	if (V_NINTIN(pb) == 2)
 	{
-		V("v_fontinit[%d]: $%08p", v->handle, vdi_intin_ptr(intin, 0));
+		V("v_fontinit[%d]: $%p", v->handle, vdi_intin_ptr(0, void *));
 		V_INTOUT(pb, 0) = 0;
 		V_NINTOUT(pb, 1);
 		V_NPTSOUT(pb, 0);
@@ -6914,12 +6967,12 @@ static int vdi_v_opnbm(VDIPB *pb)
 	
 	mfdb = vdi_control_ptr(0, MFDB *);
 
-	V("v_opnbm[%d]: MFDB[0x%08p,%dx%dx%d,wd=%d,std=%d]",
+	V("v_opnbm[%d]: MFDB[0x%p,%dx%dx%d,wd=%d,std=%d]",
 		V_HANDLE(pb),
 		mfdb->fd_addr,
 		mfdb->fd_w,
 		mfdb->fd_h,
-		mfdb->fd_planes,
+		mfdb->fd_nplanes,
 		mfdb->fd_wdwidth,
 		mfdb->fd_stand);
 
@@ -7152,10 +7205,6 @@ static gboolean vdi_call(VDIPB *pb)
 	if (op == V_OPNWK)
 	{
 		_WORD *intin = PV_INTIN(pb);
-#if 0
-		printf("openwk(vdi): %dx%dx%d wk %d, shiftmod %d\n", scr_width, scr_height, scr_planes, V_INTIN(pb, 0), shiftmod);
-		fflush(stdout);
-#endif
 		if (V_INTIN(pb, 0) <= LAST_SCREEN_DEVICE)
 		{
 			/*
@@ -7531,7 +7580,7 @@ void vdi_change_colors(void)
 	for (i = 0; i < MAX_VDI_COLS; i++)
 		vdi_maptab[i] = n - 1;
 	{
-		V("vdi_change_colors: scr_planes=%d, vdi_planes=%d", scr_planes, vdi_planes);
+		V("vdi_change_colors: vdi_planes=%d", vdi_planes);
 		for (i = 0; i < n; i++)
 		{
 			vdi_maptab[i] = st_maptab[i];
@@ -7627,11 +7676,9 @@ void vdi_cursblink(void)
 	if (--vt52->blink_count != 0)
 		return;
 	{
-		BEGIN_ALPHA_DRAW(v);
 		if (vt52->cursor_inverse)
 			v_hide_alpha_cursor(v);
 		else
 			v_show_alpha_cursor(v);
-		END_DRAW(v);
 	}
 }

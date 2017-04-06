@@ -18,12 +18,9 @@
 
 #include "aes.h"
 
-#define STATIC
-
-
 static _WORD const gl_dcrates[5] = { 450, 330, 275, 220, 165 };
 
-STATIC _WORD gl_dcindex;
+static _WORD gl_dcindex;
 /*
  * # of ticks to wait to see if a second click will occur
  */
@@ -334,6 +331,7 @@ _WORD ev_multi(_WORD flags, const MOBLK *pmo1, const MOBLK *pmo2, _LONG tmcount,
 	return what;
 }
 
+#endif
 
 /*
  * AES #26 - evnt_dclick - Obtain or set the time delay between the two clicks of a double-elick.
@@ -348,4 +346,3 @@ _WORD ev_dclick(_WORD rate, _WORD setit)
 
 	return gl_dcindex;
 }
-#endif

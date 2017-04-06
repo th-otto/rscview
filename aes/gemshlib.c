@@ -33,11 +33,11 @@
 /* if TRUE then do an an exec on the current command else exit and return to DOS  */
 _WORD sh_doexec;
 
-/* used to signal if the curren tly running appl is a GEM app */
+/* used to signal if the currently running appl is a GEM app */
 _WORD sh_isgem;
 
-/* same as above for previously running DOS app.     */
-_WORD sh_gem;
+/* same as above for previously running DOS app. */
+_WORD gl_shgem;
 
 char *ad_envrn;
 
@@ -50,3 +50,17 @@ _BOOL sh_iscart;
 
 char *ad_path;
 
+/*
+ *	Convert the screen to graphics-mode in preparation for the 
+ *	running of a GEM-based graphic application.
+ */
+_BOOL sh_tographic(void)
+{
+	gsx_graphic(TRUE);					/* convert to graphic   */
+	gsx_sclip(&gl_rscreen);				/* set initial clip rect */
+	gsx_malloc();						/* allocate screen space BUG: not checked */
+	gsx_mfset((MFORM *)aes_rsc_bitblk[MICE02]->bi_pdata, TRUE);				/* put mouse to hourglass */
+	ratinit();							/* start up the mouse   */
+
+	return TRUE;
+}

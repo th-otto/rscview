@@ -259,50 +259,79 @@ extern _VOID *hfix_objs(RSHDR *_hdr, OBJECT *_ob, _WORD _num_objs);
 #endif
 
 
+#if RSC_STATIC_FILE
+#undef NUM_STRINGS
+#undef NUM_BB
+#undef NUM_IB
+#undef NUM_CIB
+#undef NUM_CIC
+#undef NUM_TI
+#undef NUM_FRSTR
+#undef NUM_FRIMG
+#undef NUM_OBS
+#undef NUM_TREE
+#undef NUM_UD
+#define NUM_STRINGS 77
+#define NUM_BB		11
+#define NUM_IB		0
+#define NUM_CIB     0
+#define NUM_CIC     0
+#define NUM_TI		14
+#define NUM_FRSTR	23
+#define NUM_FRIMG	11
+#define NUM_OBS     66
+#define NUM_TREE	3
+#define NUM_UD		0
+#endif
+
 
 #ifdef __GNUC__
 #pragma GCC diagnostic ignored "-Wcast-qual"
 #endif
 
+static TEDINFO rs_tedinfo[NUM_TI];
+static OBJECT rs_object[NUM_OBS];
+static char gem_rsc_string_space[169];
+
 static char const gem_rsc_string_0[] = "_";
 static char const gem_rsc_string_1[] = "Directory:";
-#define gem_rsc_string_2 0
+#define gem_rsc_string_2 &gem_rsc_string_space[0]
 static char const gem_rsc_string_3[] = "______________________________________";
 static char const gem_rsc_string_4[] = "P";
-#define gem_rsc_string_5 0
+#define gem_rsc_string_5 &gem_rsc_string_space[39]
 static char const gem_rsc_string_6[] = "Drive:";
 static char const gem_rsc_string_7[] = "";
-#define gem_rsc_string_8 0
+#define gem_rsc_string_8 &gem_rsc_string_space[40]
 static char const gem_rsc_string_9[] = "Selection: ________.___";
 static char const gem_rsc_string_10[] = "f";
 static char const gem_rsc_string_11[] = "";
 static char const gem_rsc_string_12[] = "";
 static char const gem_rsc_string_13[] = "";
-#define gem_rsc_string_14 0
+#define gem_rsc_string_14 &gem_rsc_string_space[52]
 static char const gem_rsc_string_15[] = "_ ________.___ ";
 static char const gem_rsc_string_16[] = "xF";
-#define gem_rsc_string_17 0
+#define gem_rsc_string_17 &gem_rsc_string_space[65]
 static char const gem_rsc_string_18[] = "_ ________.___ ";
 static char const gem_rsc_string_19[] = "xF";
-#define gem_rsc_string_20 0
+#define gem_rsc_string_20 &gem_rsc_string_space[78]
 static char const gem_rsc_string_21[] = "_ ________.___ ";
 static char const gem_rsc_string_22[] = "xF";
-#define gem_rsc_string_23 0
+#define gem_rsc_string_23 &gem_rsc_string_space[91]
 static char const gem_rsc_string_24[] = "_ ________.___ ";
 static char const gem_rsc_string_25[] = "xF";
-#define gem_rsc_string_26 0
+#define gem_rsc_string_26 &gem_rsc_string_space[104]
 static char const gem_rsc_string_27[] = "_ ________.___ ";
 static char const gem_rsc_string_28[] = "xF";
-#define gem_rsc_string_29 0
+#define gem_rsc_string_29 &gem_rsc_string_space[117]
 static char const gem_rsc_string_30[] = "_ ________.___ ";
 static char const gem_rsc_string_31[] = "xF";
-#define gem_rsc_string_32 0
+#define gem_rsc_string_32 &gem_rsc_string_space[130]
 static char const gem_rsc_string_33[] = "_ ________.___ ";
 static char const gem_rsc_string_34[] = "xF";
-#define gem_rsc_string_35 0
+#define gem_rsc_string_35 &gem_rsc_string_space[143]
 static char const gem_rsc_string_36[] = "_ ________.___ ";
 static char const gem_rsc_string_37[] = "xF";
-#define gem_rsc_string_38 0
+#define gem_rsc_string_38 &gem_rsc_string_space[156]
 static char const gem_rsc_string_39[] = "_ ________.___ ";
 static char const gem_rsc_string_40[] = "xF";
 static char const gem_rsc_string_41[] = "OK";
@@ -441,7 +470,7 @@ static _UBYTE const IMAGE10[] = {
 0x02, 0x40, 0x02, 0x40, 0x02, 0x40, 0x03, 0xC0, 0x00, 0x00};
 
 
-static const char *const rs_frstr[] = {
+static const char *const rs_frstr[NUM_FRSTR] = {
 	gem_rsc_string_54,
 	gem_rsc_string_55,
 	gem_rsc_string_56,
@@ -468,7 +497,7 @@ static const char *const rs_frstr[] = {
 };
 
 
-static BITBLK const rs_bitblk[] = {
+static BITBLK const rs_bitblk[NUM_BB] = {
 	{ CP IMAGE0, 4, 32, 0, 0, 1 },
 	{ CP IMAGE1, 4, 32, 0, 0, 1 },
 	{ CP IMAGE2, 4, 32, 0, 0, 1 },
@@ -483,7 +512,7 @@ static BITBLK const rs_bitblk[] = {
 };
 
 
-static const BITBLK *const rs_frimg[] = {
+static const BITBLK *const rs_frimg[NUM_FRIMG] = {
 	&rs_bitblk[0],
 	&rs_bitblk[1],
 	&rs_bitblk[2],
@@ -498,7 +527,7 @@ static const BITBLK *const rs_frimg[] = {
 };
 
 
-static TEDINFO const rs_tedinfo_rom[] = {
+static TEDINFO const rs_tedinfo_rom[NUM_TI] = {
 	{ (char*)gem_rsc_string_2, (char*)gem_rsc_string_3, (char*)gem_rsc_string_4, IBM, 1, TE_LEFT, 0x1100, 0x0, 0, 39,39 }, /* FSDIRECT */
 	{ (char*)gem_rsc_string_5, (char*)gem_rsc_string_6, (char*)gem_rsc_string_7, IBM, 6, TE_CNTR, 0x1180, 0x0, -1, 1,7 },
 	{ (char*)gem_rsc_string_8, (char*)gem_rsc_string_9, (char*)gem_rsc_string_10, IBM, 1, TE_LEFT, 0x1100, 0x0, 0, 12,24 }, /* FSSELECT */
@@ -516,15 +545,15 @@ static TEDINFO const rs_tedinfo_rom[] = {
 };
 
 
-static OBJECT const rs_object_rom[] = {
+static OBJECT const rs_object_rom[NUM_OBS] = {
 /* FSELECTR */
 
 	{ -1, 1, 52, G_BOX, OF_NONE, OS_OUTLINED, C_UNION(0x21100L), 0,0, 40,20 },
 	{ 2, -1, -1, G_STRING, OF_NONE, OS_NORMAL, C_UNION(gem_rsc_string_0), 1,2048, 1,1 }, /* FSTITLE */
 	{ 3, -1, -1, G_STRING, OF_NONE, OS_NORMAL, C_UNION(gem_rsc_string_1), 1,2, 10,1 },
-	{ 4, -1, -1, G_FBOXTEXT, OF_EDITABLE, OS_NORMAL, C_UNION(&rs_tedinfo_rom[0]), 1,1027, 38,1 }, /* FSDIRECT */
-	{ 5, -1, -1, G_FTEXT, OF_NONE, OS_NORMAL, C_UNION(&rs_tedinfo_rom[1]), 27,5, 11,1 },
-	{ 6, -1, -1, G_FBOXTEXT, OF_EDITABLE, OS_NORMAL, C_UNION(&rs_tedinfo_rom[2]), 1,5, 24,1 }, /* FSSELECT */
+	{ 4, -1, -1, G_FBOXTEXT, OF_EDITABLE, OS_NORMAL, C_UNION(&rs_tedinfo[0]), 1,1027, 38,1 }, /* FSDIRECT */
+	{ 5, -1, -1, G_FTEXT, OF_NONE, OS_NORMAL, C_UNION(&rs_tedinfo[1]), 27,5, 11,1 },
+	{ 6, -1, -1, G_FBOXTEXT, OF_EDITABLE, OS_NORMAL, C_UNION(&rs_tedinfo[2]), 1,5, 24,1 }, /* FSSELECT */
 	{ 33, 7, 32, G_IBOX, OF_NONE, OS_NORMAL, C_UNION(0x1100L), 27,6, 11,9 }, /* FSDRIVES */
 	{ 8, -1, -1, G_BOXCHAR, OF_TOUCHEXIT, OS_NORMAL, C_UNION(0x41FF1100L), 0,0, 3,1 }, /* FS1STDRV */
 	{ 9, -1, -1, G_BOXCHAR, OF_TOUCHEXIT, OS_NORMAL, C_UNION(0x42FF1100L), 0,1, 3,1 },
@@ -554,22 +583,22 @@ static OBJECT const rs_object_rom[] = {
 	{ 6, -1, -1, G_BOXCHAR, OF_TOUCHEXIT, OS_NORMAL, C_UNION(0x5AFF1100L), 8,7, 3,1 }, /* FSLSTDRV */
 	{ 51, 34, 41, G_IBOX, OF_NONE, OS_NORMAL, C_UNION(0x1100L), 3,7, 22,12 },
 	{ 35, -1, -1, G_BOXCHAR, OF_TOUCHEXIT, OS_NORMAL, C_UNION(0x5FF1101L), 0,0, 2,1 }, /* FCLSBOX */
-	{ 36, -1, -1, G_BOXTEXT, OF_TOUCHEXIT, OS_NORMAL, C_UNION(&rs_tedinfo_rom[3]), 2,0, 20,1 }, /* FTITLE */
+	{ 36, -1, -1, G_BOXTEXT, OF_TOUCHEXIT, OS_NORMAL, C_UNION(&rs_tedinfo[3]), 2,0, 20,1 }, /* FTITLE */
 	{ 41, 37, 39, G_BOX, OF_TOUCHEXIT, OS_NORMAL, C_UNION(0x11100L), 19,1, 3,11 }, /* SCRLBAR */
 	{ 38, -1, -1, G_BOXCHAR, OF_TOUCHEXIT, OS_NORMAL, C_UNION(0x1FF1100L), 0,0, 3,2 }, /* FUPAROW */
 	{ 39, -1, -1, G_BOXCHAR, OF_TOUCHEXIT, OS_NORMAL, C_UNION(0x2FF1100L), 0,9, 3,2 }, /* FDNAROW */
 	{ 36, 40, 40, G_BOX, OF_TOUCHEXIT, OS_NORMAL, C_UNION(0xFF1111L), 0,2, 3,7 }, /* FSVSLID */
 	{ 39, -1, -1, G_BOX, OF_TOUCHEXIT, OS_NORMAL, C_UNION(0x11101L), 0,0, 3,1 }, /* FSVELEV */
 	{ 33, 42, 50, G_BOX, OF_TOUCHEXIT, OS_NORMAL, C_UNION(0xFF1100L), 0,1, 19,11 }, /* FILEBOX */
-	{ 43, -1, -1, G_FBOXTEXT, OF_TOUCHEXIT, OS_NORMAL, C_UNION(&rs_tedinfo_rom[4]), 2,1, 15,1 }, /* F1NAME */
-	{ 44, -1, -1, G_FBOXTEXT, OF_TOUCHEXIT, OS_NORMAL, C_UNION(&rs_tedinfo_rom[5]), 2,2, 15,1 }, /* F2NAME */
-	{ 45, -1, -1, G_FBOXTEXT, OF_TOUCHEXIT, OS_NORMAL, C_UNION(&rs_tedinfo_rom[6]), 2,3, 15,1 }, /* F3NAME */
-	{ 46, -1, -1, G_FBOXTEXT, OF_TOUCHEXIT, OS_NORMAL, C_UNION(&rs_tedinfo_rom[7]), 2,4, 15,1 }, /* F4NAME */
-	{ 47, -1, -1, G_FBOXTEXT, OF_TOUCHEXIT, OS_NORMAL, C_UNION(&rs_tedinfo_rom[8]), 2,5, 15,1 }, /* F5NAME */
-	{ 48, -1, -1, G_FBOXTEXT, OF_TOUCHEXIT, OS_NORMAL, C_UNION(&rs_tedinfo_rom[9]), 2,6, 15,1 }, /* F6NAME */
-	{ 49, -1, -1, G_FBOXTEXT, OF_TOUCHEXIT, OS_NORMAL, C_UNION(&rs_tedinfo_rom[10]), 2,7, 15,1 }, /* F7NAME */
-	{ 50, -1, -1, G_FBOXTEXT, OF_TOUCHEXIT, OS_NORMAL, C_UNION(&rs_tedinfo_rom[11]), 2,8, 15,1 }, /* F8NAME */
-	{ 41, -1, -1, G_FBOXTEXT, OF_TOUCHEXIT, OS_NORMAL, C_UNION(&rs_tedinfo_rom[12]), 2,9, 15,1 }, /* F9NAME */
+	{ 43, -1, -1, G_FBOXTEXT, OF_TOUCHEXIT, OS_NORMAL, C_UNION(&rs_tedinfo[4]), 2,1, 15,1 }, /* F1NAME */
+	{ 44, -1, -1, G_FBOXTEXT, OF_TOUCHEXIT, OS_NORMAL, C_UNION(&rs_tedinfo[5]), 2,2, 15,1 }, /* F2NAME */
+	{ 45, -1, -1, G_FBOXTEXT, OF_TOUCHEXIT, OS_NORMAL, C_UNION(&rs_tedinfo[6]), 2,3, 15,1 }, /* F3NAME */
+	{ 46, -1, -1, G_FBOXTEXT, OF_TOUCHEXIT, OS_NORMAL, C_UNION(&rs_tedinfo[7]), 2,4, 15,1 }, /* F4NAME */
+	{ 47, -1, -1, G_FBOXTEXT, OF_TOUCHEXIT, OS_NORMAL, C_UNION(&rs_tedinfo[8]), 2,5, 15,1 }, /* F5NAME */
+	{ 48, -1, -1, G_FBOXTEXT, OF_TOUCHEXIT, OS_NORMAL, C_UNION(&rs_tedinfo[9]), 2,6, 15,1 }, /* F6NAME */
+	{ 49, -1, -1, G_FBOXTEXT, OF_TOUCHEXIT, OS_NORMAL, C_UNION(&rs_tedinfo[10]), 2,7, 15,1 }, /* F7NAME */
+	{ 50, -1, -1, G_FBOXTEXT, OF_TOUCHEXIT, OS_NORMAL, C_UNION(&rs_tedinfo[11]), 2,8, 15,1 }, /* F8NAME */
+	{ 41, -1, -1, G_FBOXTEXT, OF_TOUCHEXIT, OS_NORMAL, C_UNION(&rs_tedinfo[12]), 2,9, 15,1 }, /* F9NAME */
 	{ 52, -1, -1, G_BUTTON, 0x7, OS_NORMAL, C_UNION(gem_rsc_string_41), 28,16, 8,1 }, /* FSOK */
 	{ 0, -1, -1, G_BUTTON, 0x25, OS_NORMAL, C_UNION(gem_rsc_string_42), 28,18, 8,1 }, /* FSCANCEL */
 
@@ -590,14 +619,14 @@ static OBJECT const rs_object_rom[] = {
 
 	{ -1, 1, 2, G_BOX, OF_NONE, OS_NORMAL, C_UNION(0x1143L), 0,0, 80,25 },
 	{ 2, -1, -1, G_BOX, OF_NONE, OS_NORMAL, C_UNION(0xFF1100L), 0,0, 80,513 },
-	{ 0, -1, -1, G_TEXT, OF_LASTOB, OS_NORMAL, C_UNION(&rs_tedinfo_rom[13]), 0,0, 80,769 } /* APPTITLE */
+	{ 0, -1, -1, G_TEXT, OF_LASTOB, OS_NORMAL, C_UNION(&rs_tedinfo[13]), 0,0, 80,769 } /* APPTITLE */
 };
 
 
-static const OBJECT *const rs_trindex[] = {
-	&rs_object_rom[0], /* FSELECTR */
-	&rs_object_rom[53], /* DIALERT */
-	&rs_object_rom[63] /* DESKTOP */
+static OBJECT *const rs_trindex[NUM_TREE] = {
+	&rs_object[0], /* FSELECTR */
+	&rs_object[53], /* DIALERT */
+	&rs_object[63] /* DESKTOP */
 };
 
 

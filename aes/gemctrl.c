@@ -19,6 +19,7 @@
  */
 
 #include "aes.h"
+#include "gempd.h"
 
 #define THEDESK 3
 
@@ -52,3 +53,25 @@ STATIC _WORD const gl_wa[] = {
 };
 
 
+static void ctlmgr(void)
+{
+}
+
+
+/*
+ *	Create a process for the Screen Control Manager and start him 
+ *	executing. Also do all the initialization that is required.  
+ *	Also zero out the desk accessory count.
+ */
+AESPD *ictlmgr(_WORD pid)
+{
+	intptr_t ldaddr;
+
+	UNUSED(pid);
+	gl_dacnt = 0;
+	gl_dabase = 0;
+	/* figure out load addr */
+	ldaddr = ((intptr_t) ctlmgr);
+	/* create process to execute it */
+	return pstart(ctlmgr, "SCRENMGR.LOC", ldaddr);
+}

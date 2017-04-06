@@ -81,7 +81,7 @@ extern _WORD curpid;
 /*
  * geminit.c
  */
-extern _BOOL autoexec;					/* autoexec a file ?    */
+extern _BOOL autoexec;					/* autoexec a file ? */
 extern _BOOL act3dtxt;					/* look of 3D activator text */
 extern _BOOL act3dface;					/* selected look of 3D activator */
 extern _BOOL ind3dtxt;					/* look of 3D indicator text */
@@ -109,6 +109,9 @@ extern int32_t NUM_TICK;
  */
 extern int32_t CMP_TICK;
 extern int32_t TICKS;
+
+void aes_init(void);
+void aes_exit(void);
 
 void set_mouse_to_arrow(void);
 void set_mouse_to_hourglass(void);
@@ -184,9 +187,9 @@ void xif(AESPB *pcrys_blk);
 /*
  * gemcli.c
  */
-extern ACCPD *gl_pacc[NUM_ACCS];		/* total of 6 desk acc, 1 from rom  */
+extern ACCPD *gl_pacc[MAX_ACCS];		/* total of 6 desk acc, 1 from rom  */
 extern _WORD gl_naccs;
-extern char *gl_adacc[NUM_ACCS];		/* addresses of accessories */
+extern char *gl_adacc[MAX_ACCS];		/* addresses of accessories */
 extern char *sys_adacc;
 extern const char stacc[];
 
@@ -209,7 +212,6 @@ void hctl_window(_WORD w_handle, _WORD mx, _WORD my);
 void hctl_button(_WORD mx, _WORD my);
 void hctl_rect(_WORD mx, _WORD my);
 void ct_chgown(AESPD *ppd, GRECT *pr);
-void ctlmgr(void);
 AESPD *ictlmgr(_WORD pid);
 void ctlmouse(_BOOL mon);
 void fm_own(_BOOL beg_ownit);
@@ -409,7 +411,7 @@ void free_cicon(CICONBLK **carray);
 
 
 /*
- * apgrlib.[cS]
+ * gemgraf.c
  */
 void gr_inside(GRECT *pt, _WORD th);
 void gr_rect(_UWORD icolor, _UWORD ipattern, GRECT *pt);
@@ -421,7 +423,7 @@ void gr_box(_WORD x, _WORD y, _WORD w, _WORD h, _WORD th);
 
 
 /*
- * gemgrlib.[cS]
+ * gemgrlib.c
  */
 void gr_stepcalc(_WORD orgw, _WORD orgh, GRECT *pt, _WORD *pcx, _WORD *pcy, _WORD *pcnt, _WORD *pxstep, _WORD *pystep);
 void gr_growbox(GRECT *po, GRECT *pt);
@@ -567,7 +569,6 @@ void aes_run_rom_program(PRG_ENTRY *entry);
 extern OBJECT *gl_newdesk;
 extern _WORD gl_newroot;							/* root object of new DESKTOP */
 extern _WORD gl_wtop;
-extern intptr_t ad_windspb;
 
 void wm_init(void);
 _WORD wm_create(_UWORD kind, GRECT *rect);
@@ -663,7 +664,7 @@ void gotopgm(void);
  * in a standard RTS stack frame, "in preparation for an RTS that
  * will start this process executing".
  */
-void psetup(AESPD *pd, void *pcode);
+void psetup(AESPD *pd, PFVOID pcode);
 _WORD pgmld(_WORD handle, const char *pname, intptr_t *ldaddr);
 
 

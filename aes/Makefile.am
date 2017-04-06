@@ -9,6 +9,7 @@ libaes_a_SOURCES = \
 	\
 	gemaplib.c \
 	gembase.c \
+	gemcli.c \
 	gemctrl.c \
 	gemevlib.c \
 	gemglobe.c \
@@ -19,6 +20,7 @@ libaes_a_SOURCES = \
 	geminput.c \
 	gemmnlib.c \
 	gemobed.c \
+	gempd.c \
 	gemobjop.c \
 	gemoblib.c \
 	gemsclib.c \

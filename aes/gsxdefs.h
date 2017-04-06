@@ -44,7 +44,7 @@ void ratinit(void);
 void ratexit(void);
 void bb_save(GRECT *ps);
 void bb_restore(GRECT *ps);
-void gsx_mfset(MFORM *pmfnew);
+void gsx_mfset(MFORM *pmfnew, _BOOL from_bitblk);
 void gsx_xmfset(MFORM *pmfnew);
 void gsx_mxmy(_WORD *pmx, _WORD *pmy);
 _WORD gsx_tick(VEX_TIMV tcode, VEX_TIMV *ptsave);
