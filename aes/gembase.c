@@ -11,21 +11,5 @@
 #include "aes.h"
 
 AESPD *rlr;
-AESPD *drl;
-AESPD *nrl;
-
-EVB *eul;
-EVB *dlr;
-EVB *zlr;
-
-char indisp;
-
-_WORD fpt;
-_WORD fph;
-_WORD fpcnt; /* forkq tail, head, count */
-
-SPB wind_spb;
-
-CDA *cda;
 
 _WORD curpid;

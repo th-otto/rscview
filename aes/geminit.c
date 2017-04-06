@@ -30,30 +30,12 @@
 #define STATIC
 
 
-_BOOL do_once;
-STATIC _WORD g_flag;
-
-_WORD crt_error;				/* critical error handler semaphore     */
-
 /* set in jbind.s, checked by dispatcher    */
 _WORD adeskp[3];				/* desktop colors & backgrounds */
 STATIC _WORD awinp[3];			/* window colors & backgrounds */
 _UWORD d_rezword;				/* default resolution for sparrow */
-char gl_logdrv;
 VEX_TIMV tiksav;
 _BOOL gl_rschange;
-
-
-STATIC char aautopath[CMDLEN];
-
-
-void sh_deskf(_WORD obj, aes_private *priv)
-{
-	OBJECT *tree;
-
-	tree = aes_rsc_tree[DESKTOP];
-	priv->l = tree[obj].ob_spec.index;
-}
 
 
 void aes_init(void)
@@ -67,29 +49,6 @@ void aes_init(void)
 	gl_recd = FALSE;
 	gl_rlen = 0;
 	gl_rbuf = 0;
-
-	/* link up all the evb's to the event unused list */
-	eul = 0;
-	for (i = 0; i < NUM_EVBS; i++)
-	{
-		D.g_evb[i].e_nextp = eul;
-		eul = &D.g_evb[i];
-	}
-	/* initialize list and unused lists   */
-
-	drl = 0;
-	nrl = 0;
-	zlr = 0;
-	dlr = 0;
-	fpcnt = 0;
-	fpt = 0;
-	fph = 0;
-	crt_error = FALSE;
-
-	/* initialize sync blocks */
-	wind_spb.sy_tas = 0;
-	wind_spb.sy_owner = 0;
-	wind_spb.sy_wait = 0;
 
 	gl_btrue = 0x0;
 	gl_bdesired = 0x0;
@@ -114,7 +73,6 @@ void aes_init(void)
 	rlr->p_pid = curpid++;
 	rlr->p_link = 0;
 	rlr->p_stat = PS_RUN;
-	cda = rlr->p_cda;
 
 	/* 
 	 * screen manager process init.
@@ -190,10 +148,7 @@ void aes_init(void)
 	tree[1].ob_height = gl_hchar + 2;
 	tree[2].ob_height = gl_hchar + 3;
 
-	indisp = FALSE;						/* init in dispatch semaphore to not indisp        */
-
 	/* off we go !!! */
-	do_once = FALSE;					/* desktop do it once flag */ /* why the hell is that set here? */
 }
 
 
@@ -226,5 +181,3 @@ void pinit(AESPD *ppd, CDA *pcda)
 	ppd->p_qindex = 0;
 	memset(ppd->p_name, ' ', AP_NAMELEN);
 }
-
-

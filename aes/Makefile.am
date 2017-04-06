@@ -9,12 +9,10 @@ libaes_a_SOURCES = \
 	\
 	gemaplib.c \
 	gembase.c \
-	gemcli.c \
 	gemctrl.c \
 	gemevlib.c \
 	gemglobe.c \
 	gemgraf.c \
-	gemgrlib.c \
 	gemgsxif.c \
 	geminit.c \
 	geminput.c \

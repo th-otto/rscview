@@ -77,58 +77,36 @@ static _WORD crysbind(AESPB *pb)
         ret = ap_init(pglobal);
         break;
 
-#if NYI
 	case 11:
 		aestrace("appl_read()");
 		AES_PARAMS(11,2,1,1,0);
-		ret = ap_rdwr(AQRD, int_in[0], int_in[1], (_WORD *)addr_in[0]);
 		break;
-#endif
 
-#if NYI
 	case 12:
 		aestrace("appl_write()");
 		AES_PARAMS(12,2,1,1,0);
-		ret = ap_rdwr(AQWRT, int_in[0], int_in[1], (_WORD *)addr_in[0]);
 		break;
-#endif
 
-#if NYI
 	case 13:
 		aestrace("appl_find()");
 		AES_PARAMS(13,0,1,1,0);
-		ret = ap_find((const char *)addr_in[0]);
 		break;
-#endif
 
-#if NYI
 	case 14:
 		aestrace("appl_tplay()");
 		AES_PARAMS(14,2,1,1,0);
-		ap_tplay((const uint32_t *)addr_in[0], int_in[0], int_in[1]);
 		break;
 
 	case 15:
 		aestrace("appl_trecord()");
 		AES_PARAMS(15,1,1,1,0);
-		ret = ap_trecd((uint32_t *)addr_in[0], int_in[0]);
 		break;
-#endif
 
-#if CONF_WITH_PCGEM
-/*
- * AES #16 - appl_bvset - Set the available logical drives for the file-selector. 
- */
 	case 16:
 		aestrace("appl_bvset()");
 		AES_PARAMS(16,2,1,0,0);
-		gl_bvdisk = HW(int_in[0]);
-		gl_bvhard = HW(int_in[1]);
 		break;
 
-/*
- * AES #18 - appl_xbvset - Set the available logical drives for the file-selector.
- */
 	case 18:
 		/* distinguish between appl_search() and appl_xbvset() */
 		if (IN_LEN == 3)
@@ -155,19 +133,10 @@ static _WORD crysbind(AESPB *pb)
 			}
 		}
 		break;
-#endif
 
-/*
- * AES #17 - appl_yield - Force AES process-switch. 
- */
-	/*
-	 * was never implemented in TOS GEM, but calling trap #2
-	 * with D0 = 201 does the same thing
-	 */
 	case 17:
 		aestrace("appl_yield()");
 		AES_PARAMS(17,0,1,0,0);
-		dsptch();
 		break;
 
 	case 19:
@@ -197,102 +166,71 @@ static _WORD crysbind(AESPB *pb)
 		break;
 
 
-#if NYI
 	/* Event Manager */
 	case 20:
 		aestrace("evnt_keybd()");
 		AES_PARAMS(20,0,1,0,0);
-		ret = ev_keybd();
 		break;
 
 	case 21:
 		aestrace("evnt_button()");
 		AES_PARAMS(21,3,5,0,0);
-		ret = ev_button(int_in[0], int_in[1], int_in[2], &int_out[1]);
 		break;
 
 	case 22:
 		aestrace("evnt_mouse()");
 		AES_PARAMS(22,5,5,0,0);
-		ret = ev_mouse((const MOBLK *)&int_in[0], &int_out[1]);
 		break;
 
 	case 23:
 		aestrace("evnt_mesag()");
 		AES_PARAMS(23,0,1,1,0);
-		ret = ev_mesag((_WORD *)addr_in[0]);
 		break;
 
 	case 24:
 		aestrace("evnt_timer()");
 		AES_PARAMS(24,2,1,0,0);
-		ev_timer(MAKE_ULONG(int_in[1], int_in[0]));
 		break;
 
 	case 25:
 		aestrace("evnt_multi()");
 		AES_PARAMS(25,16,7,1,0);
-		timeval = 0;
-		if (int_in[0] & MU_TIMER)
-			timeval = MAKE_ULONG(int_in[15], int_in[14]);
-		lbuparm = combine_cms(int_in[1], int_in[2], int_in[3]);
-		ret = ev_multi(int_in[0], (const MOBLK *)&int_in[4], (const MOBLK *)&int_in[9], timeval, lbuparm, (_WORD *)addr_in[0], &int_out[1]);
 		break;
 
 	case 26:
 		aestrace("evnt_dclick()");
 		AES_PARAMS(26,2,1,0,0);
-		ret = ev_dclick(int_in[0], int_in[1]);
 		break;
-#endif
 
 	/* Menu Manager */
 	case 30:
 		aestrace("menu_bar()");
 		AES_PARAMS(30,1,1,1,0);
-#if NYI
-		mn_bar((OBJECT *)addr_in[0], int_in[0], rlr->p_pid);
-#endif
 		break;
 
 	case 31:
 		aestrace("menu_icheck()");
 		AES_PARAMS(31,2,1,1,0);
-#if NYI
-		do_chg((OBJECT *)addr_in[0], int_in[0], CHECKED, int_in[1], FALSE, FALSE);
-#endif
 		break;
 
 	case 32:
 		aestrace("menu_ienable()");
 		AES_PARAMS(32,2,1,1,0);
-#if NYI
-		do_chg((OBJECT *)addr_in[0], (int_in[0] & 0x7FFF), DISABLED, !int_in[1], ((int_in[0] & 0x8000) != 0x0), FALSE);
-#endif
 		break;
 
 	case 33:
 		aestrace("menu_tnormal()");
 		AES_PARAMS(33,2,1,1,0);
-#if NYI
-		do_chg((OBJECT *)addr_in[0], int_in[0], SELECTED, !int_in[1], TRUE, TRUE);
-#endif
 		break;
 
 	case 34:
 		aestrace("menu_text()");
 		AES_PARAMS(34,1,1,2,0);
-#if NYI
-		mn_text((OBJECT *)addr_in[0], int_in[0], (const char *)addr_in[1]);
-#endif
 		break;
 
 	case 35:
 		aestrace("menu_register()");
 		AES_PARAMS(35,1,1,1,0);
-#if NYI
-		ret = mn_register(int_in[0], (char *)addr_in[1]);
-#endif
 		break;
 
 	case 36:
@@ -310,11 +248,7 @@ static _WORD crysbind(AESPB *pb)
 		{
 			aestrace("menu_popup()");
 			AES_PARAMS(36,2,1,2,0);
-#if SUBMENUS
-			ret = mn_popup(rlr->p_pid, (MENU *)addr_in[0], int_in[0], int_in[1], (MENU *)addr_in[1]);
-#else
 			unsupported = TRUE;
-#endif
 		}
 		break;
 
@@ -335,32 +269,20 @@ static _WORD crysbind(AESPB *pb)
 		{
 			aestrace("menu_attach()");
 			AES_PARAMS(37,2,1,2,0);
-#if SUBMENUS
-			ret = mn_attach(rlr->p_pid, int_in[0], (OBJECT *)addr_in[0], int_in[1], (MENU *)addr_in[1]);
-#else
 			unsupported = TRUE;
-#endif
 		}
 		break;
 
 	case 38:
 		aestrace("menu_istart()");
 		AES_PARAMS(38,3,1,1,0);
-#if SUBMENUS
-		ret = mn_istart(rlr->p_pid, int_in[0], (OBJECT *)addr_in[0], int_in[1], int_in[2]);
-#else
 		unsupported = TRUE;
-#endif
 		break;
 
 	case 39:
 		aestrace("menu_settings()");
 		AES_PARAMS(39,1,1,1,0);
-#if SUBMENUS
-		mn_settings(int_in[0], (MN_SET *)addr_in[0]);
-#else
 		unsupported = TRUE;
-#endif
 		break;
 
 	/* Object Manager */

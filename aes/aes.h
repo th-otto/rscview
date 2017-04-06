@@ -61,20 +61,6 @@ intptr_t dos_exec(const char *cmd, _WORD mode, const char *tail);
  */
 extern AESPD *rlr;
 
-extern AESPD *drl;
-extern AESPD *nrl;
-extern EVB *eul;
-extern EVB *dlr;
-extern EVB *zlr;
-
-/* In Dispatch - a byte whose value is zero when not in function
- * dsptch, and 1 when between dsptch ... switchto function calls
- */
-extern char indisp;
-
-extern _WORD fpt, fph, fpcnt;		/* forkq tail, head, count */
-extern SPB wind_spb;
-extern CDA *cda;
 extern _WORD curpid;
 
 
@@ -90,8 +76,6 @@ extern _UWORD gl_indbutcol;				/* indicator button color */
 extern _UWORD gl_actbutcol;				/* activator button color */
 extern _UWORD gl_alrtcol;				/* alert background color */
 extern _BOOL gl_aes3d;
-extern char gl_logdrv;
-extern _WORD crt_error;					/* critical error handler semaphore */
 extern _WORD adeskp[3];					/* desktop colors & backgrounds */
 extern OBJECT **aes_rsc_tree;
 extern const char *const *aes_rsc_string;
@@ -116,7 +100,6 @@ void aes_exit(void);
 void set_mouse_to_arrow(void);
 void set_mouse_to_hourglass(void);
 void gr_mouse(_WORD mkind, MFORM *grmaddr);
-void sh_deskf(_WORD obj, aes_private *priv);
 void gem_main(void);
 void setres(void);
 void pinit(AESPD *ppd, CDA *pcda);
@@ -154,59 +137,13 @@ extern _WORD gl_mnpds[NUM_PDS];
 
 _WORD ap_init(AES_GLOBAL *pglobal);
 _WORD ap_exit(void);
-_WORD rd_mymsg(void *buffer);
-_WORD ap_rdwr(_WORD code, _WORD id, _WORD length, _WORD *pbuff);
-_WORD ap_find(const char *pname);
-void ap_tplay(const uint32_t *pbuff, _WORD length, _WORD scale);
-_WORD ap_trecd(uint32_t *pbuff, _WORD length);
 
-
-
-/*
- * gemasync.c
- */
-extern _WORD tbutton;
-extern _WORD wwait;
-
-EVB *get_evb(void);
-void azombie(EVB *e, _UWORD ret);
-void evinsert(EVB *e, EVB **root);
-void takeoff(EVB *p);
-EVSPEC mwait(EVSPEC mask);
-EVSPEC iasync(_WORD afunc, intptr_t aparm);
-_UWORD apret(EVSPEC mask);
-EVSPEC acancel(EVSPEC m);
-
-
-/*
- * gembind.c
- */
-void xif(AESPB *pcrys_blk);
-
-
-/*
- * gemcli.c
- */
-extern ACCPD *gl_pacc[MAX_ACCS];		/* total of 6 desk acc, 1 from rom  */
-extern _WORD gl_naccs;
-extern char *gl_adacc[MAX_ACCS];		/* addresses of accessories */
-extern char *sys_adacc;
-extern const char stacc[];
-
-void release(void);
-void all_run(void);
-_WORD sndcli(char *pfilespec, _WORD acc);
-void ldaccs(void);
-void free_accs(void);
-_BOOL cre_aproc(void);
 
 
 /*
  * gemctrl.c
  */
-extern MOBLK gl_ctwait;
 extern _WORD appl_msg[8];
-extern _WORD ml_ocnt;
 
 void hctl_window(_WORD w_handle, _WORD mx, _WORD my);
 void hctl_button(_WORD mx, _WORD my);
@@ -685,16 +622,8 @@ extern _BOOL gl_rschange;
 extern _WORD gl_restype;
 
 
-/*
- * someone messed it up and called functions from desktop here...
- */
 extern char const infdata[]; /* "DESKTOP.INF" */
 
-#if AESVERSION >= 0x330
-extern _BOOL do_once; /* used by desktop only */
-#endif
-
-void XDeselect(OBJECT *tree, _WORD obj);
 _BOOL getcookie(int32_t cookie, int32_t *val);
 char *scan_2(char *pcurr, _WORD *pwd);
 char *escan_str(char *pcurr, char *ppstr);

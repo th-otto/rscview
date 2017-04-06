@@ -26,37 +26,8 @@
 #define MBDOWN 0x0001
 #define BELL 0x07						/* bell         */
 
-#define STATIC
-
 _BOOL gl_mouse;
-STATIC OBJECT *ml_mnhold;
-GRECT ml_ctrl;
-AESPD *ml_pmown;
-AESPD *ml_pkown;
-STATIC _WORD tmpmoff;
-STATIC _WORD tmpmon;
-MOBLK gl_ctwait;
 _WORD appl_msg[8];
-_WORD ml_ocnt;
-
-/* used to convert from window object # to window message code */
-STATIC _WORD const gl_wa[] = {
-	WA_UPLINE,
-	WA_DNLINE,
-	WA_UPPAGE,
-	WA_DNPAGE,
-	0x0,
-	WA_LFLINE,
-	WA_RTLINE,
-	WA_LFPAGE,
-	WA_RTPAGE
-};
-
-
-static void ctlmgr(void)
-{
-}
-
 
 /*
  *	Create a process for the Screen Control Manager and start him 
@@ -65,13 +36,14 @@ static void ctlmgr(void)
  */
 AESPD *ictlmgr(_WORD pid)
 {
-	intptr_t ldaddr;
-
+	AESPD *p;
+	
 	UNUSED(pid);
 	gl_dacnt = 0;
 	gl_dabase = 0;
-	/* figure out load addr */
-	ldaddr = ((intptr_t) ctlmgr);
 	/* create process to execute it */
-	return pstart(ctlmgr, "SCRENMGR.LOC", ldaddr);
+	p = &D.g_pd[curpid];
+	p->p_pid = curpid++;
+	rlr = p;
+	return p;
 }
