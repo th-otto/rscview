@@ -26,9 +26,9 @@ vqt_extent (short handle, const char *str, short extent[])
 {
 	short vdi_control[VDI_CNTRLMAX]; 
 	short vdi_intin[VDI_INTINMAX];   
-	register short n = vdi_str2array (str, vdi_intin);
+	short n = vdi_str2array (str, vdi_intin);
 	
-	VDI_PARAMS(vdi_control, vdi_intin, 0L, vdi_dummy, extent );
+	VDI_PARAMS(vdi_control, vdi_intin, NULL, vdi_dummy, extent);
 
 	VDI_TRAP (vdi_params, handle, 116, 0,n);
 }

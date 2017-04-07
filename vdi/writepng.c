@@ -148,26 +148,28 @@ void writepng_exit(writepng_info *wpnginfo)
 int writepng_output(writepng_info *wpnginfo)
 {
 	unsigned long rowbytes;
+	int rc;
 	
 	if (wpnginfo == NULL || wpnginfo->image_data == NULL || wpnginfo->outfile == NULL)
-	{
-		errno = EINVAL;
-		return -1;
-	}
-	if (writepng_init(wpnginfo) != 0)
-		return -1;
+		return EINVAL;
+	if ((rc = writepng_init(wpnginfo)) != 0)
+		return rc;
 
 	/* calculate rowbytes on basis of image type; note that this becomes much
 	 * more complicated if we choose to support PBM type, ASCII PNM types, or
 	 * 16-bit-per-sample binary data [currently not an official NetPBM type] */
 
-	if (wpnginfo->bpp <= 8)
-		rowbytes = wpnginfo->width;
-	else if (wpnginfo->bpp == 24)
-		rowbytes = wpnginfo->width * 3;
-	else
-		rowbytes = wpnginfo->width * 4;
-
+	rowbytes = wpnginfo->rowbytes;
+	if (rowbytes == 0)
+	{
+		if (wpnginfo->bpp <= 8)
+			rowbytes = wpnginfo->width;
+		else if (wpnginfo->bpp == 24)
+			rowbytes = wpnginfo->width * 3;
+		else
+			rowbytes = wpnginfo->width * 4;
+	}
+	
 	if (wpnginfo->interlaced)
 	{
 		long i;
@@ -176,40 +178,39 @@ int writepng_output(writepng_info *wpnginfo)
 		if (wpnginfo->row_pointers == NULL)
 		{
 			writepng_cleanup(wpnginfo);
-			return -1;
+			return ENOMEM;
 		}
 		for (i = 0; i < wpnginfo->height; ++i)
 			wpnginfo->row_pointers[i] = wpnginfo->image_data + i * rowbytes;
-		if (writepng_encode_image(wpnginfo) != 0)
+		if ((rc = writepng_encode_image(wpnginfo)) != 0)
 		{
 			writepng_cleanup(wpnginfo);
-			return -1;
+			return rc;
 		}
 
 	} else								/* not interlaced:  write progressively (row by row) */
 	{
 		long j;
 		unsigned char *image_data;
-		int error = 0;
 		
 		image_data = wpnginfo->image_data;
-		for (j = wpnginfo->height; j > 0L; --j)
+		rc = 0;
+		for (j = wpnginfo->height; j > 0; --j)
 		{
-			if (writepng_encode_row(wpnginfo, image_data) != 0)
+			if ((rc = writepng_encode_row(wpnginfo, image_data)) != 0)
 			{
-				++error;
 				break;
 			}
 			image_data += rowbytes;
 		}
-		if (error)
+		if (rc)
 		{
 			writepng_cleanup(wpnginfo);
-			return -1;
+			return rc;
 		}
-		if (writepng_encode_finish(wpnginfo) != 0)
+		if ((rc = writepng_encode_finish(wpnginfo)) != 0)
 		{
-			return -1;
+			return rc;
 		}
 	}
 
@@ -233,13 +234,13 @@ int writepng_init(writepng_info *wpnginfo)
 
 	png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, wpnginfo, writepng_error_handler, NULL);
 	if (!png_ptr)
-		return 4;						/* out of memory */
+		return ENOMEM;						/* out of memory */
 
 	info_ptr = png_create_info_struct(png_ptr);
 	if (!info_ptr)
 	{
 		png_destroy_write_struct(&png_ptr, NULL);
-		return 4;						/* out of memory */
+		return ENOMEM;						/* out of memory */
 	}
 
 
@@ -252,7 +253,7 @@ int writepng_init(writepng_info *wpnginfo)
 	if (setjmp(wpnginfo->jmpbuf))
 	{
 		png_destroy_write_struct(&png_ptr, &info_ptr);
-		return 2;
+		return EFAULT;
 	}
 
 
@@ -290,7 +291,7 @@ int writepng_init(writepng_info *wpnginfo)
 	else
 	{
 		png_destroy_write_struct(&png_ptr, &info_ptr);
-		return 11;
+		return EINVAL;
 	}
 
 	interlace_type = wpnginfo->interlaced ? PNG_INTERLACE_ADAM7 : PNG_INTERLACE_NONE;
@@ -424,7 +425,7 @@ int writepng_encode_image(writepng_info *wpnginfo)
 		png_destroy_write_struct(&png_ptr, &info_ptr);
 		wpnginfo->png_ptr = NULL;
 		wpnginfo->info_ptr = NULL;
-		return 2;
+		return EFAULT;
 	}
 
 
@@ -462,7 +463,7 @@ int writepng_encode_row(writepng_info *wpnginfo, unsigned char *row_data)
 		png_destroy_write_struct(&png_ptr, &info_ptr);
 		wpnginfo->png_ptr = NULL;
 		wpnginfo->info_ptr = NULL;
-		return 2;
+		return EFAULT;
 	}
 
 	/* image_data points at our one row of image data */
@@ -493,7 +494,7 @@ int writepng_encode_finish(writepng_info *wpnginfo)	/* NON-interlaced! */
 		png_destroy_write_struct(&png_ptr, &info_ptr);
 		wpnginfo->png_ptr = NULL;
 		wpnginfo->info_ptr = NULL;
-		return 2;
+		return EFAULT;
 	}
 
 

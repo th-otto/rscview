@@ -80,6 +80,7 @@ typedef struct _writepng_info {
 	double gamma;
 	long width;
 	long height;
+	unsigned long rowbytes;
 	time_t modtime;
 	FILE *outfile;
 	void *png_ptr;

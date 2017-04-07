@@ -1128,6 +1128,12 @@ _WORD		vst_fg_color		(_WORD handle, int32_t color_space, COLOR_ENTRY *fg_color);
 
 
 /*
+ * extensions used by our emulation
+ */
+_WORD v_write_png(_WORD handle, const char *filename);
+
+
+/*
  * Some useful extensions.
  */
 

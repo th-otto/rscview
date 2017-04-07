@@ -12,4 +12,6 @@ libvdi_a_SOURCES = \
 	maptab.c maptab.h \
 	\
 	vdidefs.h vdimaps.h pattern.h \
+	\
+	writepng.c writepng.h \
 	$(empty)

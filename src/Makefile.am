@@ -20,7 +20,6 @@ rscview_SOURCES = \
 	w_draw.c \
 	w_font.c \
 	fio_err.c \
-	writepng.c writepng.h \
 	$(empty)
 
 rscview_LDADD = -L../aes -L../vdi -L../gemlib -L../util -laes -lgem -lvdi -laes -lgem -lvdi -lutil

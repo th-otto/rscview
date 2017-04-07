@@ -7,6 +7,7 @@
 #include "fonthdr.h"
 #include "maptab.h"
 #include "pattern.h"
+#include "writepng.h"
 
 /*
  * our "screen" format
@@ -6611,6 +6612,53 @@ static int vdi_vst_kern(VWK *v, VDIPB *pb)
 }
 
 /******************************************************************************/
+/******************************************************************************/
+/* Extensions                                                                 */
+/******************************************************************************/
+/******************************************************************************/
+
+static int vdi_v_write_png(VWK *v, VDIPB *pb)
+{
+	_WORD *control = PV_CONTROL(pb);
+	_WORD *intin = PV_INTIN(pb);
+	_WORD *intout = PV_INTOUT(pb);
+	int n = V_NINTIN(pb);
+	char *filename = (char *)malloc(n + 1);
+	int i;
+	writepng_info *info;
+	int rc;
+	
+	V("v_write_png[%d]: '%s'", v->handle, ascii_text(n, &V_INTIN(pb, 0)));
+
+	for (i = 0; i < n; i++)
+	{
+		filename[i] = intin[i];
+	}
+	filename[i] = 0;
+	
+	info = writepng_new();
+	info->rowbytes = v->width * sizeof(pel);
+	info->bpp = v->planes;
+	if (v->clipping)
+	{
+		info->image_data = (unsigned char *)(&framebuffer[v->clipr.y * v->width + v->clipr.x]);
+		info->width = v->clipr.width;
+		info->height = v->clipr.height;
+	} else
+	{
+		info->image_data = (unsigned char *)framebuffer;
+		info->width = v->width;
+		info->height = v->height;
+	}
+	rc = writepng_output(info);
+	writepng_exit(info);
+	V_INTOUT(pb, 0) = rc;
+	V_NINTOUT(pb, 1);
+	V_NPTSOUT(pb, 0);
+	return VDI_DONE;
+}
+
+/******************************************************************************/
 /* -------------------------------------------------------------------------- */
 /******************************************************************************/
 
@@ -7390,6 +7438,7 @@ static gboolean vdi_call(VDIPB *pb)
 			case OPCODE(37, 0): vdi_done = vdi_vqf_attributes(v, pb); break;
 			case OPCODE(38, 0): vdi_done = vdi_vqt_attributes(v, pb); break;
 			case OPCODE(39, 0): vdi_done = vdi_vst_alignment(v, pb); break;
+			case OPCODE(96, 1): vdi_done = vdi_v_write_png(v, pb); break;
 			case OPCODE(100, 0): vdi_done = vdi_v_opnvwk(pb); break;
 			case OPCODE(100, 1): vdi_done = vdi_v_opnbm(pb); break;
 			case OPCODE(100, 2): vdi_done = vdi_v_resize_bm(v, pb); break;
