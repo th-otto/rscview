@@ -430,11 +430,11 @@ Opcode      VDI Name                   Function
 
 #define MOUSE_CURSOR_WIDTH 16
 #define MOUSE_CURSOR_HEIGHT 16
-#define MOUSE_CURSOR_MASKSIZE (MOUSE_CURSOR_HEIGHT * MOUSE_CURSOR_WIDTH / 8)
+#define MOUSE_CURSOR_MASKSIZE (MOUSE_CURSOR_HEIGHT * MOUSE_CURSOR_WIDTH / 16)
 
 #define PATTERN_WIDTH 16
 #define PATTERN_HEIGHT 16
-#define PATTERN_SIZE (PATTERN_HEIGHT * PATTERN_WIDTH / 8)
+#define PATTERN_SIZE (PATTERN_HEIGHT * PATTERN_WIDTH / 16)
 
 void vdi_init(void);
 void vditrap(VDIPB *pb);
@@ -658,14 +658,7 @@ struct _vwk
 	struct sizeinfo siz_tab;
 	struct inqinfo inq_tab;
 
-	const unsigned char *x_fill_pattern;
-	int x_fill_style;
-#define FillSolid 0
-#define FillOpaqueStippled 1
-#define FillStippled 2
-	int x_function;
-	
-	unsigned char ud_fill_pattern[PATTERN_SIZE];
+	_UWORD ud_fill_pattern[PATTERN_SIZE];
 
 	struct {
 		int (*v_clswk)(VWK *v, VDIPB *pb);
@@ -726,7 +719,6 @@ struct _vwk
 		int (*v_ftext)(VWK *v, VDIPB *pb);
 	} drv;
 };
-
 
 typedef struct {
 	short lbearing;			/* origin to left edge of raster */

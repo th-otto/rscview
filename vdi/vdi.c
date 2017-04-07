@@ -6,6 +6,7 @@
 #include <math.h>
 #include "fonthdr.h"
 #include "maptab.h"
+#include "pattern.h"
 
 /*
  * our "screen" format
@@ -25,6 +26,13 @@ typedef uint16_t pel;
 #else
 typedef uint8_t pel;
 #endif
+
+struct fillparams {
+	const _UWORD *fill_pattern;
+	pel fg;
+	pel bg;
+};
+
 
 
 
@@ -77,8 +85,8 @@ static vdi_palette dummy_pal;
 
 static struct alpha_info global_vt52;
 
-static const unsigned char **fillpat[5];
-static const unsigned char *allpatterns[NUM_PATTERN_MASKS];
+static const _UWORD **fillpat[5];
+static const _UWORD *allpatterns[NUM_PATTERN_MASKS];
 
 #if TRACE_VDI
 static const char *const function_name[16] = {
@@ -141,9 +149,9 @@ static _WORD SAVE_STAT;
 static struct {
 	int xhot;
 	int yhot;
-	int fg, bg;
-	unsigned char mask[MOUSE_CURSOR_MASKSIZE];
-	unsigned char data[MOUSE_CURSOR_MASKSIZE];
+	pel fg, bg;
+	_UWORD mask[MOUSE_CURSOR_MASKSIZE];
+	_UWORD data[MOUSE_CURSOR_MASKSIZE];
 } x_cursor;
 
 #define NUM_COLORS(planes) ((planes) > 8 ? 256 : (1 << (planes)))
@@ -318,11 +326,9 @@ static void destroy_image(void)
 
 /******************************************************************************/
 
-static void init_filled(VWK *v)
+static void init_filled(VWK *v, struct fillparams *params, int color)
 {
 	int style;
-	unsigned long fg, bg;
-	int function;
 	
 	V("  init_filled: interior: %s, style: %d, color: %d, mode: %s", interior_name[v->fill_interior], v->fill_style, v->fill_color, wrmode_name[v->wrmode]);
 
@@ -333,72 +339,74 @@ static void init_filled(VWK *v)
 	if (style < 1 || style > patnum[v->fill_interior])
 		style = 1;
 	
+	params->fill_pattern = v->fill_interior == FIS_USER ? v->ud_fill_pattern : fillpat[v->fill_interior][style - 1];
 	switch (v->wrmode)
 	{
 	default:
 	case MD_REPLACE:
-		fg = FIX_COLOR(v->fill_interior == FIS_HOLLOW ? v->bg_color : v->fill_color);
-		bg = FIX_COLOR(v->bg_color);
+		params->fg = FIX_COLOR(v->fill_interior == FIS_HOLLOW ? v->bg_color : color);
+		params->bg = FIX_COLOR(v->bg_color);
 		if (v->fill_interior == FIS_SOLID || v->fill_interior == FIS_HOLLOW || (v->fill_interior == FIS_PATTERN && style == 8))
 		{
-			v->x_fill_style = FillSolid;
-		} else
-		{
-			v->x_fill_style = FillOpaqueStippled;
-			v->x_fill_pattern = v->fill_interior == FIS_USER ? v->ud_fill_pattern : fillpat[v->fill_interior][style - 1];
+			params->fill_pattern = fillpat[FIS_SOLID][0];
 		}
-		function = MD_REPLACE;
 		break;
 	case MD_TRANS:
-		fg = FIX_COLOR(v->fill_interior == FIS_HOLLOW ? v->bg_color : v->fill_color);
-		bg = FIX_COLOR(v->bg_color);
-		v->x_fill_style = FillStippled;
-		function = MD_REPLACE;
-		v->x_fill_pattern = v->fill_interior == FIS_USER ? v->ud_fill_pattern : fillpat[v->fill_interior][style - 1];
+		params->fg = FIX_COLOR(v->fill_interior == FIS_HOLLOW ? v->bg_color : color);
+		params->bg = FIX_COLOR(v->bg_color);
 		/* maybe fixme: MD_TRANS + FIS_HOLLOW is actually a no-op */
 		break;
 	case MD_XOR:
-		fg = FIX_COLOR(WHITE) ^ FIX_COLOR(BLACK);
-		bg = FIX_COLOR(BLACK);
-		v->x_fill_style = FillOpaqueStippled;
-		function = MD_XOR;
-		v->x_fill_pattern = v->fill_interior == FIS_USER ? v->ud_fill_pattern : fillpat[v->fill_interior][style - 1];
+		params->fg = FIX_COLOR(WHITE) ^ FIX_COLOR(BLACK);
+		params->bg = FIX_COLOR(BLACK);
 		break;
 	case MD_ERASE:
-		fg = FIX_COLOR(v->fill_color);
-		bg = FIX_COLOR(v->bg_color);
-		v->x_fill_style = FillStippled;
-		function = MD_ERASE;
-		v->x_fill_pattern = v->fill_interior == FIS_USER ? v->ud_fill_pattern : fillpat[v->fill_interior][style - 1];
+		params->fg = FIX_COLOR(color);
+		params->bg = FIX_COLOR(v->bg_color);
 		break;
 	}
-
-	v->x_function = function;
 }
 
 
-static void fill_rectangle_color(VWK *v, int x, int y, unsigned int width, unsigned int height, int color)
+static void fill_rectangle_params(VWK *v, int x, int y, unsigned int width, unsigned int height, struct fillparams *params)
 {
+	unsigned int x0, y0;
+	_UWORD pattern;
+	
 	if (width > 0 && height > 0)
 	{
-		color = FIX_COLOR(color);
-		XBUF(XFillRectangle, gc, x, y, width, height);
+		for (y0 = 0; y0 < height; y0++)
+		{
+			pattern = params->fill_pattern[y0];
+			for (x0 = 0; x0 < width; x0++)
+			{
+				gfx_put_pixel(v, x + x0, y + y0, pattern, v->wrmode, params->fg, params->bg);
+				pattern = roll(pattern);
+			}
+		}
 	}
-	/* TODO */
-	(void)x;
-	(void)y;
-	(void)v;
 }
 
 
 static void fill_rectangle_brush(VWK *v, int x, int y, unsigned int width, unsigned int height)
 {
-	init_filled(v);
-	fill_rectangle_color(v, x, y, width, height, v->fill_color);
+	struct fillparams params;
+	
+	init_filled(v, &params, v->fill_color);
+	fill_rectangle_params(v, x, y, width, height, &params);
 }
 
 
-static void create_pattern_pixmap(const unsigned char *data, unsigned char *mask)
+static void fill_rectangle_color(VWK *v, int x, int y, unsigned int width, unsigned int height, int color)
+{
+	struct fillparams params;
+	
+	init_filled(v, &params, color);
+	fill_rectangle_params(v, x, y, width, height, &params);
+}
+
+
+static void create_pattern_pixmap(const _UWORD *data, _UWORD *mask)
 {
 	int i;
 	
@@ -1031,8 +1039,8 @@ static gboolean vdi_set_mouse(_WORD *intin)
 	
 	MOUSE_FLAG = MOUSE_FLAG + 1;		/* disable mouse redrawing (mouse_flag) */
 
-	create_pattern_pixmap((const unsigned char *)&V_INTIN(pb, 5), x_cursor.mask);
-	create_pattern_pixmap((const unsigned char *)&V_INTIN(pb, 21), x_cursor.data);
+	create_pattern_pixmap((const _UWORD *)&V_INTIN(pb, 5), x_cursor.mask);
+	create_pattern_pixmap((const _UWORD *)&V_INTIN(pb, 21), x_cursor.data);
 	ncolors = NUM_COLORS(vdi_planes);
 	fg = V_INTIN(pb, 4);
 	if (fg < 0 || fg >= ncolors)
@@ -2720,7 +2728,7 @@ static int vdi_v_get_pixel(VWK *v, VDIPB *pb)
 
 	if (x >= 0 && y >= 0 && x < v->width && y < v->height)
 	{
-		/* TODO */
+		pixelcol = pixel(x, y);
 	}
 	if (v->planes >= 15)
 	{
@@ -2757,7 +2765,7 @@ static void vt52_scroll(int sx, int sy, int w, int h, int dx, int dy)
 }
 
 
-static void vdi_draw_char(VWK *v, int x, int y, unsigned char c, unsigned int fg, unsigned int bg)
+static void vdi_draw_char(VWK *v, int x, int y, unsigned char c, pel fg, pel bg)
 {
 	/* TODO */
 	(void) v;
@@ -2777,7 +2785,7 @@ static void output_raw_char_dc(VWK *v, struct alpha_info *vt52, char c)
 	x = vt52->ax * vt52->acw;
 	y = vt52->ay * vt52->ach;
 	{
-		unsigned int fg, bg;
+		pel fg, bg;
 		if (vt52->rev_on)
 		{
 			fg = FIX_COLOR(vt52->abg);
@@ -3951,7 +3959,9 @@ static void do_arrow(VWK *v, VDI_POINT *xy, int npoints)
 	line_ends = v->line_ends;
 	v->line_ends = 0;
 	{
-		init_filled(v);
+		struct fillparams params;
+	
+		init_filled(v, &params, v->fill_color);
 		
 		/* Function "arrow" will alter the end of the line segment.  Save the */
 		/* starting point of the polyline in case two calls to "arrow" are    */
@@ -4040,7 +4050,9 @@ static void do_pline(VWK *v, VDI_POINT *points, int n)
 
 static void do_fillarea(VWK *v, VDI_POINT *points, int n)
 {
-	init_filled(v);
+	struct fillparams params;
+	
+	init_filled(v, &params, v->fill_color);
 	/* TODO */
 	(void) points;
 	(void) n;
@@ -4806,7 +4818,7 @@ static int vdi_vsf_udpat(VWK *v, VDIPB *pb)
 {
 	_WORD *control = PV_CONTROL(pb);
 	_WORD *intin = PV_INTIN(pb);
-	const unsigned char *pattern = (const unsigned char *)(&V_INTIN(pb, 0));
+	const _UWORD *pattern = (const _UWORD *)(&V_INTIN(pb, 0));
 	
 	V("vsf_udpat[%d]", v->handle);
 
@@ -5154,7 +5166,9 @@ static int vdi_v_arc(VWK *v, VDIPB *pb)
 
 static void filled_ellpie(VWK *v, int x, int y, int xradius, int yradius, int beg_angle, int end_angle)
 {
-	init_filled(v);
+	struct fillparams params;
+	
+	init_filled(v, &params, v->fill_color);
 	/* TODO */
 	XBUF(XFillArc, v->gc, x - xradius, y - yradius, 2 * xradius, 2 * yradius, beg_angle, end_angle);
 	if (v->fill_perimeter)
@@ -5194,7 +5208,9 @@ static int vdi_v_pieslice(VWK *v, VDIPB *pb)
 
 static void filled_ellipse(VWK *v, int x, int y, int xradius, int yradius)
 {
-	init_filled(v);
+	struct fillparams params;
+	
+	init_filled(v, &params, v->fill_color);
 	XBUF(XFillArc, v->gc, x - xradius, y - yradius, xradius * 2, yradius * 2, 0, 360 * 64);
 	/* TODO */
 	(void) x;
@@ -5510,7 +5526,9 @@ static void rounded_box(VWK *v, VDIPB *pb, int filled)
 
 		if (filled)
 		{
-			init_filled(v);
+			struct fillparams params;
+			
+			init_filled(v, &params, v->fill_color);
 			vdi_draw_polygons(v->gc, points, 21);
 			if (v->fill_perimeter)
 			{
@@ -5789,7 +5807,7 @@ static void x_get_font_props(FONT_DESC *sf, const FONT_HDR *h)
 
 static void vdi_reset_vars(void)
 {
-	int i, k;
+	int i, j, k;
 
 	phys_handle = -1;
 	user_but = 0;
@@ -5801,7 +5819,8 @@ static void vdi_reset_vars(void)
 	for (i = 0, k = 0; i < 5; i++)
 	{
 		fillpat[i] = &allpatterns[k];
-		k += patnum[i];
+		for (j = 0; j < patnum[i]; j++, k++)
+			allpatterns[k] = &pattern_bits[PATTERN_SIZE * k];
 	}
 
 	/* Now load the system font: */
@@ -6004,7 +6023,6 @@ static VWK *init_vwk(VDIPB *pb, int h, int phys_wk, int width, int height, int p
 	v->fill_color = m;
 	v->fill_perimeter = TRUE;
 	v->fill_perimeter_whichcolor = 0;
-	init_filled(v);
 	
 	m = V_INTIN(pb, 10);
 	if (m != 0 && m != 2)
