@@ -13,6 +13,7 @@ libaes_a_SOURCES = \
 	gemevlib.c \
 	gemglobe.c \
 	gemgraf.c \
+	gemgrlib.c \
 	gemgsxif.c \
 	geminit.c \
 	geminput.c \

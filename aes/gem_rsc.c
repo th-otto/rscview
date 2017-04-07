@@ -1,6 +1,7 @@
 #include "aes.h"
 #include "gem_rsc.h"
 #include "gem_rsc.rsh"
+#include "s_endian.h"
 
 OBJECT **aes_rsc_tree = (OBJECT **)rs_trindex;
 const char *const *aes_rsc_string = rs_frstr;

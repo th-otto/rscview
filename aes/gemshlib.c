@@ -59,7 +59,7 @@ _BOOL sh_tographic(void)
 	gsx_graphic(TRUE);					/* convert to graphic   */
 	gsx_sclip(&gl_rscreen);				/* set initial clip rect */
 	gsx_malloc();						/* allocate screen space BUG: not checked */
-	gsx_mfset((MFORM *)aes_rsc_bitblk[MICE02]->bi_pdata, TRUE);				/* put mouse to hourglass */
+	gsx_mfset((MFORM *)aes_rsc_bitblk[MICE02]->bi_pdata);				/* put mouse to hourglass */
 	ratinit();							/* start up the mouse   */
 
 	return TRUE;

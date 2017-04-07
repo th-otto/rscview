@@ -45,7 +45,7 @@ void aes_init(void)
 
 	/****************************************/
 
-	/* init event recorder  */
+	/* init event recorder */
 	gl_recd = FALSE;
 	gl_rlen = 0;
 	gl_rbuf = 0;
@@ -79,7 +79,7 @@ void aes_init(void)
 	 * This process starts out owning the mouse
 	 * and the keyboard. it has a pid == 1
 	 */
-	gl_mowner = gl_kowner = ctl_pd = ictlmgr(rlr->p_pid);
+	gl_mowner = gl_kowner = ctl_pd = ictlmgr();
 
 	rsc_read();							/* read in resource */
 
@@ -109,7 +109,7 @@ void aes_init(void)
 		gl_alrtcol = LWHITE;			/* init alert background color */
 	}
 
-	gsx_mfset((MFORM *)aes_rsc_bitblk[MICE02]->bi_pdata, TRUE);
+	gsx_mfset((MFORM *)aes_rsc_bitblk[MICE02]->bi_pdata);
 
 	/* fix up icons */
 	for (i = 0; i < 3; i++)

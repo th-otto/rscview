@@ -99,7 +99,6 @@ void aes_exit(void);
 
 void set_mouse_to_arrow(void);
 void set_mouse_to_hourglass(void);
-void gr_mouse(_WORD mkind, MFORM *grmaddr);
 void gem_main(void);
 void setres(void);
 void pinit(AESPD *ppd, CDA *pcda);
@@ -149,7 +148,7 @@ void hctl_window(_WORD w_handle, _WORD mx, _WORD my);
 void hctl_button(_WORD mx, _WORD my);
 void hctl_rect(_WORD mx, _WORD my);
 void ct_chgown(AESPD *ppd, GRECT *pr);
-AESPD *ictlmgr(_WORD pid);
+AESPD *ictlmgr(void);
 void ctlmouse(_BOOL mon);
 void fm_own(_BOOL beg_ownit);
 void akbin(EVB *e);
@@ -363,8 +362,8 @@ void gr_box(_WORD x, _WORD y, _WORD w, _WORD h, _WORD th);
  * gemgrlib.c
  */
 void gr_stepcalc(_WORD orgw, _WORD orgh, GRECT *pt, _WORD *pcx, _WORD *pcy, _WORD *pcnt, _WORD *pxstep, _WORD *pystep);
-void gr_growbox(GRECT *po, GRECT *pt);
-void gr_shrinkbox(GRECT *po, GRECT *pt);
+void gr_growbox(const GRECT *po, const GRECT *pt);
+void gr_shrinkbox(const GRECT *po, const GRECT *pt);
 void gr_xor(_WORD clipped, _WORD cnt, _WORD cx, _WORD cy, _WORD cw, _WORD ch, _WORD xstep, _WORD ystep, _WORD dowdht);
 void gr_movebox(_WORD w, _WORD h, _WORD srcx, _WORD srcy, _WORD dstx, _WORD dsty);
 void gr_scale(_WORD xdist, _WORD ydist, _WORD *pcnt, _WORD *pxstep, _WORD *pystep);
@@ -375,11 +374,12 @@ _WORD gr_wait(GRECT *po, GRECT *poff, _WORD mx, _WORD my);
 void gr_setup(_WORD color);
 void gr_rubbox(_WORD xorigin, _WORD yorigin, _WORD wmin, _WORD hmin, _WORD *pwend, _WORD *phend);
 void gr_rubwind(_WORD xorigin, _WORD yorigin, _WORD wmin, _WORD hmin, GRECT *poff, _WORD *pwend, _WORD *phend);
-void gr_dragbox(_WORD w, _WORD h, _WORD sx, _WORD sy, GRECT *pc, _WORD *pdx, _WORD *pdy);
+void gr_dragbox(_WORD w, _WORD h, _WORD sx, _WORD sy, const GRECT *pc, _WORD *pdx, _WORD *pdy);
 void gr_2box(_WORD flag1, _WORD cnt, GRECT *pt, _WORD xstep, _WORD ystep, _WORD flag2);
 void gr_clamp(_WORD xorigin, _WORD yorigin, _WORD wmin, _WORD hmin, _WORD *pneww, _WORD *pnewh);
 _WORD gr_slidebox(OBJECT *tree, _WORD parent, _WORD obj, _WORD isvert);
 _WORD gr_mkstate(_WORD *pmx, _WORD *pmy, _WORD *pmstat, _WORD *pkstat);
+void gr_mouse(_WORD mkind, MFORM *grmaddr);
 
 /*
  * gemgraf.c
@@ -508,34 +508,29 @@ extern _WORD gl_newroot;							/* root object of new DESKTOP */
 extern _WORD gl_wtop;
 
 void wm_init(void);
-_WORD wm_create(_UWORD kind, GRECT *rect);
+_WORD wm_create(_UWORD kind, const GRECT *rect);
 _WORD wm_find(int mx, int my);
 void wm_min(_WORD kind, _WORD *ow, _WORD *oh);
 #if NEWWIN
 extern MEMHDR *rmhead, *rmtail;					/* rect lists memory linked list */
 WINDOW *srchwp(int handle);
-_WORD wm_open(_WORD handle, GRECT *rect);
+_WORD wm_open(_WORD handle, const GRECT *rect);
 _WORD wm_close(_WORD handle);
 _WORD wm_delete(_WORD handle);
 _WORD wm_set(_WORD handle, _WORD field, _WORD *iw);
-_WORD wm_calc(_WORD type, _WORD kind, _WORD ix, _WORD iy, _WORD iw, _WORD ih, _WORD *ox, _WORD *oy, _WORD *ow, _WORD *oh);
 void w_drawchange(GRECT *dirty, _UWORD skip, _UWORD stop);
 #else
 #define srchwp(handle) (&D.w_win[handle])
 void wm_open(_WORD handle, GRECT *rect);
 void wm_close(_WORD handle);
 _WORD wm_delete(_WORD handle);
-void wm_set(_WORD handle, _WORD field, _WORD *iw);
-void wm_calc(_WORD type, _WORD kind, _WORD ix, _WORD iy, _WORD iw, _WORD ih, _WORD *ox, _WORD *oy, _WORD *ow, _WORD *oh);
+_WORD wm_set(_WORD handle, _WORD field, _WORD *iw);
 void w_drawdesk(GRECT *dirty);
-void w_update(_WORD bottom, GRECT *pt, _WORD top, _BOOL moved);
+_WORD w_update(_WORD bottom, GRECT *pt, _WORD top, _BOOL moved);
 _BOOL wm_start(void);
 #endif
-#if NEWWIN | AES3D
+_WORD wm_calc(_WORD type, _WORD kind, const GRECT *in, GRECT *out);
 _WORD wm_get(_WORD handle, _WORD field, _WORD *ow, const _WORD *iw);
-#else
-void wm_get(_WORD handle, _WORD field, _WORD *ow);
-#endif
 _WORD wm_update(_WORD code);
 _WORD wm_new(void);
 void w_setactive(void);
@@ -616,10 +611,12 @@ _WORD mul_div(_WORD mul1, _WORD mul2, _WORD divis);
 
 
 /*
- * gemjstrt.S
+ * gemgsxif.c
  */
 extern _BOOL gl_rschange;
 extern _WORD gl_restype;
+extern MFORM gl_cmform;				/* current aes mouse form   */
+extern MFORM gl_omform;				/* old aes mouse form       */
 
 
 extern char const infdata[]; /* "DESKTOP.INF" */

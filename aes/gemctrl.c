@@ -34,16 +34,14 @@ _WORD appl_msg[8];
  *	executing. Also do all the initialization that is required.  
  *	Also zero out the desk accessory count.
  */
-AESPD *ictlmgr(_WORD pid)
+AESPD *ictlmgr(void)
 {
 	AESPD *p;
 	
-	UNUSED(pid);
 	gl_dacnt = 0;
 	gl_dabase = 0;
 	/* create process to execute it */
 	p = &D.g_pd[curpid];
 	p->p_pid = curpid++;
-	rlr = p;
 	return p;
 }

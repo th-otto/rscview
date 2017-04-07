@@ -91,10 +91,10 @@ static MFDB gl_tmp;
 static VEX_MOTV old_mcode;
 static VEX_BUTV old_bcode;
 static _LONG gl_mlen;
-VEX_CURV drwaddr;
+static VEX_CURV drwaddr;
 short gl_restype;
-static MFORM gl_cmform;				/* current aes mouse form   */
-static MFORM gl_omform;				/* old aes mouse form       */
+MFORM gl_cmform;				/* current aes mouse form   */
+MFORM gl_omform;				/* old aes mouse form       */
 
 
 
@@ -414,7 +414,9 @@ static void bb_set(_WORD sx, _WORD sy, _WORD sw, _WORD sh, _WORD *pts1, _WORD *p
 
 		/* issue warning message for backup only, not for subsequent restore */
 		if (pdst == &gl_tmp)
+		{
 			nf_debugprintf("Menu/alert buffer too small: need at least %ld bytes\n", size);
+		}
 	}
 
 	gl_tmp.fd_stand = TRUE;
@@ -475,26 +477,11 @@ void gsx_xmfset(MFORM *pmfnew)
 }
 
 
-void gsx_mfset(MFORM *pmfnew, _BOOL from_bitblk)
+void gsx_mfset(MFORM *pmfnew)
 {
 	gsx_moff();
 	gl_omform = gl_cmform;
 	gl_cmform = *pmfnew;
-	/*
-	 * temporary workaround for mouse forms stored in BITBLKs
-	 * compiled into the executable:
-	 * the data is stored "as is", that is, like in big-endian
-	 * format, but the first 5 words must be swapped
-	 * on little-endian hosts
-	 */
-	if (from_bitblk)
-	{
-		gl_cmform.mf_xhot = n2hs(gl_cmform.mf_xhot);
-		gl_cmform.mf_yhot = n2hs(gl_cmform.mf_yhot);
-		gl_cmform.mf_nplanes = n2hs(gl_cmform.mf_nplanes);
-		gl_cmform.mf_fg = n2hs(gl_cmform.mf_fg);
-		gl_cmform.mf_bg = n2hs(gl_cmform.mf_bg);
-	}
 	vsc_form(gl_handle, &gl_cmform.mf_xhot);
 	gsx_mon();
 }

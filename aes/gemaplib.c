@@ -58,6 +58,8 @@ _WORD ap_init(AES_GLOBAL *pglobal)
 	rlr->p_msgtosend = FALSE;
 	rlr->p_flags |= AP_OPEN;		/* appl_init() done */
 
+	sh_isgem = TRUE; /* fake for emulation */
+	
 	return pid;
 }
 
