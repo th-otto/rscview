@@ -11,6 +11,7 @@
 #ifndef __GRECT_H__
 #  include <grect.h>
 #endif
+#include <portvdi.h>
 
 EXTERN_C_BEG
 

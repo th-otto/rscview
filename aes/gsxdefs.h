@@ -26,7 +26,7 @@ extern VEX_TIMV tiksav;
 
 
 /*
- * gemgsxif.[cS]
+ * gemgsxif.c
  */
 
 _BOOL gsx_malloc(void);
@@ -52,9 +52,11 @@ void gsx_moff(void);
 void gsx_mon(void);
 _WORD gsx_char(void);
 _WORD gsx_nplanes(void);
+_BOOL sound(_BOOL isfreq, _WORD freq, _WORD duration);
+
 
 /*
- * apgsxif.[cS]
+ * apgsxif.c
  */
 void gsx_fix(MFDB *pfd, _WORD *theaddr, _WORD wb, _WORD h);
 void gsx_blt(_WORD *saddr, _UWORD sx, _UWORD sy, _UWORD swb, _WORD *daddr, _UWORD dx, _UWORD dy, _UWORD dwb, _UWORD w, _UWORD h, _UWORD rule, _WORD fgcolor, _WORD bgcolor);

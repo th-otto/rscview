@@ -19,7 +19,7 @@
 
 #define MAXNAMELEN		32			/* maximum length of object names */
 #define RSDNAMELEN		8			/* maximum length of names in old formats */
-#define RSMNAMELEN      99
+#define RSMNAMELEN      99			/* maximum length of names for RSM */
 #define COMMENTLEN		250			/* maximum length of comment strings */
 #define COMMENTLINES	3			/* number of comment lines */
 #define FNAMELEN		32			/* size of file names */
@@ -81,12 +81,12 @@ struct _bghinfo {
 };
 
 typedef struct {
-	_UBYTE *al_str;
+	char *al_str;
 	BGHINFO *al_bgh;
 } ALERTINFO;
 
 typedef struct {
-	_UBYTE *fr_str;
+	char *fr_str;
 	BGHINFO *fr_bgh;
 } STRINFO;
 
@@ -102,7 +102,7 @@ typedef enum { RET_OK, RET_NEXT, RET_CAN, RET_EDIT, RET_PREV } dialog_retcode;
  */
 struct _rsctree {
 	_WORD rt_type;					/* type of tree */
-	_UBYTE rt_name[MAXNAMELEN+1];	/* tree name */
+	char rt_name[MAXNAMELEN+1];	/* tree name */
 	union {
 		void *any;
 		DIALINFO dial;				/* RT_DIALOG, RT_FREE, RT_UNKNOWN */
@@ -163,7 +163,7 @@ typedef struct _rsc_ext {
 
 
 typedef struct {
-	_UBYTE ted_fillchar;		/* char used to fill up editable text fields */
+	char ted_fillchar;		/* char used to fill up editable text fields */
 	_WORD menu_leftmargin;		/* min. spaces left of menu text */
 	_WORD menu_rightmargin;		/* min. spaces at end of emnu entry */
 	_WORD menu_minspace;		/* min. spaces between text & shortcut */
@@ -253,18 +253,18 @@ typedef struct {
 typedef struct {
 	_UWORD na_count;				/* number of infos */
 	_UWORD na_flags;				/* application binding flags */
-	_UBYTE na_treeidx;				/* tree index */
-	_UBYTE na_obidx;				/* object index */
-	_UBYTE na_nametype;             /* type of entry: 0 = tree, 1 = object */
-	_UBYTE na_treetype;             /* type of tree */
-	_UBYTE na_name[RSDNAMELEN];     /* object name */
+	unsigned char na_treeidx;		/* tree index */
+	unsigned char na_obidx;			/* object index */
+	unsigned char na_nametype;		/* type of entry: 0 = tree, 1 = object */
+	unsigned char na_treetype;      /* type of tree */
+	char na_name[RSDNAMELEN];		/* object name */
 } NAMEINFO;
 
 
 /* File FILEIO.C */
 
-_BOOL export_strings(RSCFILE *file, const _UBYTE *filename);
-_BOOL import_strings(RSCFILE *file, const _UBYTE *filename);
+_BOOL export_strings(RSCFILE *file, const char *filename);
+_BOOL import_strings(RSCFILE *file, const char *filename);
 
 
 /* File MOBJ.C */
@@ -285,39 +285,39 @@ BGHENTRY *bgh_idx(BGHINFO *bgh, _WORD idx);
 
 enum check_code { CHECK_ABORT, CHECK_OK, CHECK_APPEND };
 
-_BOOL load_all(RSCFILE *file, const _UBYTE *filename);
-enum check_code check_file(_UBYTE *filename, const _UBYTE *extension, _BOOL append_allowed);
-_BOOL save_all(RSCFILE *file, const _UBYTE *filename);
+_BOOL load_all(RSCFILE *file, const char *filename);
+enum check_code check_file(char *filename, const char *extension, _BOOL append_allowed);
+_BOOL save_all(RSCFILE *file, const char *filename);
 _VOID err_nota_rsc(const char *filename);
-_BOOL ask_ibm(const _UBYTE *filename, _BOOL);
+_BOOL ask_ibm(const char *filename, _BOOL);
 _BOOL ask_unknown_ext(_VOID);
 _BOOL ask_convert_names(_VOID);
 _BOOL ask_rsm_single_layer(_VOID);
 _BOOL ask_rsm_multi_layer(_VOID);
-_BOOL ask_damaged_rsx(const _UBYTE *filename);
+_BOOL ask_damaged_rsx(const char *filename);
 _VOID warn_cicons(_VOID);
 _VOID warn_rso_toonew(_VOID);
 _VOID warn_names_truncated(_WORD maxlen);
 void warn_rsm_bgh_comments(void);
-_VOID warn_name_truncated(const _UBYTE *name);
-_VOID warn_damaged(const _UBYTE *filename, const _UBYTE *where);
-_VOID warn_def_damaged(const _UBYTE *filename);
-_VOID warn_interface_flags(const _UBYTE *filename);
-_VOID warn_names_deleted(const _UBYTE *filename);
-_BOOL ask_corrupted(_WORD tree_index, _WORD obj_index, _UWORD type, const _UBYTE *whats_wrong);
+_VOID warn_name_truncated(const char *name);
+_VOID warn_damaged(const char *filename, const char *where);
+_VOID warn_def_damaged(const char *filename);
+_VOID warn_interface_flags(const char *filename);
+_VOID warn_names_deleted(const char *filename);
+_BOOL ask_corrupted(_WORD tree_index, _WORD obj_index, _UWORD type, const char *whats_wrong);
 _BOOL ask_cicon_probs(_VOID);
 _BOOL ask_tree_notfound(_WORD);
-_BOOL ask_object_notfound(_LONG ob_index, _UBYTE *tree_name);
+_BOOL ask_object_notfound(_LONG ob_index, char *tree_name);
 _VOID warn_toobig(_VOID);
 _BOOL ask_file_toobig(_LONG filesize);
-_BOOL warn_ted_length(const _UBYTE *treename, const _UBYTE *obname, _WORD dstlen, _WORD srclen);
+_BOOL warn_ted_length(const char *treename, const char *obname, _WORD dstlen, _WORD srclen);
 _WORD rsc_icon_type(_WORD tree_type);
 _VOID close_tree_window(RSCTREE *tree);
 _VOID rsc_name_change(RSCFILE *file);
 _VOID err_overlay_crashed(void);
-_VOID warn_unknown_module(const _UBYTE *filename, const char *id, const char *name);
-_VOID warn_crc_mismatch(const _UBYTE *filename);
-_VOID warn_crc_string_mismatch(const _UBYTE *filename);
+_VOID warn_unknown_module(const char *filename, const char *id, const char *name);
+_VOID warn_crc_mismatch(const char *filename);
+_VOID warn_crc_string_mismatch(const char *filename);
 
 const char *ob_name(RSCFILE *file, OBJECT *tree, _WORD ob);
 const char *ob_cmnt(RSCFILE *file, OBJECT *tree, _WORD ob);

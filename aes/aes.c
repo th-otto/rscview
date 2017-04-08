@@ -204,6 +204,7 @@ static _WORD crysbind(AESPB *pb)
 		AES_PARAMS(26,2,1,0,0);
 		break;
 
+
 	/* Menu Manager */
 	case 30:
 		aestrace("menu_bar()");
@@ -287,6 +288,7 @@ static _WORD crysbind(AESPB *pb)
 		unsupported = TRUE;
 		break;
 
+
 	/* Object Manager */
 	case 40:
 		aestrace("objc_add()");
@@ -355,6 +357,7 @@ static _WORD crysbind(AESPB *pb)
 		ret = ob_find((OBJECT *)addr_in[0], int_in[0], int_in[1], int_in[2], int_in[3]);
 		break;
 	
+
 	/* Form Manager */
 	case 50:
 		aestrace("form_do()");
@@ -375,25 +378,19 @@ static _WORD crysbind(AESPB *pb)
 	case 52:
 		aestrace("form_alert()");
 		AES_PARAMS(52,1,1,1,0);
-#if NYI
 		ret = fm_alert(int_in[0], (const char *)addr_in[0]);
-#endif
 		break;
 
 	case 53:
 		aestrace("form_error()");
 		AES_PARAMS(53,1,1,0,0);
-#if NYI
 		ret = fm_error(int_in[0]);
-#endif
 		break;
 
 	case 54:
 		aestrace("form_center()");
 		AES_PARAMS(54,0,5,1,0);
-#if NYI
 		ob_center((OBJECT *)addr_in[0], (GRECT *)&int_out[1]);
-#endif
 		break;
 
 	case 55:
@@ -402,20 +399,17 @@ static _WORD crysbind(AESPB *pb)
 		gsx_sclip(&gl_rfull);
 		int_out[2] = int_in[1];
 		int_out[1] = int_in[2];
-#if NYI
 		ret = fm_keybd((OBJECT *)addr_in[0], int_in[0], &int_out[2], &int_out[1]);
-#endif
 		break;
 
 	case 56:
 		aestrace("form_button()");
 		AES_PARAMS(56,2,2,1,0);
 		gsx_sclip(&gl_rfull);
-#if NYI
 		ret = fm_button((OBJECT *)addr_in[0], int_in[0], int_in[1], &int_out[1]);
-#endif
 		break;
 	
+
 	/* Graphics Manager */
 	case 70:
 		aestrace("graf_rubberbox()");
@@ -489,11 +483,9 @@ static _WORD crysbind(AESPB *pb)
 	case 78:
 		aestrace("graf_mouse()");
 		AES_PARAMS(78,1,1,1,0);
-#if NYI
 		ctlmouse(FALSE);
 		gr_mouse(int_in[0], (MFORM *)addr_in[0]);
 		ctlmouse(TRUE);
-#endif
 		break;
 
 	case 79:
@@ -504,6 +496,7 @@ static _WORD crysbind(AESPB *pb)
 #endif
 		break;
 	
+
 	/* Scrap Manager */
 	case 80:
 		aestrace("scrap_read()");
@@ -529,6 +522,7 @@ static _WORD crysbind(AESPB *pb)
 #endif
 		break;
 	
+
 	/* File Selector Manager */
 	case 90:
 		aestrace("fs_input()");
@@ -551,6 +545,7 @@ static _WORD crysbind(AESPB *pb)
 		ret = fs_input((char *)addr_in[0], (char *)addr_in[1], &int_out[1], (char *)addr_in[2]);
 #endif
 		break;
+
 
 	/* Window Manager */
 	case 99:
@@ -645,6 +640,7 @@ static _WORD crysbind(AESPB *pb)
 #endif
 		break;
 
+
 	/* Resource Manager */
 	case 110:
 		aestrace("rsrc_load()");
@@ -692,6 +688,7 @@ static _WORD crysbind(AESPB *pb)
 		unsupported = TRUE;
 		break;
 	
+
 	/* Shell Manager */
 	case 120:
 		aestrace("shel_read()");

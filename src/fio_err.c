@@ -36,70 +36,70 @@ static void warn(const char *msg, ...)
 
 /*** ---------------------------------------------------------------------- ***/
 
-_VOID err_fcreate(const char *filename)
+void err_fcreate(const char *filename)
 {
 	error(_("can't create %s: %s"), filename, strerror(errno));
 }
 
 /*** ---------------------------------------------------------------------- ***/
 
-_VOID err_fopen(const char *filename)
+void err_fopen(const char *filename)
 {
 	error(_("can't open %s: %s"), filename, strerror(errno));
 }
 
 /*** ---------------------------------------------------------------------- ***/
 
-_VOID err_fread(const char *filename)
+void err_fread(const char *filename)
 {
 	error(_("reading %s"), filename);
 }
 
 /*** ---------------------------------------------------------------------- ***/
 
-_VOID err_fwrite(const char *filename)
+void err_fwrite(const char *filename)
 {
 	error(_("writing %s"), filename);
 }
 
 /*** ---------------------------------------------------------------------- ***/
 
-_VOID err_rename(const char *oldname, const char *newname)
+void err_rename(const char *oldname, const char *newname)
 {
 	error(_("can't rename %s to %s"), oldname, newname);
 }
 
 /*** ---------------------------------------------------------------------- ***/
 
-_VOID err_nota_rsc(const char *filename)
+void err_nota_rsc(const char *filename)
 {
 	error(_("not a resource file: %s"), filename);
 }
 
 /*** ---------------------------------------------------------------------- ***/
 
-_VOID warn_damaged(CONST _UBYTE *filename, CONST _UBYTE *where)
+void warn_damaged(const char *filename, const char *where)
 {
 	warn("problems in %s while scanning %s", filename, where);
 }
 
 /*** ---------------------------------------------------------------------- ***/
 
-_VOID warn_cicons(_VOID)
+void warn_cicons(void)
 {
 	warn("I couldn't find any color icons although\nthe flag is set the header");
 }
 
 /*** ---------------------------------------------------------------------- ***/
 
-_VOID warn_crc_mismatch(CONST _UBYTE *filename)
+void warn_crc_mismatch(const char *filename)
 {
 	warn("%s: CRC does not match resource file", filename);
 }
 
 /*** ---------------------------------------------------------------------- ***/
 
-_VOID warn_crc_string_mismatch(CONST _UBYTE *filename)
+void warn_crc_string_mismatch(const char *filename)
 {
 	warn("%s: embedded string CRC does not match resource file", filename);
 }

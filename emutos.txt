@@ -9,3 +9,6 @@ gemgsxif:
     bb_save: pass GRECT to bb_set
 gemgraf:
     gsx_bxpts: optimizations
+
+wm_update: superfluous usetrue
+eralert: no hourglass

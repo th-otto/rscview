@@ -5,10 +5,57 @@
 #include <errno.h>
 #include "nls.h"
 #include "fileio.h"
+#include "ws.h"
+
 
 char const program_name[] = "rscview";
 char const program_version[] = VERSION;
 char const program_date[] = "28.03.2017";
+
+/*
+ * gui variables
+ */
+static _WORD gl_hchar;
+static _WORD gl_wchar;
+static _WORD gl_wbox;
+static _WORD gl_hbox;							/* system sizes */
+static _WORD xdesk, ydesk, hdesk, wdesk;
+static _WORD phys_handle;						/* physical workstation handle */
+static _WORD vdi_handle;						/* virtual screen handle */
+static WS ws;
+static _WORD workin[11];
+
+
+static void open_screen(void)
+{
+	int i;
+	_WORD pxy[8];
+
+	vdi_handle = phys_handle;
+	for (i = 0; i < 10; i++)
+		workin[i] = 1;
+	workin[10] = 2;
+	v_opnvwk(workin, &vdi_handle, &ws.ws_xres);
+	vsf_interior(vdi_handle, FIS_SOLID);
+	vsf_perimeter(vdi_handle, FALSE);
+	vswr_mode(vdi_handle, MD_REPLACE);
+	vsf_color(vdi_handle, GREEN);
+	
+	pxy[0] = 0;
+	pxy[1] = 0;
+	pxy[2] = ws.ws_xres;
+	pxy[3] = ws.ws_yres;
+	vr_recfl(vdi_handle, pxy);
+
+	vsf_color(vdi_handle, WHITE);
+}
+
+
+static void close_screen(void)
+{
+	v_clsvwk(vdi_handle);
+}
+
 
 static gboolean xml_out = FALSE;
 
@@ -88,6 +135,13 @@ int main(int argc, char **argv)
 			}
 			
 			appl_init();
+			
+			menu_register(-1, program_name);
+			phys_handle = graf_handle(&gl_wchar, &gl_hchar, &gl_wbox, &gl_hbox);
+			wind_get(DESK, WF_WORKXYWH, &xdesk, &ydesk, &wdesk, &hdesk);
+			open_screen();
+			
+			close_screen();
 			
 			appl_exit();
 			

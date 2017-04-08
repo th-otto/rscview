@@ -271,13 +271,13 @@ extern _VOID *hfix_objs(RSHDR *_hdr, OBJECT *_ob, _WORD _num_objs);
 #undef NUM_OBS
 #undef NUM_TREE
 #undef NUM_UD
-#define NUM_STRINGS 77
+#define NUM_STRINGS 78
 #define NUM_BB		11
 #define NUM_IB		0
 #define NUM_CIB     0
 #define NUM_CIC     0
 #define NUM_TI		14
-#define NUM_FRSTR	23
+#define NUM_FRSTR	24
 #define NUM_FRIMG	11
 #define NUM_OBS     66
 #define NUM_TREE	3
@@ -360,16 +360,17 @@ static char const gem_rsc_string_63[] = "[1][The drive you specified|does not ex
 static char const gem_rsc_string_64[] = "[1][There is not enough memory|in your computer for the|application you just tried|to run.][  OK  ]";
 static char const gem_rsc_string_65[] = "[3][TOS error #%u.][Cancel]";
 static char const gem_rsc_string_66[] = "[3][Unsupported AES function #%d.][Cancel]";
-static char const gem_rsc_string_67[] = "ITEM SELECTOR";
-static char const gem_rsc_string_68[] = "0..9";
-static char const gem_rsc_string_69[] = "A..Z \200\216\217\220\222\231\232\245\265\266\267\270\236\302..\334";
-static char const gem_rsc_string_70[] = "0..9A..Z \200\216\217\220\222\231\232\245\265\266\267\270\236\302..\334";
-static char const gem_rsc_string_71[] = "0..9a..zA..Z\200..\377\\?*:._";
-static char const gem_rsc_string_72[] = "0..9a..zA..Z\200..\377\\:_";
-static char const gem_rsc_string_73[] = "a..z0..9A..Z\200..\377:?*_";
-static char const gem_rsc_string_74[] = "a..z0..9A..Z\200..\377_";
-static char const gem_rsc_string_75[] = "a..zA..Z \200..\377";
-static char const gem_rsc_string_76[] = "0..9a..zA..Z \200..\377";
+static char const gem_rsc_string_67[] = "[3][Please insert disk %c|into drive A:.][  OK  ]";
+static char const gem_rsc_string_68[] = "ITEM SELECTOR";
+static char const gem_rsc_string_69[] = "0..9";
+static char const gem_rsc_string_70[] = "A..Z \200\216\217\220\222\231\232\245\265\266\267\270\236\302..\334";
+static char const gem_rsc_string_71[] = "0..9A..Z \200\216\217\220\222\231\232\245\265\266\267\270\236\302..\334";
+static char const gem_rsc_string_72[] = "0..9a..zA..Z\200..\377\\?*:._";
+static char const gem_rsc_string_73[] = "0..9a..zA..Z\200..\377\\:_";
+static char const gem_rsc_string_74[] = "a..z0..9A..Z\200..\377:?*_";
+static char const gem_rsc_string_75[] = "a..z0..9A..Z\200..\377_";
+static char const gem_rsc_string_76[] = "a..zA..Z \200..\377";
+static char const gem_rsc_string_77[] = "0..9a..zA..Z \200..\377";
 
 
 /* data of NOTEBB */
@@ -493,7 +494,8 @@ static const char *const rs_frstr[NUM_FRSTR] = {
 	gem_rsc_string_73,
 	gem_rsc_string_74,
 	gem_rsc_string_75,
-	gem_rsc_string_76
+	gem_rsc_string_76,
+	gem_rsc_string_77
 };
 
 
@@ -605,7 +607,7 @@ static OBJECT const rs_object_rom[NUM_OBS] = {
 /* DIALERT */
 
 	{ -1, 1, 9, G_BOX, OF_NONE, OS_SHADOWED, C_UNION(0x21100L), 0,0, 80,9 },
-	{ 2, -1, -1, G_BOX, OF_NONE, OS_NORMAL, C_UNION(0xFF1100L), 3,1, 4,4 },
+	{ 2, -1, -1, G_BOX, OF_NONE, OS_NORMAL, C_UNION(0xFF1100L), 3,1, 4,4 }, /* ALICON */
 	{ 3, -1, -1, G_STRING, OF_NONE, OS_NORMAL, C_UNION(gem_rsc_string_43), 9,1, 40,1 }, /* MSGOFF */
 	{ 4, -1, -1, G_STRING, OF_NONE, OS_NORMAL, C_UNION(gem_rsc_string_44), 9,2, 50,1 },
 	{ 5, -1, -1, G_STRING, OF_NONE, OS_NORMAL, C_UNION(gem_rsc_string_45), 9,3, 50,1 },
@@ -823,8 +825,8 @@ _WORD gem_rsc_rsc_free()
 #endif /* RSC_NAMED_FUNCTIONS */
 
 #else /* !RSC_STATIC_FILE */
-int rs_numstrings = 77;
-int rs_numfrstr = 23;
+int rs_numstrings = 78;
+int rs_numfrstr = 24;
 
 int rs_nuser = 0;
 int rs_numimages = 11;

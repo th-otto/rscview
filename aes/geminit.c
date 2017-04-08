@@ -136,17 +136,18 @@ void aes_init(void)
 	/* This code is also in gemshlib, but it belongs here so that the correct
 	 * default GEM backdrop pattern is set for accessories and autoboot app.
 	 */
+	/* FIXME: use function from sh_main */
 	if (gl_ws.ws_ncolors > 2)				/* set solid pattern in color modes */
-		tree[ROOT].ob_spec.index = 0x00001173L;
+		tree[ROOT].ob_spec.index = OBSPEC_MAKE(0, 0, BLACK, BLACK, FALSE, IP_SOLID, GREEN);
 	else
-		tree[ROOT].ob_spec.index = 0x00001143L;
+		tree[ROOT].ob_spec.index = OBSPEC_MAKE(0, 0, BLACK, BLACK, FALSE, IP_4PATT, GREEN);
 
 	for (i = 0; i < 3; i++)
 		tree[i].ob_width = gl_width;
 
 	tree[ROOT].ob_height = gl_height;
-	tree[1].ob_height = gl_hchar + 2;
-	tree[2].ob_height = gl_hchar + 3;
+	tree[1].ob_height = gl_hchar + 2;        /* the background bar */
+	tree[APPTITLE].ob_height = gl_hchar + 3; /* the title */
 
 	/* off we go !!! */
 }

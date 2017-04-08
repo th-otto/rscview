@@ -255,7 +255,7 @@ THEGLO
 	char	g_fmtstr[MAX_LEN];	/* used in gemoblib.s	*/
 
 	char	g_loc1[256];		/* MAX alert length	*/
-	char	g_loc2[256];
+	char	alert_str[256];		/* must be long enough for longest alert in gem.rsc */
 
 	char    g_scrap[164];		/* current scrap directory */
 

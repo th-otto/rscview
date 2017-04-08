@@ -5,19 +5,19 @@
  */
 
 /*
- * Number of Strings:        77
+ * Number of Strings:        78
  * Number of Bitblks:        11
  * Number of Iconblks:       0
  * Number of Color Iconblks: 0
  * Number of Color Icons:    0
  * Number of Tedinfos:       14
- * Number of Free Strings:   23
+ * Number of Free Strings:   24
  * Number of Free Images:    11
  * Number of Objects:        66
  * Number of Trees:          3
  * Number of Userblks:       0
  * Number of Images:         11
- * Total file size:          4940
+ * Total file size:          4994
  */
 
 #undef RSC_NAME
@@ -35,8 +35,8 @@
 # define RSC_STATIC_FILE 0
 #endif
 #if !RSC_STATIC_FILE
-#define NUM_STRINGS 77
-#define NUM_FRSTR 23
+#define NUM_STRINGS 78
+#define NUM_FRSTR 24
 #define NUM_UD 0
 #define NUM_IMAGES 11
 #define NUM_BB 11
@@ -78,6 +78,7 @@
 #define FSCANCEL                          52 /* BUTTON in tree FSELECTR */
 
 #define DIALERT                            1 /* form/dialog */
+#define ALICON                             1 /* BOX in tree DIALERT */
 #define MSGOFF                             2 /* STRING in tree DIALERT */
 #define BUTOFF                             7 /* BUTTON in tree DIALERT */
 
@@ -123,34 +124,37 @@
 #define ALNOFUNC                          12 /* Alert string */
 /* [3][Unsupported AES function #%d.][Cancel] */
 
-#define ITEMSLCT                          13 /* Free string */
+#define ALRTDSWAP                         13 /* Alert string */
+/* [3][Please insert disk %c|into drive A:.][  OK  ] */
+
+#define ITEMSLCT                          14 /* Free string */
 /* ITEM SELECTOR */
 
-#define ST9VAL                            14 /* Free string */
+#define ST9VAL                            15 /* Free string */
 /* 0..9 */
 
-#define STAVAL                            15 /* Free string */
+#define STAVAL                            16 /* Free string */
 /* A..Z Äéèêíôö•µ∂∑∏û¬..‹ */
 
-#define STNVAL                            16 /* Free string */
+#define STNVAL                            17 /* Free string */
 /* 0..9A..Z Äéèêíôö•µ∂∑∏û¬..‹ */
 
-#define STPVAL                            17 /* Free string */
+#define STPVAL                            18 /* Free string */
 /* 0..9a..zA..ZÄ..ˇ\?*:._ */
 
-#define STLPVAL                           18 /* Free string */
+#define STLPVAL                           19 /* Free string */
 /* 0..9a..zA..ZÄ..ˇ\:_ */
 
-#define STFVAL                            19 /* Free string */
+#define STFVAL                            20 /* Free string */
 /* a..z0..9A..ZÄ..ˇ:?*_ */
 
-#define STLFVAL                           20 /* Free string */
+#define STLFVAL                           21 /* Free string */
 /* a..z0..9A..ZÄ..ˇ_ */
 
-#define STLAVAL                           21 /* Free string */
+#define STLAVAL                           22 /* Free string */
 /* a..zA..Z Ä..ˇ */
 
-#define STLNVAL                           22 /* Free string */
+#define STLNVAL                           23 /* Free string */
 /* 0..9a..zA..Z Ä..ˇ */
 
 #define NOTEBB                             0 /* Free image */

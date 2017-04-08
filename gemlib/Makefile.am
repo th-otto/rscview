@@ -14,6 +14,11 @@ libgem_a_SOURCES = \
 	a_appl_init.c \
 	a_vq_aes.c \
 	\
+	a_graf_handle.c \
+	\
+	a_menu_register.c \
+	\
+	a_wind_get.c \
 	a_wind_set.c \
 	a_wind_set_int.c \
 	a_wind_set_str.c \

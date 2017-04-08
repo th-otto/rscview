@@ -200,10 +200,6 @@ void tchange(_LONG fdata);
 _WORD tak_flag(SPB *sy);
 void amutex(EVB *e, SPB *sy);
 void unsync(SPB *sy);
-void fm_strbrk(OBJECT *tree, const char *palstr, _WORD stroff, _WORD *pcurr_id, _WORD *pnitem, _WORD *pmaxlen);
-void fm_parse(OBJECT *tree, const char *palstr, _WORD *picnum, _WORD *pnummsg, _WORD *plenmsg, _WORD *pnumbut, _WORD *plenbut);
-void fm_build(OBJECT *tree, _WORD haveicon, _WORD nummsg, _WORD mlenmsg, _WORD numbut, _WORD mlenbut);
-_WORD fm_alert(_WORD defbut, const char *palstr);
 
 
 /*
@@ -213,10 +209,10 @@ _WORD fm_keybd(OBJECT *tree, _WORD obj, _WORD *pchar, _WORD *pnew_obj);
 _WORD fm_button(OBJECT *tree, _WORD new_obj, _WORD clks, _WORD *pnew_obj);
 _WORD fm_do(OBJECT *tree, _WORD start_fld);
 _WORD fm_dial(_WORD fmd_type, GRECT *pi, GRECT *pt);
-_WORD fm_show(_WORD string, _WORD level, ...);
-_WORD fm_showv(_WORD string, _WORD level, va_list parms);
+_WORD fm_show(_WORD string, _WORD level, _WORD arg);
 _WORD eralert(_WORD n, _WORD d);
 _BOOL fm_error(_WORD n);
+_WORD fm_alert(_WORD defbut, const char *palstr);
 
 
 /*
@@ -445,7 +441,6 @@ extern AES_GLOBAL *rs_global;
 
 void rs_sglobe(AES_GLOBAL *pglobal);
 _WORD rs_obfix(OBJECT *tree, _WORD curob);
-char *rs_str(_WORD stnum);
 _WORD rs_free(AES_GLOBAL *pglobal);
 _WORD rs_gaddr(AES_GLOBAL *pglobal, _UWORD rtype, _UWORD rindex, void **rsaddr);
 _WORD rs_saddr(AES_GLOBAL *pglobal, _UWORD rtype, _UWORD rindex, void *rsaddr);
@@ -525,8 +520,8 @@ void wm_open(_WORD handle, GRECT *rect);
 void wm_close(_WORD handle);
 _WORD wm_delete(_WORD handle);
 _WORD wm_set(_WORD handle, _WORD field, _WORD *iw);
-void w_drawdesk(GRECT *dirty);
-_WORD w_update(_WORD bottom, GRECT *pt, _WORD top, _BOOL moved);
+void w_drawdesk(const GRECT *dirty);
+_WORD w_update(_WORD bottom, const GRECT *pt, _WORD top, _BOOL moved);
 _BOOL wm_start(void);
 #endif
 _WORD wm_calc(_WORD type, _WORD kind, const GRECT *in, GRECT *out);
@@ -628,3 +623,16 @@ char *save_2(char *pcurr, _UWORD wd);
 _BOOL app_reschange(_WORD res);
 const char *g_name(const char *file);
 _BOOL deskmain(void);
+
+#define ctlmouse(x)
+#define wm_update(x)
+#define get_ctrl(pt)
+#define get_mkown(m)
+#define ct_chgown(a, b) (void)(a); (void)(b)
+#define sound(a, b, c)
+#define gr_shrinkbox(i, o)
+#define gr_growbox(i, o) (void)(i)
+#define gr_watchbox(a, b, c, d) 0
+#define fq()
+#define ev_multi(flags, mo1, mo2, count, parm, mebuff, rets) rets[4] = 0x1c0d, MU_KEYBD
+#define ev_button(a, b, c, rets) rets[0] = 0
