@@ -52,7 +52,7 @@ void inf_fldset(OBJECT *tree, _WORD obj, _UWORD testfld, _UWORD testbit, _UWORD 
 void merge_str(char *pdst, const char *ptmp, va_list parms);
 _WORD wildcmp(const char *pwild, const char *ptest);
 size_t strlcpy(char *dst, size_t len, const char *src);
-unsigned int reverse(int index);
+unsigned int reverse(unsigned int index);
 _BOOL streq(const char *p1, const char *p2);
 char *xstrpcat(const char *ps, char *pd);
 _WORD inf_gindex(OBJECT *tree, _UWORD baseobj, _UWORD numobj);

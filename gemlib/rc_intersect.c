@@ -1,7 +1,3 @@
-/*
- *  $Id: rc_intersect.c,v 1.2 2003/02/28 20:46:41 a_bercegeay Exp $
- */
-
 #include "gem_aesP.h"
 
 #define max(x,y)   	(((x)>(y))?(x):(y))

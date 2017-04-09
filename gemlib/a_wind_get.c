@@ -328,9 +328,8 @@ wind_get (short WindowHandle, short What,
 			break;
 	}
 
-	/* ol: this line is required for WF_FIRSTXYWH and WF_NEXTXYWH because
-	   lot of programmers doesn't verify the return value and espect W or H
-	   will be 0 it's not true for NAES */
+	/* this line is required for WF_FIRSTXYWH and WF_NEXTXYWH because
+	   of a bug in N.AES that does not set these values, and only returns 0 */
 	aes_intout[3] = aes_intout[4] = 0;
 
 	AES_TRAP(aes_params);

@@ -7107,7 +7107,7 @@ static int vdi_v_opnbm(VDIPB *pb)
 
 	if (addr == 0)
 	{
-		addr = (uint8_t *)dos_alloc(size);
+		addr = (uint8_t *)dos_alloc_anyram(size);
 		if (addr == NULL)
 		{
 			vdi_clswk(v);

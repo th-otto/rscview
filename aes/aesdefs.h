@@ -35,12 +35,6 @@
 #define COLORICON_SUPPORT (AESVERSION >= 0x330)
 #endif
 
-#if AESVERSION >= 0x330
-#define	MAXOBJ	    20		/* maximum number of objects in a window */
-#else
-#define	MAXOBJ	    19		/* maximum number of objects in a window */
-#endif
-
 #define	NUM_WIN	8		/* # window structures per block of memory */
 
 #define STACK_SIZE  500

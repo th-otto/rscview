@@ -24,8 +24,11 @@ libaes_a_SOURCES = \
 	gempd.c \
 	gemobjop.c \
 	gemoblib.c \
+	gemrslib.c \
 	gemsclib.c \
 	gemshlib.c \
+	gemwmlib.c \
+	gemwrect.c \
 	aesutils.c \
 	\
 	gem_rsc.c gem_rsc.rsc gem_rsc.rso gem_rsc.rsh gem_rsc.h \

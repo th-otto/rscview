@@ -358,7 +358,7 @@ _WORD fm_do(OBJECT *tree, _WORD start_fld)
  *	Form DIALogue routine to handle visual effects of drawing and
  *	undrawing a dialogue
  */
-_WORD fm_dial(_WORD fmd_type, GRECT *pi, GRECT *pt)
+_WORD fm_dial(_WORD fmd_type, const GRECT *pi, const GRECT *pt)
 {
 	/* adjust tree position */
 	gsx_sclip(&gl_rscreen);
@@ -397,7 +397,7 @@ _WORD fm_show(_WORD string, _WORD level, _WORD arg)
 {
 	const char *ad_alert;
 	
-	ad_alert = aes_rsc_string[string];
+	ad_alert = rs_str(string);
 	sprintf(D.alert_str, ad_alert, arg);
 	ad_alert = D.alert_str;
 	return fm_alert(level, ad_alert);

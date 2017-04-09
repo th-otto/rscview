@@ -12,3 +12,5 @@ gemgraf:
 
 wm_update: superfluous usetrue
 eralert: no hourglass
+
+get rid of gl_awind

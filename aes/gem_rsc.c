@@ -1,4 +1,5 @@
 #include "aes.h"
+#include "nls.h"
 #include "gem_rsc.h"
 #include "gem_rsc.rsh"
 #include "s_endian.h"
@@ -17,4 +18,11 @@ _BOOL rsc_read(void)
 
 void rsc_free(void)
 {
+}
+
+
+/* Get a string from the GEM-RSC */
+char *rs_str(_UWORD stnum)
+{
+    return (char *)NO_CONST(_(aes_rsc_string[stnum]));
 }

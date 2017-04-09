@@ -57,7 +57,7 @@ static void ob_getsp(OBJECT *tree, _WORD obj, TEDINFO *pted)
  */
 void ob_center(OBJECT *tree, GRECT *pt)
 {
-	register _WORD xd, yd, wd, hd;
+	_WORD xd, yd, wd, hd;
 	_WORD iword, th;
 	OBSPEC spec;
 	GRECT rec;

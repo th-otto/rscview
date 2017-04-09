@@ -726,7 +726,7 @@ static _WORD crysbind(AESPB *pb)
 		aestrace("shel_find()");
 		AES_PARAMS(124,0,1,1,0);
 #if NYI
-		ret = sh_find((char *)addr_in[0], NULL);
+		ret = sh_find((char *)addr_in[0]);
 #endif
 		break;
 

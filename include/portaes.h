@@ -2120,6 +2120,7 @@ _WORD xshl_setshell(char *program);
 void rc_copy(const GRECT *src, GRECT *dst);
 _WORD rc_equal(const GRECT *r1, const GRECT *r2);
 _WORD rc_intersect(const GRECT *src, GRECT *dst);
+void rc_union(const GRECT *p1, GRECT *p2);
 GRECT *array_to_grect (const _WORD *array, GRECT *area);
 _WORD *grect_to_array (const GRECT *area, _WORD *array);
 

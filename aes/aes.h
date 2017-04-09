@@ -208,7 +208,7 @@ void unsync(SPB *sy);
 _WORD fm_keybd(OBJECT *tree, _WORD obj, _WORD *pchar, _WORD *pnew_obj);
 _WORD fm_button(OBJECT *tree, _WORD new_obj, _WORD clks, _WORD *pnew_obj);
 _WORD fm_do(OBJECT *tree, _WORD start_fld);
-_WORD fm_dial(_WORD fmd_type, GRECT *pi, GRECT *pt);
+_WORD fm_dial(_WORD fmd_type, const GRECT *pi, const GRECT *pt);
 _WORD fm_show(_WORD string, _WORD level, _WORD arg);
 _WORD eralert(_WORD n, _WORD d);
 _BOOL fm_error(_WORD n);
@@ -440,13 +440,14 @@ extern RSHDR *rs_hdr;
 extern AES_GLOBAL *rs_global;
 
 void rs_sglobe(AES_GLOBAL *pglobal);
-_WORD rs_obfix(OBJECT *tree, _WORD curob);
+void rs_obfix(OBJECT *tree, _WORD curob);
 _WORD rs_free(AES_GLOBAL *pglobal);
 _WORD rs_gaddr(AES_GLOBAL *pglobal, _UWORD rtype, _UWORD rindex, void **rsaddr);
 _WORD rs_saddr(AES_GLOBAL *pglobal, _UWORD rtype, _UWORD rindex, void *rsaddr);
-void do_rsfix(RSHDR *hdr, _WORD size);
+void do_rsfix(RSHDR *hdr, _LONG size);
 void rs_fixit(AES_GLOBAL *pglobal);
 _WORD rs_load(AES_GLOBAL *pglobal, const char *rsfname);
+char *rs_str(_UWORD stnum);
 
 
 /*
@@ -484,8 +485,7 @@ _BOOL sh_toalpha(void);
 void sh_draw(char *lcmd, _WORD start, _WORD depth);
 char *sh_name(char *ppath);
 _WORD sh_envrn(char **ppath, const char *psrch);
-typedef void (*SHFIND_PROC)(const char *path);
-_WORD sh_find(char *pspec, SHFIND_PROC routine);
+_WORD sh_find(char *pspec);
 void sh_rdef(char *lpcmd, char *lpdir);
 void sh_wdef(const char *lpcmd, const char *lpdir);
 void sh_main(void);
@@ -504,26 +504,16 @@ extern _WORD gl_wtop;
 
 void wm_init(void);
 _WORD wm_create(_UWORD kind, const GRECT *rect);
-_WORD wm_find(int mx, int my);
+_WORD wm_find(_WORD mx, _WORD my);
 void wm_min(_WORD kind, _WORD *ow, _WORD *oh);
-#if NEWWIN
-extern MEMHDR *rmhead, *rmtail;					/* rect lists memory linked list */
-WINDOW *srchwp(int handle);
-_WORD wm_open(_WORD handle, const GRECT *rect);
-_WORD wm_close(_WORD handle);
-_WORD wm_delete(_WORD handle);
-_WORD wm_set(_WORD handle, _WORD field, _WORD *iw);
-void w_drawchange(GRECT *dirty, _UWORD skip, _UWORD stop);
-#else
-#define srchwp(handle) (&D.w_win[handle])
-void wm_open(_WORD handle, GRECT *rect);
+void wm_open(_WORD handle, const GRECT *rect);
 void wm_close(_WORD handle);
 _WORD wm_delete(_WORD handle);
-_WORD wm_set(_WORD handle, _WORD field, _WORD *iw);
+_WORD wm_set(_WORD handle, _WORD field, const _WORD *iw);
+#define srchwp(handle) (&D.w_win[handle])
 void w_drawdesk(const GRECT *dirty);
-_WORD w_update(_WORD bottom, const GRECT *pt, _WORD top, _BOOL moved);
+_VOID w_update(_WORD bottom, const GRECT *pt, _WORD top, _BOOL moved);
 _BOOL wm_start(void);
-#endif
 _WORD wm_calc(_WORD type, _WORD kind, const GRECT *in, GRECT *out);
 _WORD wm_get(_WORD handle, _WORD field, _WORD *ow, const _WORD *iw);
 _WORD wm_update(_WORD code);
@@ -531,24 +521,18 @@ _WORD wm_new(void);
 void w_setactive(void);
 void ap_sendmsg(_WORD *ap_msg, _WORD type, AESPD *towhom, _WORD w3, _WORD w4, _WORD w5, _WORD w6, _WORD w7);
 
-#if !NEWWIN
 extern _WORD gl_wtop;
 extern OBJECT *gl_awind;
 void w_getsize(_WORD which, _WORD w_handle, GRECT *pt);
 void w_bldactive(_WORD w_handle);
-#endif
  
 
 /*
  * gemwrect.c
  */
-#if !NEWWIN
-extern ORECT *rul;
-
 void or_start(void);
 ORECT *get_orect(void);
-_WORD newrect(OBJECT *tree, _WORD wh, _WORD junkx, _WORD junky);
-#endif
+void newrect(OBJECT *tree, _WORD wh, _WORD junkx, _WORD junky);
 
 
 /*
@@ -636,3 +620,5 @@ _BOOL deskmain(void);
 #define fq()
 #define ev_multi(flags, mo1, mo2, count, parm, mebuff, rets) rets[4] = 0x1c0d, MU_KEYBD
 #define ev_button(a, b, c, rets) rets[0] = 0
+#define ap_rdwr(a, b, c, d) (void)(b)
+#define sh_find(name) 1

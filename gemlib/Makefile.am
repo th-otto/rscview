@@ -26,6 +26,7 @@ libgem_a_SOURCES = \
 	rc_copy.c \
 	rc_equal.c \
 	rc_intersect.c \
+	rc_union.c \
 	rc_array_to_grect.c \
 	rc_grect_to_array.c \
 	globals.c \

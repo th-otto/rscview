@@ -85,7 +85,7 @@ int toupper(int ch)
  */
 size_t strlen(const char *p1)
 {
-	register _WORD len;
+	_WORD len;
 
 	len = 0;
 	while (*p1++)
@@ -125,7 +125,7 @@ char *strscn(const char *ps, char *pd, char stop)
  */
 _WORD strchk(const char *s, const char *t)
 {
-	register _WORD i;
+	_WORD i;
 
 	i = 0;
 	while (s[i] == t[i])
@@ -276,7 +276,7 @@ _WORD inf_gindex(OBJECT *tree, _UWORD baseobj, _UWORD numobj)
  */
 _WORD inf_what(OBJECT *tree, _WORD ok)
 {
-	register _WORD field;
+	_WORD field;
 
 	field = inf_gindex(tree, ok, 2);
 
@@ -294,9 +294,9 @@ void merge_str(char *pdst, const char *ptmp, va_list parms)
 {
 	_WORD do_value;
 	char lholder[12];
-	register char *pnum;
+	char *pnum;
 	char *psrc;
-	register int32_t lvalue, divten;
+	int32_t lvalue, divten;
 	_WORD digit;
 	
 	while (*ptmp)
@@ -431,11 +431,12 @@ _WORD wildcmp(const char *pwild, const char *ptest)
  */
 size_t strlcpy(char *dest, size_t count, const char *src)
 {
-char *d = dest;
-const char *s = src;
-size_t n;
+	char *d = dest;
+	const char *s = src;
+	size_t n;
 
-    if (count > 0) {
+    if (count > 0)
+    {
         for (n = count-1; *s && n; n--)
             *d++ = *s++;
         *d = '\0';
@@ -444,7 +445,7 @@ size_t n;
     while (*s++)
         ;
 
-    return s-src-1;
+    return s - src - 1;
 }
 
 
@@ -454,16 +455,16 @@ size_t n;
  * packed value 0x8000 is index 0x0001 ).
  * NOTE: This routine has been optimized into assembly.
  */
-unsigned int reverse(int index)
+unsigned int reverse(unsigned int index)
 {
 	unsigned int mask, result = 0x0000;
-	long temp;
+	unsigned int temp;
 	int i;
 
 	for (i = 0; i < 16; i++)
 	{
 		mask = 0x0001 << i;
-		temp = (long) mask & index;
+		temp = mask & index;
 		if (temp)
 			result |= 0x0001 << (16 - i - 1);
 	}

@@ -407,7 +407,7 @@ static void just_draw(OBJECT *tree, _WORD obj, _WORD sx, _WORD sy)
 	_WORD thick;
 	char ch;
 	GRECT t, c;
-	register GRECT *pt;
+	GRECT *pt;
 	BITBLK bi;
 	ICONBLK ib;
 	TEDINFO edblk;
@@ -927,7 +927,7 @@ _WORD ob_find(OBJECT *tree, _WORD currobj, _WORD depth, _WORD mx, _WORD my)
 	_WORD state;
 	GRECT t, o;
 	_WORD parent, childobj, flags;
-	register GRECT *pt;
+	GRECT *pt;
 
 	pt = &t;
 
@@ -1081,7 +1081,7 @@ _BOOL ob_delete(OBJECT *tree, _WORD obj)
  */
 _BOOL ob_order(OBJECT *tree, _WORD mov_obj, _WORD new_pos)
 {
-	register _WORD parent;
+	_WORD parent;
 	_WORD chg_obj, ii;
 
 	if (mov_obj == ROOT)
@@ -1137,7 +1137,7 @@ _BOOL ob_change(OBJECT *tree, _WORD obj, _WORD new_state, _WORD redraw)
 	GRECT t;
 	_WORD curr_state;
 	OBSPEC spec;
-	register GRECT *pt;
+	GRECT *pt;
 
 	pt = &t;
 
@@ -1486,7 +1486,7 @@ static void convert_mask(_WORD *mask, _WORD *dst_mask, _WORD width, _WORD height
  */
 void gr_cicon(_WORD state, _WORD *pmask, _WORD *pdata, const char *ptext, _WORD ch, _WORD chx, _WORD chy, GRECT *pi, GRECT *pt, CICONBLK *cicon)
 {
-	register _WORD fgcol, bgcol, tmp;
+	_WORD fgcol, bgcol, tmp;
 	/* crack the color/char definition word */
 	CICON *color;
 	int col_select;						/* is there a color select icon */
@@ -1728,8 +1728,8 @@ static void fixup_cicon(CICON * ptr, int tot_icons, CICONBLK ** carray)
 static void expand_data(_WORD *saddr, _WORD *daddr, _WORD *mask, int splanes, int dplanes, int w, int h)
 {
 	int plane_size, orig_size, end_size;
-	register int i, n;
-	register _WORD *stemp, *dtemp;
+	int i, n;
+	_WORD *stemp, *dtemp;
 
 	plane_size = ((w + 15) >> 4) * h;
 	orig_size = plane_size * splanes;
@@ -1811,8 +1811,8 @@ static void trans_cicon(int tot_icons, CICONBLK **carray)
 			/* if not same size, allocate bigger buffers and expand */
 			if (ctemp->num_planes != gl_nplanes)
 			{
-				tempbuffer = (_WORD *) dos_alloc(tot_size);
-				databuffer = (_WORD *) dos_alloc(tot_size);
+				tempbuffer = (_WORD *) dos_alloc_anyram(tot_size);
+				databuffer = (_WORD *) dos_alloc_anyram(tot_size);
 				if (!tempbuffer || !databuffer)
 				{
 					ciconblk->mainlist = 0L;
@@ -1823,7 +1823,7 @@ static void trans_cicon(int tot_icons, CICONBLK **carray)
 				ctemp->col_data = databuffer;
 				if (ctemp->sel_data)
 				{
-					selbuffer = (_WORD *) dos_alloc(tot_size);
+					selbuffer = (_WORD *) dos_alloc_anyram(tot_size);
 					if (selbuffer)
 					{
 						expand_data(ctemp->sel_data, tempbuffer, ctemp->sel_mask, ctemp->num_planes, gl_nplanes, w, h);
@@ -1835,7 +1835,7 @@ static void trans_cicon(int tot_icons, CICONBLK **carray)
 			} else
 			{							/* just allocate same size, copy over because */
 				/* we don't want to transform form in place */
-				databuffer = (_WORD *) dos_alloc(tot_size);
+				databuffer = (_WORD *) dos_alloc_anyram(tot_size);
 				if (!databuffer)
 				{
 					ciconblk->mainlist = 0L;
@@ -1845,7 +1845,7 @@ static void trans_cicon(int tot_icons, CICONBLK **carray)
 				ctemp->col_data = databuffer;
 				if (ctemp->sel_data)
 				{
-					selbuffer = (_WORD *) dos_alloc(tot_size);
+					selbuffer = (_WORD *) dos_alloc_anyram(tot_size);
 					if (selbuffer)
 					{
 						my_trans(ctemp->sel_data, w / 8, selbuffer, w / 8, h, gl_nplanes);

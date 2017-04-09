@@ -98,22 +98,26 @@ typedef struct moblk
 #define	W_HELEV	    18		/* horizontal slider thumb/elevator */
 #define	W_MENUBAR	19		/* menu bar (added Jul 23 91 - ml.) */
 
-#define NUM_ELEM    20
+#if AESVERSION >= 0x330
+#define	NUM_ELEM	20		/* maximum number of objects in a window */
+#else
+#define	NUM_ELEM	19		/* maximum number of objects in a window */
+#endif
 
 
 typedef struct sh_struct
 {
-    _WORD sh_doexec;             /* TRUE during normal processing; set */
+    _WORD sh_doexec;            /* TRUE during normal processing; set */
                                 /*  to FALSE to shutdown the system   */
-    _WORD sh_dodef;              /* if TRUE then run the default startup   */
+    _WORD sh_dodef;             /* if TRUE then run the default startup   */
                                 /*  app: normally EMUDESK, but can be an  */
                                 /*  autorun program if so configured.     */
                                 /*  if FALSE, run a normal application.   */
-    _WORD sh_isdef;              /* if TRUE then using the default startup   */
+    _WORD sh_isdef;             /* if TRUE then using the default startup   */
                                 /*  app: normally EMUDESK, but can be an    */
                                 /*  autorun program if so configured.       */
                                 /*  if FALSE, running a normal application. */
-    _WORD sh_isgem;              /* TRUE if the application to be run is a GEM */
+    _WORD sh_isgem;             /* TRUE if the application to be run is a GEM */
                                 /*  application; FALSE if character-mode      */
     char sh_desk[LEN_ZFNAME];   /* the name of the default startup app */
     char sh_cdir[LEN_ZPATH];    /* the current directory for the default startup app */
@@ -151,54 +155,10 @@ typedef struct orect
 } ORECT;
 
 
-#if NEWWIN
-
-/* Window structure */
-typedef	struct	window {
-    struct {
-	unsigned used : 1;	/* bit 0 -> 1: slot is currently used */
-	unsigned opened : 1;	/* bit 1 -> 1: window is currently opened */
-    } status;			/* window status */
-    AESPD	 *w_owner;		/* owner of this window */
-    _UWORD   w_mowner;	/* mouse owner of this window */
-    _UWORD   w_handle;	/* window handle */
-    _UWORD   w_kind;		/* flag for components of window */
-    OBJECT  *aesobj;		/* for use in AES */
-    OBJECT  obj[MAXOBJ];	/* definition of each object */
-    _WORD    w_tcolor[MAXOBJ];	/* object colors if window is topped */
-    _WORD    w_bcolor[MAXOBJ];	/* object colors if window is in background */
-    TEDINFO ttxt;			/* title bar text */
-    TEDINFO itxt;			/* info line text */
-    TEDINFO mtxt;			/* menu bar text */
-    GRECT   w_full;			/* coords and size when full */
-    GRECT   w_prev;			/* previous coords and size */
-    GRECT   w_curr;			/* current coords and size */
-    RLIST   *fxywh;			/* first rect in rectangle list */
-    RLIST   *nxywh;			/* next rect in rectangle list */
-							/* slider positions and sizes are in 1-1000
-							   range and relative to the scroll bar */
-    _UWORD   w_hslide;	/* horizontal slider position */
-    _UWORD   w_vslide;	/* vertical slider position */
-    _UWORD   w_hslsiz;	/* horizontal slider size */
-    _UWORD   w_vslsiz;	/* vertical slider size */
-    _UWORD   ontop;		/* handle # of window on top */
-    _UWORD   under;		/* handle # of window under */
-    _UWORD   nxthndl;		/* next handle # in used */
-    _UWORD   parent;		/* handle # of parent window */
-    _UWORD   child;		/* handle # of 1st child window */
-    _UWORD   type;		/* window's characteristics	*/
-    _UWORD   sibling;		/* handle # of next sibling window */
-    MEMHDR  *wwhere;		/* ptr to memory this WINDOW resides in */
-    struct  window *wnext;	/* ptr to next WINDOW in database */
-} WINDOW;
-
-#else
-
-#define VF_INUSE   0x0001
+#define VF_INUSE   0x0001	/* this window has been created */
 #define VF_BROKEN  0x0002
-#define VF_INTREE  0x0004
+#define VF_INTREE  0x0004	/* this windows has been opened */
 #define VF_SUBWIN  0x0008
-#define VF_KEEPWIN 0x0010
 
 typedef struct window
 {
@@ -214,8 +174,8 @@ typedef struct window
 	_WORD		w_vslide;
 	_WORD		w_hslsiz;
 	_WORD		w_vslsiz;
-	_WORD		w_tcolor[MAXOBJ];	
-	_WORD		w_bcolor[MAXOBJ];	
+	_WORD		w_tcolor[NUM_ELEM];	
+	_WORD		w_bcolor[NUM_ELEM];	
 	ORECT		*w_rlist;	/* owner rectangle list	*/
 	ORECT		*w_rnext;	/* used for search first search next */
 } WINDOW;
@@ -228,8 +188,6 @@ typedef struct window
 #define WTS_FG 0x11a1
 /* window title normal */
 #define WTN_FG 0x1100
-
-#endif
 
 /* system has 3 pds to start - app, control mgr, acc	*/
 
@@ -245,9 +203,7 @@ THEGLO
 
 	FPD	g_fpdx[NFORKS];
 
-#if !NEWWIN
 	ORECT 	g_olist[NUM_ORECT];
-#endif
 
 	char	g_rawstr[MAX_LEN];	/* used in gemoblib.s	*/
 	char	g_tmpstr[MAX_LEN];	/* used in gemoblib.s	*/
@@ -269,9 +225,7 @@ THEGLO
 	char	s_save[SIZE_AFILE];	/* SIZE_AFILE		*/
 	char	s_tail[CMDLEN];
 
-#if !NEWWIN
 	WINDOW	w_win[NUM_WIN];
-#endif
 };
 
 extern THEGLO D;
