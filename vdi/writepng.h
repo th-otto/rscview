@@ -83,8 +83,8 @@ typedef struct _writepng_info {
 	unsigned long rowbytes;
 	time_t modtime;
 	FILE *outfile;
-	void *png_ptr;
-	void *info_ptr;
+	png_structp png_ptr;
+	png_infop info_ptr;
 	unsigned char *image_data;
 	unsigned char **row_pointers;
 	char *title;

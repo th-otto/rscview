@@ -147,7 +147,8 @@ void writepng_exit(writepng_info *wpnginfo)
 
 int writepng_output(writepng_info *wpnginfo)
 {
-	unsigned long rowbytes;
+	unsigned long srcrowbytes;
+	unsigned long dstrowbytes;
 	int rc;
 	
 	if (wpnginfo == NULL || wpnginfo->image_data == NULL || wpnginfo->outfile == NULL)
@@ -159,64 +160,54 @@ int writepng_output(writepng_info *wpnginfo)
 	 * more complicated if we choose to support PBM type, ASCII PNM types, or
 	 * 16-bit-per-sample binary data [currently not an official NetPBM type] */
 
-	rowbytes = wpnginfo->rowbytes;
-	if (rowbytes == 0)
+	srcrowbytes = wpnginfo->rowbytes;
+	if (srcrowbytes == 0)
 	{
 		if (wpnginfo->bpp <= 8)
-			rowbytes = wpnginfo->width;
+			srcrowbytes = wpnginfo->width;
 		else if (wpnginfo->bpp == 24)
-			rowbytes = wpnginfo->width * 3;
+			srcrowbytes = wpnginfo->width * 3;
 		else
-			rowbytes = wpnginfo->width * 4;
+			srcrowbytes = wpnginfo->width * 4;
 	}
+	dstrowbytes = srcrowbytes;
 	
+	rc = 0;
 	if (wpnginfo->interlaced)
 	{
-		long i;
+		long y;
 
 		wpnginfo->row_pointers = (unsigned char **) malloc(wpnginfo->height * sizeof(unsigned char *));
 		if (wpnginfo->row_pointers == NULL)
 		{
 			writepng_cleanup(wpnginfo);
-			return ENOMEM;
+			return errno;
 		}
-		for (i = 0; i < wpnginfo->height; ++i)
-			wpnginfo->row_pointers[i] = wpnginfo->image_data + i * rowbytes;
-		if ((rc = writepng_encode_image(wpnginfo)) != 0)
-		{
-			writepng_cleanup(wpnginfo);
-			return rc;
-		}
-
+		for (y = 0; y < wpnginfo->height; ++y)
+			wpnginfo->row_pointers[y] = wpnginfo->image_data + y * srcrowbytes;
+		rc = writepng_encode_image(wpnginfo);
 	} else								/* not interlaced:  write progressively (row by row) */
 	{
-		long j;
-		unsigned char *image_data;
+		long y;
+		unsigned char *image_data = wpnginfo->image_data;
 		
-		image_data = wpnginfo->image_data;
-		rc = 0;
-		for (j = wpnginfo->height; j > 0; --j)
+		for (y = wpnginfo->height; y > 0; --y)
 		{
 			if ((rc = writepng_encode_row(wpnginfo, image_data)) != 0)
 			{
 				break;
 			}
-			image_data += rowbytes;
+			image_data += srcrowbytes;
 		}
-		if (rc)
+		if (rc == 0) 
 		{
-			writepng_cleanup(wpnginfo);
-			return rc;
-		}
-		if ((rc = writepng_encode_finish(wpnginfo)) != 0)
-		{
-			return rc;
+			rc = writepng_encode_finish(wpnginfo);
 		}
 	}
 
 	writepng_cleanup(wpnginfo);
 
-	return 0;
+	return rc;
 }
 
 
@@ -243,6 +234,11 @@ int writepng_init(writepng_info *wpnginfo)
 		return ENOMEM;						/* out of memory */
 	}
 
+	/* make sure we save our pointers for use in writepng_encode_image() */
+
+	wpnginfo->png_ptr = png_ptr;
+	wpnginfo->info_ptr = info_ptr;
+
 
 	/* setjmp() must be called in every function that calls a PNG-writing
 	 * libpng function, unless an alternate error handler was installed--
@@ -252,10 +248,9 @@ int writepng_init(writepng_info *wpnginfo)
 
 	if (setjmp(wpnginfo->jmpbuf))
 	{
-		png_destroy_write_struct(&png_ptr, &info_ptr);
+		png_destroy_write_struct(&wpnginfo->png_ptr, &wpnginfo->info_ptr);
 		return EFAULT;
 	}
-
 
 	/* make sure outfile is (re)opened in BINARY mode */
 
@@ -283,12 +278,15 @@ int writepng_init(writepng_info *wpnginfo)
 	/* set the image parameters appropriately */
 
 	if (wpnginfo->bpp <= 8)
-		color_type = wpnginfo->num_palette > 0 ? PNG_COLOR_TYPE_PALETTE : PNG_COLOR_TYPE_GRAY;
-	else if (wpnginfo->bpp == 24)
+	{
+		color_type = wpnginfo->num_palette > 2 ? PNG_COLOR_TYPE_PALETTE : PNG_COLOR_TYPE_GRAY;
+	} else if (wpnginfo->bpp == 24)
+	{
 		color_type = PNG_COLOR_TYPE_RGB;
-	else if (wpnginfo->bpp == 32)
+	} else if (wpnginfo->bpp == 32)
+	{
 		color_type = PNG_COLOR_TYPE_RGB_ALPHA;
-	else
+	} else
 	{
 		png_destroy_write_struct(&png_ptr, &info_ptr);
 		return EINVAL;
@@ -396,12 +394,6 @@ int writepng_init(writepng_info *wpnginfo)
 /*  png_set_shift(png_ptr, &sig_bit);  to scale low-bit-depth values */
 
 
-	/* make sure we save our pointers for use in writepng_encode_image() */
-
-	wpnginfo->png_ptr = png_ptr;
-	wpnginfo->info_ptr = info_ptr;
-
-
 	/* OK, that's all we need to do for now; return happy */
 
 	return 0;
@@ -482,7 +474,6 @@ int writepng_encode_row(writepng_info *wpnginfo, unsigned char *row_data)
 int writepng_encode_finish(writepng_info *wpnginfo)	/* NON-interlaced! */
 {
 	png_structp png_ptr = (png_structp) wpnginfo->png_ptr;
-
 	png_infop info_ptr = (png_infop) wpnginfo->info_ptr;
 
 
@@ -514,15 +505,12 @@ void writepng_cleanup(writepng_info *wpnginfo)
 {
 	if (wpnginfo)
 	{
-		png_structp png_ptr = (png_structp) wpnginfo->png_ptr;
-		png_infop info_ptr = (png_infop) wpnginfo->info_ptr;
-	
 		if (wpnginfo->row_pointers)
 		{
 			free(wpnginfo->row_pointers);
 			wpnginfo->row_pointers = NULL;
 		}
-		if (png_ptr && info_ptr)
-			png_destroy_write_struct(&png_ptr, &info_ptr);
+		if (wpnginfo->png_ptr && wpnginfo->info_ptr)
+			png_destroy_write_struct(&wpnginfo->png_ptr, &wpnginfo->info_ptr);
 	}
 }

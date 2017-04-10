@@ -57,7 +57,7 @@
 #define VDI_HANDLE   vdi_control[6]
 
 
-#define VDI_NPTRINTS (sizeof(void *) / sizeof(short))
+#define N_PTRINTS (sizeof(void *) / sizeof(short))
 
 
 #ifdef __GNUC__
@@ -95,23 +95,23 @@ static __inline int32_t *__vdi_ptsin_long(short n, short *vdi_ptsin)
 
 static __inline void **__vdi_intin_ptr(short n, short *vdi_intin)
 {
-	return ((void**)(vdi_intin + n * VDI_NPTRINTS));
+	return ((void**)(vdi_intin + n * N_PTRINTS));
 }
 #define vdi_intin_ptr(n, t)  *((t *)__vdi_intin_ptr(n, vdi_intin))
 
 static __inline void **__vdi_control_ptr(short n, short *vdi_control)
 {
-	return ((void**)(vdi_control + 7 + n * VDI_NPTRINTS));
+	return ((void**)(vdi_control + 7 + n * N_PTRINTS));
 }
 #define vdi_control_ptr(n, t)  *((t *)__vdi_control_ptr(n, vdi_control))
 
 #else
 
-#define vdi_control_ptr(n, t)   *((t *)(vdi_control + 7 + (n) * VDI_NPTRINTS))
-#define vdi_intin_ptr(n, t)     *((t *)(vdi_intin + (n) * VDI_NPTRINTS))
+#define vdi_control_ptr(n, t)   *((t *)(vdi_control + 7 + (n) * N_PTRINTS))
+#define vdi_intin_ptr(n, t)     *((t *)(vdi_intin + (n) * N_PTRINTS))
 #define vdi_intin_long(n)       *((int32_t *)(vdi_intin + (n)))
 #define vdi_intout_long(n)      *((int32_t *)(vdi_intout + (n)))
-#define vdi_intout_ptr(n, t)    *((t *)(vdi_intout + n * VDI_NPTRINTS))
+#define vdi_intout_ptr(n, t)    *((t *)(vdi_intout + n * N_PTRINTS))
 #define vdi_ptsout_long(n)      *((int32_t *)(vdi_ptsout + n))
 #define vdi_ptsin_long(n)       *((int32_t *)(vdi_ptsin + n))
 

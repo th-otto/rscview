@@ -28,15 +28,15 @@ short
 vs_calibrate (short handle, short flag, short *rgb)
 {
 	short vdi_control[VDI_CNTRLMAX]; 
-	short vdi_intin[1 + VDI_NPTRINTS];   
+	short vdi_intin[1 + N_PTRINTS];   
 	short vdi_intout[VDI_INTOUTMAX]; 
 	
 	VDI_PARAMS(vdi_control, vdi_intin, 0L, vdi_intout, vdi_dummy );
 	
 	vdi_intin_ptr(0, short *) = rgb;
-	vdi_intin    [VDI_NPTRINTS] = flag;
+	vdi_intin    [N_PTRINTS] = flag;
 	
-	VDI_TRAP_ESC (vdi_params, handle, 5,76, 0, 1 + VDI_NPTRINTS);
+	VDI_TRAP_ESC (vdi_params, handle, 5,76, 0, 1 + N_PTRINTS);
 	
 	return vdi_intout[0];
 }

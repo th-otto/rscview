@@ -377,12 +377,8 @@ _WORD fm_dial(_WORD fmd_type, const GRECT *pi, const GRECT *pt)
 		break;
 	case FMD_FINISH:
 		/* update certain portion of the screen */
-#if NEWWIN
-		w_drawchange(pt, NIL, NIL);
-#else
 		w_drawdesk(pt);
 		w_update(DESK, pt, DESK, FALSE);
-#endif
 		break;
 	}
 

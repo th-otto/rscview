@@ -40,7 +40,7 @@ _BOOL gl_rschange;
 
 void aes_init(void)
 {
-	register _WORD i;
+	_WORD i;
 	OBJECT *tree;
 
 	/****************************************/
@@ -142,6 +142,8 @@ void aes_init(void)
 	else
 		tree[ROOT].ob_spec.index = OBSPEC_MAKE(0, 0, BLACK, BLACK, FALSE, IP_4PATT, GREEN);
 
+	wm_init();
+
 	for (i = 0; i < 3; i++)
 		tree[i].ob_width = gl_width;
 
@@ -158,9 +160,6 @@ void aes_exit(void)
 	rsc_free();							/* free up resource */
 
 	gsx_mfree();
-#if SUBMENUS
-	mn_new();
-#endif
 
 	/* give back the tick */
 	gl_ticktime = gsx_tick(tiksav, &tiksav);

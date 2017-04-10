@@ -8,7 +8,7 @@
  */
 void rc_union(const GRECT *p1, GRECT *p2)
 {
-	_WORD tx, ty, tw, th;
+	short tx, ty, tw, th;
 
 	tw = max(p1->g_x + p1->g_w, p2->g_x + p2->g_w);
 	th = max(p1->g_y + p1->g_h, p2->g_y + p2->g_h);

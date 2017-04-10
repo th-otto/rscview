@@ -25,8 +25,6 @@
 
 #define N_PTRINTS (sizeof(void *) / sizeof(short))
 
-#if !NEWWIN /* whole file */
-
 /*
  *	defines
  */
@@ -821,6 +819,9 @@ _BOOL wm_start(void)
 	ORECT *po;
 	OBJECT *tree;
 	
+	/* init owner rectangles */
+	or_start();
+
 	/* init window extent objects */
 	memset(W_TREE, 0, sizeof(W_TREE));
 	w_nilit(NUM_MWIN, &W_TREE[ROOT]);
@@ -854,7 +855,7 @@ _BOOL wm_start(void)
 	w_setsize(WS_PREV, DESK, &gl_rscreen);
 	w_setsize(WS_FULL, DESK, &gl_rfull);
 	w_setsize(WS_WORK, DESK, &gl_rfull);
-
+	
 	/* init global variables */
 	gl_wtop = NIL;
 	gl_awind = W_ACTIVE;
@@ -1024,7 +1025,6 @@ _WORD wm_get(_WORD w_handle, _WORD w_field, _WORD *poutwds, const _WORD *iw)
 	{
 	/* Some functions may be allowed without a real window handle */
 	case WF_BOTTOM:
-	case WF_FULLXYWH:
 	case WF_TOP:
 	case WF_NEWDESK:
 	case WF_SCREEN:
@@ -1037,7 +1037,7 @@ _WORD wm_get(_WORD w_handle, _WORD w_field, _WORD *poutwds, const _WORD *iw)
 	case WF_DDELAY:
 		break;
 	default:
-		if (pwin == NULL || !(pwin->w_flags & VF_INUSE))
+		if (pwin == NULL || (w_handle > DESK && !(pwin->w_flags & VF_INUSE)))
 		{
 			KDEBUG(("WARNING:wind_get for %-*.*s: Invalid window handle %d", AP_NAMELEN, AP_NAMELEN, rlr->p_name, w_handle));
 			/* clear args, Prevents FIRST/NEXTXYWH loops with invalid handle from looping forever. */
@@ -1180,7 +1180,6 @@ _WORD wm_set(_WORD w_handle, _WORD w_field, const _WORD *pinwds)
 	switch (w_field)
 	{
 	/* Some functions may be allowed without a real window handle */
-	case WF_FULLXYWH:
 	case WF_NEWDESK:
 	case WF_SCREEN:
 	case WF_WHEEL:
@@ -1378,6 +1377,3 @@ _WORD wm_new(void)
 {
 	return TRUE;
 }
-
-
-#endif /* !NEWWIN */

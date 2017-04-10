@@ -50,7 +50,7 @@ v_getbitmap_info (short handle, short ch, fix31 *advancex, fix31 *advancey,
                   short **bitmap)
 {
 	short vdi_control[VDI_CNTRLMAX]; 
-	short vdi_intout[10 + VDI_NPTRINTS]; 
+	short vdi_intout[10 + N_PTRINTS]; 
 
 	VDI_PARAMS(vdi_control, &ch, 0L, vdi_intout, vdi_dummy );
 		

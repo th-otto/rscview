@@ -22,7 +22,7 @@ void
 vst_error (short handle, short mode, short *errorvar)
 {
 	short vdi_control[VDI_CNTRLMAX]; 
-	short vdi_intin[1 + VDI_NPTRINTS];   
+	short vdi_intin[1 + N_PTRINTS];   
 	short vdi_intout[VDI_INTOUTMAX]; /* todo (doc wanted) */
 	short vdi_ptsout[VDI_PTSOUTMAX]; /* todo (doc wanted) */
 	
@@ -31,5 +31,5 @@ vst_error (short handle, short mode, short *errorvar)
 	vdi_intin    [0] = mode;
 	vdi_intin_ptr(1, short *) = errorvar;
 	
-	VDI_TRAP (vdi_params, handle, 245, 0, 1 + VDI_NPTRINTS);
+	VDI_TRAP (vdi_params, handle, 245, 0, 1 + N_PTRINTS);
 }

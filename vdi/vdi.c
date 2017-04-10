@@ -8,6 +8,7 @@
 #include "maptab.h"
 #include "pattern.h"
 #include "writepng.h"
+#include <errno.h>
 
 /*
  * our "screen" format
@@ -371,19 +372,21 @@ static void init_filled(VWK *v, struct fillparams *params, int color)
 
 static void fill_rectangle_params(VWK *v, int x, int y, unsigned int width, unsigned int height, struct fillparams *params)
 {
-	unsigned int x0, y0;
+	unsigned int x0, y0, p;
 	_UWORD pattern;
 	
 	if (width > 0 && height > 0)
 	{
-		for (y0 = 0; y0 < height; y0++)
+		for (y0 = 0, p = 0; y0 < height; y0++)
 		{
-			pattern = params->fill_pattern[y0];
+			pattern = params->fill_pattern[p];
 			for (x0 = 0; x0 < width; x0++)
 			{
 				gfx_put_pixel(v, x + x0, y + y0, pattern, v->wrmode, params->fg, params->bg);
 				pattern = roll(pattern);
 			}
+			if (++p == PATTERN_HEIGHT)
+				p = 0;
 		}
 	}
 }
@@ -720,8 +723,17 @@ static int vdi_vs_clip(VWK *v, VDIPB *pb)
 	_WORD *ptsin = PV_PTSIN(pb);
 	vdi_rectangle *r;
 
-	V("vs_clip[%d]: %d, %d,%d, %d,%d", v->handle, V_INTIN(pb, 0), V_PTSIN(pb, 0), V_PTSIN(pb, 1), V_PTSIN(pb, 2), V_PTSIN(pb, 3));
-
+	/*
+	 * Do not print clip coordinates with clip_flag == FALSE,
+	 * they are sometimes not initialized
+	 */
+	if (V_INTIN(pb, 0) == 0)
+	{
+		V("vs_clip[%d]: %d, %d,%d, %d,%d", v->handle, V_INTIN(pb, 0), 0, 0, v->width, v->height);
+	} else
+	{
+		V("vs_clip[%d]: %d, %d,%d, %d,%d", v->handle, V_INTIN(pb, 0), V_PTSIN(pb, 0), V_PTSIN(pb, 1), V_PTSIN(pb, 2), V_PTSIN(pb, 3));
+	}
 	if (v->can_clip)
 	{
 		r = &(v->clipr);
@@ -6650,7 +6662,28 @@ static int vdi_v_write_png(VWK *v, VDIPB *pb)
 		info->width = v->width;
 		info->height = v->height;
 	}
-	rc = writepng_output(info);
+	info->outfile = fopen(filename, "wb");
+	if (info->outfile == NULL)
+	{
+		rc = errno;
+	} else
+	{
+		info->num_palette = v->dev_tab.num_colors;
+		for (i = 0; i < v->dev_tab.num_colors; i++)
+		{
+			int c;
+			pel pix;
+			pix = FIX_COLOR(i);
+			c = (*v->req_col)[i][0]; c = c * 255 / 1000;
+			info->palette[pix].red = c;
+			c = (*v->req_col)[i][1]; c = c * 255 / 1000;
+			info->palette[pix].green = c;
+			c = (*v->req_col)[i][2]; c = c * 255 / 1000;
+			info->palette[pix].blue = c;
+		}
+		rc = writepng_output(info);
+		fclose(info->outfile);
+	}
 	writepng_exit(info);
 	V_INTOUT(pb, 0) = rc;
 	V_NINTOUT(pb, 1);
@@ -7318,7 +7351,7 @@ static gboolean vdi_call(VDIPB *pb)
 				int h = V_HANDLE(pb);
 				if (!VALID_V_HANDLE(h))
 				{
-					V("VDI: invalid handle: %d", h);
+					V("invalid handle: %d", h);
 					return VDI_PASS;
 				}
 				v = vwk[h];

@@ -19,7 +19,7 @@ COLOR_TAB *v_create_ctab (short handle, int32_t color_space, uint32_t px_format)
 {
 	short vdi_control[VDI_CNTRLMAX]; 
 	short vdi_intin[4];   
-	short vdi_intout[VDI_NPTRINTS];
+	short vdi_intout[N_PTRINTS];
 
 	VDI_PARAMS(vdi_control, vdi_intin, 0L, vdi_intout, vdi_dummy);
 	

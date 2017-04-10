@@ -33,14 +33,14 @@ v_getoutline (short handle, short ch, short *xyarray, char *bezarray,
               short maxverts, short *numverts)
 {
 	short vdi_control[VDI_CNTRLMAX]; 
-	short vdi_intin[2 + VDI_NPTRINTS];
+	short vdi_intin[2 + N_PTRINTS];
 
 	VDI_PARAMS(vdi_control, vdi_intin, 0L, numverts, vdi_dummy);
 	
 	vdi_intin    [0] = ch;
 	vdi_intin    [1] = maxverts;
 	vdi_intin_ptr(2, short *) = xyarray;
-	vdi_intin_ptr(2 + VDI_NPTRINTS, char *) = bezarray;
+	vdi_intin_ptr(2 + N_PTRINTS, char *) = bezarray;
 	
-	VDI_TRAP (vdi_params, handle, 243, 0, 2 + 2 * VDI_NPTRINTS);
+	VDI_TRAP (vdi_params, handle, 243, 0, 2 + 2 * N_PTRINTS);
 }

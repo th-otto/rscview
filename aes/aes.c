@@ -563,57 +563,43 @@ static _WORD crysbind(AESPB *pb)
 			aestrace("wind_create()");
 		}
 		AES_PARAMS(100,5,1,0,0);
-#if NYI
 		ret = wm_create(int_in[0], (const GRECT *)&int_in[1]);
-#endif
 		break;
 
 	case 101:
 		aestrace("wind_open()");
 		AES_PARAMS(101,5,1,0,0);
-#if NYI
 		wm_open(int_in[0], (const GRECT *)&int_in[1]);
-#endif
 		break;
 
 	case 102:
 		aestrace("wind_close()");
 		AES_PARAMS(102,1,1,0,0);
-#if NYI
 		wm_close(int_in[0]);
-#endif
 		break;
 
 	case 103:
 		aestrace("wind_delete()");
 		AES_PARAMS(103,1,1,0,0);
-#if NYI
 		wm_delete(int_in[0]);
-#endif
 		break;
 
 	case 104:
 		aestrace("wind_get()");
 		AES_PARAMS(104,2,5,0,0);
-#if NYI
 		ret = wm_get(int_in[0], int_in[1], &int_out[1], (const _WORD *)&int_in[2]);
-#endif
 		break;
 
 	case 105:
 		aestrace("wind_set()");
 		AES_PARAMS(105,6,1,0,0);
-#if NYI
 		ret = wm_set(int_in[0], int_in[1], (_WORD *)&int_out[2]);
-#endif
 		break;
 
 	case 106:
 		aestrace("wind_find()");
 		AES_PARAMS(106,2,1,0,0);
-#if NYI
 		ret = wm_find(int_in[0], int_in[1]);
-#endif
 		break;
 
 	case 107:
@@ -627,17 +613,13 @@ static _WORD crysbind(AESPB *pb)
 	case 108:
 		aestrace("wind_calc()");
 		AES_PARAMS(108,6,5,0,0);
-#if NYI
 		ret = wm_calc(int_in[0], int_in[1], (const GRECT *)&int_in[2], (GRECT *)&int_out[1]);
-#endif
 		break;
 
 	case 109:
 		aestrace("wind_new()");
 		AES_PARAMS(109,0,0,0,0);
-#if NYI
 		ret = wm_new();
-#endif
 		break;
 
 
@@ -645,41 +627,31 @@ static _WORD crysbind(AESPB *pb)
 	case 110:
 		aestrace("rsrc_load()");
 		AES_PARAMS(110,0,1,1,0);
-#if NYI
 		ret = rs_load(pglobal, (const char *)addr_in[0]);
-#endif
 		break;
 
 	case 111:
 		aestrace("rsrc_free()");
 		AES_PARAMS(111,0,1,0,0);
-#if NYI
 		ret = rs_free(pglobal);
-#endif
 		break;
 
 	case 112:
 		aestrace("rsrc_gaddr()");
 		AES_PARAMS(112,2,1,0,1);
-#if NYI
 		ret = rs_gaddr(pglobal, int_in[0], int_in[1], &pb->addrout[0]);
-#endif
 		break;
 
 	case 113:
 		aestrace("rsrc_saddr()");
 		AES_PARAMS(113,2,1,1,0);
-#if NYI
 		ret = rs_saddr(pglobal, int_in[0], int_in[1], addr_in[0]);
-#endif
 		break;
 
 	case 114:
 		aestrace("rsrc_obfix()");
 		AES_PARAMS(114,1,1,1,0);
-#if NYI
-		ret = rs_obfix((OBJECT *)addr_in[0], int_in[0]);
-#endif
+		rs_obfix((OBJECT *)addr_in[0], int_in[0]);
 		break;
 
 	case 115:

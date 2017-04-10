@@ -303,16 +303,20 @@ wind_get (short WindowHandle, short What,
 		case WF_INFO:
 		case WF_NAME:
 			nf_debugprintf("wind_get() with string not supported on this machine, use wind_get_str() instead\n");
-			break;
+			return 0;
 		case WF_NEWDESK:
+		case WF_SCREEN:
 			nf_debugprintf("wind_get() with OBJECT ptr not supported on this machine, use wind_get_ptr() instead\n");
-			break;
+			return 0;
 		}
-		return 0;
 	}
 	
 	aes_intin[0] = WindowHandle;
 	aes_intin[1] = What;
+
+	/* this line is required for WF_FIRSTXYWH and WF_NEXTXYWH because
+	   of a bug in N.AES that does not set these values, and only returns 0 */
+	aes_intout[3] = aes_intout[4] = 0;
 
 	switch (What) {
 		case WF_DCOLOR:
@@ -328,13 +332,14 @@ wind_get (short WindowHandle, short What,
 			break;
 	}
 
-	/* this line is required for WF_FIRSTXYWH and WF_NEXTXYWH because
-	   of a bug in N.AES that does not set these values, and only returns 0 */
-	aes_intout[3] = aes_intout[4] = 0;
-
 	AES_TRAP(aes_params);
 	
-	if (What == WF_INFO || What == WF_NAME) {
+	if (What == WF_SCREEN || What == WF_NEWDESK)
+	{
+		*((void **)W1) = *((void **)&aes_intout[1]);
+		if (W2 && What == WF_NEWDESK)
+			*W2 = aes_intout[N_PTRINTS + 1];
+	} else if (What == WF_INFO || What == WF_NAME) {
 		/* special case where W1 shall not be overwritten */
 	} else {
 #if CHECK_NULLPTR
@@ -351,5 +356,5 @@ wind_get (short WindowHandle, short What,
 #endif
 	}
 
-	return (aes_intout[0]);
+	return aes_intout[0];
 }

@@ -29,7 +29,7 @@ vq_page_name (short handle, short page_id, char *page_name,
               long *page_width, long *page_height)
 {
 	short vdi_control[VDI_CNTRLMAX]; 
-	short vdi_intin[1 + VDI_NPTRINTS];   
+	short vdi_intin[1 + N_PTRINTS];   
 	short vdi_intout[VDI_INTOUTMAX]; 
 
 	VDI_PARAMS(vdi_control, vdi_intin, 0L, vdi_intout, vdi_dummy);
@@ -37,7 +37,7 @@ vq_page_name (short handle, short page_id, char *page_name,
 	vdi_intin    [0] = page_id;
 	vdi_intin_ptr(1, char *) = page_name;
 	
-	VDI_TRAP_ESC (vdi_params, handle, 5,38, 0, 1 + VDI_NPTRINTS);
+	VDI_TRAP_ESC (vdi_params, handle, 5,38, 0, 1 + N_PTRINTS);
 	
 	if (VDI_N_INTOUT == 0) /* function not supported by the driver */
 		return -1;

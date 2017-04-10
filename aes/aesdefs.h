@@ -12,19 +12,13 @@
 
 #define CARTRIDGE	1	/* if rom cartridge exists */
 
-#define NEWWIN 0
 #define AES3D  1
 #define MULTITOS 0
 #define CONF_WITH_PCGEM 0
 #define NYI 0
-#define UNLINKED 1
 
 #ifndef MULTILANG_SUPPORT
 #define MULTILANG_SUPPORT (OS_COUNTRY == OS_CONF_MULTILANG)
-#endif
-
-#ifndef SUBMENUS
-#define SUBMENUS (AESVERSION >= 0x340)
 #endif
 
 #ifndef AES3D

@@ -6,6 +6,7 @@
 #include "nls.h"
 #include "fileio.h"
 #include "ws.h"
+#include "debug.h"
 
 
 char const program_name[] = "rscview";
@@ -79,34 +80,45 @@ static void print_version(void)
 }
 
 
-static void clear_screen(void)
+static void clear_screen(char *title)
 {
-	OBJECT desktop[] = {
-		{ NIL, NIL, NIL, G_BOX, OF_NONE, OS_NORMAL, { OBSPEC_MAKE(0, 0, BLACK, BLACK, TRUE, IP_SOLID, GREEN) }, 0, 0, 0, 0 },
+	static char empty[1] = { 0 };
+	static TEDINFO tedinfo = {
+		NULL, empty, empty, IBM, 1, TE_CNTR, 0x1100, 0x0, 1, 2,1
 	};
+	static OBJECT desktop[] = {
+		{ NIL, 1, 2, G_BOX, OF_NONE, OS_NORMAL, { OBSPEC_MAKE(0, 0, BLACK, BLACK, TRUE, IP_SOLID, GREEN) }, 0, 0, 0, 0 },
+		{ 2, NIL, NIL, G_BOX, OF_NONE, OS_NORMAL, { OBSPEC_MAKE(0, -1, BLACK, BLACK, FALSE, IP_HOLLOW, WHITE) }, 0, 0, 0, 0 },
+		{ 0, NIL, NIL, G_TEXT, OF_LASTOB, OS_NORMAL, { (_LONG_PTR)&tedinfo }, 0, 0, 0, 0 },
+	};
+	int i;
 	
-	desktop[ROOT].ob_x = 0;
-	desktop[ROOT].ob_y = 0;
-	desktop[ROOT].ob_width = desk.g_x + desk.g_w;
+	for (i = 0; i < 3; i++)
+		desktop[i].ob_width = desk.g_x + desk.g_w;
 	desktop[ROOT].ob_height = desk.g_y + desk.g_h;
+	desktop[1].ob_height = gl_hchar + 2;
+	desktop[2].ob_height = gl_hchar + 3;
+	tedinfo.te_ptext = title;
+	
 	objc_draw(desktop, ROOT, MAX_DEPTH, 0, 0, desk.g_x + desk.g_w, desk.g_y + desk.g_h);
 }
 
 
-static void draw_dialog(RSCTREE *tree)
+static _BOOL draw_dialog(RSCTREE *tree)
 {
 	OBJECT *ob;
 	_WORD x, y, w, h;
 	_WORD pxy[4];
 	char filename[PATH_MAX];
+	_WORD err;
 	
 	ob = tree->rt_objects.dial.di_tree;
 	if (ob == NULL)
-		return;
+		return FALSE;
 	form_center(ob, &x, &y, &w, &h);
 	wind_update(BEG_UPDATE);
 	form_dial(FMD_START, x, y, w, h, x, y, w, h);
-	clear_screen();
+	clear_screen(tree->rt_name);
 	
 	form_dial(FMD_FINISH, x, y, w, h, x, y, w, h);
 	wind_update(END_UPDATE);
@@ -116,7 +128,10 @@ static void draw_dialog(RSCTREE *tree)
 	pxy[3] = y + h - 1;
 	vs_clip(vdi_handle, 0, pxy);
 	sprintf(filename, "%s.png", tree->rt_name);
-	v_write_png(vdi_handle, filename);
+	err = v_write_png(vdi_handle, filename);
+	if (err != 0)
+		nf_debugprintf("write_png: %s: %s\n", filename, strerror(err));
+	return err == 0;
 }
 
 
@@ -225,11 +240,12 @@ int main(int argc, char **argv)
 			menu_register(-1, program_name);
 			phys_handle = graf_handle(&gl_wchar, &gl_hchar, &gl_wbox, &gl_hbox);
 			wind_get(DESK, WF_WORKXYWH, &desk.g_x, &desk.g_y, &desk.g_w, &desk.g_h);
+			nf_debugprintf("desktop: %d %d %d %d\n", desk.g_x, desk.g_y, desk.g_w, desk.g_h);
 			open_screen();
 			
-			close_screen();
-			
 			draw_all_trees(file);
+			
+			close_screen();
 			
 			appl_exit();
 			

@@ -39,6 +39,8 @@
 /** size of the aes_addrout[] array */
 #define AES_ADDROUTMAX		16
 
+#define N_PTRINTS (sizeof(void *) / sizeof(short))
+
 #if defined(__GNUC__) && defined(__mc68000__)
 
 #define _AES_TRAP(pb) \
