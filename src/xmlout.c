@@ -98,7 +98,7 @@ static unsigned short const atari_to_utf16[256] = {
 /*** ---------------------------------------------------------------------- ***/
 /******************************************************************************/
 
-static _VOID mobj2index(OBJECT *tree, _WORD parent, XRS_HEADER *xrsc_header, RSCFILE *file)
+static void mobj2index(OBJECT *tree, _WORD parent, XRS_HEADER *xrsc_header, RSCFILE *file)
 {
 	_WORD mob;
 	
@@ -160,7 +160,7 @@ static _VOID mobj2index(OBJECT *tree, _WORD parent, XRS_HEADER *xrsc_header, RSC
 
 /*** ---------------------------------------------------------------------- ***/
 
-static _VOID index_init(XRS_HEADER *xrsc_header, RSCFILE *file, _UBYTE *buf)
+static void index_init(XRS_HEADER *xrsc_header, RSCFILE *file, char *buf)
 {
 	UNUSED(buf);
 	xrsc_header->rsh_nobs = 0;
@@ -179,7 +179,7 @@ static _VOID index_init(XRS_HEADER *xrsc_header, RSCFILE *file, _UBYTE *buf)
 
 /*** ---------------------------------------------------------------------- ***/
 
-static _VOID index_trees(RSCFILE *file, XRS_HEADER *xrsc_header, _UBYTE *buf)
+static void index_trees(RSCFILE *file, XRS_HEADER *xrsc_header, char *buf)
 {
 	RSCTREE *tree;
 	OBJECT *ob;
@@ -736,7 +736,7 @@ static _BOOL xml_trees(RSCFILE *file, XRS_HEADER *xrsc_header, rsc_counter *coun
 {
 	RSCTREE *tree;
 	OBJECT *ob;
-	_UBYTE *str;
+	char *str;
 	
 	FOR_ALL_RSC(file, tree)
 	{
@@ -815,7 +815,7 @@ static _BOOL xml_trees(RSCFILE *file, XRS_HEADER *xrsc_header, rsc_counter *coun
 
 /*** ---------------------------------------------------------------------- ***/
 
-static _BOOL output_xml_data(RSCFILE *file, XRS_HEADER *xrsc_header, rsc_counter *counter, _UBYTE *buf)
+static _BOOL output_xml_data(RSCFILE *file, XRS_HEADER *xrsc_header, rsc_counter *counter, char *buf)
 {
 	_BOOL verbose;
 	
@@ -901,7 +901,7 @@ static _BOOL output_xml_data(RSCFILE *file, XRS_HEADER *xrsc_header, rsc_counter
 
 /*** ---------------------------------------------------------------------- ***/
 
-static _BOOL rsc_xml_output_source_file(RSCFILE *file, XRS_HEADER *xrsc_header, rsc_counter *counter, _UBYTE *buf, const _UBYTE *h_ext, const _UBYTE *default_file)
+static _BOOL rsc_xml_output_source_file(RSCFILE *file, XRS_HEADER *xrsc_header, rsc_counter *counter, char *buf, const char *h_ext, const char *default_file)
 {
 	_BOOL ret;
 	
@@ -916,7 +916,7 @@ static _BOOL rsc_xml_output_source_file(RSCFILE *file, XRS_HEADER *xrsc_header, 
 
 /*** ---------------------------------------------------------------------- ***/
 
-_BOOL rsc_xml_source(RSCFILE *file, rsc_counter *counter, _UBYTE *filename, _UBYTE *buf)
+_BOOL rsc_xml_source(RSCFILE *file, rsc_counter *counter, char *filename, char *buf)
 {
 	XRS_HEADER xrsc_header;
 	_BOOL ok;

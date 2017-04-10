@@ -469,7 +469,7 @@ you loose
 #define HAVE_STDINT_H 1
 #endif
 
-#if defined(__PUREC__) && defined(_PUREC_SOURCE)
+#if defined(__PUREC__)
 #define fclose(file) purec_fclose(file)
 void purec_fclose(FILE *fp);
 #endif
@@ -719,7 +719,7 @@ typedef int gboolean;
 #endif
 
 #ifndef RETSIGTYPE
-#  define RETSIGTYPE _VOID
+#  define RETSIGTYPE void
 #endif
 #ifndef SIGNAL_RETURN
 #  define SIGNAL_RETURN

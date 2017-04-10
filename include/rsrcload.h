@@ -89,7 +89,7 @@ struct _rscfile {
 	_LONG rsc_nuserblks;		/* number of USERBLK structs */
 };
 
-_VOID GetTextSize(_WORD *width, _WORD *height);
+void GetTextSize(_WORD *width, _WORD *height);
 void hfix_objs(RSCFILE *file, OBJECT *objects, _UWORD num_objs);
 void hrelease_objs(OBJECT *objects, _UWORD num_objs);
 

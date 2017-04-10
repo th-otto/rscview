@@ -5,6 +5,7 @@
 #include <object.h>
 #include <ro_mem.h>
 #include "fileio.h"
+#include <rsc.h>
 
 FILE *ffp = NULL;
 const char *fname;
@@ -49,19 +50,6 @@ _BOOL file_close(_BOOL status)
 			fclose(ffp);
 		if (fname != NULL && status == FALSE)
 			(*(fopen_mode ? err_fwrite : err_fread))(fname);
-#if defined(__TURBOC__) && defined(OS_ATARI)
-		/*
-		 * Turbo-C schliesst die System-Datei nicht, wenn
-		 * ein Fehler aufgetreten ist
-		 */
-		if (ffp != stdout && (ffp->Flags & 3))
-		{
-			close(ffp->Handle);
-			if (ffp->Flags & 0x08)
-				free(ffp->BufStart);
-			ffp->Flags = 0;
-		}
-#endif
 		ffp = NULL;
 	}
 	fname = NULL;
@@ -70,7 +58,7 @@ _BOOL file_close(_BOOL status)
 
 /*** ---------------------------------------------------------------------- ***/
 
-_BOOL file_create(const _UBYTE *filename, const _UBYTE *mode)
+_BOOL file_create(const char *filename, const char *mode)
 {
 	if ((ffp = fopen(filename, mode)) == NULL)
 	{
@@ -83,7 +71,7 @@ _BOOL file_create(const _UBYTE *filename, const _UBYTE *mode)
 
 /*** ---------------------------------------------------------------------- ***/
 
-_BOOL file_open(const _UBYTE *filename, const _UBYTE *mode)
+_BOOL file_open(const char *filename, const char *mode)
 {
 	if ((ffp = fopen(filename, mode)) == NULL)
 		return FALSE;
@@ -93,7 +81,7 @@ _BOOL file_open(const _UBYTE *filename, const _UBYTE *mode)
 
 /*** ---------------------------------------------------------------------- ***/
 
-const _UBYTE *rtype_name(_WORD type)
+const char *rtype_name(_WORD type)
 {
 	switch (type)
 	{
@@ -113,7 +101,7 @@ const _UBYTE *rtype_name(_WORD type)
 
 /*** ---------------------------------------------------------------------- ***/
 
-const _UBYTE *rtype_name_short(_WORD type)
+const char *rtype_name_short(_WORD type)
 {
 	switch (type)
 	{
@@ -133,7 +121,7 @@ const _UBYTE *rtype_name_short(_WORD type)
 
 /*** ---------------------------------------------------------------------- ***/
 
-const _UBYTE *type_name(_WORD type)
+const char *type_name(_WORD type)
 {
 	switch (type)
 	{
@@ -164,10 +152,10 @@ const _UBYTE *type_name(_WORD type)
 
 /*** ---------------------------------------------------------------------- ***/
 
-_UBYTE *rsx_basename(const _UBYTE *name)
+char *rsx_basename(const char *name)
 {
-	static _UBYTE namebuf[FNAMELEN+1];
-	_UBYTE *dotp;
+	static char namebuf[FNAMELEN+1];
+	char *dotp;
 
 	strcpy(namebuf, name);
 	dotp = strrchr(namebuf, '.');
@@ -179,7 +167,7 @@ _UBYTE *rsx_basename(const _UBYTE *name)
 
 /*** ---------------------------------------------------------------------- ***/
 
-_VOID set_extension(char *filename, const char *ext)
+void set_extension(char *filename, const char *ext)
 {
 	const char *p;
 	char *p2;
@@ -194,4 +182,151 @@ _VOID set_extension(char *filename, const char *ext)
 		++p2;
 	*p2 = '\0';
 	strncat(filename, ext, PATH_MAX);
+}
+
+/*** ---------------------------------------------------------------------- ***/
+
+static _BOOL is_menu(OBJECT *tree)
+{
+	_WORD titleline;
+	_WORD titlebox;
+	_WORD workscreen;
+	_WORD title, menubox;
+
+	if (tree == NULL ||
+		tree[ROOT].ob_type != G_IBOX ||
+		(titleline = tree[ROOT].ob_head) == NIL ||
+		tree[titleline].ob_type != G_BOX ||
+		(workscreen = tree[tree[ROOT].ob_head].ob_next) == titleline ||
+		tree[workscreen].ob_type != G_IBOX ||
+		tree[workscreen].ob_next != titleline ||
+		(titlebox = tree[titleline].ob_head) == NIL ||
+		tree[titlebox].ob_type != G_IBOX ||
+#if 0
+		tree[titlebox].ob_next != titlebox ||
+#endif
+		(title = tree[titlebox].ob_head) == NIL ||
+		(menubox = tree[workscreen].ob_head) == NIL)
+		return FALSE;
+	do
+	{
+		if (tree[title].ob_type != G_TITLE ||
+			tree[title].ob_head != NIL ||
+			tree[menubox].ob_type != G_BOX ||
+			tree[menubox].ob_head == NIL)
+			return FALSE;
+		title = tree[title].ob_next;
+		menubox = tree[menubox].ob_next;
+	} while (title != titlebox && menubox != workscreen);
+	if (title != titlebox || menubox != workscreen)
+		return FALSE;
+	return TRUE;
+}
+
+/*** ---------------------------------------------------------------------- ***/
+
+static _BOOL any_exit(OBJECT *tree)
+{
+	_WORD i = 0;
+	_UWORD flags;
+	
+	for (;;)
+	{
+		flags = tree[i].ob_flags;
+		if (!(flags & OF_HIDETREE))
+		{
+			if (!(tree[i].ob_state & OS_DISABLED) &&
+				((flags & OF_TOUCHEXIT) || ((flags & OF_EXIT) && (flags & (OF_SELECTABLE|OF_DEFAULT)))))
+					return TRUE;
+		}
+		if (tree[i].ob_flags & OF_LASTOB)
+			return FALSE;
+		++i;
+	}		
+}
+
+static _BOOL Form_Al_is_Str_Ok(const char *str)
+{
+	if (str != NULL &&
+		str[0] == '[' &&
+		str[1] >= '0' &&
+#if 0
+		str[1] <= '0' + MAX_ALERT_SYM &&
+#endif
+		str[2] == ']' &&
+		str[3] == '[' &&
+#if 0
+		strlen(str) < FO_BUFSIZE &&
+#endif
+		(str = strchr(str + 4, ']')) != NULL &&
+		str[1] == '[' &&
+		(str = strchr (str + 2, ']')) != NULL &&
+		str[1] == '\0')
+		return TRUE;
+	return FALSE;
+}
+
+/*** ---------------------------------------------------------------------- ***/
+
+static _BOOL rsc_load_trees(RSCFILE *file)
+{
+	_ULONG i;
+	_WORD type;
+	RSCTREE *tree;
+	char name[MAXNAMELEN+1];
+	
+	for (i = 0; i < file->header.rsh_ntree; i++)
+	{
+		OBJECT *ob = file->rs_trindex[i];
+		type = is_menu(ob) ? RT_MENU :
+			   any_exit(ob) ? RT_DIALOG : RT_UNKNOWN;
+		sprintf(name, "TREE%03ld", i + 1);
+		if ((tree = rsc_add_tree(file, type, name, ob)) == NULL)
+		{
+			return FALSE;
+		}
+	}
+
+	for (i = 0; i < file->header.rsh_nstring; i++)
+	{
+		char *str = file->rs_frstr[i];
+		type = Form_Al_is_Str_Ok(str) ? RT_ALERT : RT_FRSTR;
+		sprintf(name, "STR%03ld", i + 1);
+		if (rsc_add_tree(file, type, name, str) == NULL)
+		{
+			g_free(str);
+			return FALSE;
+		}
+	}
+
+	for (i = 0; i < file->header.rsh_nimages; i++)
+	{
+		BITBLK *bitblk = file->rs_frimg[i];
+		sprintf(name, "IMAGE%03ld", i + 1);
+		if ((tree = rsc_add_tree(file, RT_FRIMG, name, bitblk)) == NULL)
+		{
+			return FALSE;
+		}
+		if (is_mouseform(tree))
+		{
+			tree->rt_type = RT_MOUSE;
+			sprintf(tree->rt_name, "MOUSE%03ld", i + 1);
+		}
+	}
+	return TRUE;
+}
+
+/*** ---------------------------------------------------------------------- ***/
+
+RSCFILE *load_all(const char *filename, _UWORD flags)
+{
+	RSCFILE *file;
+	
+	file = xrsrc_load(filename, flags);
+	if (file == NULL)
+		return NULL;
+	
+	rsc_load_trees(file);
+	
+	return file; 
 }

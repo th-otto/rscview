@@ -156,37 +156,37 @@ typedef struct rsc_counter {
 extern FILE *ffp;
 extern _BOOL ask_if_swapped;
 extern const char *fname;
-extern _BOOL (*rsc_a_source_func)(RSCFILE *file, rsc_counter *counter, _UBYTE *filename, _UBYTE *buf, _BOOL (*output_names)(RSCFILE *file, XRS_HEADER *xrsc_header, rsc_counter *counter));
-extern _BOOL (*rsc_c1_source_func)(RSCFILE *file, rsc_counter *counter, _UBYTE *filename, _UBYTE *buf, _BOOL (*output_names)(RSCFILE *file, XRS_HEADER *xrsc_header, rsc_counter *counter));
-extern _BOOL (*rsc_c2_source_func)(RSCFILE *file, rsc_counter *counter, _UBYTE *filename, _UBYTE *buf, _BOOL (*output_names)(RSCFILE *file, XRS_HEADER *xrsc_header, rsc_counter *counter));
-extern _BOOL (*rsc_p_source_func)(RSCFILE *file, rsc_counter *counter, _UBYTE *filename, _UBYTE *buf, _BOOL (*output_names)(RSCFILE *file, XRS_HEADER *xrsc_header, rsc_counter *counter));
-extern _BOOL (*rsc_rc_source_func)(RSCFILE *file, rsc_counter *counter, _UBYTE *filename, _UBYTE *filename2, _UBYTE *buf);
-extern _BOOL (*rsc_sdl_source_func)(RSCFILE *file, rsc_counter *counter, _UBYTE *filename, _UBYTE *buf);
-extern _BOOL (*rsc_xml_source_func)(RSCFILE *file, rsc_counter *counter, _UBYTE *filename, _UBYTE *buf);
-extern _BOOL (*rsc_bgh_source_func)(RSCFILE *file, rsc_counter *counter, _UBYTE *filename, _UBYTE *buf);
+extern _BOOL (*rsc_a_source_func)(RSCFILE *file, rsc_counter *counter, char *filename, char *buf, _BOOL (*output_names)(RSCFILE *file, XRS_HEADER *xrsc_header, rsc_counter *counter));
+extern _BOOL (*rsc_c1_source_func)(RSCFILE *file, rsc_counter *counter, char *filename, char *buf, _BOOL (*output_names)(RSCFILE *file, XRS_HEADER *xrsc_header, rsc_counter *counter));
+extern _BOOL (*rsc_c2_source_func)(RSCFILE *file, rsc_counter *counter, char *filename, char *buf, _BOOL (*output_names)(RSCFILE *file, XRS_HEADER *xrsc_header, rsc_counter *counter));
+extern _BOOL (*rsc_p_source_func)(RSCFILE *file, rsc_counter *counter, char *filename, char *buf, _BOOL (*output_names)(RSCFILE *file, XRS_HEADER *xrsc_header, rsc_counter *counter));
+extern _BOOL (*rsc_rc_source_func)(RSCFILE *file, rsc_counter *counter, char *filename, char *filename2, char *buf);
+extern _BOOL (*rsc_sdl_source_func)(RSCFILE *file, rsc_counter *counter, char *filename, char *buf);
+extern _BOOL (*rsc_xml_source_func)(RSCFILE *file, rsc_counter *counter, char *filename, char *buf);
+extern _BOOL (*rsc_bgh_source_func)(RSCFILE *file, rsc_counter *counter, char *filename, char *buf);
 
 extern void (*read_info_func)(const char *filename);
 
 void xrsc_get_header(XRS_HEADER *xrsc_header, const char *buf);
-_UBYTE *rsx_basename(const _UBYTE *);
-_BOOL file_create(const _UBYTE *filename, const _UBYTE *mode);
-_BOOL file_open(const _UBYTE *filename, const _UBYTE *mode);
+char *rsx_basename(const char *);
+_BOOL file_create(const char *filename, const char *mode);
+_BOOL file_open(const char *filename, const char *mode);
 _BOOL file_close(_BOOL status);
-_BOOL test_read(_VOID *buf, size_t size);
-const _UBYTE *type_name(_WORD type);
-const _UBYTE *flags_name(_UBYTE *sbuf, _UWORD flags, _BOOL verbose, _BOOL for_pascal);
-const _UBYTE *state_name(_UBYTE *sbuf, _UWORD flags, _BOOL verbose, _BOOL for_pascal);
-const _UBYTE *c2_ti_fontname(_UBYTE *buf, size_t bufsize, _UWORD size, _BOOL verbose);
-_UBYTE *c2_ti_just(_UBYTE *buf, size_t bufsize, _UWORD just, _BOOL verbose);
+_BOOL test_read(void *buf, size_t size);
+const char *type_name(_WORD type);
+const char *flags_name(char *sbuf, _UWORD flags, _BOOL verbose, _BOOL for_pascal);
+const char *state_name(char *sbuf, _UWORD flags, _BOOL verbose, _BOOL for_pascal);
+const char *c2_ti_fontname(char *buf, size_t bufsize, _UWORD size, _BOOL verbose);
+char *c2_ti_just(char *buf, size_t bufsize, _UWORD just, _BOOL verbose);
 _BOOL rsc_tree_save(RSCTREE *tree);
-_UBYTE *rsc_alloc_buf(XRS_HEADER *xrsc_header, RSCFILE *file, rsc_counter *counter, _BOOL for_file);
-_BOOL f_exists(const _UBYTE *filename);
-_BOOL save_all_files(RSCFILE *file, const _UBYTE *filename);
-_BOOL load_all_files(RSCFILE *file, const _UBYTE *filename, _ULONG which);
+char *rsc_alloc_buf(XRS_HEADER *xrsc_header, RSCFILE *file, rsc_counter *counter, _BOOL for_file);
+_BOOL f_exists(const char *filename);
+_BOOL save_all_files(RSCFILE *file, const char *filename);
+_BOOL load_all_files(RSCFILE *file, const char *filename, _ULONG which);
 _BOOL rsc_activate(RSCFILE *file);
 _BOOL rsc_gfa_names(RSCFILE *file, RSCTREE *tree);
-_BOOL write_strings(RSCFILE *file, const _UBYTE *filename);
-_BOOL read_strings(RSCFILE *file, const _UBYTE *filename);
+_BOOL write_strings(RSCFILE *file, const char *filename);
+_BOOL read_strings(RSCFILE *file, const char *filename);
 
 #define FINAMES    0
 #define FIBUILD    1
@@ -205,98 +205,99 @@ _BOOL read_strings(RSCFILE *file, const _UBYTE *filename);
 #define FITREES   14
 #define FIBGH     15
 
-_VOID err_popup_not_found(const _UBYTE *name);
+void err_popup_not_found(const char *name);
 
-_VOID rsc_h_print_header(FILE *fp);
-_VOID rsc_c1_print_header(FILE *fp);
-_VOID rsc_c2_print_header(FILE *fp);
-_VOID rsc_p_print_header(FILE *fp);
-_VOID rsc_rsi_print_header(FILE *fp);
-_VOID rsc_gfa_print_header(FILE *fp);
-_VOID rsc_bas_print_header(FILE *fp);
-_VOID rsc_mod_print_def_header(FILE *fp);
-_VOID rsc_mod_print_mod_header(FILE *fp);
-_VOID rsc_for_print_header(FILE *fp);
-_VOID rsc_a_print_header(FILE *fp);
-_VOID rsc_ass_print_header(FILE *fp);
-_VOID rsc_inc_print_header(FILE *fp);
-_VOID rsc_rc_print_rh_header(FILE *fp);
-_VOID rsc_rc_print_rc_header(FILE *fp);
-_VOID rsc_sdl_print_header(FILE *fp);
-_VOID rsc_xml_print_header(FILE *fp);
+void rsc_h_print_header(FILE *fp);
+void rsc_c1_print_header(FILE *fp);
+void rsc_c2_print_header(FILE *fp);
+void rsc_p_print_header(FILE *fp);
+void rsc_rsi_print_header(FILE *fp);
+void rsc_gfa_print_header(FILE *fp);
+void rsc_bas_print_header(FILE *fp);
+void rsc_mod_print_def_header(FILE *fp);
+void rsc_mod_print_mod_header(FILE *fp);
+void rsc_for_print_header(FILE *fp);
+void rsc_a_print_header(FILE *fp);
+void rsc_ass_print_header(FILE *fp);
+void rsc_inc_print_header(FILE *fp);
+void rsc_rc_print_rh_header(FILE *fp);
+void rsc_rc_print_rc_header(FILE *fp);
+void rsc_sdl_print_header(FILE *fp);
+void rsc_xml_print_header(FILE *fp);
 
 /* CSOURCE1.C */
 
-_BOOL rsc_c1_source(RSCFILE *file, rsc_counter *counter, _UBYTE *filename, _UBYTE *buf, _BOOL (*output_names)(RSCFILE *file, XRS_HEADER *xrsc_header, rsc_counter *counter));
+_BOOL rsc_c1_source(RSCFILE *file, rsc_counter *counter, char *filename, char *buf, _BOOL (*output_names)(RSCFILE *file, XRS_HEADER *xrsc_header, rsc_counter *counter));
 
 
 /* CSOURCE2.C */
 
-_VOID p_source_info(FILE *fp, const _UBYTE *output_for, const _UBYTE *beg_comment, const _UBYTE *mid_comment, const _UBYTE *end_comment);
-_BOOL c_out_str(const _UBYTE *str, _WORD mx, _BOOL translatable);
-_BOOL c_out_lang_str(_UBYTE *str, _WORD mx, _BOOL translatable);
-_BOOL rsc_c2_source(RSCFILE *file, rsc_counter *counter, _UBYTE *filename, _UBYTE *buf, _BOOL (*output_names)(RSCFILE *file, XRS_HEADER *xrsc_header, rsc_counter *counter));
+void p_source_info(FILE *fp, const char *output_for, const char *beg_comment, const char *mid_comment, const char *end_comment);
+_BOOL c_out_str(const char *str, _WORD mx, _BOOL translatable);
+_BOOL c_out_lang_str(char *str, _WORD mx, _BOOL translatable);
+_BOOL rsc_c2_source(RSCFILE *file, rsc_counter *counter, char *filename, char *buf, _BOOL (*output_names)(RSCFILE *file, XRS_HEADER *xrsc_header, rsc_counter *counter));
 _BOOL translatestr(RSCFILE *file, const char *str);
 
 
 /* ASOURCE.C */
 
-_BOOL rsc_a_source(RSCFILE *file, rsc_counter *counter, _UBYTE *filename, _UBYTE *buf, _BOOL (*output_names)(RSCFILE *file, XRS_HEADER *xrsc_header, rsc_counter *counter));
+_BOOL rsc_a_source(RSCFILE *file, rsc_counter *counter, char *filename, char *buf, _BOOL (*output_names)(RSCFILE *file, XRS_HEADER *xrsc_header, rsc_counter *counter));
 
 
 /* PSOURCE.C */
 
-_BOOL rsc_p_source(RSCFILE *file, rsc_counter *counter, _UBYTE *filename, _UBYTE *buf, _BOOL (*output_names)(RSCFILE *file, XRS_HEADER *xrsc_header, rsc_counter *counter));
-_VOID rsc_rsi_print_header(FILE *fp);
+_BOOL rsc_p_source(RSCFILE *file, rsc_counter *counter, char *filename, char *buf, _BOOL (*output_names)(RSCFILE *file, XRS_HEADER *xrsc_header, rsc_counter *counter));
+void rsc_rsi_print_header(FILE *fp);
 
 /* RCSOURCE.C */
 
-_BOOL rsc_rc_source(RSCFILE *file, rsc_counter *counter, _UBYTE *filename, _UBYTE *filename2, _UBYTE *buf);
+_BOOL rsc_rc_source(RSCFILE *file, rsc_counter *counter, char *filename, char *filename2, char *buf);
 
 
 /* SDSOURCE.C */
 
-_BOOL rsc_sdl_source(RSCFILE *file, rsc_counter *counter, _UBYTE *filename, _UBYTE *buf);
+_BOOL rsc_sdl_source(RSCFILE *file, rsc_counter *counter, char *filename, char *buf);
 
 /* XMLOUT.C */
 
-_BOOL rsc_xml_source(RSCFILE *file, rsc_counter *counter, _UBYTE *filename, _UBYTE *buf);
+_BOOL rsc_xml_source(RSCFILE *file, rsc_counter *counter, char *filename, char *buf);
 
 /* BGH.C */
 
 _BOOL bgh_split_cmnt(cstringarray cmnt, stringarray *pcmnt, stringarray *pbgh);
-_BOOL rsc_bgh_source(RSCFILE *file, rsc_counter *counter, _UBYTE *filename, _UBYTE *buf);
+_BOOL rsc_bgh_source(RSCFILE *file, rsc_counter *counter, char *filename, char *buf);
 
 
 /* COUNT.C */
 
-_VOID count_trees(RSCFILE *file, XRS_HEADER *xrsc_header, rsc_counter *counter, _BOOL for_file);
-_VOID count_init(XRS_HEADER *xrsc_header, RSCFILE *file, rsc_counter *counter);
-_VOID calc_offsets(XRS_HEADER *xrsc_header, RSCFILE *file, rsc_counter *counter, _BOOL for_file);
-const _UBYTE *rtype_name(_WORD type);
-const _UBYTE *rtype_name_short(_WORD type);
+void count_trees(RSCFILE *file, XRS_HEADER *xrsc_header, rsc_counter *counter, _BOOL for_file);
+void count_init(XRS_HEADER *xrsc_header, RSCFILE *file, rsc_counter *counter);
+void calc_offsets(XRS_HEADER *xrsc_header, RSCFILE *file, rsc_counter *counter, _BOOL for_file);
+const char *rtype_name(_WORD type);
+const char *rtype_name_short(_WORD type);
 
 _BOOL output_source_file(
 	RSCFILE *file,
 	XRS_HEADER *xrsc_header,
 	rsc_counter *counter,
-	_UBYTE *buf,
-	const _UBYTE *h_ext,
-	const _UBYTE *default_header1,
-	const _UBYTE *default_header2,
-	const _UBYTE *default_file,
-	_BOOL (*output_data)(RSCFILE *file, XRS_HEADER *xrsc_header, rsc_counter *counter, _UBYTE *buf),
+	char *buf,
+	const char *h_ext,
+	const char *default_header1,
+	const char *default_header2,
+	const char *default_file,
+	_BOOL (*output_data)(RSCFILE *file, XRS_HEADER *xrsc_header, rsc_counter *counter, char *buf),
 	_BOOL (*output_name)(RSCFILE *file, XRS_HEADER *xrsc_header, rsc_counter *counter));
 
 #define empty(p) ((p) == NULL || *(p) == '\0')
 #define fixnull(p) ((p) ? (p) : "")
 #define printnull(p) ((p) ? (p) : "(nil)")
 
-_VOID err_fopen(const char *fname);
-_VOID err_fread(const char *fname);
-_VOID err_fwrite(const char *fname);
-_VOID err_fcreate(const char *fname);
-_VOID err_rename(const char *oldname, const char *newname);
+void err_fopen(const char *fname);
+void err_fread(const char *fname);
+void err_fwrite(const char *fname);
+void err_fcreate(const char *fname);
+void err_rename(const char *oldname, const char *newname);
 
-_VOID set_extension(char *filename, const char *ext);
+void set_extension(char *filename, const char *ext);
+_BOOL is_mouseform(RSCTREE *tree);
 

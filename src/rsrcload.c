@@ -1,3 +1,5 @@
+#define _GNU_SOURCE
+
 #include "config.h"
 #include <gem.h>
 #include <s_endian.h>
@@ -905,7 +907,7 @@ static void report_problem(XRS_HEADER *xrsc_header, const char *what, _LONG offs
  */
 RSCFILE *xrsrc_load(const char *filename, _UWORD flags)
 {
-	register _ULONG UObj;
+	_ULONG UObj;
 	CICONBLK *cicon_p;
 	CICONBLK *cicon_dst;
 	char headerbuf[max(RSC_SIZEOF_XRS_HEADER, RSC_SIZEOF_RS_HEADER)];
@@ -1041,6 +1043,8 @@ RSCFILE *xrsrc_load(const char *filename, _UWORD flags)
 	file = (RSCFILE *)buf;
 	memset(file, 0, sizeof(RSCFILE));
 	rsc_init_file(file);
+	strcpy(file->rsc_rsxfilename, filename);
+	strcpy(file->rsc_rsxname, basename(filename));
 	if (error == RSC_OK)
 		file->rsc_rsm_crc = rsc_rsm_calc_crc(buf, filesize);
 	buf += sizeof(RSCFILE);
@@ -1049,7 +1053,6 @@ RSCFILE *xrsrc_load(const char *filename, _UWORD flags)
 	file->rsc_swap_flag = swap_flag;
 	file->rsc_xrsc_flag = xrsc_flag;
 	file->rsc_little_endian = swap_flag ^ (HOST_BYTE_ORDER != BYTE_ORDER_BIG_ENDIAN);
-	strcpy(file->rsc_rsxfilename, filename);
 	
 #if SWAP_ALLOWED
 	if (error == RSC_OK && swap_flag)
@@ -1294,45 +1297,6 @@ RSCFILE *xrsrc_load(const char *filename, _UWORD flags)
 		/*
 		 * we have to do it the hard way
 		 */
-		if (file->header.rsh_ntree > 0)
-		{
-			char *src;
-			OBJECT **dst;
-			
-			file->rs_trindex = g_new0(OBJECT *, file->header.rsh_ntree);
-			if (file->rs_trindex == NULL)
-			{
-				xrsrc_free(file);
-				return NULL;
-			}
-			file->allocated |= RSC_ALLOC_TRINDEX;
-			dst = file->rs_trindex;
-			if (file->header.rsh_trindex < RSC_SIZEOF_RS_HEADER ||
-				file->header.rsh_trindex + file->header.rsh_ntree * RSC_SIZEOF_PTR > file->header.rsh_rssize)
-			{
-				report_problem(&file->header, "rsh_trindex out of range", file->header.rsh_trindex, NULL);
-				warn_damaged(filename, "Trees");
-				for (UObj = 0; UObj < xrsc_header.rsh_ntree; UObj++, dst++)
-					*dst = &empty_object;
-			} else
-			{
-				src = MAKEPTR(buf, file->header.rsh_trindex);
-				for (UObj = 0; UObj < xrsc_header.rsh_ntree; UObj++, src += RSC_SIZEOF_PTR, dst++)
-				{
-					offset = get_long(src);
-					if (offset < RSC_SIZEOF_RS_HEADER || CHECK_ODD(offset))
-					{
-						nf_debugprintf("tree offset[%lu] out of range: $%lx\n", UObj, offset);
-						warn_damaged(filename, "Trees");
-						*dst = &empty_object;
-					} else
-					{
-						*dst = (OBJECT *)MAKEPTR(buf, offset);
-					}
-				}
-			}
-		}
-		
 		if (file->header.rsh_nobs > 0)
 		{
 			char *src;
@@ -1371,6 +1335,48 @@ RSCFILE *xrsrc_load(const char *filename, _UWORD flags)
 			}
 		}
 
+		if (file->header.rsh_ntree > 0)
+		{
+			char *src;
+			OBJECT **dst;
+			
+			file->rs_trindex = g_new0(OBJECT *, file->header.rsh_ntree);
+			if (file->rs_trindex == NULL)
+			{
+				xrsrc_free(file);
+				return NULL;
+			}
+			file->allocated |= RSC_ALLOC_TRINDEX;
+			dst = file->rs_trindex;
+			if (file->header.rsh_trindex < RSC_SIZEOF_RS_HEADER ||
+				file->header.rsh_trindex + file->header.rsh_ntree * RSC_SIZEOF_PTR > file->header.rsh_rssize)
+			{
+				report_problem(&file->header, "rsh_trindex out of range", file->header.rsh_trindex, NULL);
+				warn_damaged(filename, "Trees");
+				for (UObj = 0; UObj < xrsc_header.rsh_ntree; UObj++, dst++)
+					*dst = &empty_object;
+			} else
+			{
+				src = MAKEPTR(buf, file->header.rsh_trindex);
+				for (UObj = 0; UObj < xrsc_header.rsh_ntree; UObj++, src += RSC_SIZEOF_PTR, dst++)
+				{
+					offset = get_long(src);
+					if (offset < RSC_SIZEOF_RS_HEADER || CHECK_ODD(offset) ||
+						offset < file->header.rsh_object ||
+						offset >= file->header.rsh_object + file->header.rsh_nobs * RSC_SIZEOF_OBJECT)
+					{
+						nf_debugprintf("tree offset[%lu] out of range: $%lx\n", UObj, offset);
+						warn_damaged(filename, "Trees");
+						*dst = &empty_object;
+					} else
+					{
+						offset = (offset - file->header.rsh_object) / RSC_SIZEOF_OBJECT;
+						*dst = &file->rs_object[offset];
+					}
+				}
+			}
+		}
+		
 		if (file->header.rsh_nted > 0)
 		{
 			char *src;
@@ -1634,14 +1640,17 @@ RSCFILE *xrsrc_load(const char *filename, _UWORD flags)
 				for (UObj = 0; UObj < xrsc_header.rsh_nimages; UObj++, src += RSC_SIZEOF_PTR, dst++)
 				{
 					offset = get_long(src);
-					if (CHECK_SIZE(offset, filesize) || IS_REALLY_ODD(offset))
+					if (CHECK_SIZE(offset, filesize) || IS_REALLY_ODD(offset) ||
+						offset < file->header.rsh_bitblk ||
+						offset >= file->header.rsh_bitblk + file->header.rsh_nbb * RSC_SIZEOF_BITBLK)
 					{
 						nf_debugprintf("image offset[%lu] out of range: $%lx\n", UObj, offset);
 						warn_damaged(filename, "Images");
 						*dst = &empty_bit;
 					} else
 					{
-						*dst = (BITBLK *)MAKEPTR(buf, offset);
+						offset = (offset - file->header.rsh_bitblk) / RSC_SIZEOF_BITBLK;
+						*dst = &file->rs_bitblk[offset];
 					}
 				}
 			}
@@ -1999,7 +2008,7 @@ RSCFILE *xrsrc_load(const char *filename, _UWORD flags)
 			
 			ob = MAKEPTR(buf, xrsc_header.rsh_object);
 			idx = 0;
-			for (i = 0; i < xrsc_header.rsh_nobs; i++)
+			for (i = 0; i < xrsc_header.rsh_nobs; i++, ob += RSC_SIZEOF_OBJECT)
 			{
 				crc += 19;
 				crc += (idx + 1 + (_WORD)get_word(ob + 0)) * 23; /* ob_next */

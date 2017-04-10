@@ -512,7 +512,7 @@ _WORD wm_delete(_WORD handle);
 _WORD wm_set(_WORD handle, _WORD field, const _WORD *iw);
 #define srchwp(handle) (&D.w_win[handle])
 void w_drawdesk(const GRECT *dirty);
-_VOID w_update(_WORD bottom, const GRECT *pt, _WORD top, _BOOL moved);
+void w_update(_WORD bottom, const GRECT *pt, _WORD top, _BOOL moved);
 _BOOL wm_start(void);
 _WORD wm_calc(_WORD type, _WORD kind, const GRECT *in, GRECT *out);
 _WORD wm_get(_WORD handle, _WORD field, _WORD *ow, const _WORD *iw);

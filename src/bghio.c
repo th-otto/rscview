@@ -315,7 +315,7 @@ static _BOOL bgh_output_source_file(RSCFILE *file)
 
 /*** ---------------------------------------------------------------------- ***/
 
-_BOOL rsc_bgh_source(RSCFILE *file, rsc_counter *counter, _UBYTE *filename, _UBYTE *buf)
+_BOOL rsc_bgh_source(RSCFILE *file, rsc_counter *counter, char *filename, char *buf)
 {
 	XRS_HEADER xrsc_header;
 	_BOOL ok;

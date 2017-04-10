@@ -93,7 +93,7 @@ static _WORD obj_count(OBJECT *tree, _WORD parent, _WORD n)
 
 /*** ---------------------------------------------------------------------- ***/
 
-_VOID rsc_count_all(RSCFILE *file)
+void rsc_count_all(RSCFILE *file)
 {
 	RSCTREE *tree;
 	
@@ -128,7 +128,7 @@ _VOID rsc_count_all(RSCFILE *file)
 
 /*** ---------------------------------------------------------------------- ***/
 
-static _BOOL rsc_insert_tree(RSCFILE *file, RSCTREE *tree, _VOID *object)
+static _BOOL rsc_insert_tree(RSCFILE *file, RSCTREE *tree, void *object)
 {
 	RSCTREE *next;
 	_BOOL duplicates = FALSE;
@@ -168,7 +168,7 @@ static _BOOL rsc_insert_tree(RSCFILE *file, RSCTREE *tree, _VOID *object)
 		}
 		break;
 	case RT_FRSTR:
-		tree->rt_objects.str.fr_str = (_UBYTE *)object;
+		tree->rt_objects.str.fr_str = (char *)object;
 		FOR_ALL_RSC(file, next)
 		{
 			if (next->rt_type == RT_FRIMG ||
@@ -177,7 +177,7 @@ static _BOOL rsc_insert_tree(RSCFILE *file, RSCTREE *tree, _VOID *object)
 		}
 		break;
 	case RT_ALERT:
-		tree->rt_objects.alert.al_str = (_UBYTE *)object;
+		tree->rt_objects.alert.al_str = (char *)object;
 		FOR_ALL_RSC(file, next)
 		{
 			if (next->rt_type == RT_FRIMG ||
@@ -214,7 +214,7 @@ static _BOOL rsc_insert_tree(RSCFILE *file, RSCTREE *tree, _VOID *object)
 
 /*** ---------------------------------------------------------------------- ***/
 
-RSCTREE *rsc_add_tree(RSCFILE *file, _WORD type, const _UBYTE *name, _VOID *object)
+RSCTREE *rsc_add_tree(RSCFILE *file, _WORD type, const char *name, void *object)
 {
 	RSCTREE *tree;
 	
@@ -313,7 +313,7 @@ RSC_RSM_CRC rsc_rsm_calc_crc(const void *buf, _ULONG size)
 
 /*** ---------------------------------------------------------------------- ***/
 
-RSCFILE *rsc_new_file(const _UBYTE *filename, const _UBYTE *basename)
+RSCFILE *rsc_new_file(const char *filename, const char *basename)
 {
 	RSCFILE *file;
 	
@@ -545,7 +545,7 @@ static _LONG count_objs(OBJECT *tree, _WORD parent, _LONG idx, XRS_HEADER *xrsc_
 
 /*** ---------------------------------------------------------------------- ***/
 
-_VOID count_init(XRS_HEADER *xrsc_header, RSCFILE *file, rsc_counter *counter)
+void count_init(XRS_HEADER *xrsc_header, RSCFILE *file, rsc_counter *counter)
 {
 	counter->types.menus = 0;
 	counter->types.dialogs = 0;
@@ -593,7 +593,7 @@ _VOID count_init(XRS_HEADER *xrsc_header, RSCFILE *file, rsc_counter *counter)
 
 /*** ---------------------------------------------------------------------- ***/
 
-_VOID calc_offsets(XRS_HEADER *xrsc_header, RSCFILE *file, rsc_counter *counter, _BOOL for_file)
+void calc_offsets(XRS_HEADER *xrsc_header, RSCFILE *file, rsc_counter *counter, _BOOL for_file)
 {
 	size_t offset;
 	
@@ -605,7 +605,7 @@ _VOID calc_offsets(XRS_HEADER *xrsc_header, RSCFILE *file, rsc_counter *counter,
 	counter->total_size += FOR_FILE(RSC_SIZEOF_XRS_HEADER, sizeof(XRS_HEADER));
 	counter->total_size += xrsc_header->rsh_ntree * FOR_FILE(RSC_SIZEOF_PTR, sizeof(OBJECT *));
 	counter->total_size += xrsc_header->rsh_nimages * FOR_FILE(RSC_SIZEOF_PTR, sizeof(BITBLK *));
-	counter->total_size += xrsc_header->rsh_nstring * FOR_FILE(RSC_SIZEOF_PTR, sizeof(_UBYTE *));
+	counter->total_size += xrsc_header->rsh_nstring * FOR_FILE(RSC_SIZEOF_PTR, sizeof(char *));
 	
 	/*
 	 * start after header
@@ -636,7 +636,7 @@ _VOID calc_offsets(XRS_HEADER *xrsc_header, RSCFILE *file, rsc_counter *counter,
 		xrsc_header->rsh_bitblk = offset;
 		offset += (size_t)(xrsc_header->rsh_nbb * FOR_FILE(RSC_SIZEOF_BITBLK, sizeof(BITBLK)));
 		xrsc_header->rsh_frstr = offset;
-		offset += (size_t)(xrsc_header->rsh_nstring * FOR_FILE(RSC_SIZEOF_PTR, sizeof(_UBYTE *)));
+		offset += (size_t)(xrsc_header->rsh_nstring * FOR_FILE(RSC_SIZEOF_PTR, sizeof(char *)));
 		xrsc_header->rsh_string = offset;
 		offset += (size_t)counter->string_space_total;
 		if (offset & 1)
@@ -654,7 +654,7 @@ _VOID calc_offsets(XRS_HEADER *xrsc_header, RSCFILE *file, rsc_counter *counter,
 		xrsc_header->rsh_imdata = offset;
 		offset += (size_t)counter->imdata_size;
 		xrsc_header->rsh_frstr = offset;
-		offset += (size_t)(xrsc_header->rsh_nstring * FOR_FILE(RSC_SIZEOF_PTR, sizeof(_UBYTE *)));
+		offset += (size_t)(xrsc_header->rsh_nstring * FOR_FILE(RSC_SIZEOF_PTR, sizeof(char *)));
 		xrsc_header->rsh_bitblk = offset;
 		offset += (size_t)(xrsc_header->rsh_nbb * FOR_FILE(RSC_SIZEOF_BITBLK, sizeof(BITBLK)));
 		xrsc_header->rsh_frimg = offset;
@@ -684,7 +684,7 @@ _VOID calc_offsets(XRS_HEADER *xrsc_header, RSCFILE *file, rsc_counter *counter,
 
 /*** ---------------------------------------------------------------------- ***/
 
-_VOID count_trees(RSCFILE *file, XRS_HEADER *xrsc_header, rsc_counter *counter, _BOOL for_file)
+void count_trees(RSCFILE *file, XRS_HEADER *xrsc_header, rsc_counter *counter, _BOOL for_file)
 {
 	RSCTREE *tree;
 	OBJECT *ob;
@@ -794,3 +794,32 @@ _VOID count_trees(RSCFILE *file, XRS_HEADER *xrsc_header, rsc_counter *counter, 
 	
 	calc_offsets(xrsc_header, file, counter, for_file);
 }
+
+/*** ---------------------------------------------------------------------- ***/
+
+_BOOL is_mouseform(RSCTREE *tree)
+{
+	MFORM *mform;
+	BITBLK *bit;
+	
+	if (tree == NULL ||
+		(tree->rt_type != RT_FRIMG && tree->rt_type != RT_MOUSE) ||
+		(bit = tree->rt_objects.bit) == NULL ||
+		bit->bi_wb != 2 ||
+		bit->bi_hl != 37 ||
+		bit->bi_color < 0 ||
+		bit->bi_color >= 16 ||
+		(mform = (MFORM *)bit->bi_pdata) == NULL ||
+		mform->mf_fg < 0 ||
+		mform->mf_fg >= 16 ||
+		mform->mf_bg < 0 ||
+		mform->mf_bg >= 16 ||
+		mform->mf_nplanes != 1 ||
+		mform->mf_xhot < 0 ||
+		mform->mf_xhot >= 16 ||
+		mform->mf_yhot < 0 ||
+		mform->mf_yhot >= 16)
+		return FALSE;
+	return TRUE;
+}
+

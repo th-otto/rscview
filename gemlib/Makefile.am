@@ -14,14 +14,21 @@ libgem_a_SOURCES = \
 	a_appl_init.c \
 	a_vq_aes.c \
 	\
+	a_form_center.c \
+	a_form_dial.c \
+	\
 	a_graf_handle.c \
 	\
 	a_menu_register.c \
+	\
+	a_objc_draw.c \
+	a_objc_draw_grect.c \
 	\
 	a_wind_get.c \
 	a_wind_set.c \
 	a_wind_set_int.c \
 	a_wind_set_str.c \
+	a_wind_update.c \
 	\
 	rc_copy.c \
 	rc_equal.c \
@@ -200,6 +207,8 @@ libgem_a_SOURCES = \
 	vr_trnfm.c \
 	vro_cpyfm.c \
 	vrt_cpyfm.c \
+	\
+	v_write_png.c \
 	\
 	n_v_bez.c \
 	n_v_bez_fill.c \

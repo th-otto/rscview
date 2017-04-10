@@ -785,7 +785,7 @@ typedef struct _font_desc {
 
 
 #ifndef TRACE_VDI
-#define TRACE_VDI 1
+#define TRACE_VDI 0
 #endif
 
 /* call was done completly native; dont pass to ROM */

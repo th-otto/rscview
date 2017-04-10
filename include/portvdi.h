@@ -445,7 +445,7 @@ _WORD v_copies          (VdiHdl , _WORD count);
 _WORD v_orient          (VdiHdl , _WORD orientation);
 _WORD v_page_size       (VdiHdl , _WORD page_id);
 _WORD v_trays           (VdiHdl , _WORD input, _WORD output, _WORD *set_input, _WORD *set_output);
-_VOID v_ps_halftone     (VdiHdl , _WORD _index, _WORD _angle, _WORD _frequency ); 
+void v_ps_halftone     (VdiHdl , _WORD _index, _WORD _angle, _WORD _frequency ); 
 _WORD vq_calibrate      (VdiHdl , _WORD *flag);
 _WORD vq_page_name      (VdiHdl , _WORD page_id, char *page_name, _LONG *page_width, _LONG *page_height);
 _WORD vq_tray_names     (VdiHdl , char *input_name, char *output_name, _WORD *input, _WORD *output);

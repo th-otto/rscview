@@ -19,7 +19,7 @@ static _WORD gl_hchar;
 static _WORD gl_wchar;
 static _WORD gl_wbox;
 static _WORD gl_hbox;							/* system sizes */
-static _WORD xdesk, ydesk, hdesk, wdesk;
+static GRECT desk;
 static _WORD phys_handle;						/* physical workstation handle */
 static _WORD vdi_handle;						/* virtual screen handle */
 static WS ws;
@@ -79,6 +79,92 @@ static void print_version(void)
 }
 
 
+static void clear_screen(void)
+{
+	OBJECT desktop[] = {
+		{ NIL, NIL, NIL, G_BOX, OF_NONE, OS_NORMAL, { OBSPEC_MAKE(0, 0, BLACK, BLACK, TRUE, IP_SOLID, GREEN) }, 0, 0, 0, 0 },
+	};
+	
+	desktop[ROOT].ob_x = 0;
+	desktop[ROOT].ob_y = 0;
+	desktop[ROOT].ob_width = desk.g_x + desk.g_w;
+	desktop[ROOT].ob_height = desk.g_y + desk.g_h;
+	objc_draw(desktop, ROOT, MAX_DEPTH, 0, 0, desk.g_x + desk.g_w, desk.g_y + desk.g_h);
+}
+
+
+static void draw_dialog(RSCTREE *tree)
+{
+	OBJECT *ob;
+	_WORD x, y, w, h;
+	_WORD pxy[4];
+	char filename[PATH_MAX];
+	
+	ob = tree->rt_objects.dial.di_tree;
+	if (ob == NULL)
+		return;
+	form_center(ob, &x, &y, &w, &h);
+	wind_update(BEG_UPDATE);
+	form_dial(FMD_START, x, y, w, h, x, y, w, h);
+	clear_screen();
+	
+	form_dial(FMD_FINISH, x, y, w, h, x, y, w, h);
+	wind_update(END_UPDATE);
+	pxy[0] = x;
+	pxy[1] = y;
+	pxy[2] = x + w - 1;
+	pxy[3] = y + h - 1;
+	vs_clip(vdi_handle, 0, pxy);
+	sprintf(filename, "%s.png", tree->rt_name);
+	v_write_png(vdi_handle, filename);
+}
+
+
+static void draw_menu(RSCTREE *tree)
+{
+	OBJECT *ob;
+	
+	/* NYI */
+	ob = tree->rt_objects.menu.mn_tree;
+	if (ob == NULL)
+		return;
+}
+
+
+static void draw_all_trees(RSCFILE *file)
+{
+	RSCTREE *tree;
+	char *str;
+	
+	FOR_ALL_RSC(file, tree)
+	{
+		switch (tree->rt_type)
+		{
+		case RT_DIALOG:
+		case RT_FREE:
+		case RT_UNKNOWN:
+			draw_dialog(tree);
+			break;
+		case RT_MENU:
+			draw_menu(tree);
+			break;
+		case RT_FRSTR:
+			str = tree->rt_objects.str.fr_str;
+			break;
+		case RT_ALERT:
+			str = tree->rt_objects.alert.al_str;
+			break;
+		case RT_FRIMG:
+		case RT_MOUSE:
+			break;
+		case RT_BUBBLEMORE:
+		case RT_BUBBLEUSER:
+			break;
+		}
+	}
+}
+
+
 int main(int argc, char **argv)
 {
 	int c;
@@ -121,7 +207,7 @@ int main(int argc, char **argv)
 	while (optind < argc)
 	{
 		filename = argv[optind++];
-		file = xrsrc_load(filename, XRSC_SAFETY_CHECKS);
+		file = load_all(filename, XRSC_SAFETY_CHECKS);
 		if (file != NULL)
 		{
 			if (xml_out)
@@ -138,10 +224,12 @@ int main(int argc, char **argv)
 			
 			menu_register(-1, program_name);
 			phys_handle = graf_handle(&gl_wchar, &gl_hchar, &gl_wbox, &gl_hbox);
-			wind_get(DESK, WF_WORKXYWH, &xdesk, &ydesk, &wdesk, &hdesk);
+			wind_get(DESK, WF_WORKXYWH, &desk.g_x, &desk.g_y, &desk.g_w, &desk.g_h);
 			open_screen();
 			
 			close_screen();
+			
+			draw_all_trees(file);
 			
 			appl_exit();
 			

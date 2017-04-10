@@ -10,7 +10,7 @@ _BOOL W_Cicon_Setpalette(_WORD *palette)
 }
 
 
-_BOOL (W_Fix_Bitmap)(_VOID **data, _UWORD w, _UWORD h, _WORD nplanes)
+_BOOL (W_Fix_Bitmap)(void **data, _UWORD w, _UWORD h, _WORD nplanes)
 {
 	UNUSED(data);
 	UNUSED(w);
@@ -20,7 +20,7 @@ _BOOL (W_Fix_Bitmap)(_VOID **data, _UWORD w, _UWORD h, _WORD nplanes)
 }
 
 
-_VOID (W_Release_Bitmap)(_VOID **data, _UWORD w, _UWORD h, _WORD nplanes)
+void (W_Release_Bitmap)(void **data, _UWORD w, _UWORD h, _WORD nplanes)
 {
 	UNUSED(data);
 	UNUSED(w);

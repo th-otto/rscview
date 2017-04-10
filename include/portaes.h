@@ -632,8 +632,8 @@ _WORD aes(AESPB *pb);
  */
 int _AesCall( _LONG c0to3); /* c4=0 */ /* MO */
 int _AesXCall( _LONG c0to3, _WORD c4);  /* MO */
-int vq_aes(_VOID);
-_VOID _crystal(AESPARBLK *aespb);
+int vq_aes(void);
+void _crystal(AESPARBLK *aespb);
 _WORD _aes(_WORD dummy, _LONG code);
 _WORD _mt_aes(AESPB *pb, _LONG code);
 
@@ -673,9 +673,9 @@ _WORD _mt_aes(AESPB *pb, _LONG code);
 
 
 #define APPL_AESFIND(mintid) \
-	appl_find( (CONST char *)(0xFFFF0000L | (_ULONG)mintid))
+	appl_find( (const char *)(0xFFFF0000L | (_ULONG)mintid))
 #define APPL_MINTFIND(aesid) \
-	appl_find( (CONST char *)(0xFFFE0000L | (_ULONG)aesid))
+	appl_find( (const char *)(0xFFFE0000L | (_ULONG)aesid))
 #define APPL_CURRFIND() appl_find(NULL)
 
 /* appl_getinfo modes */
@@ -962,22 +962,22 @@ typedef struct
 {
 	_WORD	dst_apid;
 	_WORD	unique_flg;
-	_VOID *	attached_mem;
+	void *	attached_mem;
 	_WORD *	msgbuf;
 } XAESMSG;
 
-_WORD appl_init( _VOID );
-_WORD appl_read( _WORD ap_rid, _WORD ap_rlength, _VOID *ap_rpbuff );
-_WORD appl_write( _WORD ap_wid, _WORD ap_wlength, CONST _VOID *ap_wpbuff );
+_WORD appl_init( void );
+_WORD appl_read( _WORD ap_rid, _WORD ap_rlength, void *ap_rpbuff );
+_WORD appl_write( _WORD ap_wid, _WORD ap_wlength, const void *ap_wpbuff );
 _WORD appl_find( const char *ap_fpname );
-_WORD appl_tplay( _VOID *ap_tpmem, _WORD ap_tpnum, _WORD ap_tpscale );
-_WORD appl_trecord( _VOID *ap_trmem, _WORD ap_trcount );
-_WORD appl_exit( _VOID );
+_WORD appl_tplay( void *ap_tpmem, _WORD ap_tpnum, _WORD ap_tpscale );
+_WORD appl_trecord( void *ap_trmem, _WORD ap_trcount );
+_WORD appl_exit( void );
 _WORD appl_search( _WORD ap_smode, char *ap_sname, _WORD *ap_stype, _WORD *ap_sid ); /* AES 4.0 */
 _WORD appl_getinfo( _WORD ap_gtype, _WORD *ap_gout1, _WORD *ap_gout2, _WORD *ap_gout3, _WORD *ap_gout4); /* AES 4.0 */
 _WORD appl_getinfo_str(_WORD type, char *out1, char *out2, char *out3, char *out4);
 _WORD appl_xgetinfo( _WORD ap_gtype, _WORD *ap_gout1, _WORD *ap_gout2, _WORD *ap_gout3, _WORD *ap_gout4); /* AES 4.0 */
-_WORD appl_control(_WORD ap_cid, _WORD ap_cwhat, _VOID *ap_cout);
+_WORD appl_control(_WORD ap_cid, _WORD ap_cwhat, void *ap_cout);
 _WORD appl_yield(void);
 _WORD appl_bvset(_WORD bvdisks, _WORD bvharddisks);
 _WORD appl_xbvget(_ULONG *bvdisk, _ULONG *bvhard);
@@ -1202,7 +1202,7 @@ _WORD evnt_button( _WORD ev_bclicks, _WORD ev_bmask, _WORD ev_bstate,
                  _WORD *ev_bmx, _WORD *ev_bmy, _WORD *ev_bbutton,
                  _WORD *ev_bkstate );
 _WORD evnt_dclick( _WORD ev_dnew, _WORD ev_dgetset );
-_WORD evnt_keybd( _VOID );
+_WORD evnt_keybd( void );
 _WORD evnt_mouse( _WORD ev_moflags, _WORD ev_mox, _WORD ev_moy,
                 _WORD ev_mowidth, _WORD ev_moheight, _WORD *ev_momx,
                 _WORD *ev_momy, _WORD *ev_mobutton,
@@ -1347,7 +1347,7 @@ _WORD menu_icheck( OBJECT *me_ctree, _WORD me_citem, _WORD me_ccheck );
 _WORD menu_ienable( OBJECT *me_etree, _WORD me_eitem, _WORD me_eenable );
 _WORD menu_tnormal( OBJECT *me_ntree, _WORD me_ntitle, _WORD me_nnormal );
 _WORD menu_text( OBJECT *me_ttree, _WORD me_titem, const char *me_ttext );
-_WORD menu_register( _WORD me_rapid, CONST char *me_rpstring );
+_WORD menu_register( _WORD me_rapid, const char *me_rpstring );
 _WORD menu_unregister( _WORD me_rapid ); /* GEM 2.x */
 _WORD menu_popup( MENU *me_menu, _WORD me_xpos, _WORD me_ypos, MENU *me_mdata ); /* AES 4.0 */
 _WORD menu_attach( _WORD me_flag, OBJECT *me_tree, _WORD me_item, MENU *me_mdata ); /* AES 4.0 */
@@ -1407,9 +1407,9 @@ _WORD objc_sysvar( _WORD ob_svmode, _WORD ob_svwhich,  /* AES 4.0 */
                  _WORD *ob_svoutval1, _WORD *ob_svoutval2); /* AES 4.0 */
 _WORD objc_xfind( OBJECT *ob_ftree, _WORD ob_fstartob, _WORD ob_fdepth,
                _WORD ob_fmx, _WORD ob_fmy );
-_VOID objc_wchange( OBJECT *ob_ctree, _WORD ob_cobject,
+void objc_wchange( OBJECT *ob_ctree, _WORD ob_cobject,
                  _WORD ob_cnewstate, GRECT *clip, _WORD whandle);
-_VOID objc_wdraw( OBJECT *ob_drtree, _WORD ob_drstartob,
+void objc_wdraw( OBJECT *ob_drtree, _WORD ob_drstartob,
                _WORD ob_drdepth, GRECT *clip, _WORD whandle);
 _WORD objc_wedit( OBJECT *ob_edtree, _WORD ob_edobject,
                _WORD ob_edchar, _WORD *ob_edidx, _WORD ob_edkind, _WORD whandle );
@@ -1449,7 +1449,7 @@ _WORD form_dial( _WORD fo_diflag, _WORD fo_dilittlx,
                _WORD fo_dilittly, _WORD fo_dilittlw,
                _WORD fo_dilittlh, _WORD fo_dibigx,
                _WORD fo_dibigy, _WORD fo_dibigw, _WORD fo_dibigh );
-_WORD form_alert( _WORD fo_adefbttn, CONST char *fo_astring );
+_WORD form_alert( _WORD fo_adefbttn, const char *fo_astring );
 _WORD form_error( _WORD fo_enum );
 _WORD form_center( OBJECT *fo_ctree, _WORD *fo_cx, _WORD *fo_cy,
                  _WORD *fo_cw, _WORD *fo_ch );
@@ -1484,7 +1484,7 @@ typedef struct
 	SCANX	*shift;
 	SCANX	*ctrl;
 	SCANX	*alt;
-	_VOID	*resvd;
+	void	*resvd;
 } XDO_INF;
 #endif
 
@@ -1493,10 +1493,10 @@ _WORD form_xdial( _WORD fo_diflag, _WORD fo_dilittlx,
                _WORD fo_dilittly, _WORD fo_dilittlw,
                _WORD fo_dilittlh, _WORD fo_dibigx,
                _WORD fo_dibigy, _WORD fo_dibigw, _WORD fo_dibigh,
-               _VOID **flydial );
-_WORD form_xdial_grect( _WORD fo_diflag, const GRECT *little, const GRECT *big, _VOID **flydial );
-_WORD form_xdo( OBJECT *tree, _WORD startob, _WORD *lastcrsr, XDO_INF *tabs, _VOID *flydial);
-_WORD form_xerr(_LONG errcode, CONST char *errfile);
+               void **flydial );
+_WORD form_xdial_grect( _WORD fo_diflag, const GRECT *little, const GRECT *big, void **flydial );
+_WORD form_xdo( OBJECT *tree, _WORD startob, _WORD *lastcrsr, XDO_INF *tabs, void *flydial);
+_WORD form_xerr(_LONG errcode, const char *errfile);
 extern _WORD xfrm_popup(
                 OBJECT *tree, _WORD x, _WORD y,
                 _WORD firstscrlob, _WORD lastscrlob,
@@ -1609,7 +1609,7 @@ _WORD graf_multirubber (_WORD bx, _WORD by, _WORD mw, _WORD mh, GRECT *rec, _WOR
 
 _WORD scrp_read( char *sc_rpscrap );
 _WORD scrp_write( const char *sc_wpscrap );
-_WORD scrp_clear( _VOID );
+_WORD scrp_clear( void );
 
 
 /****** File selector definitions ***************************************/
@@ -1629,8 +1629,8 @@ typedef void _CDECL (*FSEL_CALLBACK)( _WORD *msg);
 #endif
 
 _WORD fsel_input( char *fs_iinpath, char *fs_iinsel, _WORD *fs_iexbutton );
-_WORD fsel_exinput( char *fs_einpath, char *fs_einsel, _WORD *fs_eexbutton, CONST char *fs_elabel );
-_WORD fsel_boxinput( char *fs_einpath, char *fs_einsel, _WORD *fs_eexbutton, CONST char *fs_elabel, FSEL_CALLBACK hndl_message );
+_WORD fsel_exinput( char *fs_einpath, char *fs_einsel, _WORD *fs_eexbutton, const char *fs_elabel );
+_WORD fsel_boxinput( char *fs_einpath, char *fs_einsel, _WORD *fs_eexbutton, const char *fs_elabel, FSEL_CALLBACK hndl_message );
 
 
 /****** Window definitions **********************************************/
@@ -1820,7 +1820,7 @@ _WORD wind_calc( _WORD wi_ctype, _WORD wi_ckind, _WORD wi_cinx,
                _WORD wi_ciny, _WORD wi_cinw, _WORD wi_cinh,
                _WORD *coutx, _WORD *couty, _WORD *coutw,
                _WORD *couth );
-_WORD wind_new( _VOID );
+_WORD wind_new( void );
 _WORD wind_draw(_WORD wi_dhandle, _WORD wi_dstartob);
 
 _WORD wind_calc_grect( _WORD Type, _WORD Parts, const GRECT *in, GRECT *out );
@@ -1843,13 +1843,13 @@ _WORD wind_set_ptr_int(_WORD whl, _WORD srt, void *s, _WORD g);
 
 /****** Resource definitions ********************************************/
 
-_WORD rsrc_load( CONST char *re_lpfname );
-_WORD rsrc_free( _VOID );
-_WORD rsrc_gaddr( _WORD re_gtype, _WORD re_gindex, _VOID *gaddr );
-_WORD rsrc_saddr( _WORD re_stype, _WORD re_sindex, _VOID *saddr );
+_WORD rsrc_load( const char *re_lpfname );
+_WORD rsrc_free( void );
+_WORD rsrc_gaddr( _WORD re_gtype, _WORD re_gindex, void *gaddr );
+_WORD rsrc_saddr( _WORD re_stype, _WORD re_sindex, void *saddr );
 _WORD rsrc_obfix( OBJECT *re_otree, _WORD re_oobject );
 _WORD rsrc_rcfix( void /* RSHDR */ *rc_header ); /* AES 4.0 */
-_BOOL rsrc_flip(_VOID *hdr, _LONG size);
+_BOOL rsrc_flip(void *hdr, _LONG size);
 
 
 /****** Shell definitions ***********************************************/
@@ -1983,7 +1983,7 @@ typedef struct _shwparblk {
 	_LONG	psetlimit;
 	_LONG	prenice;
 	char	*directory;
-	_VOID	*environment;
+	void	*environment;
     _LONG   flags;                      /* From MagiC 6 on */
 } SHWPARBLK;
 
@@ -2028,7 +2028,7 @@ typedef struct {
 #else
 	_LONG _CDECL (*proc)(void *par);
 #endif
-	_VOID	*user_stack;
+	void	*user_stack;
 	_ULONG	stacksize;
 	_WORD	mode;                       /* Always set to 0! */
 	_LONG	res1;                       /* Always set to 0! */
@@ -2050,7 +2050,7 @@ _WORD shel_envrn( char **sh_epvalue, const char *sh_eparm );
 _WORD shel_rdef ( char *cmd, char *dir ); /* GEM 2.x */
 _WORD shel_wdef ( const char *cmd, const char *dir ); /* GEM 2.x */
 
-_WORD shel_help (_WORD sh_hmode, CONST char *sh_hfile, CONST char *sh_hkey);
+_WORD shel_help (_WORD sh_hmode, const char *sh_hfile, const char *sh_hkey);
 
 
 /****** Xgrf definitions ***********************************************/
