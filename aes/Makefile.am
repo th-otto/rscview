@@ -13,6 +13,7 @@ libaes_a_SOURCES = \
 	gemevlib.c \
 	gemfmalt.c \
 	gemfmlib.c \
+	gemfslib.c \
 	gemglobe.c \
 	gemgraf.c \
 	gemgrlib.c \

@@ -12,7 +12,6 @@ char ob_sst(OBJECT *tree, _WORD obj, OBSPEC *pspec, _WORD *pstate, _WORD *ptype,
 {
 	_WORD th;
 	OBJECT *tmp;
-    TEDINFO *ted;
 
 	tmp = &tree[obj];
 
@@ -41,8 +40,7 @@ char ob_sst(OBJECT *tree, _WORD obj, OBSPEC *pspec, _WORD *pstate, _WORD *ptype,
 	case G_BOXTEXT:
 	case G_FTEXT:
 	case G_FBOXTEXT:
-		ted = (*pspec).tedinfo;
-		th = ted->te_thickness;
+		th = (*pspec).tedinfo->te_thickness;
 		break;
 
 	case G_BOX:							/* for these use object thickness */

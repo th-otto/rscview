@@ -72,7 +72,7 @@ _WORD sc_clear(void)
 
 	strcpy(ptmp, scrapmask);				/* Add mask */
 
-	dos_sdta(&D.g_dta); 					/* make sure dta ok */
+	dos_setdta(&D.g_dta); 					/* make sure dta ok */
 
 	ret = dos_sfirst(D.g_scrap, F_SUBDIR);
 	while(ret == 0)

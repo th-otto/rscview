@@ -395,8 +395,6 @@ static _BOOL xor_ok(_WORD type, _WORD flags, OBSPEC spec)
 }
 
 
-extern const char *type_name(_WORD type);
-
 /*
  *	Routine to draw an object from an object tree.
  */
@@ -555,10 +553,9 @@ static void just_draw(OBJECT *tree, _WORD obj, _WORD sx, _WORD sy)
 		switch (obtype)
 		{
 		case G_BOX:
-			printf("just_draw box %d: %d %d %d %d\n", obj, pt->g_x, pt->g_y, pt->g_w, pt->g_h); /* ZZZ */
 		case G_BOXCHAR:
 		case G_IBOX:
-			gr_crack((_UWORD) spec.index, &bcol, &tcol, &ipat, &icol, &tmode);
+			gr_crack(LOWORD(spec.index), &bcol, &tcol, &ipat, &icol, &tmode);
 			if (gl_aes3d && obtype != G_IBOX && ipat == IP_HOLLOW && icol == WHITE)
 			{
 				switch (flags & (FL3DIND | FL3DBAK))
@@ -680,7 +677,6 @@ static void just_draw(OBJECT *tree, _WORD obj, _WORD sx, _WORD sy)
 				{
 					gr_gtext(edblk.te_just, edblk.te_font, edblk.te_ptext, pt);
 				}
-
 			} else
 			{
 				gr_gtext(edblk.te_just, edblk.te_font, edblk.te_ptext, pt);
@@ -689,7 +685,7 @@ static void just_draw(OBJECT *tree, _WORD obj, _WORD sx, _WORD sy)
 			break;
 		case G_IMAGE:
 			bi = *spec.bitblk;
-			if (gl_aes3d && state & SELECTED)
+			if (gl_aes3d && (state & SELECTED))
 			{
 				/* If selected, XOR the background before drawing the image */
 				bb_fill(MD_XOR, FIS_SOLID, IP_SOLID, pt->g_x, pt->g_y, pt->g_w, pt->g_h);
@@ -783,7 +779,7 @@ static void just_draw(OBJECT *tree, _WORD obj, _WORD sx, _WORD sy)
 				gr_box(pt->g_x - 2, pt->g_y - 2, pt->g_w + 4, pt->g_h + 4, 2);
 			} else
 			{
-				/* draw a 3D outline for 3D background objects: 1/18/93 ERS */
+				/* draw a 3D outline for 3D background objects */
 				gsx_attr(FALSE, MD_REPLACE, LBLACK);
 				gsx_cline(pt->g_x + pt->g_w + 2, pt->g_y - 3, pt->g_x + pt->g_w + 2, pt->g_y + pt->g_h + 2);
 				gsx_cline(pt->g_x + pt->g_w + 1, pt->g_y - 2, pt->g_x + pt->g_w + 1, pt->g_y + pt->g_h + 1);
@@ -835,7 +831,7 @@ static void just_draw(OBJECT *tree, _WORD obj, _WORD sx, _WORD sy)
 			if (gl_aes3d && (flags & (FL3DIND | FL3DBAK)) == FL3DBAK)
 				vsf_color(gl_handle, gl_alrtcol);
 			else
-				vsf_color(gl_handle, WHITE);
+				vsf_color(gl_handle, G_WHITE);
 
 			bb_fill(MD_TRANS, FIS_PATTERN, IP_4PATT, pt->g_x, pt->g_y, pt->g_w, pt->g_h);
 		}
@@ -955,14 +951,14 @@ _WORD ob_find(OBJECT *tree, _WORD currobj, _WORD depth, _WORD mx, _WORD my)
 		 */
 
 		state = tree[currobj].ob_state;
-		if (!gl_aes3d || (state & SHADOWED))
+		if (gl_aes3d && !(state & SHADOWED))
+		{
+			ob_gclip(tree, currobj, &dummy, &dummy, &pt->g_x, &pt->g_y, &pt->g_w, &pt->g_h);
+		} else
 		{
 			ob_relxywh(tree, currobj, pt);
 			pt->g_x += o.g_x;
 			pt->g_y += o.g_y;
-		} else
-		{
-			ob_gclip(tree, currobj, &dummy, &dummy, &pt->g_x, &pt->g_y, &pt->g_w, &pt->g_h);
 		}
 		
 		flags = tree[currobj].ob_flags;
@@ -1189,7 +1185,6 @@ _BOOL ob_change(OBJECT *tree, _WORD obj, _WORD new_state, _WORD redraw)
 }
 
 
-/* 306de: 00e23fb6 */
 _UWORD ob_fs(OBJECT *tree, _WORD ob, _WORD *pflag)
 {
 	*pflag = tree[ob].ob_flags;
@@ -1201,7 +1196,6 @@ _UWORD ob_fs(OBJECT *tree, _WORD ob, _WORD *pflag)
 /* o b _ a c t x y w h                                                  */
 /* fill GRECT with x/y/w/h of object (absolute x/y)                     */
 /************************************************************************/
-/* 306de: 00e23fea */
 void ob_actxywh(OBJECT *tree, _WORD obj, GRECT * pt)
 {
 	if (gl_aes3d)
@@ -1431,7 +1425,7 @@ CICON *match_planes(CICON *iconlist, int planes)
 /*	Takes a list of icons and returns the first icon that 
  *	has equal or smaller planes.  Returns a null pointer if no match.
  */
-CICON *find_eq_or_less(CICON * iconlist, int planes)
+CICON *find_eq_or_less(CICON *iconlist, int planes)
 {
 	CICON *tempicon, *lasticon;
 
@@ -1462,11 +1456,9 @@ CICON *find_eq_or_less(CICON * iconlist, int planes)
  */
 static void convert_mask(_WORD *mask, _WORD *dst_mask, _WORD width, _WORD height)
 {
-	int i, j, wdwide, no_bytes;
+	int i, j, wdwide;
 
-	UNUSED(no_bytes);
 	wdwide = width / 16;
-	no_bytes = width / 8 * height;
 	for (i = 0; i < height; i += 2)
 	{
 		for (j = 0; j < wdwide; j++)
@@ -1493,10 +1485,7 @@ void gr_cicon(_WORD state, _WORD *pmask, _WORD *pdata, const char *ptext, _WORD 
 	/* crack the color/char definition word */
 	CICON *color;
 	int col_select;						/* is there a color select icon */
-	int i, j;
 
-	UNUSED(i);
-	UNUSED(j);
 	/* color = match_planes( cicon->mainlist, gl_nplanes ); */
 	/* Don't need this routine since mainlist is patched to
 	 * contain the icon for this resolution.
@@ -1685,14 +1674,12 @@ static CICON *fix_res(CICON *ptr, long mono_size, CICON ***next_res)
  */
 static void fixup_cicon(CICON * ptr, int tot_icons, CICONBLK ** carray)
 {
-	int tot_resicons, tot_selicons;
-	int i, j, k;
+	int tot_resicons;
+	int i, j;
 	long mono_size;						/* size of a single mono icon in bytes */
 	CICON **next_res;
 	CICONBLK *cicon;
 
-	UNUSED(k);
-	UNUSED(tot_selicons);
 	for (i = 0; i < tot_icons; i++)
 	{
 		cicon = (CICONBLK *) ptr;
@@ -1793,12 +1780,11 @@ static void trans_cicon(int tot_icons, CICONBLK **carray)
 {
 	int i;
 	CICONBLK *ciconblk;
-	CICON *cic, *ctemp;
+	CICON *ctemp;
 	int w, h;
 	_WORD *databuffer, *selbuffer, *tempbuffer;
 	int32_t tot_size;
 
-	UNUSED(cic);
 	for (i = 0; i < tot_icons; i++)
 	{
 		ciconblk = carray[i];

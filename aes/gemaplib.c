@@ -25,8 +25,6 @@
 #define MCHNG 2
 #define KCHNG 3
 
-uint32_t gl_bvdisk;
-uint32_t gl_bvhard;
 _WORD gl_recd;
 _WORD gl_rlen;
 uint32_t *gl_rbuf;

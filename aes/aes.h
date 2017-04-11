@@ -223,7 +223,7 @@ _WORD fm_alert(_WORD defbut, const char *palstr);
  * gemfslib.c
  */
 _WORD fs_input(char *pipath, char *pisel, _WORD *pbutton, char *lstring);
-void ini_fsel(void);
+void fs_start(void);
 
 
 /*
@@ -543,7 +543,6 @@ void newrect(OBJECT *tree, _WORD wh, _WORD junkx, _WORD junky);
  * jdos.c
  */
 int do_cdir(int drv, const char *path);
-uint32_t isdrive(void);
 
 
 /*

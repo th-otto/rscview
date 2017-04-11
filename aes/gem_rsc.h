@@ -5,19 +5,19 @@
  */
 
 /*
- * Number of Strings:        78
+ * Number of Strings:        79
  * Number of Bitblks:        11
  * Number of Iconblks:       0
  * Number of Color Iconblks: 0
  * Number of Color Icons:    0
  * Number of Tedinfos:       14
- * Number of Free Strings:   24
+ * Number of Free Strings:   25
  * Number of Free Images:    11
  * Number of Objects:        66
  * Number of Trees:          3
  * Number of Userblks:       0
  * Number of Images:         11
- * Total file size:          4994
+ * Total file size:          5070
  */
 
 #undef RSC_NAME
@@ -35,8 +35,8 @@
 # define RSC_STATIC_FILE 0
 #endif
 #if !RSC_STATIC_FILE
-#define NUM_STRINGS 78
-#define NUM_FRSTR 24
+#define NUM_STRINGS 79
+#define NUM_FRSTR 25
 #define NUM_UD 0
 #define NUM_IMAGES 11
 #define NUM_BB 11
@@ -53,6 +53,7 @@
 #define FSELECTR                           0 /* form/dialog */
 #define FSTITLE                            1 /* STRING in tree FSELECTR */
 #define FSDIRECT                           3 /* FBOXTEXT in tree FSELECTR */ /* max len 38 */
+#define FSDRIVE                            4 /* FTEXT in tree FSELECTR */ /* max len 0 */
 #define FSSELECT                           5 /* FBOXTEXT in tree FSELECTR */ /* max len 11 */
 #define FSDRIVES                           6 /* IBOX in tree FSELECTR */
 #define FS1STDRV                           7 /* BOXCHAR in tree FSELECTR */
@@ -156,6 +157,9 @@
 
 #define STLNVAL                           23 /* Free string */
 /* 0..9a..zA..Z €..ÿ */
+
+#define NOMEMORY                          24 /* Alert string */
+/* [1][The system does not have |enough memory for this|directory.][  OK  ] */
 
 #define NOTEBB                             0 /* Free image */
 

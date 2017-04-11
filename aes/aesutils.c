@@ -207,7 +207,7 @@ void unfmt_str(const char *in_str, char *out_str)
  *	to the callers ptxtlen.
  *	obj must reference a TEDINFO object.
  */
-void fs_sset(OBJECT *tree, _WORD obj, char *pstr, char **ptext, _WORD *ptxtlen)
+void fs_sset(OBJECT *tree, _WORD obj, const char *pstr, char **ptext, _WORD *ptxtlen)
 {
 	TEDINFO *ted;
 

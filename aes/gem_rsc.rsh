@@ -271,13 +271,13 @@ extern _VOID *hfix_objs(RSHDR *_hdr, OBJECT *_ob, _WORD _num_objs);
 #undef NUM_OBS
 #undef NUM_TREE
 #undef NUM_UD
-#define NUM_STRINGS 78
+#define NUM_STRINGS 79
 #define NUM_BB		11
 #define NUM_IB		0
 #define NUM_CIB     0
 #define NUM_CIC     0
 #define NUM_TI		14
-#define NUM_FRSTR	24
+#define NUM_FRSTR	25
 #define NUM_FRIMG	11
 #define NUM_OBS     66
 #define NUM_TREE	3
@@ -371,6 +371,7 @@ static char const gem_rsc_string_74[] = "a..z0..9A..Z\200..\377:?*_";
 static char const gem_rsc_string_75[] = "a..z0..9A..Z\200..\377_";
 static char const gem_rsc_string_76[] = "a..zA..Z \200..\377";
 static char const gem_rsc_string_77[] = "0..9a..zA..Z \200..\377";
+static char const gem_rsc_string_78[] = "[1][The system does not have |enough memory for this|directory.][  OK  ]";
 
 
 /* data of NOTEBB */
@@ -495,7 +496,8 @@ static const char *const rs_frstr[NUM_FRSTR] = {
 	gem_rsc_string_74,
 	gem_rsc_string_75,
 	gem_rsc_string_76,
-	gem_rsc_string_77
+	gem_rsc_string_77,
+	gem_rsc_string_78
 };
 
 
@@ -531,7 +533,7 @@ static const BITBLK *const rs_frimg[NUM_FRIMG] = {
 
 static TEDINFO const rs_tedinfo_rom[NUM_TI] = {
 	{ (char*)gem_rsc_string_2, (char*)gem_rsc_string_3, (char*)gem_rsc_string_4, IBM, 1, TE_LEFT, 0x1100, 0x0, 0, 39,39 }, /* FSDIRECT */
-	{ (char*)gem_rsc_string_5, (char*)gem_rsc_string_6, (char*)gem_rsc_string_7, IBM, 6, TE_CNTR, 0x1180, 0x0, -1, 1,7 },
+	{ (char*)gem_rsc_string_5, (char*)gem_rsc_string_6, (char*)gem_rsc_string_7, IBM, 6, TE_CNTR, 0x1180, 0x0, -1, 1,7 }, /* FSDRIVE */
 	{ (char*)gem_rsc_string_8, (char*)gem_rsc_string_9, (char*)gem_rsc_string_10, IBM, 1, TE_LEFT, 0x1100, 0x0, 0, 12,24 }, /* FSSELECT */
 	{ (char*)gem_rsc_string_11, (char*)gem_rsc_string_12, (char*)gem_rsc_string_13, IBM, 6, TE_CNTR, 0x11A1, 0x0, -1, 1,1 }, /* FTITLE */
 	{ (char*)gem_rsc_string_14, (char*)gem_rsc_string_15, (char*)gem_rsc_string_16, IBM, 1, TE_LEFT, 0x1100, 0x0, 0, 13,16 }, /* F1NAME */
@@ -554,7 +556,7 @@ static OBJECT const rs_object_rom[NUM_OBS] = {
 	{ 2, -1, -1, G_STRING, OF_NONE, OS_NORMAL, C_UNION(gem_rsc_string_0), 1,2048, 1,1 }, /* FSTITLE */
 	{ 3, -1, -1, G_STRING, OF_NONE, OS_NORMAL, C_UNION(gem_rsc_string_1), 1,2, 10,1 },
 	{ 4, -1, -1, G_FBOXTEXT, OF_EDITABLE, OS_NORMAL, C_UNION(&rs_tedinfo[0]), 1,1027, 38,1 }, /* FSDIRECT */
-	{ 5, -1, -1, G_FTEXT, OF_NONE, OS_NORMAL, C_UNION(&rs_tedinfo[1]), 27,5, 11,1 },
+	{ 5, -1, -1, G_FTEXT, OF_NONE, OS_NORMAL, C_UNION(&rs_tedinfo[1]), 27,5, 11,1 }, /* FSDRIVE */
 	{ 6, -1, -1, G_FBOXTEXT, OF_EDITABLE, OS_NORMAL, C_UNION(&rs_tedinfo[2]), 1,5, 24,1 }, /* FSSELECT */
 	{ 33, 7, 32, G_IBOX, OF_NONE, OS_NORMAL, C_UNION(0x1100L), 27,6, 11,9 }, /* FSDRIVES */
 	{ 8, -1, -1, G_BOXCHAR, OF_TOUCHEXIT, OS_NORMAL, C_UNION(0x41FF1100L), 0,0, 3,1 }, /* FS1STDRV */
@@ -825,8 +827,8 @@ _WORD gem_rsc_rsc_free()
 #endif /* RSC_NAMED_FUNCTIONS */
 
 #else /* !RSC_STATIC_FILE */
-int rs_numstrings = 78;
-int rs_numfrstr = 24;
+int rs_numstrings = 79;
+int rs_numfrstr = 25;
 
 int rs_nuser = 0;
 int rs_numimages = 11;

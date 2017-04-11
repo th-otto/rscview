@@ -349,7 +349,7 @@ _WORD ob_edit(OBJECT *tree, _WORD obj, _WORD in_char, _WORD *idx, _WORD kind)
 	len = ii = strlcpy(D.g_valstr, sizeof(D.g_valstr), edblk.te_pvalid);
 
 	/* expand out valid str */
-	while ((ii > 0) && (len < edblk.te_tmplen))
+	while (ii > 0 && len < edblk.te_tmplen)
 		D.g_valstr[len++] = D.g_valstr[ii - 1];
 	D.g_valstr[len] = '\0';
 

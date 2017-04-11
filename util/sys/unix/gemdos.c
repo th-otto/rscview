@@ -2,6 +2,7 @@
 #include <gemdos.h>
 #include <fcntl.h>
 #include <errno.h>
+#include "dos.h"
 
 
 #ifndef O_BINARY
@@ -116,4 +117,58 @@ int dos_rename(const char *oldname, const char *newname)
 	if (rename(oldname, newname) == 0)
 		return 0;
 	return errno;
+}
+
+
+uint32_t isdrive(void)
+{
+	return 1 << 2;
+}
+
+
+DTA *dos_getdta(void)
+{
+	return NULL;
+}
+
+
+int dos_setdta(DTA *dta)
+{
+	(void) dta;
+	return 0;
+}
+
+
+int dos_sdrv(int drv)
+{
+	(void) drv;
+	return 0;
+}
+
+
+int dos_gdrv(void)
+{
+	return 2;
+}
+
+
+int dos_sfirst(const char *name, int attrib)
+{
+	(void) name;
+	(void) attrib;
+	return E_FILNF;
+}
+
+
+int dos_snext(void)
+{
+	return E_NMFIL;
+}
+
+
+int dos_gdir(int drive, char *pdrvpath)
+{
+	(void) drive;
+	(void) pdrvpath;
+	return E_FILNF;
 }

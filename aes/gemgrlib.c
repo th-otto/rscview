@@ -52,3 +52,15 @@ void gr_mouse(_WORD mkind, MFORM *grmaddr)
 		gsx_mfset(grmaddr);
 	}
 }
+
+
+void set_mouse_to_arrow(void)
+{
+	gr_mouse(ARROW, NULL);
+}
+
+
+void set_mouse_to_hourglass(void)
+{
+	gr_mouse(HOURGLASS, NULL);
+}
