@@ -173,7 +173,7 @@ _vdi_trap_00 (VDIPB * vdipb, int32_t cntrl_0_1, short handle)
 	VDI_N_PTSIN    = nptsin; \
 	VDI_N_PTSOUT   = 0; \
 	VDI_N_INTIN    = nintin; \
-	VDI_N_PTSIN    = 0; \
+	VDI_N_INTOUT   = 0; \
 	VDI_SUBCODE    = subop;   \
 	VDI_HANDLE     = handle;  \
 	vdi (&vdipb);
@@ -195,7 +195,7 @@ void vditrap(VDIPB *vdipb);
 	VDI_N_PTSIN    = nptsin; \
 	VDI_N_PTSOUT   = 0; \
 	VDI_N_INTIN    = nintin; \
-	VDI_N_PTSIN    = 0; \
+	VDI_N_INTOUT   = 0; \
 	VDI_SUBCODE    = subop;   \
 	VDI_HANDLE     = handle;  \
 	vditrap(&vdipb);

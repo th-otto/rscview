@@ -197,14 +197,12 @@ static _BOOL is_menu(OBJECT *tree)
 		tree[ROOT].ob_type != G_IBOX ||
 		(titleline = tree[ROOT].ob_head) == NIL ||
 		tree[titleline].ob_type != G_BOX ||
-		(workscreen = tree[tree[ROOT].ob_head].ob_next) == titleline ||
+		(workscreen = tree[titleline].ob_next) == titleline ||
 		tree[workscreen].ob_type != G_IBOX ||
-		tree[workscreen].ob_next != titleline ||
+		tree[workscreen].ob_next != ROOT ||
 		(titlebox = tree[titleline].ob_head) == NIL ||
 		tree[titlebox].ob_type != G_IBOX ||
-#if 0
-		tree[titlebox].ob_next != titlebox ||
-#endif
+		tree[titlebox].ob_next != titleline ||
 		(title = tree[titlebox].ob_head) == NIL ||
 		(menubox = tree[workscreen].ob_head) == NIL)
 		return FALSE;

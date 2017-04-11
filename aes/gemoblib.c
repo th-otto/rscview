@@ -270,7 +270,7 @@ static void draw_hi(GRECT *prect, _WORD state, _WORD clip, _WORD th, _WORD icol)
 	pts[4] = pts[2] + r.g_w - 2;
 
 	col = (state & SELECTED) ? BLACK : WHITE;
-	gsx_attr(0, MD_REPLACE, col);
+	gsx_attr(FALSE, MD_REPLACE, col);
 	v_pline(gl_handle, 3, pts);
 
 	/* Draw shadow:
@@ -297,7 +297,7 @@ static void draw_hi(GRECT *prect, _WORD state, _WORD clip, _WORD th, _WORD icol)
 		if (icol == col || gl_ws.ws_ncolors < col)
 			col = BLACK;
 	}
-	gsx_attr(0, MD_REPLACE, col);
+	gsx_attr(FALSE, MD_REPLACE, col);
 	v_pline(gl_handle, 3, pts);
 
 	gsx_mon();
@@ -395,6 +395,8 @@ static _BOOL xor_ok(_WORD type, _WORD flags, OBSPEC spec)
 }
 
 
+extern const char *type_name(_WORD type);
+
 /*
  *	Routine to draw an object from an object tree.
  */
@@ -471,7 +473,7 @@ static void just_draw(OBJECT *tree, _WORD obj, _WORD sx, _WORD sy)
 		if (state & OUTLINED)
 			gr_inside(&c, -3);
 		else
-			gr_inside(&c, ((th < 0) ? (3 * th) : (-3 * th)));
+			gr_inside(&c, th < 0 ? 3 * th : -3 * th);
 		if (!gsx_chkclip(&c))
 			return;
 	}
@@ -553,6 +555,7 @@ static void just_draw(OBJECT *tree, _WORD obj, _WORD sx, _WORD sy)
 		switch (obtype)
 		{
 		case G_BOX:
+			printf("just_draw box %d: %d %d %d %d\n", obj, pt->g_x, pt->g_y, pt->g_w, pt->g_h); /* ZZZ */
 		case G_BOXCHAR:
 		case G_IBOX:
 			gr_crack((_UWORD) spec.index, &bcol, &tcol, &ipat, &icol, &tmode);
@@ -619,7 +622,7 @@ static void just_draw(OBJECT *tree, _WORD obj, _WORD sx, _WORD sy)
 					if (ipat == IP_HOLLOW)
 					{
 						ipat = IP_SOLID;
-						icol = BLACK;
+						icol = G_BLACK;
 					} else
 					{
 						icol = xor16(icol);

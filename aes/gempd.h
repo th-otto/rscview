@@ -22,7 +22,7 @@ AESPD *fpdnm(const char *pname, _UWORD pid);
 void p_nameit(AESPD *p, const char *pname);
 
 /* set the application directory of an AESPD */
-void p_setappdir(AESPD *p, char *pfilespec);
+void p_setappdir(AESPD *p, const char *pfilespec);
 
 AESPD *pstart(PFVOID pcode, const char *pfilespec, intptr_t ldaddr);
 

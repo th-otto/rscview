@@ -27,6 +27,7 @@
 #define BELL 0x07						/* bell         */
 
 _BOOL gl_mouse;
+MOBLK gl_ctwait;
 _WORD appl_msg[8];
 
 /*

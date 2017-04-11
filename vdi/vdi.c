@@ -317,7 +317,7 @@ static void vdi_draw_lines(VWK *v, VDI_POINT *points, int n, _UWORD pattern, int
 		points++;
 		vdi_draw_line(v, x1, y1, x2, y2, pattern, op, fg, bg);
 		x1 = x2;
-		y1 = y1;
+		y1 = y2;
 	}
 }
 

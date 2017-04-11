@@ -20,9 +20,11 @@ libgem_a_SOURCES = \
 	a_graf_handle.c \
 	\
 	a_menu_register.c \
+	a_menu_bar.c \
 	\
 	a_objc_draw.c \
 	a_objc_draw_grect.c \
+	a_objc_offset.c \
 	\
 	a_wind_get.c \
 	a_wind_set.c \

@@ -24,8 +24,6 @@ static int dspcnt;
 #undef CONF_WITH_PCGEM
 #define CONF_WITH_PCGEM 0
 
-#define dsptch()
-
 
 #ifdef ENABLE_KDEBUG
 static void aestrace(const char *message)
@@ -209,31 +207,37 @@ static _WORD crysbind(AESPB *pb)
 	case 30:
 		aestrace("menu_bar()");
 		AES_PARAMS(30,1,1,1,0);
+		mn_bar((OBJECT *)addr_in[0], int_in[0], rlr->p_pid);
 		break;
 
 	case 31:
 		aestrace("menu_icheck()");
 		AES_PARAMS(31,2,1,1,0);
+		do_chg((OBJECT *)addr_in[0], int_in[0], CHECKED, int_in[1], FALSE, FALSE);
 		break;
 
 	case 32:
 		aestrace("menu_ienable()");
 		AES_PARAMS(32,2,1,1,0);
+		do_chg((OBJECT *)addr_in[0], (int_in[0] & 0x7FFF), DISABLED, !int_in[1], ((int_in[0] & 0x8000) != 0x0), FALSE);
 		break;
 
 	case 33:
 		aestrace("menu_tnormal()");
 		AES_PARAMS(33,2,1,1,0);
+		do_chg((OBJECT *)addr_in[0], int_in[0], SELECTED, !int_in[1], TRUE, TRUE);
 		break;
 
 	case 34:
 		aestrace("menu_text()");
 		AES_PARAMS(34,1,1,2,0);
+		mn_text((OBJECT *)addr_in[0], int_in[0], (const char *)addr_in[1]);
 		break;
 
 	case 35:
 		aestrace("menu_register()");
 		AES_PARAMS(35,1,1,1,0);
+		ret = mn_register(int_in[0], (char *)addr_in[1]);
 		break;
 
 	case 36:

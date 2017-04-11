@@ -143,6 +143,7 @@ _WORD ap_exit(void);
  * gemctrl.c
  */
 extern _WORD appl_msg[8];
+extern MOBLK gl_ctwait;
 
 void hctl_window(_WORD w_handle, _WORD mx, _WORD my);
 void hctl_button(_WORD mx, _WORD my);
@@ -163,6 +164,9 @@ _WORD chk_ctrl(_WORD mx, _WORD my);
  */
 extern AESPD *dpd;								/* critical error process   */
 extern AESPD *slr;
+extern AESPD *drl;
+extern ACCPD *gl_pacc[NUM_ACCS];		/* total of 6 desk acc, 1 from rom  */
+extern _WORD gl_naccs;
 
 _BOOL forkq(FCODE f_code, _LONG f_data);
 void disp_act(AESPD *p);
@@ -618,7 +622,10 @@ _BOOL deskmain(void);
 #define gr_growbox(i, o) (void)(i)
 #define gr_watchbox(a, b, c, d) 0
 #define fq()
-#define ev_multi(flags, mo1, mo2, count, parm, mebuff, rets) rets[4] = 0x1c0d, MU_KEYBD
+#define ev_multi(flags, mo1, mo2, count, parm, mebuff, rets) rets[0] = 0, rets[1] = 0, rets[2] = 0, rets[3] = 0, rets[5] = 0, rets[4] = 0x1c0d, MU_KEYBD
 #define ev_button(a, b, c, rets) rets[0] = 0
 #define ap_rdwr(a, b, c, d) (void)(b)
 #define sh_find(name) 1
+#define dsptch()
+#define post_button(a, b, c)
+#define psetup(a, b) (void)(b)

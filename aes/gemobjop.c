@@ -78,7 +78,7 @@ void everyobj(OBJECT *tree, _WORD thisobj, _WORD last, EVERYOBJ_CALLBACK routine
 {
 	_WORD tmp1;
 	_WORD depth;
-	_WORD x[MAX_DEPTH + 1], y[MAX_DEPTH + 1];
+	_WORD x[MAX_DEPTH + 2], y[MAX_DEPTH + 2];
 
 	x[0] = startx;
 	y[0] = starty;
@@ -91,16 +91,17 @@ void everyobj(OBJECT *tree, _WORD thisobj, _WORD last, EVERYOBJ_CALLBACK routine
 	 */
 	for (;;)
 	{
-		/* see if we need to to stop */
+		/* see if we need to stop */
 		if (thisobj == last)
 			return;
+
 		/* do this object */
 		x[depth] = x[depth - 1] + tree[thisobj].ob_x;
 		y[depth] = y[depth - 1] + tree[thisobj].ob_y;
 		(*routine) (tree, thisobj, x[depth], y[depth]);
+
 		/* if this guy has kids then do them */
 		tmp1 = tree[thisobj].ob_head;
-		
 		if (tmp1 != NIL)
 		{
 			if (!(tree[thisobj].ob_flags & HIDETREE) && depth <= maxdep)
@@ -157,7 +158,7 @@ _WORD get_par(OBJECT *tree, _WORD obj)
 	{
 		obj = pobj;
 		pobj = tree[obj].ob_next;
-	} while (tree[pobj].ob_next != obj);
+	} while (tree[pobj].ob_tail != obj);
 
 	return pobj;
 }

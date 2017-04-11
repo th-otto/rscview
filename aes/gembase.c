@@ -11,5 +11,8 @@
 #include "aes.h"
 
 AESPD *rlr;
+AESPD *drl;
+ACCPD *gl_pacc[NUM_ACCS];		/* total of 6 desk acc, 1 from rom */
+_WORD gl_naccs;
 
 _WORD curpid;
