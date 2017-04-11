@@ -122,7 +122,7 @@ void everyobj(OBJECT *tree, _WORD thisobj, _WORD last, EVERYOBJ_CALLBACK routine
 			 * if this object has a sibling that is not his parent,
 			 * then move to him and do him and his kids
 			 */
-			if (tree[thisobj].ob_tail != thisobj)
+			if (tree[tmp1].ob_tail != thisobj)
 			{
 				thisobj = tmp1;
 				break;

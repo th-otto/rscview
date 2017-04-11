@@ -373,7 +373,7 @@ void mn_bar(OBJECT *tree, _WORD showit, _WORD pid)
 		rc_copy(&gl_rmenu, &gl_ctwait.m_gr);
 	}
 
-	/* make ctlmgr fix up the size of rect its waiting for */
+	/* make ctlmgr fix up the size of rect it is waiting for */
 	post_button(ctl_pd, 0x0000, 1);
 	dsptch();
 }

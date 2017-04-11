@@ -144,7 +144,7 @@ _WORD ob_sysvar(_UWORD mode, _UWORD which, _WORD inval1, _WORD inval2, _WORD *ou
 			*outval1 = gl_alrtcol;
 			break;
 		case AD3DVALUE:
-			*outval1 = ADJ3DPIX;		/* horizontal   */
+			*outval1 = ADJ3DPIX;		/* horizontal */
 			*outval2 = ADJ3DPIX;		/* vertical */
 			break;
 		default:
@@ -249,9 +249,9 @@ static void draw_hi(GRECT *prect, _WORD state, _WORD clip, _WORD th, _WORD icol)
 	rc_copy(prect, &r);
 
 	if (th > 0)
-	{									/* if border is inside,     */
-		r.g_x += th;					/* object area is 1 pixel   */
-		r.g_y += th;					/* in all around        */
+	{									/* if border is inside, */
+		r.g_x += th;					/* object area is 1 pixel */
+		r.g_y += th;					/* in all around */
 		r.g_w -= th << 1;
 		r.g_h -= th << 1;
 	}
@@ -814,7 +814,7 @@ static void just_draw(OBJECT *tree, _WORD obj, _WORD sx, _WORD sy)
 
 		if (state & CHECKED)
 		{
-			_WORD ch = 0x08;   /* a check mark */;
+			_WORD ch = 0x08;   /* a check mark */
 			gsx_attr(TRUE, MD_TRANS, BLACK);
 			gsx_tblt(IBM, pt->g_x + 2, pt->g_y, &ch, 1);
 		}
@@ -899,7 +899,7 @@ static _WORD get_prev(OBJECT *tree, _WORD parent, _WORD obj)
 		nobj = tree[pobj].ob_next;
 		if (nobj == obj)
 			return pobj;
-		if (nobj == parent) 	/* next object is the parent,  */
+		if (nobj == parent) 	/* next object is the parent, */
 			return NIL; 		/*	so we're not in this chain */
 		pobj = nobj;
 	}
@@ -907,7 +907,7 @@ static _WORD get_prev(OBJECT *tree, _WORD parent, _WORD obj)
 
 
 /*
- * AES #43 - objc_find - Find which object lies at the specified screen position.
+ * AES #43 - objc_find - Find which object that lies at the specified screen position.
  *
  *	Routine to find out which object a certain mx,my value is
  *	over.  Since each parent object contains its children the
@@ -1016,7 +1016,7 @@ void ob_add(OBJECT *tree, _WORD parent, _WORD child)
 
 		lastkid = tree[parent].ob_tail;
 		if (lastkid == NIL)
-			/* this is parent's 1st kid, so both head and tail pt to it  */
+			/* this is parent's 1st kid, so both head and tail pt to it */
 			tree[parent].ob_head = child;
 		else
 			/* add kid to end of kid list */
@@ -1094,7 +1094,7 @@ _BOOL ob_order(OBJECT *tree, _WORD mov_obj, _WORD new_pos)
 	chg_obj = tree[parent].ob_head;
 	if (new_pos == 0)
 	{
-		/* put mov_obj at head of list        */
+		/* put mov_obj at head of list */
 		tree[mov_obj].ob_next = chg_obj;
 		tree[parent].ob_head = mov_obj;
 	} else
@@ -1495,7 +1495,7 @@ void gr_cicon(_WORD state, _WORD *pmask, _WORD *pdata, const char *ptext, _WORD 
 	fgcol = (ch >> 12) & 0x000f;
 	bgcol = (ch >> 8) & 0x000f;
 	ch &= 0x0ff;
-	/* invert if selected   */
+	/* invert if selected */
 	if (state & SELECTED)
 	{
 		tmp = fgcol;
@@ -1526,7 +1526,7 @@ void gr_cicon(_WORD state, _WORD *pmask, _WORD *pdata, const char *ptext, _WORD 
 	}
 
 	/* do mask unless its on */
-	/* a white background   */
+	/* a white background */
 	if (!((state & WHITEBAK) && (bgcol == WHITE)))
 	{
 		/* for pixel-packed mode, must blit in black (to zero out backgd) */
@@ -1576,7 +1576,7 @@ void gr_cicon(_WORD state, _WORD *pmask, _WORD *pdata, const char *ptext, _WORD 
 				gl_width / 8, pi->g_w, pi->g_h, MD_TRANS, fgcol, bgcol);
 	}
 	
-	/* draw the character   */
+	/* draw the character */
 	gsx_attr(TRUE, MD_TRANS, fgcol);
 	if (ch)
 	{

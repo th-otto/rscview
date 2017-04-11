@@ -199,7 +199,7 @@ static void vdi_put_pixel(VWK *v, int x, int y, pel color)
 	{
 		if (x < v->clipr.x || x >= v->clipr.x + v->clipr.width)
 			return;
-		if (y < v->clipr.y || x >= v->clipr.y + v->clipr.height)
+		if (y < v->clipr.y || y >= v->clipr.y + v->clipr.height)
 			return;
 	}
 	pixel(x, y) = color;
@@ -289,10 +289,10 @@ static void vdi_draw_line(VWK *v, int x1, int y1, int x2, int y2, _UWORD pattern
 	{
 		if (x1 < x2)
 		{
-			vdi_draw_hline(v, x1, x2, y1, pattern, fg, bg, op);
+			vdi_draw_hline(v, x1, x2, y1, pattern, op, fg, bg);
 		} else if (x1 > x2)
 		{
-			vdi_draw_hline(v, x2, x1, y1, pattern, fg, bg, op);
+			vdi_draw_hline(v, x2, x1, y1, pattern, op, fg, bg);
 		} else
 		{
 			/* x1 == x2; already catched above */

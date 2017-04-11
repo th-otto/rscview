@@ -54,7 +54,7 @@ WS gl_ws;
 
 /*
  *	Routine to set the clip rectangle.	If the w,h of the clip is 0,
- *	then no clip should be set.  Ohterwise, set the appropriate clip.
+ *	then no clip should be set.  Otherwise, set the appropriate clip.
  */
 void gsx_sclip(const GRECT *pt)
 {
@@ -62,12 +62,12 @@ void gsx_sclip(const GRECT *pt)
 
 	rc_copy(pt, &gl_clip);
 	
-	if (gl_clip.g_w && gl_clip.g_h)
+	if (pt->g_w > 0 && pt->g_h > 0)
 	{
-		pts[0] = gl_clip.g_x;
-		pts[1] = gl_clip.g_y;
-		pts[2] = gl_clip.g_x + gl_clip.g_w - 1;
-		pts[3] = gl_clip.g_y + gl_clip.g_h - 1;
+		pts[0] = pt->g_x;
+		pts[1] = pt->g_y;
+		pts[2] = pt->g_x + pt->g_w - 1;
+		pts[3] = pt->g_y + pt->g_h - 1;
 		vs_clip(gl_handle, TRUE, pts);
 	} else
 	{

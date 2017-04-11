@@ -105,12 +105,31 @@ static void clear_screen(char *title)
 }
 
 
+static _WORD write_png(RSCTREE *tree, _WORD x, _WORD y, _WORD w, _WORD h)
+{
+	_WORD pxy[4];
+	char filename[PATH_MAX];
+	_WORD err;
+	
+	if (verbose)
+		printf("%s %ld %s: %dx%d\n", rtype_name(tree->rt_type), tree->rt_index, tree->rt_name, w, h);
+	pxy[0] = x;
+	pxy[1] = y;
+	pxy[2] = x + w - 1;
+	pxy[3] = y + h - 1;
+	vs_clip(vdi_handle, 1, pxy);
+	sprintf(filename, "%s.png", tree->rt_name);
+	err = v_write_png(vdi_handle, filename);
+	if (err != 0)
+		nf_debugprintf("write_png: %s: %s\n", filename, strerror(err));
+	return err;
+}
+
+
 static _BOOL draw_dialog(RSCTREE *tree)
 {
 	OBJECT *ob;
 	_WORD x, y, w, h;
-	_WORD pxy[4];
-	char filename[PATH_MAX];
 	_WORD err;
 	
 	ob = tree->rt_objects.dial.di_tree;
@@ -120,22 +139,12 @@ static _BOOL draw_dialog(RSCTREE *tree)
 
 	wind_update(BEG_UPDATE);
 	form_dial(FMD_START, x, y, w, h, x, y, w, h);
-	if (verbose)
-		printf("%s %ld %s: %dx%d\n", rtype_name(tree->rt_type), tree->rt_index, tree->rt_name, w, h);
 	
 	clear_screen(tree->rt_name);
 	
 	objc_draw(ob, ROOT, MAX_DEPTH, x, y, w, h);
 	
-	pxy[0] = x;
-	pxy[1] = y;
-	pxy[2] = x + w - 1;
-	pxy[3] = y + h - 1;
-	vs_clip(vdi_handle, 0, pxy);
-	sprintf(filename, "%s.png", tree->rt_name);
-	err = v_write_png(vdi_handle, filename);
-	if (err != 0)
-		nf_debugprintf("write_png: %s: %s\n", filename, strerror(err));
+	err = write_png(tree, x, y, w, h);
 
 	form_dial(FMD_FINISH, x, y, w, h, x, y, w, h);
 	wind_update(END_UPDATE);
@@ -152,11 +161,9 @@ static _BOOL draw_menu(RSCTREE *tree)
 	_WORD themenus;
 	_WORD title, menubox;
 	_WORD x, y, w, h;
-	_WORD pxy[4];
-	char filename[PATH_MAX];
 	_WORD err;
+	_WORD maxx, maxy;
 	
-	/* NYI */
 	ob = tree->rt_objects.menu.mn_tree;
 	if (ob == NULL)
 		return FALSE;
@@ -177,8 +184,6 @@ static _BOOL draw_menu(RSCTREE *tree)
 	h = ob[ROOT].ob_height;
 
 	wind_update(BEG_UPDATE);
-	if (verbose)
-		printf("%s %ld %s: %dx%d\n", rtype_name(tree->rt_type), tree->rt_index, tree->rt_name, w, h);
 	
 	/*
 	 * draw the menu titles
@@ -209,7 +214,7 @@ static _BOOL draw_menu(RSCTREE *tree)
 	{
 		ob[menubox].ob_x = x;
 		/* ob[title].ob_x = x + gl_wchar; */
-		x += ob[menubox].ob_width;
+		x += ob[menubox].ob_width + 1;
 		title = ob[title].ob_next;
 		menubox = ob[menubox].ob_next;
 	} while (title != theactive && menubox != themenus);
@@ -217,6 +222,7 @@ static _BOOL draw_menu(RSCTREE *tree)
 	/*
 	 * draw the boxes
 	 */
+	maxx = maxy = 0;
 	menubox = ob[themenus].ob_head;
 	do
 	{
@@ -229,25 +235,21 @@ static _BOOL draw_menu(RSCTREE *tree)
 		my -= 1;
 		mw += 2;
 		mh += 2;
-		printf("draw menu %d: %d %d %d %d\n", menubox, mx, my, mw, mh);
 		objc_draw(ob, menubox, MAX_DEPTH, mx, my, mw, mh);
 		menubox = ob[menubox].ob_next;
+		mx = mx + mw;
+		my = my + mh;
+		if (mx > maxx)
+			maxx = mx;
+		if (my > maxy)
+			maxy = my;
 	} while (menubox != themenus);
 	
-	pxy[0] = x;
-	pxy[1] = y;
-	pxy[2] = x + w - 1;
-	pxy[3] = y + h - 1;
-	vs_clip(vdi_handle, 0, pxy);
-	sprintf(filename, "%s.png", tree->rt_name);
-	err = v_write_png(vdi_handle, filename);
-	if (err != 0)
-		nf_debugprintf("write_png: %s: %s\n", filename, strerror(err));
+	err = write_png(tree, 0, 0, maxx, maxy);
 
 	menu_bar(ob, FALSE);
 	form_dial(FMD_FINISH, x, y, w, h, x, y, w, h);
 	wind_update(END_UPDATE);
-	exit(0); /* ZZZ */
 	
 	return err == 0;
 }
