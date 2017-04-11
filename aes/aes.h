@@ -361,22 +361,14 @@ void gr_box(_WORD x, _WORD y, _WORD w, _WORD h, _WORD th);
 /*
  * gemgrlib.c
  */
-void gr_stepcalc(_WORD orgw, _WORD orgh, GRECT *pt, _WORD *pcx, _WORD *pcy, _WORD *pcnt, _WORD *pxstep, _WORD *pystep);
+void gr_stepcalc(_WORD orgw, _WORD orgh, const GRECT *pt, _WORD *pcx, _WORD *pcy, _WORD *pcnt, _WORD *pxstep, _WORD *pystep);
 void gr_growbox(const GRECT *po, const GRECT *pt);
 void gr_shrinkbox(const GRECT *po, const GRECT *pt);
-void gr_xor(_WORD clipped, _WORD cnt, _WORD cx, _WORD cy, _WORD cw, _WORD ch, _WORD xstep, _WORD ystep, _WORD dowdht);
 void gr_movebox(_WORD w, _WORD h, _WORD srcx, _WORD srcy, _WORD dstx, _WORD dsty);
-void gr_scale(_WORD xdist, _WORD ydist, _WORD *pcnt, _WORD *pxstep, _WORD *pystep);
 _WORD gr_watchbox(OBJECT *tree, _WORD obj, _WORD instate, _WORD outstate);
-_BOOL gr_stilldn(_WORD out, _WORD x, _WORD y, _WORD w, _WORD h);
-void gr_draw(_WORD have2box, GRECT *po, GRECT *poff);
-_WORD gr_wait(GRECT *po, GRECT *poff, _WORD mx, _WORD my);
-void gr_setup(_WORD color);
 void gr_rubbox(_WORD xorigin, _WORD yorigin, _WORD wmin, _WORD hmin, _WORD *pwend, _WORD *phend);
 void gr_rubwind(_WORD xorigin, _WORD yorigin, _WORD wmin, _WORD hmin, GRECT *poff, _WORD *pwend, _WORD *phend);
 void gr_dragbox(_WORD w, _WORD h, _WORD sx, _WORD sy, const GRECT *pc, _WORD *pdx, _WORD *pdy);
-void gr_2box(_WORD flag1, _WORD cnt, GRECT *pt, _WORD xstep, _WORD ystep, _WORD flag2);
-void gr_clamp(_WORD xorigin, _WORD yorigin, _WORD wmin, _WORD hmin, _WORD *pneww, _WORD *pnewh);
 _WORD gr_slidebox(OBJECT *tree, _WORD parent, _WORD obj, _WORD isvert);
 _WORD gr_mkstate(_WORD *pmx, _WORD *pmy, _WORD *pmstat, _WORD *pkstat);
 void gr_mouse(_WORD mkind, MFORM *grmaddr);
@@ -617,9 +609,6 @@ _BOOL deskmain(void);
 #define get_mkown(m)
 #define ct_chgown(a, b) (void)(a); (void)(b)
 #define sound(a, b, c)
-#define gr_shrinkbox(i, o)
-#define gr_growbox(i, o) (void)(i)
-#define gr_watchbox(a, b, c, d) 0
 #define fq()
 #define ev_multi(flags, mo1, mo2, count, parm, mebuff, rets) rets[0] = 0, rets[1] = 0, rets[2] = 0, rets[3] = 0, rets[5] = 0, rets[4] = 0x1c0d, MU_KEYBD
 #define ev_button(a, b, c, rets) rets[0] = 0

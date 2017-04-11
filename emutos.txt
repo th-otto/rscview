@@ -14,3 +14,6 @@ wm_update: superfluous usetrue
 eralert: no hourglass
 
 get rid of gl_awind
+
+optimize gr_scale from Pacific
+change gr_xor to grect
