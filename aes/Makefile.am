@@ -5,7 +5,8 @@ INCLUDES += -I$(srcdir)
 noinst_LIBRARIES = libaes.a
 
 libaes_a_SOURCES = \
-	aes.c \
+	aes.c aes.h \
+	aesdefs.h crysbind.h gemlib.h gempd.h gsxdefs.h struct.h \
 	\
 	gemaplib.c \
 	gembase.c \

@@ -353,6 +353,12 @@ int main(int argc, char **argv)
 		return EXIT_FAILURE;
 	}
 	
+	appl_init();
+	
+	menu_register(-1, program_name);
+	phys_handle = graf_handle(&gl_wchar, &gl_hchar, &gl_wbox, &gl_hbox);
+	wind_get(DESK, WF_WORKXYWH, &desk.g_x, &desk.g_y, &desk.g_w, &desk.g_h);
+
 	while (optind < argc)
 	{
 		filename = argv[optind++];
@@ -369,18 +375,11 @@ int main(int argc, char **argv)
 					exit_status = EXIT_FAILURE;
 			}
 			
-			appl_init();
-			
-			menu_register(-1, program_name);
-			phys_handle = graf_handle(&gl_wchar, &gl_hchar, &gl_wbox, &gl_hbox);
-			wind_get(DESK, WF_WORKXYWH, &desk.g_x, &desk.g_y, &desk.g_w, &desk.g_h);
 			open_screen();
 			
 			draw_all_trees(file);
 			
 			close_screen();
-			
-			appl_exit();
 			
 			xrsrc_free(file);
 		} else
@@ -389,5 +388,7 @@ int main(int argc, char **argv)
 		}
 	}
 	
+	appl_exit();
+		
 	return exit_status;
 }

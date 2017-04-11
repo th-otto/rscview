@@ -2,14 +2,11 @@
 #include "gempd.h"
 #include "debug.h"
 #include "gem_rsc.h"
+#include "crysbind.h"
 
-/* max sizes for arrays */
-#define C_SIZE 4
-#define I_SIZE 16
-#define O_SIZE 7
-#define AI_SIZE 2
-#define AO_SIZE 1
-
+/*
+ * Crystal function op code
+ */
 #define OP_CODE pb->control[0]
 #define IN_LEN  pb->control[1]
 #define OUT_LEN pb->control[2]
@@ -18,8 +15,6 @@
 
 #define RET_CODE int_out[0]
 
-
-static int dspcnt;
 
 #undef CONF_WITH_PCGEM
 #define CONF_WITH_PCGEM 0
@@ -67,47 +62,66 @@ static _WORD crysbind(AESPB *pb)
 	switch (opcode)
 	{
 	/* Application Manager */
-	case 10:
+	case APPL_INIT:
 		aestrace("appl_init()");
 		AES_PARAMS(10,0,1,0,0);
         /* reset dispatcher count to let the app run a while */
-        dspcnt = 0;
         if (rlr == NULL)
         	aes_init();
         ret = ap_init(pglobal);
         break;
 
-	case 11:
+	case APPL_READ:
 		aestrace("appl_read()");
 		AES_PARAMS(11,2,1,1,0);
+#if NYI
+		ret = ap_rdwr(AQRD, AP_RWID, AP_LENGTH, (_WORD *)AP_PBUFF);
+#endif
 		break;
 
-	case 12:
+	case APPL_WRITE:
 		aestrace("appl_write()");
 		AES_PARAMS(12,2,1,1,0);
+#if NYI
+		ret = ap_rdwr(AQWRT, AP_RWID, AP_LENGTH, (_WORD *)AP_PBUFF);
+#endif
 		break;
 
-	case 13:
+	case APPL_FIND:
 		aestrace("appl_find()");
 		AES_PARAMS(13,0,1,1,0);
+#if NYI
+		ret = ap_find((const char *)AP_PNAME);
+#endif
 		break;
 
-	case 14:
+	case APPL_TPLAY:
 		aestrace("appl_tplay()");
 		AES_PARAMS(14,2,1,1,0);
+#if NYI
+		ap_tplay((const uint32_t *)AP_TBUFFER, AP_TLENGTH, AP_TSCALE);
+#endif
 		break;
 
-	case 15:
+	case APPL_TRECORD:
 		aestrace("appl_trecord()");
 		AES_PARAMS(15,1,1,1,0);
+#if NYI
+		ret = ap_trecd((uint32_t *)AP_TBUFFER, AP_TLENGTH);
+#endif
 		break;
 
-	case 16:
+	case APPL_BVSET:
 		aestrace("appl_bvset()");
 		AES_PARAMS(16,2,1,0,0);
+#if CONF_WITH_PCGEM
+		gl_bvdisk = HW(AP_BVDISK);
+		gl_bvhard = HW(AP_BVHARD);
+#endif
 		break;
 
-	case 18:
+	case APPL_SEARCH:
+	/* case APPL_BVEXT: */
 		/* distinguish between appl_search() and appl_xbvset() */
 		if (IN_LEN == 3)
 		{
@@ -118,6 +132,7 @@ static _WORD crysbind(AESPB *pb)
 		{
 			aestrace("appl_xbvset()");
 			AES_PARAMS(18,1,0,0,0);
+#if CONF_WITH_PCGEM
 			switch (int_in[0])
 			{
 			case 0:
@@ -131,28 +146,31 @@ static _WORD crysbind(AESPB *pb)
 				gl_bvhard = (_ULONG)(uintptr_t)addr_in[1];
 				break;
 			}
+#else
+			unsupported = TRUE;
+#endif
 		}
 		break;
 
-	case 17:
+	case APPL_YIELD:
 		aestrace("appl_yield()");
 		AES_PARAMS(17,0,1,0,0);
+		dsptch();
 		break;
 
-	case 19:
+	case APPL_EXIT:
 		aestrace("appl_exit()");
 		AES_PARAMS(19,0,1,0,0);
 		ap_exit();
 		break;
 
-	
-	case 129:
+	case APPL_CONTROL:
 		aestrace("appl_control()");
 		AES_PARAMS(129,2,1,1,0);
 		unsupported = TRUE;
 		break;
 
-	case 130:
+	case APPL_GETINFO:
 		if (AIN_LEN >= 4)
 		{
 			aestrace("appl_getinfo_str()");
@@ -167,87 +185,110 @@ static _WORD crysbind(AESPB *pb)
 
 
 	/* Event Manager */
-	case 20:
+	case EVNT_KEYBD:
 		aestrace("evnt_keybd()");
 		AES_PARAMS(20,0,1,0,0);
+#if NYI
+		ret = ev_keybd();
+#endif
 		break;
 
-	case 21:
+	case EVNT_BUTTON:
 		aestrace("evnt_button()");
 		AES_PARAMS(21,3,5,0,0);
+#if NYI
+		ret = ev_button(B_CLICKS, B_MASK, B_STATE, &EV_MX);
+#endif
 		break;
 
-	case 22:
+	case EVNT_MOUSE:
 		aestrace("evnt_mouse()");
 		AES_PARAMS(22,5,5,0,0);
+#if NYI
+		ret = ev_mouse((const MOBLK *)&MO_FLAGS, &EV_MX);
+#endif
 		break;
 
-	case 23:
+	case EVNT_MESAG:
 		aestrace("evnt_mesag()");
 		AES_PARAMS(23,0,1,1,0);
+#if NYI
+		ret = ev_mesag((_WORD *)ME_PBUFF);
+#endif
 		break;
 
-	case 24:
+	case EVNT_TIMER:
 		aestrace("evnt_timer()");
 		AES_PARAMS(24,2,1,0,0);
+#if NYI
+		ev_timer(MAKE_ULONG(T_HICOUNT, T_LOCOUNT));
+#endif
 		break;
 
-	case 25:
+	case EVNT_MULTI:
 		aestrace("evnt_multi()");
 		AES_PARAMS(25,16,7,1,0);
+		timeval = 0;
+		if (MU_FLAGS & MU_TIMER)
+			timeval = MAKE_ULONG(MT_HICOUNT, MT_LOCOUNT);
+		lbuparm = combine_cms(MB_CLICKS, MB_MASK, MB_STATE);
+#if NYI
+		ret = ev_multi(MU_FLAGS, (const MOBLK *)&MMO1_FLAGS, (const MOBLK *)&MMO2_FLAGS, timeval, lbuparm, (_WORD *)MME_PBUFF, &EV_MX);
+#endif
 		break;
 
-	case 26:
+	case EVNT_DCLICK:
 		aestrace("evnt_dclick()");
 		AES_PARAMS(26,2,1,0,0);
+		ret = ev_dclick(EV_DCRATE, EV_DCSETIT);
 		break;
 
 
 	/* Menu Manager */
-	case 30:
+	case MENU_BAR:
 		aestrace("menu_bar()");
 		AES_PARAMS(30,1,1,1,0);
-		mn_bar((OBJECT *)addr_in[0], int_in[0], rlr->p_pid);
+		mn_bar((OBJECT *)MM_ITREE, SHOW_IT, rlr->p_pid);
 		break;
 
-	case 31:
+	case MENU_ICHECK:
 		aestrace("menu_icheck()");
 		AES_PARAMS(31,2,1,1,0);
-		do_chg((OBJECT *)addr_in[0], int_in[0], CHECKED, int_in[1], FALSE, FALSE);
+		do_chg((OBJECT *)MM_ITREE, ITEM_NUM, CHECKED, CHECK_IT, FALSE, FALSE);
 		break;
 
-	case 32:
+	case MENU_IENABLE:
 		aestrace("menu_ienable()");
 		AES_PARAMS(32,2,1,1,0);
-		do_chg((OBJECT *)addr_in[0], (int_in[0] & 0x7FFF), DISABLED, !int_in[1], ((int_in[0] & 0x8000) != 0x0), FALSE);
+		do_chg((OBJECT *)MM_ITREE, (ITEM_NUM & 0x7FFF), DISABLED, !ENABLE_IT, ((ITEM_NUM & 0x8000) != 0x0), FALSE);
 		break;
 
-	case 33:
+	case MENU_TNORMAL:
 		aestrace("menu_tnormal()");
 		AES_PARAMS(33,2,1,1,0);
-		do_chg((OBJECT *)addr_in[0], int_in[0], SELECTED, !int_in[1], TRUE, TRUE);
+		do_chg((OBJECT *)MM_ITREE, TITLE_NUM, SELECTED, !NORMAL_IT, TRUE, TRUE);
 		break;
 
-	case 34:
+	case MENU_TEXT:
 		aestrace("menu_text()");
 		AES_PARAMS(34,1,1,2,0);
-		mn_text((OBJECT *)addr_in[0], int_in[0], (const char *)addr_in[1]);
+		mn_text((OBJECT *)MM_ITREE, ITEM_NUM, (const char *)MM_PTEXT);
 		break;
 
-	case 35:
+	case MENU_REGISTER:
 		aestrace("menu_register()");
 		AES_PARAMS(35,1,1,1,0);
-		ret = mn_register(int_in[0], (char *)addr_in[1]);
+		ret = mn_register(MM_PID, (char *)MM_PSTR);
 		break;
 
-	case 36:
+	case MENU_POPUP:
 		/* distinguish between menu_unregister() and menu_popup() */
 		if (IN_LEN == 1)
 		{
 			aestrace("menu_unregister()");
 			AES_PARAMS(36,1,1,0,0);
 #if CONF_WITH_PCGEM
-			mn_unregister(int_in[0]);
+			mn_unregister(MM_PID);
 #else
 			unsupported = TRUE;
 #endif
@@ -259,7 +300,7 @@ static _WORD crysbind(AESPB *pb)
 		}
 		break;
 
-	case 37:
+	case MENU_CLICK:
 		/* distinguish between menu_click() and menu_attach() */
 		/*
 		 * although menu_click() is PC-GEM only, it's always
@@ -269,8 +310,8 @@ static _WORD crysbind(AESPB *pb)
 		{
 			aestrace("menu_click()");
 			AES_PARAMS(37,2,1,0,0);
-			if (int_in[1])
-				gl_mnclick = int_in[0];
+			if (MN_SETIT)
+				gl_mnclick = MN_CLICK;
 			ret = gl_mnclick;
 		} else
 		{
@@ -280,13 +321,13 @@ static _WORD crysbind(AESPB *pb)
 		}
 		break;
 
-	case 38:
+	case MENU_ISTART:
 		aestrace("menu_istart()");
 		AES_PARAMS(38,3,1,1,0);
 		unsupported = TRUE;
 		break;
 
-	case 39:
+	case MENU_SETTINGS:
 		aestrace("menu_settings()");
 		AES_PARAMS(39,1,1,1,0);
 		unsupported = TRUE;
@@ -294,231 +335,217 @@ static _WORD crysbind(AESPB *pb)
 
 
 	/* Object Manager */
-	case 40:
+	case OBJC_ADD:
 		aestrace("objc_add()");
 		AES_PARAMS(40,2,1,1,0);
-		ob_add((OBJECT *)addr_in[0], int_in[0], int_in[1]);
+		ob_add((OBJECT *)OB_TREE, OB_PARENT, OB_CHILD);
 		break;
 
-	case 41:
+	case OBJC_DELETE:
 		aestrace("objc_delete()");
 		AES_PARAMS(41,1,1,1,0);
-		ob_delete((OBJECT *)addr_in[0], int_in[0]);
+		ob_delete((OBJECT *)OB_TREE, OB_DELOB);
 		break;
 
-	case 42:
+	case OBJC_DRAW:
 		aestrace("objc_draw()");
 		AES_PARAMS(42,6,1,1,0);
-		gsx_sclip((const GRECT *)&int_in[2]);
-		ob_draw((OBJECT *)addr_in[0], int_in[0], int_in[1]);
+		gsx_sclip((const GRECT *)&OB_XCLIP);
+		ob_draw((OBJECT *)OB_TREE, OB_DRAWOB, OB_DEPTH);
 		break;
 
-	case 43:
+	case OBJC_FIND:
 		aestrace("objc_find()");
 		AES_PARAMS(43,4,1,1,0);
-		ret = ob_find((OBJECT *)addr_in[0], int_in[0], int_in[1], int_in[2], int_in[3]);
+		ret = ob_find((OBJECT *)OB_TREE, OB_STARTOB, OB_DEPTH, OB_MX, OB_MY);
 		break;
 
-	case 44:
+	case OBJC_OFFSET:
 		aestrace("objc_offset()");
 		AES_PARAMS(44,1,3,1,0);
 		if (gl_aes3d)
-			ob_gclip((OBJECT *)addr_in[0], int_in[0], &int_out[1], &int_out[2], &int_out[3], &int_out[4], &int_out[5], &int_out[6]);
+			ob_gclip((OBJECT *)OB_TREE, OB_OBJ, &OB_XOFF, &OB_YOFF, &OB_GX, &OB_GY, &OB_GW, &OB_GH);
 		else
-			ob_offset((OBJECT *)addr_in[0], int_in[0], &int_out[1], &int_out[2]);
+			ob_offset((OBJECT *)OB_TREE, OB_OBJ, &OB_XOFF, &OB_YOFF);
 		break;
 
-	case 45:
+	case OBJC_ORDER:
 		aestrace("objc_order()");
 		AES_PARAMS(45,2,1,1,0);
-		ob_order((OBJECT *)addr_in[0], int_in[0], int_in[1]);
+		ob_order((OBJECT *)OB_TREE, OB_OBJ, OB_NEWPOS);
 		break;
 
-	case 46:
+	case OBJC_EDIT:
 		aestrace("objc_edit()");
 		AES_PARAMS(46,4,2,1,0);
-		int_out[1] = int_in[2];
-		ret = ob_edit((OBJECT *)addr_in[0], int_in[0], int_in[1], &int_out[1], int_in[3]);
+		OB_ODX = OB_IDX;
+		ret = ob_edit((OBJECT *)OB_TREE, OB_OBJ, OB_CHAR, &OB_ODX, OB_KIND);
 		break;
 
-	case 47:
+	case OBJC_CHANGE:
 		aestrace("objc_change()");
 		AES_PARAMS(47,8,1,1,0);
-		gsx_sclip((const GRECT *)&int_in[2]);
-		ob_change((OBJECT *)addr_in[0], int_in[0], int_in[6], int_in[7]);
+		gsx_sclip((const GRECT *)&OB_XCLIP);
+		ob_change((OBJECT *)OB_TREE, OB_DRAWOB, OB_NEWSTATE, OB_REDRAW);
 		break;
 
-	case 48:
+	case OBJC_SYSVAR:
 		aestrace("objc_sysvar()");
 		AES_PARAMS(48,4,3,0,0);
 		if (gl_aes3d)
-			ret = ob_sysvar(int_in[0], int_in[1], int_in[2], int_in[3], &int_out[1], &int_out[2]);
+			ret = ob_sysvar(OB_MODE, OB_WHICH, OB_I1, OB_I2, &OB_O1, &OB_O2);
+		else
+			ret = FALSE;
 		break;
 
-	case 49:
+	case OBJC_XFIND:
 		aestrace("objc_xfind()");
 		AES_PARAMS(49,4,1,1,0);
-		ret = ob_find((OBJECT *)addr_in[0], int_in[0], int_in[1], int_in[2], int_in[3]);
+		ret = ob_find((OBJECT *)OB_TREE, OB_STARTOB, OB_DEPTH, OB_MX, OB_MY);
 		break;
 	
 
 	/* Form Manager */
-	case 50:
+	case FORM_DO:
 		aestrace("form_do()");
 		AES_PARAMS(50,1,1,1,0);
 #if NYI
-		ret = fm_do((OBJECT *)addr_in[0], int_in[0]);
+		ret = fm_do((OBJECT *)FM_FORM, FM_START);
 #endif
 		break;	
 
-	case 51:
+	case FORM_DIAL:
 		aestrace("form_dial()");
 		AES_PARAMS(51,9,1,0,0);
 #if NYI
-		fm_dial(int_in[0], (const GRECT *)&int_in[1], (const GRECT *)&int_in[5]);
+		fm_dial(FM_TYPE, (const GRECT *)&FM_IX, (const GRECT *)&FM_X);
 #endif
 		break;
 
-	case 52:
+	case FORM_ALERT:
 		aestrace("form_alert()");
 		AES_PARAMS(52,1,1,1,0);
-		ret = fm_alert(int_in[0], (const char *)addr_in[0]);
+		ret = fm_alert(FM_DEFBUT, (const char *)FM_ASTRING);
 		break;
 
-	case 53:
+	case FORM_ERROR:
 		aestrace("form_error()");
 		AES_PARAMS(53,1,1,0,0);
-		ret = fm_error(int_in[0]);
+		ret = fm_error(FM_ERRNUM);
 		break;
 
-	case 54:
+	case FORM_CENTER:
 		aestrace("form_center()");
 		AES_PARAMS(54,0,5,1,0);
-		ob_center((OBJECT *)addr_in[0], (GRECT *)&int_out[1]);
+		ob_center((OBJECT *)FM_FORM, (GRECT *)&FM_XC);
 		break;
 
-	case 55:
+	case FORM_KEYBD:
 		aestrace("form_keybd()");
 		AES_PARAMS(55,3,3,1,0);
 		gsx_sclip(&gl_rfull);
-		int_out[2] = int_in[1];
-		int_out[1] = int_in[2];
-		ret = fm_keybd((OBJECT *)addr_in[0], int_in[0], &int_out[2], &int_out[1]);
+		FM_OCHAR = FM_ICHAR;
+		FM_ONXTOB = FM_INXTOB;
+		ret = fm_keybd((OBJECT *)FM_FORM, FM_OBJ, &FM_OCHAR, &FM_ONXTOB);
 		break;
 
-	case 56:
+	case FORM_BUTTON:
 		aestrace("form_button()");
 		AES_PARAMS(56,2,2,1,0);
 		gsx_sclip(&gl_rfull);
-		ret = fm_button((OBJECT *)addr_in[0], int_in[0], int_in[1], &int_out[1]);
+		ret = fm_button((OBJECT *)FM_FORM, FM_OBJ, FM_CLKS, &FM_ONXTOB);
 		break;
 	
 
 	/* Graphics Manager */
-	case 70:
+	case GRAF_RUBBOX:
 		aestrace("graf_rubberbox()");
 		AES_PARAMS(70,4,3,0,0);
-#if NYI
-		gr_rubbox(int_in[0], int_in[1], int_in[2], int_in[3], &int_out[1], &int_out[2]);
-#endif
+		gr_rubbox(GR_I1, GR_I2, GR_I3, GR_I4, &GR_O1, &GR_O2);
 		break;
 
-	case 71:
+	case GRAF_DRAGBOX:
 		aestrace("graf_dragbox()");
 		AES_PARAMS(71,8,3,0,0);
-#if NYI
-		gr_dragbox(int_in[0], int_in[1], int_in[2], int_in[3], (const GRECT *)&int_in[4], &int_out[1], &int_out[2]);
-#endif
+		gr_dragbox(GR_I1, GR_I2, GR_I3, GR_I4, (const GRECT *)&GR_I5, &GR_O1, &GR_O2);
 		break;
 
-	case 72:
+	case GRAF_MBOX:
 		aestrace("graf_movebox()");
 		AES_PARAMS(72,6,1,0,0);
-#if NYI
-		gr_movebox(int_in[0], int_in[1], int_in[2], int_in[3], int_in[4], int_in[5]);
-#endif
+		gr_movebox(GR_I1, GR_I2, GR_I3, GR_I4, GR_I5, GR_I6);
 		break;
 
-	case 73:
+	case GRAF_GROWBOX:
 		aestrace("graf_growbox()");
 		AES_PARAMS(73,8,1,0,0);
-#if NYI
-		gr_growbox((const GRECT *)&int_in[0], (const GRECT *)&int_in[4]);
-#endif
+		gr_growbox((const GRECT *)&GR_I1, (const GRECT *)&GR_I5);
 		break;
 
-	case 74:
+	case GRAF_SHRINKBOX:
 		aestrace("graf_shrinkbox()");
 		AES_PARAMS(74,8,1,0,0);
-#if NYI
-		gr_shrinkbox((const GRECT *)&int_in[0], (const GRECT *)&int_in[4]);
-#endif
+		gr_shrinkbox((const GRECT *)&GR_I1, (const GRECT *)&GR_I5);
 		break;
 
-	case 75:
+	case GRAF_WATCHBOX:
 		aestrace("graf_watchbox()");
 		AES_PARAMS(75,4,1,1,0);
-#if NYI
-		ret = gr_watchbox((OBJECT *)addr_in[0], int_in[1], int_in[2], int_in[3]);
-#endif
+		ret = gr_watchbox((OBJECT *)GR_TREE, GR_OBJ, GR_INSTATE, GR_OUTSTATE);
 		break;
 
-	case 76:
+	case GRAF_SLIDEBOX:
 		aestrace("graf_slidebox()");
 		AES_PARAMS(76,3,1,1,0);
-#if NYI
-		ret = gr_slidebox((OBJECT *)addr_in[0], int_in[0], int_in[1], int_in[2]);
-#endif
+		ret = gr_slidebox((OBJECT *)GR_TREE, GR_PARENT, GR_OBJ, GR_ISVERT);
 		break;
 
-	case 77:
+	case GRAF_HANDLE:
 /*
  * AES #77 - graf_handle - Obtain the VDI handle of the AES workstation. 
  */
 		aestrace("graf_handle()");
 		AES_PARAMS(77,0,5,0,0);
-		int_out[1] = gl_wchar;
-		int_out[2] = gl_hchar;
-		int_out[3] = gl_wbox;
-		int_out[4] = gl_hbox;
+		GR_WCHAR = gl_wchar;
+		GR_HCHAR = gl_hchar;
+		GR_WBOX = gl_wbox;
+		GR_HBOX = gl_hbox;
 		ret = gl_handle;
 		break;
 
-	case 78:
+	case GRAF_MOUSE:
 		aestrace("graf_mouse()");
 		AES_PARAMS(78,1,1,1,0);
 		ctlmouse(FALSE);
-		gr_mouse(int_in[0], (MFORM *)addr_in[0]);
+		gr_mouse(GR_MNUMBER, (MFORM *)GR_MADDR);
 		ctlmouse(TRUE);
 		break;
 
-	case 79:
+	case GRAF_MKSTATE:
 		aestrace("graf_mkstate()");
 		AES_PARAMS(79,0,5,0,0);
-#if NYI
-		ret = gr_mkstate(&int_out[1], &int_out[2], &int_out[3], &int_out[4]);
-#endif
+		ret = gr_mkstate(&GR_MX, &GR_MY, &GR_MSTATE, &GR_KSTATE);
 		break;
 	
 
 	/* Scrap Manager */
-	case 80:
+	case SCRP_READ:
 		aestrace("scrap_read()");
 		AES_PARAMS(80,0,1,1,0);
 #if NYI
-		ret = sc_read((char *)addr_in[0]);
+		ret = sc_read((char *)SC_PATH);
 #endif
 		break;
 
-	case 81:
+	case SCRP_WRITE:
 		aestrace("scrap_write()");
 		AES_PARAMS(81,0,1,1,0);
 #if NYI
-		ret = sc_write((const char *)addr_in[0]);
+		ret = sc_write((const char *)SC_PATH);
 #endif
 		break;
 
-	case 82:
+	case SCRP_CLEAR:
 		aestrace("scrap_clear()");
 		AES_PARAMS(82,0,1,0,0);
 #if CONF_WITH_PCGEM
@@ -528,15 +555,13 @@ static _WORD crysbind(AESPB *pb)
 	
 
 	/* File Selector Manager */
-	case 90:
+	case FSEL_INPUT:
 		aestrace("fs_input()");
 		AES_PARAMS(90,0,2,2,0);
-#if NYI
-		ret = fs_input((char *)addr_in[0], (char *)addr_in[1], &int_out[1], (char *)NO_CONST(aes_rsc_string[ITEMSLCT]));
-#endif
+		ret = fs_input((char *)FS_IPATH, (char *)FS_ISEL, &FS_BUTTON, (char *)NO_CONST(aes_rsc_string[ITEMSLCT]));
 		break;
 
-	case 91:
+	case FSEL_EXINPUT:
 		if (AIN_LEN >= 4)
 		{
 			aestrace("fsel_boxinput()");
@@ -545,9 +570,7 @@ static _WORD crysbind(AESPB *pb)
 			aestrace("fsel_exinput()");
 		}
 		AES_PARAMS(91,0,2,3,0);
-#if NYI
-		ret = fs_input((char *)addr_in[0], (char *)addr_in[1], &int_out[1], (char *)addr_in[2]);
-#endif
+		ret = fs_input((char *)FS_IPATH, (char *)FS_ISEL, &FS_BUTTON, (char *)FS_ILABEL);
 		break;
 
 
@@ -558,7 +581,7 @@ static _WORD crysbind(AESPB *pb)
 		unsupported = TRUE;
 		break;
 
-	case 100:
+	case WIND_CREATE:
 		if (OUT_LEN >= 5)
 		{
 			aestrace("wind_xcreate()");
@@ -567,60 +590,60 @@ static _WORD crysbind(AESPB *pb)
 			aestrace("wind_create()");
 		}
 		AES_PARAMS(100,5,1,0,0);
-		ret = wm_create(int_in[0], (const GRECT *)&int_in[1]);
+		ret = wm_create(WM_KIND, (const GRECT *)&WM_WX);
 		break;
 
-	case 101:
+	case WIND_OPEN:
 		aestrace("wind_open()");
 		AES_PARAMS(101,5,1,0,0);
-		wm_open(int_in[0], (const GRECT *)&int_in[1]);
+		wm_open(WM_HANDLE, (const GRECT *)&WM_WX);
 		break;
 
-	case 102:
+	case WIND_CLOSE:
 		aestrace("wind_close()");
 		AES_PARAMS(102,1,1,0,0);
-		wm_close(int_in[0]);
+		wm_close(WM_HANDLE);
 		break;
 
-	case 103:
+	case WIND_DELETE:
 		aestrace("wind_delete()");
 		AES_PARAMS(103,1,1,0,0);
-		wm_delete(int_in[0]);
+		wm_delete(WM_HANDLE);
 		break;
 
-	case 104:
+	case WIND_GET:
 		aestrace("wind_get()");
 		AES_PARAMS(104,2,5,0,0);
-		ret = wm_get(int_in[0], int_in[1], &int_out[1], (const _WORD *)&int_in[2]);
+		ret = wm_get(WM_HANDLE, WM_WFIELD, &WM_OX, &WM_IX);
 		break;
 
-	case 105:
+	case WIND_SET:
 		aestrace("wind_set()");
 		AES_PARAMS(105,6,1,0,0);
-		ret = wm_set(int_in[0], int_in[1], (_WORD *)&int_out[2]);
+		ret = wm_set(WM_HANDLE, WM_WFIELD, &WM_OX);
 		break;
 
-	case 106:
+	case WIND_FIND:
 		aestrace("wind_find()");
 		AES_PARAMS(106,2,1,0,0);
-		ret = wm_find(int_in[0], int_in[1]);
+		ret = wm_find(WM_MX, WM_MY);
 		break;
 
-	case 107:
+	case WIND_UPDATE:
 		aestrace("wind_update()");
 		AES_PARAMS(107,1,1,0,0);
 #if NYI
-		ret = wm_update(int_in[0]);
+		ret = wm_update(WM_BEGUP);
 #endif
 		break;
 
-	case 108:
+	case WIND_CALC:
 		aestrace("wind_calc()");
 		AES_PARAMS(108,6,5,0,0);
-		ret = wm_calc(int_in[0], int_in[1], (const GRECT *)&int_in[2], (GRECT *)&int_out[1]);
+		ret = wm_calc(WM_WCTYPE, WM_WCKIND, (const GRECT *)&WM_WCIX, (GRECT *)&WM_WCOX);
 		break;
 
-	case 109:
+	case WIND_NEW:
 		aestrace("wind_new()");
 		AES_PARAMS(109,0,0,0,0);
 		ret = wm_new();
@@ -628,37 +651,37 @@ static _WORD crysbind(AESPB *pb)
 
 
 	/* Resource Manager */
-	case 110:
+	case RSRC_LOAD:
 		aestrace("rsrc_load()");
 		AES_PARAMS(110,0,1,1,0);
-		ret = rs_load(pglobal, (const char *)addr_in[0]);
+		ret = rs_load(pglobal, (const char *)RS_PFNAME);
 		break;
 
-	case 111:
+	case RSRC_FREE:
 		aestrace("rsrc_free()");
 		AES_PARAMS(111,0,1,0,0);
 		ret = rs_free(pglobal);
 		break;
 
-	case 112:
+	case RSRC_GADDR:
 		aestrace("rsrc_gaddr()");
 		AES_PARAMS(112,2,1,0,1);
-		ret = rs_gaddr(pglobal, int_in[0], int_in[1], &pb->addrout[0]);
+		ret = rs_gaddr(pglobal, RS_TYPE, RS_INDEX, &pb->addrout[0]);
 		break;
 
-	case 113:
+	case RSRC_SADDR:
 		aestrace("rsrc_saddr()");
 		AES_PARAMS(113,2,1,1,0);
-		ret = rs_saddr(pglobal, int_in[0], int_in[1], addr_in[0]);
+		ret = rs_saddr(pglobal, RS_TYPE, RS_INDEX, RS_INADDR);
 		break;
 
-	case 114:
+	case RSRC_OBFIX:
 		aestrace("rsrc_obfix()");
 		AES_PARAMS(114,1,1,1,0);
-		rs_obfix((OBJECT *)addr_in[0], int_in[0]);
+		rs_obfix((OBJECT *)RS_TREE, RS_OBJ);
 		break;
 
-	case 115:
+	case RSRC_RCFIX:
 		aestrace("rsrc_rcfix()");
 		AES_PARAMS(115,0,1,1,0);
 		unsupported = TRUE;
@@ -666,75 +689,75 @@ static _WORD crysbind(AESPB *pb)
 	
 
 	/* Shell Manager */
-	case 120:
+	case SHEL_READ:
 		aestrace("shel_read()");
 		AES_PARAMS(120,0,1,2,0);
 #if NYI
-		ret = sh_read((char *)addr_in[0], (char *)addr_in[1]);
+		ret = sh_read((char *)SH_PCMD, (char *)SH_PTAIL);
 #endif
 		break;
 
-	case 121:
+	case SHEL_WRITE:
 		aestrace("shel_write()");
 		AES_PARAMS(121,3,1,2,0);
 #if NYI
-		ret = sh_write(int_in[0], int_in[1], int_in[2], (char *)addr_in[0], (char *)addr_in[1]);
+		ret = sh_write(SH_DOEX, SH_ISGR, SH_ISCR, (char *)SH_PCMD, (char *)SH_PTAIL);
 #endif
 		break;
 
-	case 122:
+	case SHEL_GET:
 		aestrace("shel_get()");
 		AES_PARAMS(122,1,1,1,0);
 #if NYI
-		ret = sh_get((char *)addr_in[0], int_in[0]);
+		ret = sh_get((char *)SH_PBUFFER, SH_LEN);
 #endif
 		break;
 
-	case 123:
+	case SHEL_PUT:
 		aestrace("shel_put()");
 		AES_PARAMS(123,1,1,1,0);
 #if NYI
-		ret = sh_put((char *)addr_in[0], int_in[0]);
+		ret = sh_put((const char *)SH_PDATA, SH_LEN);
 #endif
 		break;
 
-	case 124:
+	case SHEL_FIND:
 		aestrace("shel_find()");
 		AES_PARAMS(124,0,1,1,0);
 #if NYI
-		ret = sh_find((char *)addr_in[0]);
+		ret = sh_find((char *)SH_PATH);
 #endif
 		break;
 
-	case 125:
+	case SHEL_ENVRN:
 		aestrace("shel_envrn()");
 		AES_PARAMS(125,0,1,2,0);
 #if NYI
-		ret = sh_envrn((char **)addr_in[0], (char *)addr_in[1]);
+		ret = sh_envrn((char **)SH_PATH, (char *)SH_SRCH);
 #endif
 		break;
 
-	case 126:
+	case SHEL_RDEF:
 		aestrace("shel_rdef()");
 		AES_PARAMS(126,0,1,2,0);
 #if CONF_WITH_PCGEM
-		sh_rdef((char *)addr_in[0], (char *)addr_in[0]);
+		sh_rdef((char *)SH_LPCMD, (char *)SH_LPDIR);
 #else
 		unsupported = TRUE;
 #endif
 		break;
 
-	case 127:
+	case SHEL_WDEF:
 		aestrace("shel_wdef()");
 		AES_PARAMS(127,0,1,2,0);
 #if CONF_WITH_PCGEM
-		sh_wdef((const char *)addr_in[0], (const char *)addr_in[0]);
+		sh_wdef((const char *)SH_LPCMD, (const char *)SH_LPDIR);
 #else
 		unsupported = TRUE;
 #endif
 		break;
 
-	case 128:
+	case SHEL_HELP:
 		aestrace("shel_help()");
 		AES_PARAMS(128,1,1,2,0);
 		unsupported = TRUE;
@@ -745,9 +768,16 @@ static _WORD crysbind(AESPB *pb)
 		break;
 	}
 	
+	if (unsupported)
+	{
+		KINFO(("Bad AES function %d\n", opcode));
+		if (opcode != 0)	/* Ignore zero since some PRGs are this call */
+			fm_show(ALNOFUNC, 1, opcode);
+		ret = -1;
+	}
+
 	RET_CODE = ret;
 		
-	UNUSED(addr_in);
 	UNUSED(lbuparm);
 	UNUSED(timeval);
 	
