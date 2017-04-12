@@ -23,11 +23,6 @@ EXTERN_C_BEG
 CICON *cicon_best_match(CICONBLK *cicon, _WORD planes);
 CICON *cicon_find_plane(CICON *list, _WORD planes);
 
-_BOOL W_Fix_Bitmap(void **data, _UWORD w, _UWORD h, _WORD nplanes);
-void W_Release_Bitmap(void **data, _UWORD w, _UWORD h, _WORD nplanes);
-#define W_Fix_Bitmap(d, w, h, n) W_Fix_Bitmap((void **)(&(d)), w, h, n)
-#define W_Release_Bitmap(d, w, h, n) W_Release_Bitmap((void **)(&(d)), w, h, n)
-
 _BOOL W_Cicon_Setpalette(_WORD *palette);
 
 EXTERN_C_END

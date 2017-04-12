@@ -24,13 +24,19 @@ static GRECT desk;
 static _WORD phys_handle;						/* physical workstation handle */
 static _WORD vdi_handle;						/* virtual screen handle */
 static WS ws;
-static _WORD workin[11];
 
 /*
  * program options
  */
 static gboolean xml_out = FALSE;
 static gboolean verbose = FALSE;
+
+
+void GetTextSize(_WORD *wchar, _WORD *hchar)
+{
+	*wchar = gl_wchar;
+	*hchar = gl_hchar;
+}
 
 
 
@@ -53,6 +59,7 @@ static void open_screen(void)
 {
 	int i;
 	_WORD pxy[8];
+	_WORD workin[11];
 
 	vdi_handle = phys_handle;
 	for (i = 0; i < 10; i++)

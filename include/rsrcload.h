@@ -90,8 +90,6 @@ struct _rscfile {
 };
 
 void GetTextSize(_WORD *width, _WORD *height);
-void hfix_objs(RSCFILE *file, OBJECT *objects, _UWORD num_objs);
-void hrelease_objs(OBJECT *objects, _UWORD num_objs);
 
 #define XRSC_NO_INSERT_POPUPS 0x0001
 #define XRSC_NO_ZERO_ROOT     0x0002

@@ -22,6 +22,7 @@
 #include <string.h>
 
 #include "vdidefs.h"
+#include "fonthdr.h"
 
 /*
 Opcode      VDI Name                   Function
@@ -780,7 +781,8 @@ typedef struct _font_desc {
 	gboolean scaled;
 	int font_id;
 	int font_index;
-	vdi_charinfo *per_char;
+	const FONT_HDR *hdr;
+	vdi_charinfo per_char[256];
 } FONT_DESC;
 
 

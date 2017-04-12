@@ -4,7 +4,6 @@
 #include "gemdos.h"
 #include "ro_mem.h"
 #include <math.h>
-#include "fonthdr.h"
 #include "maptab.h"
 #include "pattern.h"
 #include "writepng.h"
@@ -214,7 +213,7 @@ static pel vdi_get_pixel(VWK *v, int x, int y)
 	{
 		if (x < v->clipr.x || x >= v->clipr.x + v->clipr.width)
 			return 0;
-		if (y < v->clipr.y || x >= v->clipr.y + v->clipr.height)
+		if (y < v->clipr.y || y >= v->clipr.y + v->clipr.height)
 			return 0;
 	}
 	return pixel(x, y);
@@ -1668,11 +1667,18 @@ static char *ascii_text(int nchars, _WORD *string)
 
 static int text_width(FONT_DESC *xf, _WORD *items, int n)
 {
-	/* TODO */
-	(void) xf;
-	(void) items;
-	(void) n;
-	return 0;
+	int width, i, c;
+	
+	width = 0;
+	for (i = 0; i < n; i++)
+	{
+		c = items[i];
+		if (c >= xf->first_char && c <= xf->last_char)
+			width += xf->per_char[c - xf->first_char].width;
+		else
+			width += xf->per_char[xf->default_char - xf->first_char].width;
+	}
+	return width;
 }
 
 /******************************************************************************/
@@ -1765,14 +1771,87 @@ static void init_font(VWK *v, _WORD *items, int n, gboolean justified)
 
 /******************************************************************************/
 
-static void draw_string(VWK *v, int x, int y, _WORD *items, int n)
+static int vdi_draw_char(VWK *v, int x0, int y0, unsigned char c, pel fg, pel bg)
 {
-	/* TODO */
+	const FONT_DESC *sf;
+	const vdi_charinfo *info;
+	int j;
+	int w;
+	int x, y;
+	const uint8_t *line;
+	int off;
+	const FONT_HDR *hdr;
+	int p;
+	int b;
+	uint8_t inmask;
+	
+	sf = &sysfont[v->font_index];
+	hdr = sf->hdr;
+	if (c < sf->first_char || c > sf->last_char)
+		c = sf->default_char;
+	info = &sf->per_char[c - sf->first_char];
+	off = hdr->off_table[c - sf->first_char];
+	y = y0;
+	for (j = 0; j < hdr->form_height; j++)
+	{
+		line = hdr->dat_table + hdr->form_width * j;
+		b = off & 7;
+		inmask = 0x80 >> b;
+		p = off >> 3;
+		w = info->width;
+		x = x0;
+		while (w > 0)
+		{
+			switch (v->wrmode)
+			{
+			case MD_REPLACE:
+				vdi_put_pixel(v, x, y, line[p] & inmask ? fg : bg);
+				break;
+			case MD_TRANS:
+				if (line[p] & inmask)
+					vdi_put_pixel(v, x, y, fg);
+				break;
+			case MD_XOR:
+				if (line[p] & inmask)
+					vdi_put_pixel(v, x, y, ~vdi_get_pixel(v, x, y));
+				break;
+			case MD_ERASE:
+				if (!(line[p] & inmask))
+					vdi_put_pixel(v, x, y, fg);
+				break;
+			}
+			inmask >>= 1;
+			b++;
+			if (b == 8)
+			{
+				p++;
+				inmask = 0x80;
+				b = 0;
+			}
+			w--;
+			x++;
+		}
+		y++;
+	}
 	(void) v;
 	(void) x;
 	(void) y;
-	(void) items;
-	(void) n;
+	(void) c;
+	(void) fg;
+	(void) bg;
+	return x0 + info->width;
+}
+
+
+static void draw_string(VWK *v, int x, int y, _WORD *items, int n)
+{
+	int i;
+	pel fg, bg;
+	
+	fg = FIX_COLOR(v->text_color);
+	bg = FIX_COLOR(v->bg_color);
+	for (i = 0; i < n; i++)
+		x = vdi_draw_char(v, x, y, items[i], fg, bg);
 }
 
 /******************************************************************************/
@@ -2478,6 +2557,44 @@ static int init_traster(VWK *v, int mode, int fg, int bg)
 }
 
 
+static void vdi_put_image(VWK *v, vdi_rectangle *sr, MFDB *s, int dx, int dy, int op, pel fg, pel bg)
+{
+	const uint16_t *src;
+	int x, y;
+	uint16_t bit;
+	
+	for (y = 0; y < sr->height; y++)
+	{
+		src = (const uint16_t *)s->fd_addr;
+		src += (y + sr->y) * s->fd_wdwidth;
+		
+		for (x = 0; x < sr->width; x++)
+		{
+			int sx = x + sr->x;
+			bit = src[sx >> 4] & (0x8000 >> (sx & 0x0f));
+			switch (op)
+			{
+			case MD_REPLACE:
+				vdi_put_pixel(v, dx + x, dy + y, bit ? fg : bg);
+				break;
+			case MD_TRANS:
+				if (bit)
+					vdi_put_pixel(v, dx + x, dy + y, fg);
+				break;
+			case MD_XOR:
+				if (bit)
+					vdi_put_pixel(v, dx + x, dy + y, ~vdi_get_pixel(v, x, y));
+				break;
+			case MD_ERASE:
+				if (!bit)
+					vdi_put_pixel(v, dx + x, dy + y, fg);
+				break;
+			}
+		}
+	}
+}
+
+
 static int do_copy_transparent(VWK *v, _WORD *intin, _WORD *ptsin, int mode, MFDB *s, MFDB *d)
 {
 	vdi_rectangle sr, dr;
@@ -2519,7 +2636,7 @@ static int do_copy_transparent(VWK *v, _WORD *intin, _WORD *ptsin, int mode, MFD
 						{
 							if (make_rectangle(v, sx1, sy1, sx2, sy2, &sr, v->width, v->height))
 							{
-								/* TODO */
+								V("vrt_cpyfm: NYI: on screen blit with planes == %d", 1);
 							}
 						} else
 						{
@@ -2529,7 +2646,7 @@ static int do_copy_transparent(VWK *v, _WORD *intin, _WORD *ptsin, int mode, MFD
 					{
 						if (make_rectangle(v, sx1, sy1, sx2, sy2, &sr, s->fd_w, s->fd_h))
 						{
-							/* TODO */
+							vdi_put_image(v, &sr, s, dx1, dy1, mode, FIX_COLOR(fg), FIX_COLOR(bg));
 						}
 					}
 				}
@@ -2778,19 +2895,7 @@ static void vt52_scroll(int sx, int sy, int w, int h, int dx, int dy)
 }
 
 
-static void vdi_draw_char(VWK *v, int x, int y, unsigned char c, pel fg, pel bg)
-{
-	/* TODO */
-	(void) v;
-	(void) x;
-	(void) y;
-	(void) c;
-	(void) fg;
-	(void) bg;
-}
-
-
-static void output_raw_char_dc(VWK *v, struct alpha_info *vt52, char c)
+static void output_raw_char_dc(VWK *v, struct alpha_info *vt52, unsigned char c)
 {
 	int x, y;
 	
@@ -2833,7 +2938,7 @@ static void output_raw_char_dc(VWK *v, struct alpha_info *vt52, char c)
 }
 
 
-static void output_raw_char(VWK *v, char c)
+static void output_raw_char(VWK *v, unsigned char c)
 {
 	struct alpha_info *vt52;
 
@@ -5770,11 +5875,13 @@ static void chomp(char *dst, const char *src, size_t maxlen)
 
 static void x_get_font_props(FONT_DESC *sf, const FONT_HDR *h)
 {
+	int c, count;
+	
+	sf->hdr = h;
 	sf->top = h->top;
 	sf->height = h->top;
 	sf->cellheight = h->form_height;
 	sf->descent = sf->bottom = sf->cellheight - sf->top - 1;
-	sf->per_char = NULL;
 	sf->scaled = 0;
 	sf->first_char = h->first_ade;
 	sf->last_char = h->last_ade;
@@ -5789,6 +5896,7 @@ static void x_get_font_props(FONT_DESC *sf, const FONT_HDR *h)
 	sf->half = h->half;
 	sf->ascent = h->ascent;
 	sf->monospaced = h->hor_table == NULL;
+	sf->default_char = '?';
 	
 #if 0
 	{
@@ -5816,6 +5924,15 @@ static void x_get_font_props(FONT_DESC *sf, const FONT_HDR *h)
 	printf(" point       : %d %d\n", sf->pointsize, sfinfo[number].point);
 	}
 #endif
+	count = sf->last_char - sf->first_char + 1;
+	for (c = 0; c < count; c++)
+	{
+		vdi_charinfo *info = &sf->per_char[c];
+		
+		info->lbearing = sf->left_offset;
+		info->width = h->off_table[c + 1] - h->off_table[c];
+		info->rbearing = info->width - info->lbearing;
+	}
 }
 
 static void vdi_reset_vars(void)
@@ -7214,22 +7331,6 @@ static int vdi_v_opnwk(VDIPB *pb)
 		destroy_image();
 		vdi_change_colors();
 
-		/*
-		 * The Desktop sometimes gets confused and
-		 * opens WK id 8 (TT-High resolution) when
-		 * using custom screensizes
-		 */
-		if (V_INTIN(pb, 0) == 8 && vdi_planes == 4)
-		{
-			V_INTIN(pb, 0) = 6;
-			V("v_opnwk: changed to device %d", V_INTIN(pb, 0));
-		}
-		if (V_INTIN(pb, 0) == 8 && vdi_planes == 8)
-		{
-			V_INTIN(pb, 0) = 9;
-			V("v_opnwk: changed to device %d", V_INTIN(pb, 0));
-		}
-
 		init_window();
 		
 		phys_handle = 0;
@@ -7306,21 +7407,6 @@ static gboolean vdi_call(VDIPB *pb)
 		_WORD *intin = PV_INTIN(pb);
 		if (V_INTIN(pb, 0) <= LAST_SCREEN_DEVICE)
 		{
-			/*
-			 * The Desktop sometimes gets confused and
-			 * opens WK id 8 (TT-High resolution) when
-			 * using custom screensizes
-			 */
-			if (vdi_planes == 4)
-			{
-				V_INTIN(pb, 0) = 6;
-				V("v_opnwk: changed to device %d", V_INTIN(pb, 0));
-			}
-			if (vdi_planes == 8)
-			{
-				V_INTIN(pb, 0) = 9;
-				V("v_opnwk: changed to device %d", V_INTIN(pb, 0));
-			}
 			/*
 			 * disable vbl drawing routine (cur_flag),
 			 * it will only draw the mouse on an invisible screen
@@ -7613,21 +7699,15 @@ static gboolean vdi_call(VDIPB *pb)
 				vdi_done = vdi_unknown(v, pb);
 				break;
 		}
-		if (vdi_done)
-		{
-			/*
-			 * many programs use incomplete vdi bindings, that don't clear
-			 * the subcode for functions they don't expect to have any
-			 * other subcode than 0. There are however some functions that were
-			 * added later, or are specific for some GDOS.
-			 * If we don't clear it, we might interpret a wrong subcode from
-			 * some previous call.
-			 */
-			V_CONTRL(pb, 5) = 0;
-		} else
-		{
-			/* otherwise subcode cleared in vdi_post */
-		}
+		/*
+		 * many programs use incomplete vdi bindings, that don't clear
+		 * the subcode for functions they don't expect to have any
+		 * other subcode than 0. There are however some functions that were
+		 * added later, or are specific for some GDOS.
+		 * If we don't clear it, we might interpret a wrong subcode from
+		 * some previous call.
+		 */
+		V_CONTRL(pb, 5) = 0;
 	}
 	return vdi_done;
 }

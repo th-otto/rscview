@@ -196,7 +196,7 @@ static void curfld(OBJECT *tree, _WORD obj, _WORD new_pos, _WORD dist)
 		t.g_w += (dist - 1) * gl_wchar + 1;
 	} else
 	{
-		gsx_attr(FALSE, MD_XOR, BLACK);
+		gsx_attr(FALSE, MD_XOR, G_BLACK);
 		t.g_y -= 3;
 		t.g_h += 6;
 	}

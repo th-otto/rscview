@@ -18,7 +18,6 @@ rscview_SOURCES = \
 	fileio.c \
 	bghio.c \
 	w_draw.c \
-	w_font.c \
 	fio_err.c \
 	$(empty)
 

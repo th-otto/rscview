@@ -269,7 +269,7 @@ static void draw_hi(GRECT *prect, _WORD state, _WORD clip, _WORD th, _WORD icol)
 	pts[1] = pts[3] + r.g_h - 2;
 	pts[4] = pts[2] + r.g_w - 2;
 
-	col = (state & SELECTED) ? BLACK : WHITE;
+	col = (state & SELECTED) ? G_BLACK : G_WHITE;
 	gsx_attr(FALSE, MD_REPLACE, col);
 	v_pline(gl_handle, 3, pts);
 
@@ -288,14 +288,14 @@ static void draw_hi(GRECT *prect, _WORD state, _WORD clip, _WORD th, _WORD icol)
 
 	if (state & SELECTED)
 	{
-		col = LWHITE;
+		col = G_LWHITE;
 		if (icol == col || gl_ws.ws_ncolors < col)
-			col = WHITE;
+			col = G_WHITE;
 	} else
 	{
-		col = LBLACK;
+		col = G_LBLACK;
 		if (icol == col || gl_ws.ws_ncolors < col)
-			col = BLACK;
+			col = G_BLACK;
 	}
 	gsx_attr(FALSE, MD_REPLACE, col);
 	v_pline(gl_handle, 3, pts);
@@ -331,12 +331,12 @@ static void draw_hi(GRECT *prect, _WORD state, _WORD clip, _WORD th, _WORD icol)
 static _WORD xor16(_WORD col)
 {
 	static _WORD const xor16tab[] = {
-    /*  WHITE,  BLACK,  RED,   GREEN,    BLUE,    CYAN,  YELLOW,   MAGENTA */
-		BLACK,  WHITE,  LCYAN, LMAGENTA, LYELLOW, LRED,  LBLUE,    LGREEN,
-    /*  LWHITE, LBLACK, LRED,  LGREEN,   LBLUE,   LCYAN, LYELLOW,  LMAGENTA */
-		LBLACK, LWHITE, CYAN,  MAGENTA,  YELLOW,  RED,   BLUE,     GREEN
+    /*  G_WHITE,  G_BLACK,  G_RED,   G_GREEN,    G_BLUE,    G_CYAN,  G_YELLOW,   G_MAGENTA */
+		G_BLACK,  G_WHITE,  G_LCYAN, G_LMAGENTA, G_LYELLOW, G_LRED,  G_LBLUE,    G_LGREEN,
+    /*  G_LWHITE, G_LBLACK, G_LRED,  G_LGREEN,   G_LBLUE,   G_LCYAN, G_LYELLOW,  G_LMAGENTA */
+		G_LBLACK, G_LWHITE, G_CYAN,  G_MAGENTA,  G_YELLOW,  G_RED,   G_BLUE,     G_GREEN
 	};
-	static _WORD const xor4tab[] = { BLACK, WHITE, GREEN, RED };
+	static _WORD const xor4tab[] = { G_BLACK, G_WHITE, G_GREEN, G_RED };
 
 	if (col >= 16 || col >= gl_ws.ws_ncolors)	/* ws_ncolors */
 		col = WHITE;
@@ -485,7 +485,7 @@ static void just_draw(OBJECT *tree, _WORD obj, _WORD sx, _WORD sy)
 	{
 		tmpth = (th < 0) ? 0 : th;
 		tmode = MD_REPLACE;
-		tcol = BLACK;
+		tcol = G_BLACK;
 
 		switch (obtype)
 		{
@@ -580,7 +580,7 @@ static void just_draw(OBJECT *tree, _WORD obj, _WORD sx, _WORD sy)
 		case G_BUTTON:
 			if (obtype == G_BUTTON)
 			{
-				bcol = BLACK;
+				bcol = G_BLACK;
 				if (three_d)
 				{
 					ipat = IP_SOLID;
@@ -737,9 +737,9 @@ static void just_draw(OBJECT *tree, _WORD obj, _WORD sx, _WORD sy)
 		if (len)
 		{
 			if (gl_aes3d && (state & SELECTED) && obtype == G_BUTTON && chcol)
-				tcol = WHITE;
+				tcol = G_WHITE;
 			else
-				tcol = BLACK;
+				tcol = G_BLACK;
 			gsx_attr(TRUE, MD_TRANS, tcol);
 
 			tmpy = pt->g_y + ((pt->g_h - gl_hchar) / 2);
@@ -773,14 +773,14 @@ static void just_draw(OBJECT *tree, _WORD obj, _WORD sx, _WORD sy)
 		{
 			if (!gl_aes3d || (flags & (FL3DBAK | FL3DIND)) != FL3DBAK)
 			{
-				gsx_attr(FALSE, MD_REPLACE, BLACK);
+				gsx_attr(FALSE, MD_REPLACE, G_BLACK);
 				gr_box(pt->g_x - 3, pt->g_y - 3, pt->g_w + 6, pt->g_h + 6, 1);
 				gsx_attr(FALSE, MD_REPLACE, WHITE);
 				gr_box(pt->g_x - 2, pt->g_y - 2, pt->g_w + 4, pt->g_h + 4, 2);
 			} else
 			{
 				/* draw a 3D outline for 3D background objects */
-				gsx_attr(FALSE, MD_REPLACE, LBLACK);
+				gsx_attr(FALSE, MD_REPLACE, G_LBLACK);
 				gsx_cline(pt->g_x + pt->g_w + 2, pt->g_y - 3, pt->g_x + pt->g_w + 2, pt->g_y + pt->g_h + 2);
 				gsx_cline(pt->g_x + pt->g_w + 1, pt->g_y - 2, pt->g_x + pt->g_w + 1, pt->g_y + pt->g_h + 1);
 				gsx_cline(pt->g_x + pt->g_w, pt->g_y - 1, pt->g_x + pt->g_w, pt->g_y + pt->g_h);
@@ -788,7 +788,7 @@ static void just_draw(OBJECT *tree, _WORD obj, _WORD sx, _WORD sy)
 				gsx_cline(pt->g_x - 2, pt->g_y + pt->g_h + 1, pt->g_x + pt->g_w + 2, pt->g_y + pt->g_h + 1);
 				gsx_cline(pt->g_x - 1, pt->g_y + pt->g_h, pt->g_x + pt->g_w + 2, pt->g_y + pt->g_h);
 
-				gsx_attr(FALSE, MD_REPLACE, WHITE);
+				gsx_attr(FALSE, MD_REPLACE, G_WHITE);
 				gsx_cline(pt->g_x - 3, pt->g_y - 3, pt->g_x + pt->g_w + 2, pt->g_y - 3);
 				gsx_cline(pt->g_x - 3, pt->g_y - 2, pt->g_x + pt->g_w + 1, pt->g_y - 2);
 				gsx_cline(pt->g_x - 3, pt->g_y - 1, pt->g_x + pt->g_w, pt->g_y - 1);
@@ -815,13 +815,13 @@ static void just_draw(OBJECT *tree, _WORD obj, _WORD sx, _WORD sy)
 		if (state & CHECKED)
 		{
 			_WORD ch = 0x08;   /* a check mark */
-			gsx_attr(TRUE, MD_TRANS, BLACK);
+			gsx_attr(TRUE, MD_TRANS, G_BLACK);
 			gsx_tblt(IBM, pt->g_x + 2, pt->g_y, &ch, 1);
 		}
 
 		if (state & CROSSED)
 		{
-			gsx_attr(FALSE, MD_TRANS, WHITE);
+			gsx_attr(FALSE, MD_TRANS, G_WHITE);
 			gsx_cline(pt->g_x, pt->g_y, pt->g_x + pt->g_w - 1, pt->g_y + pt->g_h - 1);
 			gsx_cline(pt->g_x, pt->g_y + pt->g_h - 1, pt->g_x + pt->g_w - 1, pt->g_y);
 		}

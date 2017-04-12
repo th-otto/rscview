@@ -771,7 +771,7 @@ void fs_start(void)
 		y += obj[FSOK].ob_height + ADJ3DPIX + 6;
 		obj[0].ob_height = y;
 	
-		if (gl_ws.ws_ncolors <= LWHITE)
+		if (gl_ws.ws_ncolors <= G_LWHITE)
 		{
 			OBSPEC_SET_INTERIORCOL(obj[FCLSBOX].ob_spec, G_WHITE);
 			OBSPEC_SET_INTERIORCOL(obj[FUPAROW].ob_spec, G_WHITE);

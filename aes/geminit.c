@@ -117,7 +117,7 @@ void aes_init(void)
 		BITBLK bi;
 
 		bi = *aes_rsc_bitblk[i];
-		gsx_trans(bi.bi_pdata, bi.bi_wb, bi.bi_pdata, bi.bi_wb, bi.bi_hl, BLACK, WHITE);
+		gsx_trans(bi.bi_pdata, bi.bi_wb, bi.bi_pdata, bi.bi_wb, bi.bi_hl, G_BLACK, G_WHITE);
 	}
 	
 	sh_tographic();						/* go into graphic mode */
@@ -138,9 +138,9 @@ void aes_init(void)
 	 */
 	/* FIXME: use function from sh_main */
 	if (gl_ws.ws_ncolors > 2)				/* set solid pattern in color modes */
-		tree[ROOT].ob_spec.index = OBSPEC_MAKE(0, 0, BLACK, BLACK, FALSE, IP_SOLID, GREEN);
+		tree[ROOT].ob_spec.index = OBSPEC_MAKE(0, 0, G_BLACK, G_BLACK, FALSE, IP_SOLID, G_GREEN);
 	else
-		tree[ROOT].ob_spec.index = OBSPEC_MAKE(0, 0, BLACK, BLACK, FALSE, IP_4PATT, GREEN);
+		tree[ROOT].ob_spec.index = OBSPEC_MAKE(0, 0, G_BLACK, G_BLACK, FALSE, IP_4PATT, G_GREEN);
 
 	wm_init();
 

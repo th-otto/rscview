@@ -457,20 +457,20 @@ static _BOOL xrsc_flip_data(RSCFILE *file, _ULONG filesize)
 		BITBLK *pbitblk;
 
 		pbitblk = file->rs_bitblk;
-		for (i = 0; i < file->header.rsh_nbb; i++)
+		for (i = 0; i < file->header.rsh_nbb; i++, pbitblk++)
 		{
 			words = bitblk_datasize(pbitblk) >> 1;
 			if (filesize != 0)
 			{
-				offset = OFFSET(pbitblk[i].bi_pdata, file->data, _ULONG);
+				offset = OFFSET(pbitblk->bi_pdata, file->data, _ULONG);
 				if ((offset + words + words) > filesize)
 				{
 					nf_debugprintf("flip_data: bitblk[%u]: bi_pdata $%lx out of range\n", i, offset);
-					pbitblk[i] = empty_bit;
+					*pbitblk = empty_bit;
 					continue;
 				}
 			}
-			flip_image(words, pbitblk[i].bi_pdata);
+			flip_image(words, pbitblk->bi_pdata);
 		}
 	}
 
@@ -585,15 +585,11 @@ static _BOOL xrsc_flip_rsc(RSCFILE *file, _ULONG filesize)
 	
 #if FLIP_DATA
 	/*
-	 * we access image data as big-endian always,
-	 * so swap it now when saving a file,
+	 * swap it now when saving a file,
 	 * before their pointers are also swapped
 	 */
-	if (HOST_BYTE_ORDER == BYTE_ORDER_BIG_ENDIAN)
-	{
-		if (filesize == 0)
-			xrsc_flip_data(file, filesize);
-	}
+	if (filesize == 0)
+		xrsc_flip_data(file, filesize);
 #endif
 
 	{
@@ -752,19 +748,6 @@ static _BOOL xrsc_flip_rsc(RSCFILE *file, _ULONG filesize)
 			swap_long(ptrindex);
 		}
 	}
-
-#if FLIP_DATA
-	/*
-	 * we access image data as big-endian always,
-	 * so swap it now when loading a file,
-	 * after their pointers have been fixed
-	 */
-	if (HOST_BYTE_ORDER == BYTE_ORDER_BIG_ENDIAN)
-	{
-		if (filesize != 0)
-			xrsc_flip_data(file, filesize);
-	}
-#endif
 
 	return TRUE;
 }
@@ -1256,8 +1239,6 @@ RSCFILE *xrsrc_load(const char *filename, _UWORD flags)
 				rs_iconblk->ib_pmask = (_WORD *)(buf + (uintptr_t)(rs_iconblk->ib_pmask));
 				rs_iconblk->ib_pdata = (_WORD *)(buf + (uintptr_t)(rs_iconblk->ib_pdata));
 				rs_iconblk->ib_ptext = buf + (uintptr_t)rs_iconblk->ib_ptext;
-				W_Fix_Bitmap(rs_iconblk->ib_pmask, rs_iconblk->ib_wicon, rs_iconblk->ib_hicon, 1);
-				W_Fix_Bitmap(rs_iconblk->ib_pdata, rs_iconblk->ib_wicon, rs_iconblk->ib_hicon, 1);
 			}
 		}
 
@@ -1268,7 +1249,6 @@ RSCFILE *xrsrc_load(const char *filename, _UWORD flags)
 			for (UObj = 0; UObj < xrsc_header.rsh_nbb; UObj++, rs_bitblk++)
 			{
 				rs_bitblk->bi_pdata = (_WORD *)(buf + (uintptr_t)(rs_bitblk->bi_pdata));
-				W_Fix_Bitmap(rs_bitblk->bi_pdata, rs_bitblk->bi_wb * 8, rs_bitblk->bi_hl, 1);
 			}
 		}
 
@@ -1527,8 +1507,6 @@ RSCFILE *xrsrc_load(const char *filename, _UWORD flags)
 					dst->ib_ytext = get_word(src + 28);
 					dst->ib_wtext = get_word(src + 30);
 					dst->ib_htext = get_word(src + 32);
-					W_Fix_Bitmap(dst->ib_pmask, dst->ib_wicon, dst->ib_hicon, 1);
-					W_Fix_Bitmap(dst->ib_pdata, dst->ib_wicon, dst->ib_hicon, 1);
 				}
 			}
 		}
@@ -1570,7 +1548,6 @@ RSCFILE *xrsrc_load(const char *filename, _UWORD flags)
 					dst->bi_x = get_word(src + 8);
 					dst->bi_y = get_word(src + 10);
 					dst->bi_color = get_word(src + 12);
-					W_Fix_Bitmap(dst->bi_pdata, dst->bi_wb * 8, dst->bi_hl, 1);
 				}
 			}
 		}
@@ -1830,8 +1807,11 @@ RSCFILE *xrsrc_load(const char *filename, _UWORD flags)
 					p += (size_t)size;
 					cicon->monoblk.ib_pmask = (_WORD *)p;
 					p += (size_t)size;
-					W_Fix_Bitmap(cicon->monoblk.ib_pdata, cicon->monoblk.ib_wicon, cicon->monoblk.ib_hicon, 1);
-					W_Fix_Bitmap(cicon->monoblk.ib_pmask, cicon->monoblk.ib_wicon, cicon->monoblk.ib_hicon, 1);
+					if (swap_flag)
+					{
+						flip_image(size / 2, cicon->monoblk.ib_pdata);
+						flip_image(size / 2, cicon->monoblk.ib_pmask);
+					}
 					/*
 					 * ib_ptext can either be the offset after the iconblk (when less than CICON_STR_SIZE),
 					 * or point into the string area
@@ -1853,6 +1833,7 @@ RSCFILE *xrsrc_load(const char *filename, _UWORD flags)
 					num_cicons = (_LONG)(intptr_t)(cicon->mainlist);
 					if (p > (buf + (size_t)filesize))
 					{
+						report_problem(&xrsc_header, "color icon data out of range", p - buf, &whats_wrong);
 						xrsrc_free(file);
 						return NULL;
 					}
@@ -1889,16 +1870,22 @@ RSCFILE *xrsrc_load(const char *filename, _UWORD flags)
 							p += (size_t)(size * dp->num_planes);
 							dp->col_mask = (_WORD *)p;
 							p += (size_t)size;
-							W_Fix_Bitmap(dp->col_data, cicon->monoblk.ib_wicon, cicon->monoblk.ib_hicon, dp->num_planes);
-							W_Fix_Bitmap(dp->col_mask, cicon->monoblk.ib_wicon, cicon->monoblk.ib_hicon, 1);
+							if (swap_flag)
+							{
+								flip_image(size * dp->num_planes / 2, dp->col_data);
+								flip_image(size / 2, dp->col_mask);
+							}
 							if (dp->sel_data != NULL)
 							{
 								dp->sel_data = (_WORD *)p;
 								p += (size_t)(size * dp->num_planes);
 								dp->sel_mask = (_WORD *)p;
 								p += (size_t)size;
-								W_Fix_Bitmap(dp->sel_data, cicon->monoblk.ib_wicon, cicon->monoblk.ib_hicon, dp->num_planes);
-								W_Fix_Bitmap(dp->sel_mask, cicon->monoblk.ib_wicon, cicon->monoblk.ib_hicon, 1);
+								if (swap_flag)
+								{
+									flip_image(size * dp->num_planes / 2, dp->sel_data);
+									flip_image(size / 2, dp->sel_mask);
+								}
 							} else
 							{
 								dp->sel_data = NULL;
@@ -2036,6 +2023,15 @@ RSCFILE *xrsrc_load(const char *filename, _UWORD flags)
 		}
 	}
 	
+#if FLIP_DATA
+	/*
+	 * swap it now when loading a file,
+	 * after their pointers have been fixed
+	 */
+	if (file->rsc_swap_flag)
+		xrsc_flip_data(file, filesize);
+#endif
+
 	return file;
 }
 
@@ -2045,7 +2041,6 @@ _BOOL xrsrc_free(RSCFILE *file)
 {
 	if (file == NULL)
 		return FALSE;
-	hrelease_objs(file->rs_object, file->header.rsh_nobs);
 	if (file->allocated & RSC_ALLOC_TRINDEX)
 		g_free(file->rs_trindex);
 	if (file->allocated & RSC_ALLOC_OBJECT)

@@ -362,7 +362,7 @@ void mn_bar(OBJECT *tree, _WORD showit, _WORD pid)
 		tree[gl_dabox].ob_height = h;
 		gsx_sclip(&gl_rzero);
 		ob_draw(tree, THEBAR, MAX_DEPTH);
-		gsx_attr(FALSE, MD_REPLACE, BLACK);	/* not xor mode! */
+		gsx_attr(FALSE, MD_REPLACE, G_BLACK);	/* not xor mode! */
 		gsx_cline(0, gl_hbox - 1, gl_width - 1, gl_hbox - 1);
 	} else
 	{
