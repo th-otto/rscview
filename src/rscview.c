@@ -28,8 +28,8 @@ static WS ws;
 /*
  * program options
  */
-static gboolean xml_out = FALSE;
-static gboolean verbose = FALSE;
+static _BOOL xml_out = FALSE;
+static _BOOL verbose = FALSE;
 
 
 void GetTextSize(_WORD *wchar, _WORD *hchar)
@@ -106,7 +106,6 @@ static void clear_screen(char *title)
 	desktop[1].ob_height = gl_hchar + 2;
 	desktop[2].ob_height = gl_hchar + 3;
 	tedinfo.te_ptext = title;
-	return; /* ZZZ */
 	
 	objc_draw(desktop, ROOT, MAX_DEPTH, 0, 0, desk.g_x + desk.g_w, desk.g_y + desk.g_h);
 }
@@ -262,10 +261,53 @@ static _BOOL draw_menu(RSCTREE *tree)
 }
 
 
-static void draw_all_trees(RSCFILE *file)
+static _BOOL draw_string(RSCTREE *tree)
+{
+	/* can't do much here */
+	if (verbose)
+		printf("%s %ld %s\n", rtype_name(tree->rt_type), tree->rt_index, tree->rt_name);
+	return TRUE;
+}
+
+
+static _BOOL draw_alert(RSCTREE *tree)
+{
+	const char *str;
+	_WORD err;
+	_WORD wo[57];
+	_WORD x, y, w, h;
+	
+	str = tree->rt_objects.alert.al_str;	
+	if (str == NULL)
+		return FALSE;
+	
+	clear_screen(tree->rt_name);
+	/*
+	 * call our special version that only displays dialog,
+	 * and does not restore screen
+	 */
+	form_alert_ex(1, str, 1 | (tree->rt_file->rsc_emutos != EMUTOS_NONE ? 2 : 0));
+	/*
+	 * get clipping rect
+	 */
+	vq_extnd(phys_handle, 1, wo);
+	x = wo[45];
+	y = wo[46];
+	w = wo[47] - x + 1;
+	h = wo[48] - y + 1;
+	
+	err = write_png(tree, x, y, w, h);
+
+	form_dial(FMD_FINISH, x, y, w, h, x, y, w, h);
+	
+	return err == 0;
+}
+
+
+static _BOOL draw_all_trees(RSCFILE *file)
 {
 	RSCTREE *tree;
-	char *str;
+	_BOOL ret;
 	
 	FOR_ALL_RSC(file, tree)
 	{
@@ -274,16 +316,16 @@ static void draw_all_trees(RSCFILE *file)
 		case RT_DIALOG:
 		case RT_FREE:
 		case RT_UNKNOWN:
-			draw_dialog(tree);
+			ret &= draw_dialog(tree);
 			break;
 		case RT_MENU:
-			draw_menu(tree);
+			ret &= draw_menu(tree);
 			break;
 		case RT_FRSTR:
-			str = tree->rt_objects.str.fr_str;
+			ret &= draw_string(tree);
 			break;
 		case RT_ALERT:
-			str = tree->rt_objects.alert.al_str;
+			ret &= draw_alert(tree);
 			break;
 		case RT_FRIMG:
 		case RT_MOUSE:
@@ -293,6 +335,7 @@ static void draw_all_trees(RSCFILE *file)
 			break;
 		}
 	}
+	return ret;
 }
 
 
@@ -384,7 +427,8 @@ int main(int argc, char **argv)
 			
 			open_screen();
 			
-			draw_all_trees(file);
+			if (draw_all_trees(file) == FALSE)
+				exit_status = EXIT_FAILURE;
 			
 			close_screen();
 			

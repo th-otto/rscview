@@ -425,7 +425,7 @@ static _WORD crysbind(AESPB *pb)
 	case FORM_ALERT:
 		aestrace("form_alert()");
 		AES_PARAMS(52,1,1,1,0);
-		ret = fm_alert(FM_DEFBUT, (const char *)FM_ASTRING);
+		ret = fm_alert(FM_DEFBUT, (const char *)FM_ASTRING, int_in[1]);
 		break;
 
 	case FORM_ERROR:
@@ -558,7 +558,7 @@ static _WORD crysbind(AESPB *pb)
 	case FSEL_INPUT:
 		aestrace("fs_input()");
 		AES_PARAMS(90,0,2,2,0);
-		ret = fs_input((char *)FS_IPATH, (char *)FS_ISEL, &FS_BUTTON, (char *)NO_CONST(aes_rsc_string[ITEMSLCT]));
+		ret = fs_input((char *)FS_IPATH, (char *)FS_ISEL, &FS_BUTTON, rs_str(ITEMSLCT));
 		break;
 
 	case FSEL_EXINPUT:

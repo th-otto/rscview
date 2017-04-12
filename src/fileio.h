@@ -299,5 +299,5 @@ void err_fcreate(const char *fname);
 void err_rename(const char *oldname, const char *newname);
 
 void set_extension(char *filename, const char *ext);
-_BOOL is_mouseform(RSCTREE *tree);
+_BOOL is_mouseform(BITBLK *bit);
 

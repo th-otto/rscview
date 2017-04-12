@@ -2124,6 +2124,11 @@ void rc_union(const GRECT *p1, GRECT *p2);
 GRECT *array_to_grect (const _WORD *array, GRECT *area);
 _WORD *grect_to_array (const GRECT *area, _WORD *array);
 
+/*
+ * special hacks
+ */
+_WORD form_alert_ex( _WORD fo_adefbttn, const char *fo_astring, _UWORD flags );
+
 EXTERN_C_END
 
 #endif /* __PORTAES_H__ */

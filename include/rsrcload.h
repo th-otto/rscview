@@ -37,15 +37,25 @@ enum emutos {
 	EMUTOS_NONE,
 	EMUTOS_DESK,
 	EMUTOS_ICONS,
-	EMUTOS_GEM
+	EMUTOS_AES
 };
+
+typedef _ULONG CSET[8];
+
+typedef struct _namerule {
+	_UWORD /* _BOOL */ upper;
+	_UWORD /* _BOOL */ lower;
+	_UWORD /* _BOOL */ alpha;
+	_UWORD /* _BOOL */ alnum;
+	_UBYTE add[40];
+	_UBYTE sub[40];
+	CSET charset;
+} NAMERULE;
 
 struct _rscfile {
 	XRS_HEADER header;		/* header from file */
 	char *data;				/* file or memory contents */
-	_BOOL rsc_swap_flag;	/* wether data was swapped when loading */
 	_BOOL rsc_little_endian;
-	_BOOL rsc_xrsc_flag;
 	unsigned int allocated;	/* bitmask of allocated arrays */
 #define RSC_ALLOC_TRINDEX  0x0001
 #define RSC_ALLOC_OBJECT   0x0002
@@ -66,22 +76,36 @@ struct _rscfile {
 	CICONBLK *rs_ciconblk;
 	CICON *rs_cicon;
 	USERBLK *rs_userblk;
-	RSCTREE rsc_treehead;		/* head of resource tree list */
+
 	_LONG rsc_ntrees;			/* number of RSCTREEs */
 	_ULONG rsc_flags;			/* output flags */
 	_ULONG rsc_flags2;			/* output flags */
+	_WORD rsc_namelen;
+	_BOOL rsc_exact;
+	NAMERULE rsc_rule1;
+	NAMERULE rsc_rule2;
+	RSCTREE rsc_treehead;		/* head of resource tree list */
 	_UBYTE rsc_rsxname[FNAMELEN+1];/* name of resource */
 	_UBYTE rsc_rsxfilename[PATH_MAX];	/* full pathname */
+	stringarray rsc_cmnt;
 	enum emutos rsc_emutos;
 	char *rsc_emutos_frstrcond_name;
 	char *rsc_emutos_frstrcond_string;
 	char *rsc_emutos_othercond_name;
 	char *rsc_emutos_othercond_string;
-	stringarray rsc_cmnt;
+	char *rsc_output_prefix;
+	char *rsc_output_basename;
+	_ULONG rsc_date_created;
+	_ULONG rsc_date_changed;
+	_LONG rsc_edition;
+	_BOOL rsc_swap_flag;		/* TRUE if file has been swapped when loading */
+	_BOOL rsc_xrsc_flag;		/* TRUE if we need an extended header */
+	EXTOB_OPTIONS rsc_extob;	/* mode of extended object types */
 	rsc_options rsc_opts;
 	RSC_RSM_CRC rsc_rsm_crc;
 	RSC_RSM_CRC rsc_crc_for_string;
-	EXTOB_OPTIONS rsc_extob;
+	_BOOL had_rsm_hdr;
+	_BOOL need_rsm_hdr;
 	_LONG rsc_nciconblks;		/* number of CICONBLK structs */
 	_LONG rsc_ncicons;			/* number of CICON structs */
 	_LONG rsc_nstrings;         /* total number of strings */

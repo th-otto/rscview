@@ -1,32 +1,32 @@
 /*
- * resource set indices for gem_rsc
+ * resource set indices for gem
  *
  * created by ORCS 2.14
  */
 
 /*
  * Number of Strings:        79
- * Number of Bitblks:        11
+ * Number of Bitblks:        14
  * Number of Iconblks:       0
  * Number of Color Iconblks: 0
  * Number of Color Icons:    0
  * Number of Tedinfos:       14
  * Number of Free Strings:   25
- * Number of Free Images:    11
+ * Number of Free Images:    14
  * Number of Objects:        66
  * Number of Trees:          3
  * Number of Userblks:       0
- * Number of Images:         11
- * Total file size:          5070
+ * Number of Images:         14
+ * Total file size:          5508
  */
 
 #undef RSC_NAME
 #ifndef __ALCYON__
-#define RSC_NAME "gem_rsc"
+#define RSC_NAME "gem"
 #endif
 #undef RSC_ID
-#ifdef gem_rsc
-#define RSC_ID gem_rsc
+#ifdef gem
+#define RSC_ID gem
 #else
 #define RSC_ID 0
 #endif
@@ -38,9 +38,9 @@
 #define NUM_STRINGS 79
 #define NUM_FRSTR 25
 #define NUM_UD 0
-#define NUM_IMAGES 11
-#define NUM_BB 11
-#define NUM_FRIMG 11
+#define NUM_IMAGES 14
+#define NUM_BB 14
+#define NUM_FRIMG 14
 #define NUM_IB 0
 #define NUM_CIB 0
 #define NUM_TI 14
@@ -167,29 +167,35 @@
 
 #define STOPBB                             2 /* Free image */
 
+#define NOTEBB_TOS                         3 /* Free image */
+
+#define QUESTBB_TOS                        4 /* Free image */
+
+#define STOPBB_TOS                         5 /* Free image */
+
 /* ARROW */
-#define MICE00                             3 /* Mouse cursor */
+#define MICE00                             6 /* Mouse cursor */
 
 /* TEXT_CRSR */
-#define MICE01                             4 /* Mouse cursor */
+#define MICE01                             7 /* Mouse cursor */
 
 /* HOURGLASS */
-#define MICE02                             5 /* Mouse cursor */
+#define MICE02                             8 /* Mouse cursor */
 
 /* POINT_HAND */
-#define MICE03                             6 /* Mouse cursor */
+#define MICE03                             9 /* Mouse cursor */
 
 /* FLAT_HAND */
-#define MICE04                             7 /* Mouse cursor */
+#define MICE04                            10 /* Mouse cursor */
 
 /* THIN_CROSS */
-#define MICE05                             8 /* Mouse cursor */
+#define MICE05                            11 /* Mouse cursor */
 
 /* THICK_CROSS */
-#define MICE06                             9 /* Mouse cursor */
+#define MICE06                            12 /* Mouse cursor */
 
 /* OUTLN_CROSS */
-#define MICE07                            10 /* Mouse cursor */
+#define MICE07                            13 /* Mouse cursor */
 
 
 
@@ -202,7 +208,7 @@
 #    define _WORD short
 #  endif
 #endif
-extern _WORD gem_rsc_rsc_load(void);
-extern _WORD gem_rsc_rsc_gaddr(_WORD type, _WORD idx, void *gaddr);
-extern _WORD gem_rsc_rsc_free(void);
+extern _WORD gem_rsc_load(void);
+extern _WORD gem_rsc_gaddr(_WORD type, _WORD idx, void *gaddr);
+extern _WORD gem_rsc_free(void);
 #endif

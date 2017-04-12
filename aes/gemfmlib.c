@@ -237,7 +237,7 @@ _WORD fm_button(OBJECT *tree, _WORD new_obj, _WORD clks, _WORD *pnew_obj)
 			while (tobj != parent)
 			{
 				tstate = ob_fs(tree, tobj, &tflags);
-				if ((tflags & RBUTTON) && ((tstate & SELECTED) || (tobj == new_obj)))
+				if ((tflags & RBUTTON) && ((tstate & SELECTED) || tobj == new_obj))
 				{
 					if (tobj == new_obj)
 						state = tstate |= SELECTED;
@@ -305,7 +305,7 @@ _WORD fm_do(OBJECT *tree, _WORD start_fld)
 	while (cont)
 	{
 		/* position cursor on the selected editing field */
-		if ((next_obj != 0) && (edit_obj != next_obj))
+		if (next_obj != 0 && edit_obj != next_obj)
 		{
 			edit_obj = next_obj;
 			next_obj = 0;
@@ -396,7 +396,7 @@ _WORD fm_show(_WORD string, _WORD level, _WORD arg)
 	ad_alert = rs_str(string);
 	sprintf(D.alert_str, ad_alert, arg);
 	ad_alert = D.alert_str;
-	return fm_alert(level, ad_alert);
+	return fm_alert(level, ad_alert, 0);
 }
 
 

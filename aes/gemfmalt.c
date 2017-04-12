@@ -19,14 +19,6 @@
 #include "aes.h"
 #include "debug.h"
 
-/* TOS standard form_alert() maximum values */
-#define MAX_LINELEN     40
-#define MAX_BUTLEN      10
-#define TOS_MAX_LINELEN 32
-#define TOS_MAX_BUTLEN	10
-#define MAX_LINENUM     5
-#define MAX_BUTNUM      3
-
 #include "gem_rsc.h"
 
 
@@ -34,7 +26,7 @@
 #define INTER_WSPACE 0
 #define INTER_HSPACE 0
 
-static int tos_like = FALSE;
+static int emutos_like = FALSE;
 
 
 /*
@@ -194,6 +186,7 @@ static void fm_build(OBJECT *tree, _BOOL haveicon, _WORD nummsg, _WORD mlenmsg, 
 	if (haveicon)
 	{
 		ich = (aes_rsc_bitblk[NOTEBB]->bi_hl + gl_hchar - 1) / gl_hchar;
+		icw = aes_rsc_bitblk[NOTEBB]->bi_wb;
 		r_set(&ic, 1 + INTER_WSPACE, 1 + INTER_HSPACE, icw, ich);
 		al.g_w += ic.g_w + 1 + INTER_WSPACE;
 		ms.g_x = ic.g_x + ic.g_w + 1 + INTER_WSPACE;
@@ -227,7 +220,7 @@ static void fm_build(OBJECT *tree, _BOOL haveicon, _WORD nummsg, _WORD mlenmsg, 
 	bt.g_y = max(ic.g_y + ic.g_h, nummsg + 1) + 1 + INTER_HSPACE;
 	al.g_h = max(bt.g_y + bt.g_h, ic.g_y + ic.g_h) + 1 + INTER_HSPACE;
 
-	if (tos_like)
+	if (!emutos_like)
 	{
 		i = (mlenbut * numbut) + ((numbut - 1) * 2);
 		i = max(i, mlenmsg);				/* find the max char length */
@@ -239,7 +232,7 @@ static void fm_build(OBJECT *tree, _BOOL haveicon, _WORD nummsg, _WORD mlenmsg, 
 	
 		if (haveicon)
 		{
-			r_set(&ic, 1, 1, 4, ich);
+			r_set(&ic, 1, 1, icw, ich);
 			al.g_w += icw + 1;
 			al.g_h = max(al.g_h, 1 + ich);
 			ms.g_x += icw;
@@ -262,11 +255,11 @@ static void fm_build(OBJECT *tree, _BOOL haveicon, _WORD nummsg, _WORD mlenmsg, 
 			al.g_h += ((gl_hchar / 2) << 8);
 		}
 		tree[ROOT].ob_state = OUTLINED;
-		OBSPEC_SET_FRAMESIZE(tree[ROOT].ob_spec, -1);
+		OBSPEC_SET_FRAMESIZE(tree[ROOT].ob_spec, 1); /* inside 1 */
 	} else
 	{
 		tree[ROOT].ob_state = SHADOWED;
-		OBSPEC_SET_FRAMESIZE(tree[ROOT].ob_spec, -2);
+		OBSPEC_SET_FRAMESIZE(tree[ROOT].ob_spec, 2); /* inside 2 */
 	}
 	
 	/* init. root object */
@@ -307,16 +300,18 @@ static void fm_build(OBJECT *tree, _BOOL haveicon, _WORD nummsg, _WORD mlenmsg, 
 /*
  * AES #52 - form_alert - Display an alert box.
  */
-_WORD fm_alert(_WORD defbut, const char *palstr)
+_WORD fm_alert(_WORD defbut, const char *palstr, _UWORD flags)
 {
 	_WORD i;
 	_WORD inm, nummsg, mlenmsg, numbut, mlenbut, image;
 	OBJECT *tree;
 	GRECT d, t;
+	_BOOL display_only = flags & 1;
 
 	/* init tree pointer */
 	tree = aes_rsc_tree[DIALERT];
-
+	emutos_like = flags & 2;
+	
 	if (gl_aes3d)
 	{
 		_UWORD color;
@@ -345,28 +340,46 @@ _WORD fm_alert(_WORD defbut, const char *palstr)
 
 	if (inm != 0)
 	{
-		switch (inm)
+		if (emutos_like)
 		{
-		case 1:
-			image = NOTEBB;
-			break;
-		case 2:
-			image = QUESTBB;
-			break;
-		default:
-			image = STOPBB;
-			break;
+			switch (inm)
+			{
+			case 1:
+				image = NOTEBB;
+				break;
+			case 2:
+				image = QUESTBB;
+				break;
+			default:
+				image = STOPBB;
+				break;
+			}
+		} else
+		{
+			switch (inm)
+			{
+			case 1:
+				image = NOTEBB_TOS;
+				break;
+			case 2:
+				image = QUESTBB_TOS;
+				break;
+			default:
+				image = STOPBB_TOS;
+				break;
+			}
 		}
 		tree[ALICON].ob_spec.bitblk = (BITBLK *)NO_CONST(aes_rsc_bitblk[image]);
+
+		/* fix up icon, 32x32 */
+		tree[ALICON].ob_type = G_IMAGE;
+		tree[ALICON].ob_width = tree[ALICON].ob_spec.bitblk->bi_wb * 8;
+		tree[ALICON].ob_height = tree[ALICON].ob_spec.bitblk->bi_hl;
 	}
 
 	/* convert to pixels */
 	for (i = 0; i < NUM_ALOBJS; i++)
 		rs_obfix(tree, i);
-
-	/* fix up icon, 32x32 */
-	tree[ALICON].ob_type = G_IMAGE;
-	tree[ALICON].ob_width = tree[ALICON].ob_height = 32;
 
 	if (gl_aes3d)
 	{
@@ -390,12 +403,13 @@ _WORD fm_alert(_WORD defbut, const char *palstr)
 	ob_center(tree, &d);
 
 	/* Fix 2003-09-25: Limit drawing to the screen! */
-	rc_intersect(&gl_rscreen, &d);
+	rc_intersect(&gl_rfull, &d);
 
 	/* save screen underneath the alert */
 	wm_update(BEG_UPDATE);
 	gsx_gclip(&t);
-	bb_save(&d);
+	if (!display_only)
+		bb_save(&d);
 
 	/* draw the alert */
 	gsx_sclip(&d);
@@ -403,14 +417,20 @@ _WORD fm_alert(_WORD defbut, const char *palstr)
 	ctlmouse(TRUE);						/* turn on the mouse    */
 
 	/* let user pick button */
-	i = fm_do(tree, ROOT);
+	if (display_only)
+		i = BUTOFF - 1;
+	else
+		i = fm_do(tree, ROOT);
 
 	ctlmouse(FALSE);					/* back to the way it was */
 
 	/* restore saved screen */
-	gsx_sclip(&d);
-	bb_restore(&d);
-	gsx_sclip(&t);
+	if (!display_only)
+	{
+		gsx_sclip(&d);
+		bb_restore(&d);
+		gsx_sclip(&t);
+	}
 	wm_update(END_UPDATE);
 
 	/* return selection */

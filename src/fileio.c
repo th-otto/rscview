@@ -6,6 +6,7 @@
 #include <ro_mem.h>
 #include "fileio.h"
 #include <rsc.h>
+#include "debug.h"
 
 FILE *ffp = NULL;
 const char *fname;
@@ -77,6 +78,83 @@ _BOOL file_open(const char *filename, const char *mode)
 		return FALSE;
 	fopen_mode = FALSE;
 	return TRUE;
+}
+
+/*** ---------------------------------------------------------------------- ***/
+
+RSCTREE *rsc_tree_index(RSCFILE *file, _UWORD idx, _UWORD type)
+{
+	RSCTREE *tree;
+
+	FOR_ALL_RSC(file, tree)
+	{
+		switch (type)
+		{
+		case RT_UNKNOWN:
+		case RT_FREE:
+		case RT_DIALOG:
+		case RT_MENU:
+			switch (tree->rt_type)
+			{
+			case RT_UNKNOWN:
+			case RT_FREE:
+			case RT_DIALOG:
+			case RT_MENU:
+				if (idx == 0)
+					return tree;
+				idx--;
+				break;
+			}
+			break;
+		case RT_ALERT:
+		case RT_FRSTR:
+			switch (tree->rt_type)
+			{
+			case RT_ALERT:
+			case RT_FRSTR:
+				if (idx == 0)
+					return tree;
+				idx--;
+				break;
+			}
+			break;
+		case RT_FRIMG:
+		case RT_MOUSE:
+			switch (tree->rt_type)
+			{
+			case RT_FRIMG:
+			case RT_MOUSE:
+				if (idx == 0)
+					return tree;
+				idx--;
+				break;
+			}
+			break;
+		case RT_BUBBLEMORE:
+			switch (tree->rt_type)
+			{
+			case RT_BUBBLEMORE:
+				if (idx == 0)
+					return tree;
+				idx--;
+				break;
+			}
+			break;
+		case RT_BUBBLEUSER:
+			switch (tree->rt_type)
+			{
+			case RT_BUBBLEUSER:
+				if (idx == 0)
+					return tree;
+				idx--;
+				break;
+			}
+			break;
+		default:
+			return NULL;
+		}
+	}
+	return NULL;
 }
 
 /*** ---------------------------------------------------------------------- ***/
@@ -272,13 +350,25 @@ static _BOOL rsc_load_trees(RSCFILE *file)
 	_WORD type;
 	RSCTREE *tree;
 	char name[MAXNAMELEN+1];
+	const char *prefix;
 	
 	for (i = 0; i < file->header.rsh_ntree; i++)
 	{
 		OBJECT *ob = file->rs_trindex[i];
-		type = is_menu(ob) ? RT_MENU :
-			   any_exit(ob) ? RT_DIALOG : RT_UNKNOWN;
-		sprintf(name, "TREE%03ld", i + 1);
+		if (is_menu(ob))
+		{
+			type = RT_MENU;
+			prefix = "MENU";
+		} else if (any_exit(ob))
+		{
+			type = RT_DIALOG;
+			prefix = "DIALOG";
+		} else
+		{
+			type = RT_UNKNOWN;
+			prefix = "TREE";
+		}
+		sprintf(name, "%s%03ld", prefix, i + 1);
 		if ((tree = rsc_add_tree(file, type, name, ob)) == NULL)
 		{
 			return FALSE;
@@ -288,8 +378,16 @@ static _BOOL rsc_load_trees(RSCFILE *file)
 	for (i = 0; i < file->header.rsh_nstring; i++)
 	{
 		char *str = file->rs_frstr[i];
-		type = Form_Al_is_Str_Ok(str) ? RT_ALERT : RT_FRSTR;
-		sprintf(name, "STR%03ld", i + 1);
+		if (Form_Al_is_Str_Ok(str))
+		{
+			type = RT_ALERT;
+			prefix = "ALERT";
+		} else
+		{
+			type = RT_FRSTR;
+			prefix = "STR";
+		}
+		sprintf(name, "%s%03ld", prefix, i + 1);
 		if (rsc_add_tree(file, type, name, str) == NULL)
 		{
 			g_free(str);
@@ -300,17 +398,81 @@ static _BOOL rsc_load_trees(RSCFILE *file)
 	for (i = 0; i < file->header.rsh_nimages; i++)
 	{
 		BITBLK *bitblk = file->rs_frimg[i];
-		sprintf(name, "IMAGE%03ld", i + 1);
-		if ((tree = rsc_add_tree(file, RT_FRIMG, name, bitblk)) == NULL)
+		if (is_mouseform(bitblk))
+		{
+			type = RT_MOUSE;
+			prefix = "MOUSE";
+		} else
+		{
+			type = RT_FRIMG;
+			prefix = "IMAGE";
+		}
+		sprintf(name, "%s%03ld", prefix, i + 1);
+		if ((tree = rsc_add_tree(file, type, name, bitblk)) == NULL)
 		{
 			return FALSE;
 		}
-		if (is_mouseform(tree))
-		{
-			tree->rt_type = RT_MOUSE;
-			sprintf(tree->rt_name, "MOUSE%03ld", i + 1);
-		}
 	}
+	return TRUE;
+}
+
+/*** ---------------------------------------------------------------------- ***/
+
+static _BOOL is_emutos_desktop(RSCFILE *file)
+{
+	RSCTREE *tree;
+	OBJECT *ob;
+	
+#define ADDINFO 3
+
+	if (strcasecmp(rsx_basename(file->rsc_rsxname), "desktop") != 0)
+		return FALSE;
+	if ((tree = rsc_tree_index(file, ADDINFO, RT_UNKNOWN)) == NULL || tree->rt_type != RT_DIALOG)
+		return FALSE;
+	ob = tree->rt_objects.dial.di_tree + 2;
+	if (ob->ob_type != G_STRING)
+		return FALSE;
+	if (strcmp(ob->ob_spec.free_string, "- EmuTOS -") != 0)
+		return FALSE;
+	
+#undef ADDINFO
+	return TRUE;
+}
+
+/*** ---------------------------------------------------------------------- ***/
+
+static _BOOL is_emutos_aes(RSCFILE *file)
+{
+	if (strcasecmp(rsx_basename(file->rsc_rsxname), "gem") != 0 &&
+		strcasecmp(rsx_basename(file->rsc_rsxname), "gem_rsc") != 0)
+		return FALSE;
+	/*
+	 * check for exactly 3 dialogs (fileselector, alert template & desktop)
+	 */
+	if (rsc_tree_index(file, 2, RT_DIALOG) == NULL)
+		return FALSE;
+	if (rsc_tree_index(file, 3, RT_DIALOG) != NULL)
+		return FALSE;
+	/*
+	 * check for at least 11 images (3 icons & 8 mouse types)
+	 */
+	if (rsc_tree_index(file, 10, RT_MOUSE) == NULL)
+		return FALSE;
+	return TRUE;
+}
+
+/*** ---------------------------------------------------------------------- ***/
+
+static _BOOL is_emutos_icon(RSCFILE *file)
+{
+	if (strcasecmp(rsx_basename(file->rsc_rsxname), "icon") != 0)
+		return FALSE;
+	if (rsc_tree_index(file, 1, RT_DIALOG) == NULL)
+		return FALSE;
+	if (rsc_tree_index(file, 2, RT_DIALOG) != NULL)
+		return FALSE;
+	if (rsc_tree_index(file, 0, RT_FRSTR) != NULL)
+		return FALSE;
 	return TRUE;
 }
 
@@ -326,5 +488,35 @@ RSCFILE *load_all(const char *filename, _UWORD flags)
 	
 	rsc_load_trees(file);
 	
+	if (is_emutos_desktop(file))
+	{
+		file->rsc_emutos = EMUTOS_DESK;
+		file->rsc_output_prefix = g_strdup("desktop");
+		file->rsc_output_basename = g_strdup("desk_rsc");
+		file->rsc_flags2 |= RF_ROMABLE | RF_IMAGEWORDS;
+		file->rsc_flags |= RF_CSOURCE2;
+		file->rsc_emutos_frstrcond_name = g_strdup("STICNTYP");
+		file->rsc_emutos_frstrcond_string = g_strdup("#ifndef TARGET_192");
+		file->rsc_emutos_othercond_name = g_strdup("ADTTREZ");
+		file->rsc_emutos_othercond_string = g_strdup("#ifndef TARGET_192");
+		nf_debugprintf("EmuTOS desktop resource loaded\n");
+	} else if (is_emutos_icon(file))
+	{
+		file->rsc_emutos = EMUTOS_ICONS;
+		file->rsc_output_prefix = g_strdup("icons");
+		file->rsc_output_basename = g_strdup("icons");
+		file->rsc_flags2 |= RF_ROMABLE | RF_IMAGEWORDS;
+		file->rsc_flags |= RF_CSOURCE2;
+		nf_debugprintf("EmuTOS icons resource loaded\n");
+	} else if (is_emutos_aes(file))
+	{
+		file->rsc_emutos = EMUTOS_AES;
+		file->rsc_output_prefix = g_strdup("gem");
+		file->rsc_output_basename = g_strdup("gem_rsc");
+		file->rsc_flags2 |= RF_ROMABLE | RF_IMAGEWORDS;
+		file->rsc_flags |= RF_CSOURCE2;
+		nf_debugprintf("EmuTOS gem resource loaded\n");
+	}
+		
 	return file; 
 }

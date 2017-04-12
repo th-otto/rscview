@@ -14,6 +14,7 @@ libgem_a_SOURCES = \
 	a_appl_init.c \
 	a_vq_aes.c \
 	\
+	a_form_alert.c \
 	a_form_center.c \
 	a_form_dial.c \
 	\

@@ -10,6 +10,7 @@
 #include <xrsrc.h>
 #include <ro_mem.h>
 #include <fileio.h>
+#include <time.h>
 
 static rsc_options op_rsc_opts = {
 	'@',	/* ted_fillchar */
@@ -277,6 +278,58 @@ void rsc_tree_delete(RSCTREE *tree)
 
 /*** ---------------------------------------------------------------------- ***/
 
+static NAMERULE const op_rule1 = { TRUE, FALSE, TRUE, FALSE, { 0 }, { 0 }, { 0 } };
+static NAMERULE const op_rule2 = { TRUE, FALSE, FALSE, TRUE, "_", { 0 }, { 0 } };
+
+/*** ---------------------------------------------------------------------- ***/
+
+static void rule_bitset(CSET cset, _WORD ch)
+{
+	_WORD i, bit;
+
+	i = ch / 32;
+	bit = ch % 32;
+	cset[i] |= 1l << bit;
+}
+
+/*** ---------------------------------------------------------------------- ***/
+
+static void rule_bitclr(CSET cset, _WORD ch)
+{
+	_WORD i, bit;
+
+	i = ch / 32;
+	bit = ch % 32;
+	cset[i] &= ~(1l << bit);
+}
+
+static void rule_calc(NAMERULE *rule)
+{
+	_WORD i;
+	_UBYTE *p;
+
+	for (i = 0; i < (_WORD)(sizeof(rule->charset) / sizeof(rule->charset[0])); i++)
+		rule->charset[i] = 0;
+	if (rule->alpha || rule->alnum)
+	{
+		for (i = 'A'; i <= 'Z'; i++)
+			rule_bitset(rule->charset, i);
+		for (i = 'a'; i <= 'z'; i++)
+			rule_bitset(rule->charset, i);
+	}
+	if (rule->alnum)
+	{
+		for (i = '0'; i <= '9'; i++)
+			rule_bitset(rule->charset, i);
+	}
+	p = rule->add;
+	while (*p)
+		rule_bitset(rule->charset, *p++ & 0xff);
+	p = rule->sub;
+	while (*p)
+		rule_bitclr(rule->charset, *p++ & 0xff);
+}
+
 void rsc_init_file(RSCFILE *file)
 {
 	file->rsc_ntrees = 0;
@@ -285,17 +338,31 @@ void rsc_init_file(RSCFILE *file)
 	file->rsc_flags = RF_C | RF_RSO | RF_RSC;
 	file->rsc_flags2 = 0;
 	file->rsc_extob.mode = EXTOB_NONE;
+	file->rsc_namelen = MAXNAMELEN;
+	file->rsc_exact = TRUE;
+	file->rsc_rule1 = op_rule1;
+	rule_calc(&file->rsc_rule1);
+	file->rsc_rule2 = op_rule2;
+	rule_calc(&file->rsc_rule2);
 	file->rsc_cmnt = NULL;
 	file->rsc_emutos = EMUTOS_NONE;
 	file->rsc_emutos_frstrcond_name = NULL;
 	file->rsc_emutos_frstrcond_string = NULL;
 	file->rsc_emutos_othercond_name = NULL;
 	file->rsc_emutos_othercond_string = NULL;
+	file->rsc_output_prefix = NULL;
+	file->rsc_output_basename = NULL;
+	file->rsc_date_created = time(NULL);
+	file->rsc_date_changed = 0;
+	file->rsc_edition = 0;
 	file->rsc_swap_flag = FALSE;
+	file->rsc_xrsc_flag = FALSE;
 	file->rsc_opts = op_rsc_opts;
 	file->rsc_rsm_crc = RSC_CRC_NONE;
 	file->rsc_opts.crc_string = FALSE;
 	file->rsc_crc_for_string = RSC_CRC_NONE;
+	file->had_rsm_hdr = FALSE;
+	file->need_rsm_hdr = FALSE;
 }
 
 /*** ---------------------------------------------------------------------- ***/
@@ -797,14 +864,11 @@ void count_trees(RSCFILE *file, XRS_HEADER *xrsc_header, rsc_counter *counter, _
 
 /*** ---------------------------------------------------------------------- ***/
 
-_BOOL is_mouseform(RSCTREE *tree)
+_BOOL is_mouseform(BITBLK *bit)
 {
 	MFORM *mform;
-	BITBLK *bit;
 	
-	if (tree == NULL ||
-		(tree->rt_type != RT_FRIMG && tree->rt_type != RT_MOUSE) ||
-		(bit = tree->rt_objects.bit) == NULL ||
+	if (bit == NULL ||
 		bit->bi_wb != 2 ||
 		bit->bi_hl != 37 ||
 		bit->bi_color < 0 ||

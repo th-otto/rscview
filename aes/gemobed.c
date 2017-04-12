@@ -292,7 +292,7 @@ static _BOOL check(char *in_char, unsigned char valchar)
 	}
 	if (rstr >= 0)
 	{
-		if (instr(*in_char, aes_rsc_string[rstr]))
+		if (instr(*in_char, rs_str(rstr)))
 		{
 			if (upcase)
 				*in_char = toupper(*in_char);

@@ -224,6 +224,7 @@ typedef struct {
 #define RF_NOPVALOPT        0x00000020l
 #define RF_STATIC           0x00000040l
 #define RF_ROMABLE          0x00000080l
+#define RF_IMAGEWORDS       0x00000100l
 
 #define RF_EXTOB_NONE		0x00000000l
 #define RF_EXTOB_ORCS		0x01000000l
@@ -321,5 +322,6 @@ void warn_crc_string_mismatch(const char *filename);
 
 const char *ob_name(RSCFILE *file, OBJECT *tree, _WORD ob);
 const char *ob_cmnt(RSCFILE *file, OBJECT *tree, _WORD ob);
+RSCTREE *rsc_tree_index(RSCFILE *file, _UWORD idx, _UWORD type);
 
 #endif /* __MOBJECT_H__ */

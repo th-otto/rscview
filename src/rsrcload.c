@@ -1807,11 +1807,13 @@ RSCFILE *xrsrc_load(const char *filename, _UWORD flags)
 					p += (size_t)size;
 					cicon->monoblk.ib_pmask = (_WORD *)p;
 					p += (size_t)size;
+#if FLIP_DATA
 					if (swap_flag)
 					{
 						flip_image(size / 2, cicon->monoblk.ib_pdata);
 						flip_image(size / 2, cicon->monoblk.ib_pmask);
 					}
+#endif
 					/*
 					 * ib_ptext can either be the offset after the iconblk (when less than CICON_STR_SIZE),
 					 * or point into the string area
@@ -1870,22 +1872,26 @@ RSCFILE *xrsrc_load(const char *filename, _UWORD flags)
 							p += (size_t)(size * dp->num_planes);
 							dp->col_mask = (_WORD *)p;
 							p += (size_t)size;
+#if FLIP_DATA
 							if (swap_flag)
 							{
 								flip_image(size * dp->num_planes / 2, dp->col_data);
 								flip_image(size / 2, dp->col_mask);
 							}
+#endif
 							if (dp->sel_data != NULL)
 							{
 								dp->sel_data = (_WORD *)p;
 								p += (size_t)(size * dp->num_planes);
 								dp->sel_mask = (_WORD *)p;
 								p += (size_t)size;
+#if FLIP_DATA
 								if (swap_flag)
 								{
 									flip_image(size * dp->num_planes / 2, dp->sel_data);
 									flip_image(size / 2, dp->sel_mask);
 								}
+#endif
 							} else
 							{
 								dp->sel_data = NULL;

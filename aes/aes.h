@@ -216,7 +216,16 @@ _WORD fm_dial(_WORD fmd_type, const GRECT *pi, const GRECT *pt);
 _WORD fm_show(_WORD string, _WORD level, _WORD arg);
 _WORD eralert(_WORD n, _WORD d);
 _BOOL fm_error(_WORD n);
-_WORD fm_alert(_WORD defbut, const char *palstr);
+
+/* TOS standard form_alert() maximum values */
+#define MAX_LINELEN     40
+#define MAX_BUTLEN      10
+#define TOS_MAX_LINELEN 32
+#define TOS_MAX_BUTLEN	10
+#define MAX_LINENUM     5
+#define MAX_BUTNUM      3
+
+_WORD fm_alert(_WORD defbut, const char *palstr, _UWORD flags);
 
 
 /*
@@ -610,7 +619,7 @@ _BOOL deskmain(void);
 #define ct_chgown(a, b) (void)(a); (void)(b)
 #define sound(a, b, c)
 #define fq()
-#define ev_multi(flags, mo1, mo2, count, parm, mebuff, rets) rets[0] = 0, rets[1] = 0, rets[2] = 0, rets[3] = 0, rets[5] = 0, rets[4] = 0x1c0d, MU_KEYBD
+#define ev_multi(flags, mo1, mo2, count, parm, mebuff, rets) (rets[0] = 0, rets[1] = 0, rets[2] = 0, rets[3] = 0, rets[5] = 0, rets[4] = 0x1c0d, MU_KEYBD)
 #define ev_button(a, b, c, rets) rets[0] = 0
 #define ap_rdwr(a, b, c, d) (void)(b)
 #define sh_find(name) 1
