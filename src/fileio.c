@@ -472,26 +472,219 @@ static _BOOL rsc_load_trees(RSCFILE *file)
 /*** ---------------------------------------------------------------------- ***/
 /******************************************************************************/
 
-static _BOOL rso_load(RSCFILE *file, const char *filename, _BOOL *def_found)
+/*
+ *  load a .HRD definition file
+ */
+static _BOOL hrd_entry(HRD_ENTRY *entry, _BOOL *too_long)
 {
-	(void) file;
-	(void) filename;
-	(void) def_found;
-	return FALSE;
+	_UBYTE c;
+	_WORD i;
+
+	INPC(entry->entry_type);
+	INPC(entry->filler);
+	/*
+	 * HRD has all fields in big-endian format
+	 */
+	INPW(entry->tree_index);
+	INPW(entry->ob_index);
+	i = 0;
+	for (;;)
+	{
+		INPC(c);
+		if (c == 0)
+			break;
+		if (i == HRD_NAMELEN)
+		{
+			/*
+			 * RSM seems to write entries with more than
+			 * 16 characters. Interface errors out on them,
+			 * and truncates them. So do we.
+			 */
+			*too_long = TRUE;
+		} else if (i < HRD_NAMELEN)
+		{
+			entry->hrd_name[i] = c;
+		}
+		i++;
+	}
+	if (i > HRD_NAMELEN)
+		i = HRD_NAMELEN;
+	entry->hrd_name[i] = 0;
+	return TRUE;
 }
+
+/*** ---------------------------------------------------------------------- ***/
 
 static _BOOL hrd_load(RSCFILE *file, const char *filename, _BOOL *def_found)
 {
-	(void) file;
-	(void) filename;
-	(void) def_found;
-	return FALSE;
+	HRD_HEADER hrd_header;
+	RSCTREE *tree;
+	OBJECT *ob;
+	_UWORD lasttype;
+	HRD_ENTRY entry;
+	_BOOL too_long = FALSE;
+	
+	fname = filename;
+	if (file_open(filename, "rb") == FALSE)
+		return FALSE;
+	*def_found = TRUE;
+	/*
+	 * HRD has all fields in big-endian format
+	 */
+	INPW(hrd_header.hrd_version);
+	INPW(hrd_header.hrd_flags);
+	INPC(hrd_header.filler1);
+	INPC(hrd_header.hrd_nametype);
+	INPC(hrd_header.filler2);
+	INPC(hrd_header.filler3);
+	if (hrd_header.hrd_version != 1)
+		return FALSE;
+	file->rsc_namelen = min(MAXNAMELEN, HRD_NAMELEN);
+	file->rsc_flags |= RF_HRD;
+	if (hrd_header.hrd_flags & HRD_C)
+		file->rsc_flags |= RF_C;
+	if (hrd_header.hrd_flags & HRD_PASCAL)
+		file->rsc_flags |= RF_PASCAL;
+	if (hrd_header.hrd_flags & HRD_MODULA)
+		file->rsc_flags |= RF_MODULA;
+	/*
+	 * if HRD_VERBOSE or HRD_CSOURCE are set,
+	 * file was definitly written by INTRFACE, KUMA
+	 * does not use these flags.
+	 * Otherwise, if HRD_BASIC, HRD_GFA or HRD_STATIC are set,
+	 * warn later, because those flags are ambigious,
+	 * but interpret them as if being written by Interface.
+	 */
+	if (!(hrd_header.hrd_flags & (HRD_VERBOSE | HRD_CSOURCE)) &&
+		(hrd_header.hrd_flags & (HRD_BASIC | HRD_GFA | HRD_STATIC)))
+	{
+		warn_interface_flags(filename);
+	}
+#define INTERFACE 1
+#if INTERFACE
+	if (hrd_header.hrd_flags & HRD_BASIC)
+		file->rsc_flags |= RF_BASIC;
+	if (hrd_header.hrd_flags & HRD_GFA)
+		file->rsc_flags |= RF_GFA;
+	if (hrd_header.hrd_flags & HRD_STATIC)
+		file->rsc_flags2 |= RF_STATIC;
+#else
+	if (hrd_header.hrd_flags & HRD_WFORTRAN)
+		file->rsc_flags |= RF_FORTRAN;
+	if (hrd_header.hrd_flags & HRD_ASSEMBLER)
+		file->rsc_flags |= RF_ASS;
+	if (hrd_header.hrd_flags & HRD_WBASIC)
+		file->rsc_flags |= RF_BASIC;
+#endif
+#undef INTERFACE
+	if (hrd_header.hrd_flags & HRD_CSOURCE)
+		file->rsc_flags |= RF_CSOURCE2;
+	if (hrd_header.hrd_flags & HRD_VERBOSE)
+		file->rsc_flags |= RF_VERBOSE;
+	switch (hrd_header.hrd_nametype)
+	{
+	case HRD_NAME_UPCASE:
+		file->rsc_rule1.upper = TRUE;
+		file->rsc_rule1.lower = FALSE;
+		file->rsc_rule2.upper = FALSE;
+		file->rsc_rule2.lower = TRUE;
+		break;
+	case HRD_NAME_LOWER:
+		file->rsc_rule1.upper = FALSE;
+		file->rsc_rule1.lower = TRUE;
+		file->rsc_rule2.upper = FALSE;
+		file->rsc_rule2.lower = TRUE;
+		break;
+	case HRD_NAME_UPPER:
+	default:
+		file->rsc_rule1.upper = TRUE;
+		file->rsc_rule1.lower = FALSE;
+		file->rsc_rule2.upper = TRUE;
+		file->rsc_rule2.lower = FALSE;
+		break;
+	}
+	lasttype = (_UWORD)-1;
+	while (hrd_entry(&entry, &too_long) != FALSE)
+	{
+		switch (entry.entry_type)
+		{
+		case HRD_DIALOG:
+			lasttype = RT_DIALOG;
+			goto common;
+		case HRD_MENU:
+			lasttype = RT_MENU;
+			goto common;
+		case HRD_ALERT:
+			lasttype = RT_ALERT;
+			goto common;
+		case HRD_FRSTR:
+			lasttype = RT_FRSTR;
+			goto common;
+		case HRD_FRIMG:
+			lasttype = RT_FRIMG;
+		common:
+			if (entry.ob_index != 0)
+				return FALSE;
+			tree = rsc_tree_index(file, entry.tree_index, lasttype);
+			if (tree != NULL)
+			{
+				tree->rt_type = lasttype;
+				strmaxcpy(tree->rt_name, min(HRD_NAMELEN,MAXNAMELEN) + 1, entry.hrd_name);
+			}
+			break;
+		case HRD_OBJECT:
+			tree = rsc_tree_index(file, entry.tree_index, lasttype);
+			if (tree != NULL)
+			{
+				ob = NULL;
+				switch (tree->rt_type)
+				{
+					case RT_DIALOG:
+					case RT_FREE:
+					case RT_UNKNOWN: ob = tree->rt_objects.dial.di_tree; break;
+					case RT_MENU: ob = tree->rt_objects.menu.mn_tree; break;
+					case RT_FRSTR:
+					case RT_ALERT:
+						break;
+					case RT_FRIMG:
+					case RT_MOUSE:
+						if (is_mouseform(tree->rt_objects.bit))
+							tree->rt_type = lasttype = RT_MOUSE;
+						break;
+					default:
+						warn_def_damaged(filename);
+						file_close(TRUE);
+						return FALSE;
+				}
+				if (ob != NULL)
+				{
+					ob_setname(file, tree, entry.ob_index, entry.hrd_name, min(HRD_NAMELEN,MAXNAMELEN) + 1);
+				}
+			}
+			break;
+		case HRD_EOF:
+			goto eof;
+		case HRD_PREFIX:
+			/* from erd; can't convince interface to produce such an entry */
+			break;
+		default:
+			nf_debugprintf("unknown hrd entry type %u: %-*.*s\n", entry.entry_type, HRD_NAMELEN, HRD_NAMELEN, entry.hrd_name);
+			break;
+		}
+	}
+eof:
+	if (too_long)
+		warn_names_truncated(HRD_NAMELEN);
+	return file_close(TRUE);
 }
 
 /******************************************************************************/
 /*** ---------------------------------------------------------------------- ***/
 /******************************************************************************/
 
+/*
+ *  load a .DFN definition file
+ */
 static _BOOL dfn_nameinfo_read(NAMEINFO *nameinfo)
 {
 	_WORD c, c2;
@@ -734,6 +927,18 @@ static _BOOL rsd_load(RSCFILE *file, const char *filename, _BOOL *def_found)
 		}
 	}
 	return file_close(TRUE);
+}
+
+/******************************************************************************/
+/*** ---------------------------------------------------------------------- ***/
+/******************************************************************************/
+
+static _BOOL rso_load(RSCFILE *file, const char *filename, _BOOL *def_found)
+{
+	(void) file;
+	(void) filename;
+	(void) def_found;
+	return FALSE;
 }
 
 /******************************************************************************/

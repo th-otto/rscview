@@ -21,6 +21,7 @@
 #define HRD_FRIMG	4
 #define HRD_OBJECT	5
 #define HRD_EOF		6
+#define HRD_PREFIX	7
 
 #define HRD_C			0x0001
 #define HRD_PASCAL		0x0002

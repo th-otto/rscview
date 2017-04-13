@@ -111,4 +111,16 @@ void warn_def_damaged(const char *filename)
 	warn("%s: illegal definition file", filename);
 }
 
+/*** ---------------------------------------------------------------------- ***/
+
+void warn_names_truncated(_WORD maxlen)
+{
+	warn("Names truncated (maxlen = %d)", maxlen);
+}
+/*** ---------------------------------------------------------------------- ***/
+
+void warn_interface_flags(const char *filename)
+{
+	warn("%s: some flags have been interpreted as being written by INTRFACE", filename);
+}
 
