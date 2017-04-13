@@ -9,6 +9,7 @@
 #include <s_endian.h>
 #include <time.h>
 #include "fileio.h"
+#include "rsc.h"
 
 static char const default_header1[] = \
 	"<?xml version=\"1.0\" encoding=\"utf-8\" ?>\n"

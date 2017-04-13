@@ -407,7 +407,7 @@ _WORD mn_register(_WORD pid, char *pstr)
 	/* use this to name our process */
 	if (pid == -1)
 	{
-		strlcpy(tmpname, sizeof(tmpname), pstr);
+		strmaxcpy(tmpname, sizeof(tmpname), pstr);
 		p_nameit(rlr, tmpname);
 		return TRUE;
 	}

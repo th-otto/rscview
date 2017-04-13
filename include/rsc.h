@@ -26,5 +26,8 @@ RSC_RSM_CRC rsc_rsm_calc_crc(const void *buf, _ULONG size);
 _BOOL rsc_is_crc_string(const char *str);
 RSC_RSM_CRC rsc_get_crc_string(const char *str);
 void rsc_remove_crc_string(RSCFILE *file);
+void rule_calc(NAMERULE *rule);
+_LONG bitblk_datasize(BITBLK *bit);
+_LONG iconblk_masksize(ICONBLK *icon);
 
 #endif /* __RSC_H__ */

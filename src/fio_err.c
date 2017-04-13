@@ -103,3 +103,12 @@ void warn_crc_string_mismatch(const char *filename)
 {
 	warn("%s: embedded string CRC does not match resource file", filename);
 }
+
+/*** ---------------------------------------------------------------------- ***/
+
+void warn_def_damaged(const char *filename)
+{
+	warn("%s: illegal definition file", filename);
+}
+
+

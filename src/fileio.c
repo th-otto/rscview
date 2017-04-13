@@ -8,6 +8,7 @@
 #include <rsc.h>
 #include <time.h>
 #include "debug.h"
+#include "aesutils.h"
 
 FILE *ffp = NULL;
 const char *fname;
@@ -36,6 +37,54 @@ static _BOOL fopen_mode;
 #define g_extbox		"G_EXTBOX"
 #define g_oblink		"G_OBLINK"
 #define g_unknown		"  ERROR: Unknown type"
+
+#define FREAD(buf, size) if (test_read(buf, size) == FALSE) return FALSE
+#define INPC(x) if (inpc(&(x)) == FALSE) return FALSE
+#define INPW(x) if (inpw(&(x)) == FALSE) return FALSE
+#define INPWC(x) if (inpwc(&(x)) == FALSE) return FALSE
+#define INPL(x) if (inpl(&(x)) == FALSE) return FALSE
+
+/******************************************************************************/
+/*** ---------------------------------------------------------------------- ***/
+/******************************************************************************/
+
+static _BOOL __attribute_noinline__ inpc(_UBYTE *x)
+{
+	int c;
+	
+	if ((c = getc(ffp)) == EOF)
+		return FALSE;
+	*x = (_UBYTE)c;
+	return TRUE;
+}
+
+/*** ---------------------------------------------------------------------- ***/
+
+static _BOOL __attribute_noinline__ inpw(_UWORD *x)
+{
+	_UWORD c1;
+	int c;
+	
+	if ((c = getc(ffp)) == EOF)
+		return FALSE;
+	c1 = c << 8;
+	if ((c = getc(ffp)) == EOF)
+		return FALSE;
+	c1 = (_UWORD)(c1 + (c & 0xff));
+	*x = (_UWORD)c1;
+	return TRUE;
+}
+
+/*** ---------------------------------------------------------------------- ***/
+
+_BOOL test_read(void *buf, size_t size)
+{
+	if (fread(buf, 1, size, ffp) != size || ferror(ffp))
+	{
+		return file_close(FALSE);
+	}
+	return TRUE;
+}
 
 /******************************************************************************/
 /*** ---------------------------------------------------------------------- ***/
@@ -238,8 +287,7 @@ char *rsx_basename(const char *name)
 
 	strcpy(namebuf, name);
 	dotp = strrchr(namebuf, '.');
-	if (dotp != NULL &&
-		(strcasecmp(dotp + 1, "rsc") == 0))
+	if (dotp != NULL && strcasecmp(dotp + 1, "rsc") == 0)
 		*dotp = '\0';
 	return namebuf;
 }
@@ -356,6 +404,7 @@ static _BOOL rsc_load_trees(RSCFILE *file)
 	for (i = 0; i < file->header.rsh_ntree; i++)
 	{
 		OBJECT *ob = file->rs_trindex[i];
+		
 		if (is_menu(ob))
 		{
 			type = RT_MENU;
@@ -374,6 +423,8 @@ static _BOOL rsc_load_trees(RSCFILE *file)
 		{
 			return FALSE;
 		}
+		tree->rt_nobs = Objc_Count(ob, ROOT);
+		tree->rt_obnames = g_new0(char, tree->rt_nobs * (MAXNAMELEN + 1));
 	}
 
 	for (i = 0; i < file->header.rsh_nstring; i++)
@@ -417,7 +468,126 @@ static _BOOL rsc_load_trees(RSCFILE *file)
 	return TRUE;
 }
 
+/******************************************************************************/
 /*** ---------------------------------------------------------------------- ***/
+/******************************************************************************/
+
+static _BOOL rso_load(RSCFILE *file, const char *filename, _BOOL *def_found)
+{
+	(void) file;
+	(void) filename;
+	(void) def_found;
+	return FALSE;
+}
+
+static _BOOL hrd_load(RSCFILE *file, const char *filename, _BOOL *def_found)
+{
+	(void) file;
+	(void) filename;
+	(void) def_found;
+	return FALSE;
+}
+
+static _BOOL dfn_load(RSCFILE *file, const char *filename, _BOOL *def_found)
+{
+	(void) file;
+	(void) filename;
+	(void) def_found;
+	return FALSE;
+}
+
+/*** ---------------------------------------------------------------------- ***/
+
+static _BOOL rsd_nameinfo_read(NAMEINFO *nameinfo)
+{
+	/*
+	 * RSD has all fields in big-endian format
+	 */
+	INPW(nameinfo->na_count);
+	INPW(nameinfo->na_flags);
+	INPC(nameinfo->na_treeidx);
+	INPC(nameinfo->na_obidx);
+	INPC(nameinfo->na_nametype);
+	INPC(nameinfo->na_treetype);
+	FREAD(nameinfo->na_name, RSDNAMELEN);
+	return TRUE;
+}
+
+/*** ---------------------------------------------------------------------- ***/
+
+static _BOOL rsd_load(RSCFILE *file, const char *filename, _BOOL *def_found)
+{
+	NAMEINFO nameinfo;
+	RSCTREE *tree;
+	OBJECT *ob;
+	_WORD i;
+	_UWORD lasttype;
+
+	fname = filename;
+	if (file_open(filename, "rb") == FALSE)
+		return FALSE;
+	*def_found = TRUE;
+
+	if (rsd_nameinfo_read(&nameinfo) == FALSE)
+		return FALSE;
+	file->rsc_flags |= /* nameinfo.na_flags | */ RF_DEF | RF_NRSC;
+	file->rsc_namelen = min(MAXNAMELEN, RSDNAMELEN);
+	lasttype = (_UWORD)-1;
+	for (i = nameinfo.na_count; i--; )
+	{
+		if (nameinfo.na_nametype == 0)
+		{
+			if (nameinfo.na_treeidx != 0)
+				break;
+			tree = rsc_tree_index(file, nameinfo.na_obidx, nameinfo.na_treetype);
+			if (tree != NULL)
+			{
+				tree->rt_type = nameinfo.na_treetype;
+				strmaxcpy(tree->rt_name, min(RSDNAMELEN,MAXNAMELEN) + 1, nameinfo.na_name);
+			}
+			lasttype = nameinfo.na_treetype;
+		} else if (nameinfo.na_nametype == 1)
+		{
+			if (nameinfo.na_treetype != 0)
+				break;
+			tree = rsc_tree_index(file, nameinfo.na_treeidx, lasttype);
+			if (tree != NULL)
+			{
+				ob = NULL;
+				switch (tree->rt_type)
+				{
+					case RT_DIALOG:
+					case RT_FREE:
+					case RT_UNKNOWN: ob = tree->rt_objects.dial.di_tree; break;
+					case RT_MENU: ob = tree->rt_objects.menu.mn_tree; break;
+					case RT_FRSTR:
+					case RT_ALERT:
+					case RT_FRIMG:
+					case RT_MOUSE:
+						break;
+					default:
+						warn_def_damaged(filename);
+						file_close(TRUE);
+						return FALSE;
+				}
+				if (ob != NULL)
+				{
+					ob_setname(file, tree, nameinfo.na_obidx, nameinfo.na_name, min(RSDNAMELEN,MAXNAMELEN) + 1);
+				}
+			}
+		}
+		if (rsd_nameinfo_read(&nameinfo) == FALSE &&
+			(ferror(ffp) || i != 0))
+		{
+			return file_close(FALSE);
+		}
+	}
+	return file_close(TRUE);
+}
+
+/******************************************************************************/
+/*** ---------------------------------------------------------------------- ***/
+/******************************************************************************/
 
 static _BOOL is_emutos_aes(RSCFILE *file)
 {
@@ -726,11 +896,27 @@ static void emutos_aes_fix(RSCFILE *file)
 
 /*** ---------------------------------------------------------------------- ***/
 
-RSCFILE *load_all(const char *filename, _UWORD flags)
+RSCFILE *load_all(const char *file_name, _UWORD flags)
 {
 	RSCFILE *file;
+	char filename[PATH_MAX];
+	_BOOL status;
+	_BOOL def_found;
+	_WORD state;
 	
-	file = xrsrc_load(filename, flags);
+	static struct {
+		const char *extension;
+		_BOOL (*func)(RSCFILE *_file, const char *_filename, _BOOL *def_found);
+		_LONG mask;
+	} const def_tab[] = {
+		{ "rso", rso_load, RF_RSO },
+		{ "hrd", hrd_load, RF_HRD },
+		{ "dfn", dfn_load, RF_DFN },
+		{ "rsd", rsd_load, RF_NRSC },
+		{ "def", rsd_load, RF_DEF },
+	};
+	
+	file = xrsrc_load(file_name, flags);
 	if (file == NULL)
 		return NULL;
 	
@@ -769,6 +955,35 @@ RSCFILE *load_all(const char *filename, _UWORD flags)
 		nf_debugprintf("EmuTOS gem resource loaded\n");
 		emutos_aes_fix(file);
 	}
+	
+	status = FALSE;
+	strcpy(filename, file_name);
+	def_found = FALSE;
+	state = 0;
+	while (def_found == FALSE && status == FALSE && state < (_WORD)(sizeof(def_tab) / sizeof(def_tab[0])))
+	{
+		set_extension(filename, def_tab[state].extension);
+		status = (*(def_tab[state].func))(file, filename, &def_found);
+		status = file_close(status);
+		if (status)
+			file->rsc_flags |= def_tab[state].mask;
+		if (def_found)
+			break;
+		state++;
+	}
+
+	if (!(file->rsc_flags & RF_RSO))
+	{
+		rule_calc(&file->rsc_rule1);
+		rule_calc(&file->rsc_rule2);
+	}
+
+	/*
+	 * Silently remove the CRC string.
+	 * It will be added again when the file is saved.
+	 */
+	if (file->rsc_opts.crc_string)
+		rsc_remove_crc_string(file);
 	
 	return file; 
 }

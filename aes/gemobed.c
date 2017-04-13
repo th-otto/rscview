@@ -344,9 +344,9 @@ _WORD ob_edit(OBJECT *tree, _WORD obj, _WORD in_char, _WORD *idx, _WORD kind)
 	ob_getsp(tree, obj, &edblk);
 
 	/* copy passed in strings to local strings */
-	strlcpy(D.g_tmpstr, sizeof(D.g_tmpstr), edblk.te_ptmplt);
-	strlcpy(D.g_rawstr, sizeof(D.g_rawstr), edblk.te_ptext);
-	len = ii = strlcpy(D.g_valstr, sizeof(D.g_valstr), edblk.te_pvalid);
+	strmaxcpy(D.g_tmpstr, sizeof(D.g_tmpstr), edblk.te_ptmplt);
+	strmaxcpy(D.g_rawstr, sizeof(D.g_rawstr), edblk.te_ptext);
+	len = ii = strmaxcpy(D.g_valstr, sizeof(D.g_valstr), edblk.te_pvalid);
 
 	/* expand out valid str */
 	while (ii > 0 && len < edblk.te_tmplen)

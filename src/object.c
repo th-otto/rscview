@@ -6,6 +6,7 @@
 #include <gem.h>
 #include <object.h>
 #include <ro_mem.h>
+#include "rsc.h"
 
 /*** ---------------------------------------------------------------------- ***/
 

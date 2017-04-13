@@ -11,6 +11,7 @@
 #include <ro_mem.h>
 #include <fileio.h>
 #include <time.h>
+#include "aesutils.h"
 
 static rsc_options op_rsc_opts = {
 	'@',	/* ted_fillchar */
@@ -264,6 +265,7 @@ static void rsc_tree_dispose(RSCTREE *tree)
 		break;
 	}
 	g_free(tree->rt_cmnt);
+	g_free(tree->rt_obnames);
 	g_free(tree);
 }
 
@@ -307,7 +309,7 @@ static void rule_bitclr(CSET cset, _WORD ch)
 	cset[i] &= ~(1l << bit);
 }
 
-static void rule_calc(NAMERULE *rule)
+void rule_calc(NAMERULE *rule)
 {
 	_WORD i;
 	_UBYTE *p;
@@ -502,10 +504,26 @@ void rsc_remove_crc_string(RSCFILE *file)
 
 const char *ob_name(RSCFILE *file, RSCTREE *tree, _WORD ob)
 {
-	UNUSED(file);
-	UNUSED(tree);
-	UNUSED(ob);
-	return NULL;
+	const char *p;
+	
+	if (file == NULL || tree == NULL || ob < 0 || ob >= tree->rt_nobs)
+		return NULL;
+	p = tree->rt_obnames + ob * (MAXNAMELEN + 1);
+	if (*p == '\0')
+		return NULL;
+	return p;
+}
+
+/*** ---------------------------------------------------------------------- ***/
+
+void ob_setname(RSCFILE *file, RSCTREE *tree, _WORD ob, const char *name, size_t maxlen)
+{
+	char *p;
+	
+	if (file == NULL || tree == NULL || ob < 0 || ob >= tree->rt_nobs)
+		return;
+	p = tree->rt_obnames + ob * (MAXNAMELEN + 1);
+	strmaxcpy(p, maxlen, name);
 }
 
 /*** ---------------------------------------------------------------------- ***/
@@ -915,4 +933,3 @@ _BOOL is_mouseform(BITBLK *bit)
 		return FALSE;
 	return TRUE;
 }
-

@@ -4,5 +4,4 @@
 
 #include <portaes.h>
 #include <stdint.h>
-#include <rsc_lib.h>
 #include <rsrcload.h>

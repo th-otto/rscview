@@ -51,7 +51,7 @@ void fs_sget(OBJECT *tree, _WORD obj, char *pstr);
 void inf_fldset(OBJECT *tree, _WORD obj, _UWORD testfld, _UWORD testbit, _UWORD truestate, _UWORD falsestate);
 void merge_str(char *pdst, const char *ptmp, va_list parms);
 _WORD wildcmp(const char *pwild, const char *ptest);
-size_t strlcpy(char *dst, size_t len, const char *src);
+size_t strmaxcpy(char *dst, size_t len, const char *src);
 unsigned int reverse(unsigned int index);
 _BOOL streq(const char *p1, const char *p2);
 _WORD inf_gindex(OBJECT *tree, _UWORD baseobj, _UWORD numobj);

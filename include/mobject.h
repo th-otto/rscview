@@ -117,6 +117,8 @@ struct _rsctree {
 	RSCTREE *rt_next;				/* next in linked list of file */
 	RSCTREE *rt_prev;				/* previous in linked list of file */
 	stringarray rt_cmnt;
+	_WORD rt_nobs;
+	char *rt_obnames;
 };
 
 #define DIAL_TREE(wr) wr_rtree(wr)->rt_objects.dial.di_tree
@@ -323,5 +325,6 @@ void warn_crc_string_mismatch(const char *filename);
 const char *ob_name(RSCFILE *file, RSCTREE *tree, _WORD ob);
 const char *ob_cmnt(RSCFILE *file, RSCTREE *tree, _WORD ob);
 RSCTREE *rsc_tree_index(RSCFILE *file, _UWORD idx, _UWORD type);
+void ob_setname(RSCFILE *file, RSCTREE *tree, _WORD ob, const char *name, size_t maxlen);
 
 #endif /* __MOBJECT_H__ */

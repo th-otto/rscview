@@ -11,6 +11,9 @@
 #include <rsc.h>
 #include "fileio.h"
 
+#undef max
+#define max(a, b) ((a) > (b) ? (a) : (b))
+
 
 #ifndef O_RDONLY
 #  define O_RDONLY 0

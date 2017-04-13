@@ -173,374 +173,366 @@
 #define RS_NIB 0
 #define RS_NBB 2
 #endif
+#define NUM_TI   RS_NTED
+#define NUM_OBS  RS_NOBS
+#define NUM_BB   RS_NBB
+#define NUM_TREE RS_NTREE
 
-#ifdef __GNUC__
-#pragma GCC diagnostic ignored "-Wcast-qual"
-#endif
-
-static TEDINFO rs_tedinfo[NUM_TI];
-static OBJECT rs_object[NUM_OBS];
+static char desktop_string_0[] = N_(" Desk ");
+static char desktop_string_1[] = N_(" File ");
+static char desktop_string_2[] = N_(" View ");
+static char desktop_string_3[] = N_(" Options ");
+static char desktop_string_4[] = N_("  Desktop info...   ");
+static char desktop_string_5[] = "--------------------";
+static char desktop_string_6[] = "1                 ";
+static char desktop_string_7[] = "2                 ";
+static char desktop_string_8[] = "3                 ";
+static char desktop_string_9[] = "4                 ";
+static char desktop_string_10[] = "5                 ";
+static char desktop_string_11[] = "6                 ";
+static char desktop_string_12[] = N_("  Open            ^O ");
+static char desktop_string_13[] = N_("  Info/Rename...  ^I ");
+static char desktop_string_14[] = "---------------------";
+static char desktop_string_15[] = N_("  New Folder...   ^N ");
+static char desktop_string_16[] = N_("  Close           ^U ");
+static char desktop_string_17[] = N_("  Close window    ^W ");
+static char desktop_string_18[] = "---------------------";
+static char desktop_string_19[] = N_("  Delete...       ^D ");
+static char desktop_string_20[] = N_("  Format...          ");
+static char desktop_string_21[] = "---------------------";
+static char desktop_string_22[] = N_("  Execute EmuCON  ^Z ");
+static char desktop_string_23[] = N_("  Shutdown        ^Q ");
+static char desktop_string_24[] = N_("  Show as text  ^T ");
+static char desktop_string_25[] = "-------------------";
+static char desktop_string_26[] = N_("  Sort by name     ");
+static char desktop_string_27[] = N_("  Sort by type     ");
+static char desktop_string_28[] = N_("  Sort by size     ");
+static char desktop_string_29[] = N_("  Sort by date     ");
+static char desktop_string_30[] = N_("  No sort          ");
+static char desktop_string_31[] = N_("  Install icon...         ");
+static char desktop_string_32[] = N_("  Install application...  ");
+static char desktop_string_33[] = N_("  Install devices         ");
+static char desktop_string_34[] = N_("  Remove desktop icon     ");
+static char desktop_string_35[] = "--------------------------";
+static char desktop_string_36[] = N_("  Set preferences...      ");
+static char desktop_string_37[] = N_("  Save desktop...      ^S ");
+static char desktop_string_38[] = N_("  Change resolution... ^R ");
+static char desktop_string_39[] = "0";
+static char desktop_string_40[] = "@2345678901";
+static char desktop_string_41[] = N_("Name: ________.___");
+static char desktop_string_42[] = "fffffffffff";
+static char desktop_string_43[] = "@2345678\0\0";
+static char desktop_string_44[] = N_("Size: __________");
+static char desktop_string_45[] = "9999999999";
+static char desktop_string_46[] = "@54321\0\0\0\0";
+static char desktop_string_47[] = N_("Date: __________");
+static char desktop_string_48[] = "XXXXXXXXXX";
+static char desktop_string_49[] = "@12345";
+static char desktop_string_50[] = N_("Time: __:__ __");
+static char desktop_string_51[] = "9999aa";
+static char desktop_string_52[] = "@1234";
+static char desktop_string_53[] = N_("Number of folders: _____");
+static char desktop_string_54[] = "99999";
+static char desktop_string_55[] = "@8765";
+static char desktop_string_56[] = N_("Number of files: _____");
+static char desktop_string_57[] = "99999";
+static char desktop_string_58[] = N_("Attribute:");
+static char desktop_string_59[] = N_("Read/Write");
+static char desktop_string_60[] = N_("Read-Only");
+static char desktop_string_61[] = N_("OK");
+static char desktop_string_62[] = N_("Cancel");
+static char desktop_string_63[] = N_("DISK INFORMATION");
+static char desktop_string_64[] = "@";
+static char desktop_string_65[] = N_("Drive identifier: _:");
+static char desktop_string_66[] = "A";
+static char desktop_string_67[] = "@2345678901";
+static char desktop_string_68[] = N_("Disk label: ________.___");
+static char desktop_string_69[] = "fffffffffff";
+static char desktop_string_70[] = "@1234";
+static char desktop_string_71[] = N_("Number of folders: _____");
+static char desktop_string_72[] = "99999";
+static char desktop_string_73[] = "@2345";
+static char desktop_string_74[] = N_("Number of files: _____");
+static char desktop_string_75[] = "99999";
+static char desktop_string_76[] = "@7654321\0\0";
+static char desktop_string_77[] = N_("Bytes used: __________");
+static char desktop_string_78[] = "9999999999";
+static char desktop_string_79[] = "@1010101\0\0";
+static char desktop_string_80[] = N_("Bytes available: __________");
+static char desktop_string_81[] = "9999999999";
+static char desktop_string_82[] = N_("OK");
+static char desktop_string_83[] = "- EmuTOS -";
+static char desktop_string_84[] = N_("Version");
+static char desktop_string_85[] = "0.0.0";
+static char desktop_string_86[] = N_("Copyright \275 2001-");
+static char desktop_string_87[] = "9999";
+static char desktop_string_88[] = N_("The EmuTOS development team");
+static char desktop_string_89[] = "http://emutos.sourceforge.net/";
+static char desktop_string_90[] = N_("Based on \'GPLed\' sources");
+static char desktop_string_91[] = "";
+static char desktop_string_92[] = N_("\275 1987 Digital Research, Inc.");
+static char desktop_string_93[] = N_("\275 1999 Caldera Thin Clients, Inc.");
+static char desktop_string_94[] = N_("\275 2001 Lineo, Inc.");
+static char desktop_string_95[] = N_("EmuTOS is distributed under the GPL");
+static char desktop_string_96[] = N_("See doc\\license.txt for details");
+static char desktop_string_97[] = N_("OK");
+static char desktop_string_98[] = N_("OPEN APPLICATION");
+static char desktop_string_99[] = "@2345678901";
+static char desktop_string_100[] = N_("Name: ________.___");
+static char desktop_string_101[] = "fffffffffff";
+static char desktop_string_102[] = N_("Parameters:");
+static char desktop_string_103[] = "@1234567890123456789012345678901234567";
+static char desktop_string_104[] = "______________________________________";
+static char desktop_string_105[] = "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX";
+static char desktop_string_106[] = N_("OK");
+static char desktop_string_107[] = N_("Cancel");
+static char desktop_string_108[] = N_("INSTALL DESKTOP ICON");
+static char desktop_string_109[] = "@";
+static char desktop_string_110[] = N_("Identifier: _:");
+static char desktop_string_111[] = "A";
+static char desktop_string_112[] = "@1234876512\0";
+static char desktop_string_113[] = N_("Label: ____________");
+static char desktop_string_114[] = "XXXXXXXXXXXX";
+static char desktop_string_115[] = N_("Item type:");
+static char desktop_string_116[] = N_("Drive");
+static char desktop_string_117[] = N_("Trash can");
+static char desktop_string_118[] = N_("Printer");
+static char desktop_string_119[] = "\001";
+static char desktop_string_120[] = "\002";
+static char desktop_string_121[] = N_("Icon:");
+static char desktop_string_122[] = N_("OK");
+static char desktop_string_123[] = N_("Skip");
+static char desktop_string_124[] = N_("Cancel");
+static char desktop_string_125[] = N_("INSTALL APPLICATION");
+static char desktop_string_126[] = "@1234876512";
+static char desktop_string_127[] = N_("Application name: ________.___");
+static char desktop_string_128[] = "FFFFFFFFFFF";
+static char desktop_string_129[] = "@1234876512";
+static char desktop_string_130[] = N_("Arguments: ___________");
+static char desktop_string_131[] = "XXXXXXXXXXX";
+static char desktop_string_132[] = "@12";
+static char desktop_string_133[] = N_("Document type: ___");
+static char desktop_string_134[] = "FFF";
+static char desktop_string_135[] = "@1";
+static char desktop_string_136[] = N_("Install as: F__");
+static char desktop_string_137[] = "99";
+static char desktop_string_138[] = N_("Boot status:");
+static char desktop_string_139[] = N_("Auto");
+static char desktop_string_140[] = N_("Normal");
+static char desktop_string_141[] = N_("Application type:");
+static char desktop_string_142[] = "TOS";
+static char desktop_string_143[] = "TTP";
+static char desktop_string_144[] = "GEM";
+static char desktop_string_145[] = "GTP";
+static char desktop_string_146[] = N_("Default dir:");
+static char desktop_string_147[] = N_("Application");
+static char desktop_string_148[] = N_("Window");
+static char desktop_string_149[] = N_("Parameter:");
+static char desktop_string_150[] = N_("Full path");
+static char desktop_string_151[] = N_("File name");
+static char desktop_string_152[] = N_("Install");
+static char desktop_string_153[] = N_("Remove");
+static char desktop_string_154[] = N_("Skip");
+static char desktop_string_155[] = N_("Cancel");
+static char desktop_string_156[] = "0";
+static char desktop_string_157[] = "@234\0";
+static char desktop_string_158[] = N_("Number of folders: _____");
+static char desktop_string_159[] = "99999";
+static char desktop_string_160[] = "@432\0";
+static char desktop_string_161[] = N_("Number of files: _____");
+static char desktop_string_162[] = "99999";
+static char desktop_string_163[] = N_("OK");
+static char desktop_string_164[] = N_("Cancel");
+static char desktop_string_165[] = N_("NAME CONFLICT DURING COPY");
+static char desktop_string_166[] = "@3456354890";
+static char desktop_string_167[] = N_("Current name: ________.___");
+static char desktop_string_168[] = "fffffffffff";
+static char desktop_string_169[] = "@5436354890";
+static char desktop_string_170[] = N_("Copy\'s name: ________.___");
+static char desktop_string_171[] = "fffffffffff";
+static char desktop_string_172[] = N_("OK");
+static char desktop_string_173[] = N_("Skip");
+static char desktop_string_174[] = N_("Stop");
+static char desktop_string_175[] = N_("NEW FOLDER");
+static char desktop_string_176[] = "@1726354890";
+static char desktop_string_177[] = N_("Name: ________.___");
+static char desktop_string_178[] = "fffffffffff";
+static char desktop_string_179[] = N_("OK");
+static char desktop_string_180[] = N_("Cancel");
+static char desktop_string_181[] = N_("SET PREFERENCES");
+static char desktop_string_182[] = N_("Confirm deletes:");
+static char desktop_string_183[] = N_("Yes");
+static char desktop_string_184[] = N_("No");
+static char desktop_string_185[] = N_("Confirm copies:");
+static char desktop_string_186[] = N_("Yes");
+static char desktop_string_187[] = N_("No");
+static char desktop_string_188[] = N_("Confirm overwrites:");
+static char desktop_string_189[] = N_("Yes");
+static char desktop_string_190[] = N_("No");
+static char desktop_string_191[] = N_("Sound effects:");
+static char desktop_string_192[] = N_("On");
+static char desktop_string_193[] = N_("Off");
+static char desktop_string_194[] = N_("More preferences");
+static char desktop_string_195[] = N_("OK");
+static char desktop_string_196[] = N_("Cancel");
+static char desktop_string_197[] = N_("SET PREFERENCES");
+static char desktop_string_198[] = N_("Double-click speed:");
+static char desktop_string_199[] = "1";
+static char desktop_string_200[] = "2";
+static char desktop_string_201[] = "3";
+static char desktop_string_202[] = "4";
+static char desktop_string_203[] = "5";
+static char desktop_string_204[] = N_("To drop down menus:");
+static char desktop_string_205[] = N_("Click");
+static char desktop_string_206[] = N_("No click");
+static char desktop_string_207[] = N_("Time format:");
+static char desktop_string_208[] = N_("Default");
+static char desktop_string_209[] = N_("12H");
+static char desktop_string_210[] = N_("24H");
+static char desktop_string_211[] = N_("Date format:");
+static char desktop_string_212[] = N_("Default");
+static char desktop_string_213[] = N_("MDY");
+static char desktop_string_214[] = N_("DMY");
+static char desktop_string_215[] = N_("OK");
+static char desktop_string_216[] = N_("Cancel");
 #ifndef TARGET_192
-static char desktop_string_space[270];
-#else
-static char desktop_string_space[246];
+static char desktop_string_217[] = N_("SET SCREEN RESOLUTION");
+static char desktop_string_218[] = "ST Low";
+static char desktop_string_219[] = "ST Medium";
+static char desktop_string_220[] = "ST High";
+static char desktop_string_221[] = N_("TT Low");
+static char desktop_string_222[] = N_("TT Medium");
+static char desktop_string_223[] = N_("OK");
+static char desktop_string_224[] = N_("Cancel");
+static char desktop_string_225[] = N_("SET SCREEN RESOLUTION");
+static char desktop_string_226[] = "2    4   16   256";
+static char desktop_string_227[] = "TC";
+static char desktop_string_228[] = "";
+static char desktop_string_229[] = "";
+static char desktop_string_230[] = "";
+static char desktop_string_231[] = "";
+static char desktop_string_232[] = "";
+static char desktop_string_233[] = "";
+static char desktop_string_234[] = "";
+static char desktop_string_235[] = "";
+static char desktop_string_236[] = "";
+static char desktop_string_237[] = "";
+static char desktop_string_238[] = "";
+static char desktop_string_239[] = "";
+static char desktop_string_240[] = "";
+static char desktop_string_241[] = "";
+static char desktop_string_242[] = "";
+static char desktop_string_243[] = "";
+static char desktop_string_244[] = N_("High");
+static char desktop_string_245[] = N_("Medium");
+static char desktop_string_246[] = N_("Low");
+static char desktop_string_247[] = "640 x 480";
+static char desktop_string_248[] = "640 x 240";
+static char desktop_string_249[] = "320 x 480";
+static char desktop_string_250[] = "320 x 240";
+static char desktop_string_251[] = "ST Compatible";
+static char desktop_string_252[] = N_("OK");
+static char desktop_string_253[] = N_("Cancel");
+static char desktop_string_254[] = N_("INSTALL WINDOW ICON");
+static char desktop_string_255[] = "@1234876512";
+static char desktop_string_256[] = N_("Name: ________.___");
+static char desktop_string_257[] = "FFFFFFFFFFF";
+static char desktop_string_258[] = N_("Item type:");
+static char desktop_string_259[] = N_("Folder");
+static char desktop_string_260[] = N_("File");
+static char desktop_string_261[] = "\001";
+static char desktop_string_262[] = "\002";
+static char desktop_string_263[] = N_("Icon:");
+static char desktop_string_264[] = N_("Install");
+static char desktop_string_265[] = N_("Remove");
+static char desktop_string_266[] = N_("Skip");
+static char desktop_string_267[] = N_("Cancel");
+static char desktop_string_268[] = N_("SET SCREEN RESOLUTION");
+static char desktop_string_269[] = N_("Monochrome only");
+static char desktop_string_270[] = "Amiga";
+static char desktop_string_271[] = N_("640x512");
+static char desktop_string_272[] = N_("640x256");
+static char desktop_string_273[] = N_("320x512");
+static char desktop_string_274[] = N_("320x256");
+static char desktop_string_275[] = N_("640x480");
+static char desktop_string_276[] = N_("640x240");
+static char desktop_string_277[] = N_("320x480");
+static char desktop_string_278[] = N_("320x240");
+static char desktop_string_279[] = "Falcon";
+static char desktop_string_280[] = N_("640x200");
+static char desktop_string_281[] = N_("320x400");
+static char desktop_string_282[] = N_("320x200");
+static char desktop_string_283[] = "ST";
+static char desktop_string_284[] = N_("640x400");
+static char desktop_string_285[] = N_("OK");
+static char desktop_string_286[] = N_("Cancel");
+static char desktop_string_287[] = N_("FORMAT FLOPPY DISKETTE");
+static char desktop_string_288[] = N_("Drive:");
+static char desktop_string_289[] = "A";
+static char desktop_string_290[] = "B";
+static char desktop_string_291[] = "\0\0\0\0\0\0\0\0\0\0\0";
+static char desktop_string_292[] = N_("Label: ________.___");
+static char desktop_string_293[] = "fffffffffff";
+static char desktop_string_294[] = N_("Single sided");
+static char desktop_string_295[] = N_("Double sided");
+static char desktop_string_296[] = N_("High density");
+static char desktop_string_297[] = N_("OK");
+static char desktop_string_298[] = N_("Cancel");
 #endif
-
-static char const desktop_string_0[] = N_(" Desk ");
-static char const desktop_string_1[] = N_(" File ");
-static char const desktop_string_2[] = N_(" View ");
-static char const desktop_string_3[] = N_(" Options ");
-static char const desktop_string_4[] = N_("  Desktop info...   ");
-static char const desktop_string_5[] = "--------------------";
-static char const desktop_string_6[] = "1                 ";
-static char const desktop_string_7[] = "2                 ";
-static char const desktop_string_8[] = "3                 ";
-static char const desktop_string_9[] = "4                 ";
-static char const desktop_string_10[] = "5                 ";
-static char const desktop_string_11[] = "6                 ";
-static char const desktop_string_12[] = N_("  Open            ^O ");
-static char const desktop_string_13[] = N_("  Info/Rename...  ^I ");
-static char const desktop_string_14[] = "---------------------";
-static char const desktop_string_15[] = N_("  New Folder...   ^N ");
-static char const desktop_string_16[] = N_("  Close           ^U ");
-static char const desktop_string_17[] = N_("  Close window    ^W ");
-static char const desktop_string_18[] = "---------------------";
-static char const desktop_string_19[] = N_("  Delete...       ^D ");
-static char const desktop_string_20[] = N_("  Format...          ");
-static char const desktop_string_21[] = "---------------------";
-static char const desktop_string_22[] = N_("  Execute EmuCON  ^Z ");
-static char const desktop_string_23[] = N_("  Shutdown        ^Q ");
-static char const desktop_string_24[] = N_("  Show as text  ^T ");
-static char const desktop_string_25[] = "-------------------";
-static char const desktop_string_26[] = N_("  Sort by name     ");
-static char const desktop_string_27[] = N_("  Sort by type     ");
-static char const desktop_string_28[] = N_("  Sort by size     ");
-static char const desktop_string_29[] = N_("  Sort by date     ");
-static char const desktop_string_30[] = N_("  No sort          ");
-static char const desktop_string_31[] = N_("  Install icon...         ");
-static char const desktop_string_32[] = N_("  Install application...  ");
-static char const desktop_string_33[] = N_("  Install devices         ");
-static char const desktop_string_34[] = N_("  Remove desktop icon     ");
-static char const desktop_string_35[] = "--------------------------";
-static char const desktop_string_36[] = N_("  Set preferences...      ");
-static char const desktop_string_37[] = N_("  Save desktop...      ^S ");
-static char const desktop_string_38[] = N_("  Change resolution... ^R ");
-static char const desktop_string_39[] = "0";
-#define desktop_string_40 &desktop_string_space[0]
-static char const desktop_string_41[] = N_("Name: ________.___");
-static char const desktop_string_42[] = "fffffffffff";
-#define desktop_string_43 &desktop_string_space[12]
-static char const desktop_string_44[] = N_("Size: __________");
-static char const desktop_string_45[] = "9999999999";
-#define desktop_string_46 &desktop_string_space[23]
-static char const desktop_string_47[] = N_("Date: __________");
-static char const desktop_string_48[] = "XXXXXXXXXX";
-#define desktop_string_49 &desktop_string_space[34]
-static char const desktop_string_50[] = N_("Time: __:__ __");
-static char const desktop_string_51[] = "9999aa";
-#define desktop_string_52 &desktop_string_space[41]
-static char const desktop_string_53[] = N_("Number of folders: _____");
-static char const desktop_string_54[] = "99999";
-#define desktop_string_55 &desktop_string_space[47]
-static char const desktop_string_56[] = N_("Number of files: _____");
-static char const desktop_string_57[] = "99999";
-static char const desktop_string_58[] = N_("Attribute:");
-static char const desktop_string_59[] = N_("Read/Write");
-static char const desktop_string_60[] = N_("Read-Only");
-static char const desktop_string_61[] = N_("OK");
-static char const desktop_string_62[] = N_("Cancel");
-static char const desktop_string_63[] = N_("DISK INFORMATION");
-#define desktop_string_64 &desktop_string_space[53]
-static char const desktop_string_65[] = N_("Drive identifier: _:");
-static char const desktop_string_66[] = "A";
-#define desktop_string_67 &desktop_string_space[55]
-static char const desktop_string_68[] = N_("Disk label: ________.___");
-static char const desktop_string_69[] = "fffffffffff";
-#define desktop_string_70 &desktop_string_space[67]
-static char const desktop_string_71[] = N_("Number of folders: _____");
-static char const desktop_string_72[] = "99999";
-#define desktop_string_73 &desktop_string_space[73]
-static char const desktop_string_74[] = N_("Number of files: _____");
-static char const desktop_string_75[] = "99999";
-#define desktop_string_76 &desktop_string_space[79]
-static char const desktop_string_77[] = N_("Bytes used: __________");
-static char const desktop_string_78[] = "9999999999";
-#define desktop_string_79 &desktop_string_space[90]
-static char const desktop_string_80[] = N_("Bytes available: __________");
-static char const desktop_string_81[] = "9999999999";
-static char const desktop_string_82[] = N_("OK");
-static char const desktop_string_83[] = "- EmuTOS -";
-static char const desktop_string_84[] = N_("Version");
-static char const desktop_string_85[] = "0.0.0";
-static char const desktop_string_86[] = N_("Copyright \275 2001-");
-static char const desktop_string_87[] = "9999";
-static char const desktop_string_88[] = N_("The EmuTOS development team");
-static char const desktop_string_89[] = "http://emutos.sourceforge.net/";
-static char const desktop_string_90[] = N_("Based on \'GPLed\' sources");
-static char const desktop_string_91[] = "";
-static char const desktop_string_92[] = N_("\275 1987 Digital Research, Inc.");
-static char const desktop_string_93[] = N_("\275 1999 Caldera Thin Clients, Inc.");
-static char const desktop_string_94[] = N_("\275 2001 Lineo, Inc.");
-static char const desktop_string_95[] = N_("EmuTOS is distributed under the GPL");
-static char const desktop_string_96[] = N_("See doc\\license.txt for details");
-static char const desktop_string_97[] = N_("OK");
-static char const desktop_string_98[] = N_("OPEN APPLICATION");
-#define desktop_string_99 &desktop_string_space[101]
-static char const desktop_string_100[] = N_("Name: ________.___");
-static char const desktop_string_101[] = "fffffffffff";
-static char const desktop_string_102[] = N_("Parameters:");
-#define desktop_string_103 &desktop_string_space[113]
-static char const desktop_string_104[] = "______________________________________";
-static char const desktop_string_105[] = "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX";
-static char const desktop_string_106[] = N_("OK");
-static char const desktop_string_107[] = N_("Cancel");
-static char const desktop_string_108[] = N_("INSTALL DESKTOP ICON");
-#define desktop_string_109 &desktop_string_space[152]
-static char const desktop_string_110[] = N_("Identifier: _:");
-static char const desktop_string_111[] = "A";
-#define desktop_string_112 &desktop_string_space[154]
-static char const desktop_string_113[] = N_("Label: ____________");
-static char const desktop_string_114[] = "XXXXXXXXXXXX";
-static char const desktop_string_115[] = N_("Item type:");
-static char const desktop_string_116[] = N_("Drive");
-static char const desktop_string_117[] = N_("Trash can");
-static char const desktop_string_118[] = N_("Printer");
-static char const desktop_string_119[] = "\001";
-static char const desktop_string_120[] = "\002";
-static char const desktop_string_121[] = N_("Icon:");
-static char const desktop_string_122[] = N_("OK");
-static char const desktop_string_123[] = N_("Skip");
-static char const desktop_string_124[] = N_("Cancel");
-static char const desktop_string_125[] = N_("INSTALL APPLICATION");
-#define desktop_string_126 &desktop_string_space[167]
-static char const desktop_string_127[] = N_("Application name: ________.___");
-static char const desktop_string_128[] = "FFFFFFFFFFF";
-#define desktop_string_129 &desktop_string_space[179]
-static char const desktop_string_130[] = N_("Arguments: ___________");
-static char const desktop_string_131[] = "XXXXXXXXXXX";
-#define desktop_string_132 &desktop_string_space[191]
-static char const desktop_string_133[] = N_("Document type: ___");
-static char const desktop_string_134[] = "FFF";
-#define desktop_string_135 &desktop_string_space[195]
-static char const desktop_string_136[] = N_("Install as: F__");
-static char const desktop_string_137[] = "99";
-static char const desktop_string_138[] = N_("Boot status:");
-static char const desktop_string_139[] = N_("Auto");
-static char const desktop_string_140[] = N_("Normal");
-static char const desktop_string_141[] = N_("Application type:");
-static char const desktop_string_142[] = "TOS";
-static char const desktop_string_143[] = "TTP";
-static char const desktop_string_144[] = "GEM";
-static char const desktop_string_145[] = "GTP";
-static char const desktop_string_146[] = N_("Default dir:");
-static char const desktop_string_147[] = N_("Application");
-static char const desktop_string_148[] = N_("Window");
-static char const desktop_string_149[] = N_("Parameter:");
-static char const desktop_string_150[] = N_("Full path");
-static char const desktop_string_151[] = N_("File name");
-static char const desktop_string_152[] = N_("Install");
-static char const desktop_string_153[] = N_("Remove");
-static char const desktop_string_154[] = N_("Skip");
-static char const desktop_string_155[] = N_("Cancel");
-static char const desktop_string_156[] = "0";
-#define desktop_string_157 &desktop_string_space[198]
-static char const desktop_string_158[] = N_("Number of folders: _____");
-static char const desktop_string_159[] = "99999";
-#define desktop_string_160 &desktop_string_space[204]
-static char const desktop_string_161[] = N_("Number of files: _____");
-static char const desktop_string_162[] = "99999";
-static char const desktop_string_163[] = N_("OK");
-static char const desktop_string_164[] = N_("Cancel");
-static char const desktop_string_165[] = N_("NAME CONFLICT DURING COPY");
-#define desktop_string_166 &desktop_string_space[210]
-static char const desktop_string_167[] = N_("Current name: ________.___");
-static char const desktop_string_168[] = "fffffffffff";
-#define desktop_string_169 &desktop_string_space[222]
-static char const desktop_string_170[] = N_("Copy\'s name: ________.___");
-static char const desktop_string_171[] = "fffffffffff";
-static char const desktop_string_172[] = N_("OK");
-static char const desktop_string_173[] = N_("Skip");
-static char const desktop_string_174[] = N_("Stop");
-static char const desktop_string_175[] = N_("NEW FOLDER");
-#define desktop_string_176 &desktop_string_space[234]
-static char const desktop_string_177[] = N_("Name: ________.___");
-static char const desktop_string_178[] = "fffffffffff";
-static char const desktop_string_179[] = N_("OK");
-static char const desktop_string_180[] = N_("Cancel");
-static char const desktop_string_181[] = N_("SET PREFERENCES");
-static char const desktop_string_182[] = N_("Confirm deletes:");
-static char const desktop_string_183[] = N_("Yes");
-static char const desktop_string_184[] = N_("No");
-static char const desktop_string_185[] = N_("Confirm copies:");
-static char const desktop_string_186[] = N_("Yes");
-static char const desktop_string_187[] = N_("No");
-static char const desktop_string_188[] = N_("Confirm overwrites:");
-static char const desktop_string_189[] = N_("Yes");
-static char const desktop_string_190[] = N_("No");
-static char const desktop_string_191[] = N_("Sound effects:");
-static char const desktop_string_192[] = N_("On");
-static char const desktop_string_193[] = N_("Off");
-static char const desktop_string_194[] = N_("More preferences");
-static char const desktop_string_195[] = N_("OK");
-static char const desktop_string_196[] = N_("Cancel");
-static char const desktop_string_197[] = N_("SET PREFERENCES");
-static char const desktop_string_198[] = N_("Double-click speed:");
-static char const desktop_string_199[] = "1";
-static char const desktop_string_200[] = "2";
-static char const desktop_string_201[] = "3";
-static char const desktop_string_202[] = "4";
-static char const desktop_string_203[] = "5";
-static char const desktop_string_204[] = N_("To drop down menus:");
-static char const desktop_string_205[] = N_("Click");
-static char const desktop_string_206[] = N_("No click");
-static char const desktop_string_207[] = N_("Time format:");
-static char const desktop_string_208[] = N_("Default");
-static char const desktop_string_209[] = N_("12H");
-static char const desktop_string_210[] = N_("24H");
-static char const desktop_string_211[] = N_("Date format:");
-static char const desktop_string_212[] = N_("Default");
-static char const desktop_string_213[] = N_("MDY");
-static char const desktop_string_214[] = N_("DMY");
-static char const desktop_string_215[] = N_("OK");
-static char const desktop_string_216[] = N_("Cancel");
+static char desktop_string_299[] = N_("%ld bytes used in %d items.");
+static char desktop_string_300[] = N_("  Show as icons ^T");
+static char desktop_string_301[] = N_("  Show as text  ^T");
+static char desktop_string_302[] = N_("FILE INFORMATION");
+static char desktop_string_303[] = N_("FOLDER INFORMATION");
+static char desktop_string_304[] = N_("COPY FILE(S)");
+static char desktop_string_305[] = N_("MOVE FILE(S)");
+static char desktop_string_306[] = N_("DELETE FILE(S)");
+static char desktop_string_307[] = "am";
+static char desktop_string_308[] = "pm";
+static char desktop_string_309[] = "640 x 400";
+static char desktop_string_310[] = "640 x 200";
+static char desktop_string_311[] = "320 x 400";
+static char desktop_string_312[] = "320 x 200";
+static char desktop_string_313[] = N_("DISK");
+static char desktop_string_314[] = N_("TRASH");
+static char desktop_string_315[] = N_("-More-");
+static char desktop_string_316[] = N_("-End of file-");
+static char desktop_string_317[] = N_("-File read error-");
+static char desktop_string_318[] = N_("[2][Switch resolution?][Yes|No]");
+static char desktop_string_319[] = N_("[2][Show this document?][Show|Cancel]");
+static char desktop_string_320[] = N_("[1][This document type has no|associated application.][  OK  ]");
+static char desktop_string_321[] = N_("[1][The GEM Desktop has no more|windows.  Please close a|window that you are not|using.][  OK  ]");
+static char desktop_string_322[] = N_("[3][You cannot copy a parent folder|into one of its child folders.][  OK  ]");
+static char desktop_string_323[] = N_("[3][Invalid copy operation.][  OK  ]");
+static char desktop_string_324[] = N_("[2][Abort this operation?][  Yes  |  No  ]");
+static char desktop_string_325[] = N_("[2][Do you want to delete all|the files on drive %c: ?][Yes| No ]");
+static char desktop_string_326[] = N_("[1][Sorry, the desktop cannot|install any more icons|or applications.][  OK  ]");
+static char desktop_string_327[] = N_("[2][You cannot create a folder|with that name. Please retry|with a new name, or cancel.][Cancel|Retry]");
+static char desktop_string_328[] = N_("[1][This disk does not have enough|room for this operation.][  OK  ]");
+static char desktop_string_329[] = N_("[3][Cannot create EMUDESK.INF.][  OK  ]");
+static char desktop_string_330[] = N_("[3][You cannot create or|access a folder this far|down the directory path.][  OK  ]");
+static char desktop_string_331[] = N_("[3][You cannot create or access|a file or folder with that|name, because the pathname|is too long.][  OK  ]");
+static char desktop_string_332[] = N_("[1][You cannot open the trash|can icon into a window.][  OK  ]");
+static char desktop_string_333[] = N_("[1][The trash can is used to|permanently delete files|or folders.][  OK  ]");
+static char desktop_string_334[] = N_("[1][You cannot drag applications,|files or folders onto the|Desktop.][  OK  ]");
+static char desktop_string_335[] = N_("[1][You cannot drag the trash can|icon into a window.][  OK  ]");
+static char desktop_string_336[] = N_("[1][You cannot place this|icon over another icon.][  OK  ]");
+static char desktop_string_337[] = N_("[2][Save Desktop?][  OK  |Cancel]");
+static char desktop_string_338[] = N_("[2][Do you want to remove icons|or delete files?][Icons|Files|Cancel]");
+static char desktop_string_339[] = N_("[1][Invalid function key value.][  OK  ]");
+static char desktop_string_340[] = N_("[2][Function key already assigned.|Do you want to reassign it?][  OK  |Cancel]");
+static char desktop_string_341[] = N_("[3][Not enough memory to|initialise EmuDesk.|You must reboot.][OK]");
+static char desktop_string_342[] = N_("[2][%s not found.|Do you want to remove the|icon or locate the icon?][Remove|Locate|Cancel]");
 #ifndef TARGET_192
-static char const desktop_string_217[] = N_("SET SCREEN RESOLUTION");
-static char const desktop_string_218[] = N_("ST Low");
-static char const desktop_string_219[] = N_("ST Medium");
-static char const desktop_string_220[] = N_("ST High");
-static char const desktop_string_221[] = N_("TT Low");
-static char const desktop_string_222[] = N_("TT Medium");
-static char const desktop_string_223[] = N_("OK");
-static char const desktop_string_224[] = N_("Cancel");
-static char const desktop_string_225[] = N_("SET SCREEN RESOLUTION");
-static char const desktop_string_226[] = "2    4   16   256";
-static char const desktop_string_227[] = "TC";
-static char const desktop_string_228[] = "";
-static char const desktop_string_229[] = "";
-static char const desktop_string_230[] = "";
-static char const desktop_string_231[] = "";
-static char const desktop_string_232[] = "";
-static char const desktop_string_233[] = "";
-static char const desktop_string_234[] = "";
-static char const desktop_string_235[] = "";
-static char const desktop_string_236[] = "";
-static char const desktop_string_237[] = "";
-static char const desktop_string_238[] = "";
-static char const desktop_string_239[] = "";
-static char const desktop_string_240[] = "";
-static char const desktop_string_241[] = "";
-static char const desktop_string_242[] = "";
-static char const desktop_string_243[] = "";
-static char const desktop_string_244[] = N_("High");
-static char const desktop_string_245[] = N_("Medium");
-static char const desktop_string_246[] = N_("Low");
-static char const desktop_string_247[] = "640 x 480";
-static char const desktop_string_248[] = "640 x 240";
-static char const desktop_string_249[] = "320 x 480";
-static char const desktop_string_250[] = "320 x 240";
-static char const desktop_string_251[] = N_("ST Compatible");
-static char const desktop_string_252[] = N_("OK");
-static char const desktop_string_253[] = N_("Cancel");
-static char const desktop_string_254[] = N_("INSTALL WINDOW ICON");
-#define desktop_string_255 &desktop_string_space[246]
-static char const desktop_string_256[] = N_("Name: ________.___");
-static char const desktop_string_257[] = "FFFFFFFFFFF";
-static char const desktop_string_258[] = N_("Item type:");
-static char const desktop_string_259[] = N_("Folder");
-static char const desktop_string_260[] = N_("File");
-static char const desktop_string_261[] = "\001";
-static char const desktop_string_262[] = "\002";
-static char const desktop_string_263[] = N_("Icon:");
-static char const desktop_string_264[] = N_("Install");
-static char const desktop_string_265[] = N_("Remove");
-static char const desktop_string_266[] = N_("Skip");
-static char const desktop_string_267[] = N_("Cancel");
-static char const desktop_string_268[] = N_("SET SCREEN RESOLUTION");
-static char const desktop_string_269[] = N_("Monochrome only");
-static char const desktop_string_270[] = N_("Amiga");
-static char const desktop_string_271[] = N_("640x512");
-static char const desktop_string_272[] = N_("640x256");
-static char const desktop_string_273[] = N_("320x512");
-static char const desktop_string_274[] = N_("320x256");
-static char const desktop_string_275[] = N_("640x480");
-static char const desktop_string_276[] = N_("640x240");
-static char const desktop_string_277[] = N_("320x480");
-static char const desktop_string_278[] = N_("320x240");
-static char const desktop_string_279[] = N_("Falcon");
-static char const desktop_string_280[] = N_("640x200");
-static char const desktop_string_281[] = N_("320x400");
-static char const desktop_string_282[] = N_("320x200");
-static char const desktop_string_283[] = N_("ST");
-static char const desktop_string_284[] = N_("640x400");
-static char const desktop_string_285[] = N_("OK");
-static char const desktop_string_286[] = N_("Cancel");
-static char const desktop_string_287[] = N_("FORMAT FLOPPY DISKETTE");
-static char const desktop_string_288[] = N_("Drive:");
-static char const desktop_string_289[] = N_("A");
-static char const desktop_string_290[] = N_("B");
-#define desktop_string_291 &desktop_string_space[258]
-static char const desktop_string_292[] = N_("Label: ________.___");
-static char const desktop_string_293[] = "fffffffffff";
-static char const desktop_string_294[] = N_("Single sided");
-static char const desktop_string_295[] = N_("Double sided");
-static char const desktop_string_296[] = N_("High density");
-static char const desktop_string_297[] = N_("OK");
-static char const desktop_string_298[] = N_("Cancel");
-#endif
-static char const desktop_string_299[] = N_("%ld bytes used in %d items.");
-static char const desktop_string_300[] = N_("  Show as icons ^T");
-static char const desktop_string_301[] = N_("  Show as text  ^T");
-static char const desktop_string_302[] = N_("FILE INFORMATION");
-static char const desktop_string_303[] = N_("FOLDER INFORMATION");
-static char const desktop_string_304[] = N_("COPY FILE(S)");
-static char const desktop_string_305[] = N_("MOVE FILE(S)");
-static char const desktop_string_306[] = N_("DELETE FILE(S)");
-static char const desktop_string_307[] = "am";
-static char const desktop_string_308[] = "pm";
-static char const desktop_string_309[] = "640 x 400";
-static char const desktop_string_310[] = "640 x 200";
-static char const desktop_string_311[] = "320 x 400";
-static char const desktop_string_312[] = "320 x 200";
-static char const desktop_string_313[] = N_("DISK");
-static char const desktop_string_314[] = N_("TRASH");
-static char const desktop_string_315[] = N_("-More-");
-static char const desktop_string_316[] = N_("-End of file-");
-static char const desktop_string_317[] = N_("-File read error-");
-static char const desktop_string_318[] = N_("[2][Switch resolution?][Yes|No]");
-static char const desktop_string_319[] = N_("[2][Show this document?][Show|Cancel]");
-static char const desktop_string_320[] = N_("[1][This document type has no|associated application.][  OK  ]");
-static char const desktop_string_321[] = N_("[1][The GEM Desktop has no more|windows.  Please close a|window that you are not|using.][  OK  ]");
-static char const desktop_string_322[] = N_("[3][You cannot copy a parent folder|into one of its child folders.][  OK  ]");
-static char const desktop_string_323[] = N_("[3][Invalid copy operation.][  OK  ]");
-static char const desktop_string_324[] = N_("[2][Abort this operation?][  Yes  |  No  ]");
-static char const desktop_string_325[] = N_("[2][Do you want to delete all|the files on drive %c: ?][Yes| No ]");
-static char const desktop_string_326[] = N_("[1][Sorry, the desktop cannot|install any more icons|or applications.][  OK  ]");
-static char const desktop_string_327[] = N_("[2][You cannot create a folder|with that name. Please retry|with a new name, or cancel.][Cancel|Retry]");
-static char const desktop_string_328[] = N_("[1][This disk does not have enough|room for this operation.][  OK  ]");
-static char const desktop_string_329[] = N_("[3][Cannot create EMUDESK.INF.][  OK  ]");
-static char const desktop_string_330[] = N_("[3][You cannot create or|access a folder this far|down the directory path.][  OK  ]");
-static char const desktop_string_331[] = N_("[3][You cannot create or access|a file or folder with that|name, because the pathname|is too long.][  OK  ]");
-static char const desktop_string_332[] = N_("[1][You cannot open the trash|can icon into a window.][  OK  ]");
-static char const desktop_string_333[] = N_("[1][The trash can is used to|permanently delete files|or folders.][  OK  ]");
-static char const desktop_string_334[] = N_("[1][You cannot drag applications,|files or folders onto the|Desktop.][  OK  ]");
-static char const desktop_string_335[] = N_("[1][You cannot drag the trash can|icon into a window.][  OK  ]");
-static char const desktop_string_336[] = N_("[1][You cannot place this|icon over another icon.][  OK  ]");
-static char const desktop_string_337[] = N_("[2][Save Desktop?][  OK  |Cancel]");
-static char const desktop_string_338[] = N_("[2][Do you want to remove icons|or delete files?][Icons|Files|Cancel]");
-static char const desktop_string_339[] = N_("[1][Invalid function key value.][  OK  ]");
-static char const desktop_string_340[] = N_("[2][Function key already assigned.|Do you want to reassign it?][  OK  |Cancel]");
-static char const desktop_string_341[] = N_("[3][Not enough memory to|initialise EmuDesk.|You must reboot.][OK]");
-static char const desktop_string_342[] = N_("[2][%s not found.|Do you want to remove the|icon or locate the icon?][Remove|Locate|Cancel]");
-#ifndef TARGET_192
-static char const desktop_string_343[] = N_("[1][Please select icon type.][Desktop|Window|Cancel]");
-static char const desktop_string_344[] = N_("[1][No matching file type.][  OK  ]");
-static char const desktop_string_345[] = N_("[3][Formatting error. The target|disk may be write-protected|or unusable.][Retry|Abort]");
-static char const desktop_string_346[] = N_("[1][This disk has %ld bytes|available to the user.][ Continue | Quit ]");
+static char desktop_string_343[] = N_("[1][Please select icon type.][Desktop|Window|Cancel]");
+static char desktop_string_344[] = N_("[1][No matching file type.][  OK  ]");
+static char desktop_string_345[] = N_("[3][Formatting error. The target|disk may be write-protected|or unusable.][Retry|Abort]");
+static char desktop_string_346[] = N_("[1][This disk has %ld bytes|available to the user.][ Continue | Quit ]");
 #endif
 
 
 /* data of DEICON */
-static _UBYTE const IMAGE0[] = {
+static _UBYTE IMAGE0[] = {
 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
 0x00, 0x00, 0x00, 0x00, 0x00, 0x0B, 0xD0, 0x00, 0x00, 0x0B, 0xD0, 0x00, 0x00, 0x1B, 0xD8, 0x00, 
 0x00, 0x1B, 0xD8, 0x00, 0x00, 0x2B, 0xD4, 0x00, 0x00, 0x3B, 0xDC, 0x00, 0x00, 0x6B, 0xD6, 0x00, 
@@ -550,7 +542,7 @@ static _UBYTE const IMAGE0[] = {
 0x14, 0x03, 0xC0, 0x28, 0x28, 0x03, 0xC0, 0x14, 0x30, 0x03, 0xC0, 0x0C, 0x00, 0x00, 0x00, 0x00, 
 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 
-static _UBYTE const IMAGE1[] = {
+static _UBYTE IMAGE1[] = {
 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
 0x00, 0x00, 0x00, 0x00, 0x00, 0x0B, 0xD0, 0x00, 0x00, 0x0B, 0xD0, 0x00, 0x00, 0x1B, 0xD8, 0x00, 
 0x00, 0x1B, 0xD8, 0x00, 0x00, 0x2B, 0xD4, 0x00, 0x00, 0x3B, 0xDC, 0x00, 0x00, 0x6B, 0xD6, 0x00, 
@@ -561,7 +553,7 @@ static _UBYTE const IMAGE1[] = {
 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 
 
-const char *const desk_rs_fstr[] = {
+char *desk_rs_fstr[] = {
 	desktop_string_299,
 	desktop_string_300,
 	desktop_string_301,
@@ -615,46 +607,46 @@ const char *const desk_rs_fstr[] = {
 };
 
 
-static BITBLK const rs_bitblk[NUM_BB] = {
+static BITBLK rs_bitblk[NUM_BB] = {
 	{ CP IMAGE0, 4, 32, 0, 0, 1 },
 	{ CP IMAGE1, 4, 32, 0, 0, 1 },
 };
 
 
-static TEDINFO const rs_tedinfo_rom[NUM_TI] = {
-	{ (char*)desktop_string_40, (char*)desktop_string_41, (char*)desktop_string_42, IBM, 0, TE_LEFT, 0x1100, 0x0, 0, 12,19 }, /* FFNAME */
-	{ (char*)desktop_string_43, (char*)desktop_string_44, (char*)desktop_string_45, IBM, 0, TE_RIGHT, 0x1100, 0x0, 0, 11,17 }, /* FFSIZE */
-	{ (char*)desktop_string_46, (char*)desktop_string_47, (char*)desktop_string_48, IBM, 0, TE_RIGHT, 0x1100, 0x0, 0, 11,17 }, /* FFDATE */
-	{ (char*)desktop_string_49, (char*)desktop_string_50, (char*)desktop_string_51, IBM, 0, TE_RIGHT, 0x1100, 0x0, 0, 7,15 }, /* FFTIME */
-	{ (char*)desktop_string_52, (char*)desktop_string_53, (char*)desktop_string_54, IBM, 0, TE_RIGHT, 0x1100, 0x0, 0, 6,25 }, /* FFNUMFOL */
-	{ (char*)desktop_string_55, (char*)desktop_string_56, (char*)desktop_string_57, IBM, 0, TE_RIGHT, 0x1100, 0x0, 0, 6,23 }, /* FFNUMFIL */
-	{ (char*)desktop_string_64, (char*)desktop_string_65, (char*)desktop_string_66, IBM, 0, TE_CNTR, 0x1100, 0x0, 0, 2,21 }, /* DIDRIVE */
-	{ (char*)desktop_string_67, (char*)desktop_string_68, (char*)desktop_string_69, IBM, 0, TE_LEFT, 0x1100, 0x0, 0, 12,25 }, /* DIVOLUME */
-	{ (char*)desktop_string_70, (char*)desktop_string_71, (char*)desktop_string_72, IBM, 0, TE_RIGHT, 0x1100, 0x0, 0, 6,25 }, /* DINFOLDS */
-	{ (char*)desktop_string_73, (char*)desktop_string_74, (char*)desktop_string_75, IBM, 0, TE_RIGHT, 0x1100, 0x0, 0, 6,23 }, /* DINFILES */
-	{ (char*)desktop_string_76, (char*)desktop_string_77, (char*)desktop_string_78, IBM, 0, TE_RIGHT, 0x1100, 0x0, 0, 11,23 }, /* DIUSED */
-	{ (char*)desktop_string_79, (char*)desktop_string_80, (char*)desktop_string_81, IBM, 0, TE_RIGHT, 0x1100, 0x0, 0, 11,28 }, /* DIAVAIL */
-	{ (char*)desktop_string_99, (char*)desktop_string_100, (char*)desktop_string_101, IBM, 0, TE_LEFT, 0x1100, 0x0, 0, 12,19 }, /* APPLNAME */
-	{ (char*)desktop_string_103, (char*)desktop_string_104, (char*)desktop_string_105, IBM, 0, TE_LEFT, 0x1100, 0x0, 0, 39,39 }, /* APPLPARM */
-	{ (char*)desktop_string_109, (char*)desktop_string_110, (char*)desktop_string_111, IBM, 0, TE_LEFT, 0x1100, 0x0, 0, 2,15 }, /* ID_ID */
-	{ (char*)desktop_string_112, (char*)desktop_string_113, (char*)desktop_string_114, IBM, 0, TE_LEFT, 0x1100, 0x0, 0, 13,20 }, /* ID_LABEL */
-	{ (char*)desktop_string_126, (char*)desktop_string_127, (char*)desktop_string_128, IBM, 0, TE_LEFT, 0x1100, 0x0, 0, 12,31 }, /* APNAME */
-	{ (char*)desktop_string_129, (char*)desktop_string_130, (char*)desktop_string_131, IBM, 0, TE_LEFT, 0x1100, 0x0, 0, 12,23 }, /* APARGS */
-	{ (char*)desktop_string_132, (char*)desktop_string_133, (char*)desktop_string_134, IBM, 0, TE_LEFT, 0x1100, 0x0, 0, 4,19 }, /* APDOCTYP */
-	{ (char*)desktop_string_135, (char*)desktop_string_136, (char*)desktop_string_137, IBM, 0, TE_LEFT, 0x1100, 0x0, 0, 3,16 }, /* APFUNKEY */
-	{ (char*)desktop_string_157, (char*)desktop_string_158, (char*)desktop_string_159, IBM, 0, TE_RIGHT, 0x1100, 0x0, 0, 6,25 }, /* CDFOLDS */
-	{ (char*)desktop_string_160, (char*)desktop_string_161, (char*)desktop_string_162, IBM, 0, TE_RIGHT, 0x1100, 0x0, 0, 6,23 }, /* CDFILES */
-	{ (char*)desktop_string_166, (char*)desktop_string_167, (char*)desktop_string_168, IBM, 0, TE_LEFT, 0x1100, 0x0, 0, 12,27 }, /* CACURRNA */
-	{ (char*)desktop_string_169, (char*)desktop_string_170, (char*)desktop_string_171, IBM, 0, TE_LEFT, 0x1100, 0x0, 0, 12,26 }, /* CACOPYNA */
-	{ (char*)desktop_string_176, (char*)desktop_string_177, (char*)desktop_string_178, IBM, 0, TE_LEFT, 0x1100, 0x0, 0, 12,19 }, /* MKNAME */
+static TEDINFO rs_tedinfo[NUM_TI] = {
+	{ desktop_string_40, desktop_string_41, desktop_string_42, IBM, 0, TE_LEFT, 0x1100, 0x0, 0, 12,19 }, /* FFNAME */
+	{ desktop_string_43, desktop_string_44, desktop_string_45, IBM, 0, TE_RIGHT, 0x1100, 0x0, 0, 11,17 }, /* FFSIZE */
+	{ desktop_string_46, desktop_string_47, desktop_string_48, IBM, 0, TE_RIGHT, 0x1100, 0x0, 0, 11,17 }, /* FFDATE */
+	{ desktop_string_49, desktop_string_50, desktop_string_51, IBM, 0, TE_RIGHT, 0x1100, 0x0, 0, 7,15 }, /* FFTIME */
+	{ desktop_string_52, desktop_string_53, desktop_string_54, IBM, 0, TE_RIGHT, 0x1100, 0x0, 0, 6,25 }, /* FFNUMFOL */
+	{ desktop_string_55, desktop_string_56, desktop_string_57, IBM, 0, TE_RIGHT, 0x1100, 0x0, 0, 6,23 }, /* FFNUMFIL */
+	{ desktop_string_64, desktop_string_65, desktop_string_66, IBM, 0, TE_CNTR, 0x1100, 0x0, 0, 2,21 }, /* DIDRIVE */
+	{ desktop_string_67, desktop_string_68, desktop_string_69, IBM, 0, TE_LEFT, 0x1100, 0x0, 0, 12,25 }, /* DIVOLUME */
+	{ desktop_string_70, desktop_string_71, desktop_string_72, IBM, 0, TE_RIGHT, 0x1100, 0x0, 0, 6,25 }, /* DINFOLDS */
+	{ desktop_string_73, desktop_string_74, desktop_string_75, IBM, 0, TE_RIGHT, 0x1100, 0x0, 0, 6,23 }, /* DINFILES */
+	{ desktop_string_76, desktop_string_77, desktop_string_78, IBM, 0, TE_RIGHT, 0x1100, 0x0, 0, 11,23 }, /* DIUSED */
+	{ desktop_string_79, desktop_string_80, desktop_string_81, IBM, 0, TE_RIGHT, 0x1100, 0x0, 0, 11,28 }, /* DIAVAIL */
+	{ desktop_string_99, desktop_string_100, desktop_string_101, IBM, 0, TE_LEFT, 0x1100, 0x0, 0, 12,19 }, /* APPLNAME */
+	{ desktop_string_103, desktop_string_104, desktop_string_105, IBM, 0, TE_LEFT, 0x1100, 0x0, 0, 39,39 }, /* APPLPARM */
+	{ desktop_string_109, desktop_string_110, desktop_string_111, IBM, 0, TE_LEFT, 0x1100, 0x0, 0, 2,15 }, /* ID_ID */
+	{ desktop_string_112, desktop_string_113, desktop_string_114, IBM, 0, TE_LEFT, 0x1100, 0x0, 0, 13,20 }, /* ID_LABEL */
+	{ desktop_string_126, desktop_string_127, desktop_string_128, IBM, 0, TE_LEFT, 0x1100, 0x0, 0, 12,31 }, /* APNAME */
+	{ desktop_string_129, desktop_string_130, desktop_string_131, IBM, 0, TE_LEFT, 0x1100, 0x0, 0, 12,23 }, /* APARGS */
+	{ desktop_string_132, desktop_string_133, desktop_string_134, IBM, 0, TE_LEFT, 0x1100, 0x0, 0, 4,19 }, /* APDOCTYP */
+	{ desktop_string_135, desktop_string_136, desktop_string_137, IBM, 0, TE_LEFT, 0x1100, 0x0, 0, 3,16 }, /* APFUNKEY */
+	{ desktop_string_157, desktop_string_158, desktop_string_159, IBM, 0, TE_RIGHT, 0x1100, 0x0, 0, 6,25 }, /* CDFOLDS */
+	{ desktop_string_160, desktop_string_161, desktop_string_162, IBM, 0, TE_RIGHT, 0x1100, 0x0, 0, 6,23 }, /* CDFILES */
+	{ desktop_string_166, desktop_string_167, desktop_string_168, IBM, 0, TE_LEFT, 0x1100, 0x0, 0, 12,27 }, /* CACURRNA */
+	{ desktop_string_169, desktop_string_170, desktop_string_171, IBM, 0, TE_LEFT, 0x1100, 0x0, 0, 12,26 }, /* CACOPYNA */
+	{ desktop_string_176, desktop_string_177, desktop_string_178, IBM, 0, TE_LEFT, 0x1100, 0x0, 0, 12,19 }, /* MKNAME */
 #ifndef TARGET_192
-	{ (char*)desktop_string_255, (char*)desktop_string_256, (char*)desktop_string_257, IBM, 0, TE_LEFT, 0x1100, 0x0, 0, 12,19 }, /* IW_NAME */
-	{ (char*)desktop_string_291, (char*)desktop_string_292, (char*)desktop_string_293, IBM, 6, TE_LEFT, 0x1180, 0x0, -1, 12,20 }, /* FMTLABEL */
+	{ desktop_string_255, desktop_string_256, desktop_string_257, IBM, 0, TE_LEFT, 0x1100, 0x0, 0, 12,19 }, /* IW_NAME */
+	{ desktop_string_291, desktop_string_292, desktop_string_293, IBM, 6, TE_LEFT, 0x1180, 0x0, -1, 12,20 }, /* FMTLABEL */
 #endif
 };
 
 
-static OBJECT const rs_object_rom[NUM_OBS] = {
+static OBJECT rs_object[NUM_OBS] = {
 /* ADMENU */
 
 	{ -1, 1, 7, G_IBOX, OF_NONE, OS_NORMAL, C_UNION(0x0L), 0,0, 80,25 },
@@ -1005,7 +997,7 @@ static OBJECT const rs_object_rom[NUM_OBS] = {
 };
 
 
-static OBJECT *const rs_trindex[NUM_TREE] = {
+static OBJECT *rs_trindex[NUM_TREE] = {
 	&rs_object[0], /* ADMENU */
 	&rs_object[47], /* ADFFINFO */
 	&rs_object[61], /* ADDISKIN */

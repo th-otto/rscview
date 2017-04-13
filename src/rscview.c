@@ -3,6 +3,7 @@
 #include <w_draw.h>
 #include <getopt.h>
 #include <errno.h>
+#include <ctype.h>
 #include "nls.h"
 #include "fileio.h"
 #include "rsc.h"
@@ -112,9 +113,20 @@ static void clear_screen(char *title)
 }
 
 
+static void str_lwr(char *name)
+{
+	while (*name)
+	{
+		*name = tolower(*name);
+		name++;
+	}
+}
+
+
 static _WORD write_png(RSCTREE *tree, _WORD x, _WORD y, _WORD w, _WORD h)
 {
 	_WORD pxy[4];
+	char basename[MAXNAMELEN + 1];
 	char filename[PATH_MAX];
 	_WORD err;
 	
@@ -125,7 +137,9 @@ static _WORD write_png(RSCTREE *tree, _WORD x, _WORD y, _WORD w, _WORD h)
 	pxy[2] = x + w - 1;
 	pxy[3] = y + h - 1;
 	vs_clip(vdi_handle, 1, pxy);
-	sprintf(filename, "%s.png", tree->rt_name);
+	strcpy(basename, tree->rt_name);
+	str_lwr(basename);
+	sprintf(filename, "%s.png", basename);
 	err = v_write_png(vdi_handle, filename);
 	if (err != 0)
 		nf_debugprintf("write_png: %s: %s\n", filename, strerror(err));
