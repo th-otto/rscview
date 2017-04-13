@@ -52,6 +52,13 @@ typedef struct _namerule {
 	CSET charset;
 } NAMERULE;
 
+typedef struct rsc_lang rsc_lang;
+struct rsc_lang {
+	char *id;
+	char *filename;
+	rsc_lang *next;
+};
+	
 struct _rscfile {
 	XRS_HEADER header;		/* header from file */
 	char *data;				/* file or memory contents */
@@ -104,6 +111,7 @@ struct _rscfile {
 	rsc_options rsc_opts;
 	RSC_RSM_CRC rsc_rsm_crc;
 	RSC_RSM_CRC rsc_crc_for_string;
+	rsc_lang *rsc_langs;
 	_BOOL had_rsm_hdr;
 	_BOOL need_rsm_hdr;
 	_LONG rsc_nciconblks;		/* number of CICONBLK structs */

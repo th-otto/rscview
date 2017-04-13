@@ -13,7 +13,7 @@
 #include <time.h>
 #include "aesutils.h"
 
-static rsc_options op_rsc_opts = {
+rsc_options op_rsc_opts = {
 	'@',	/* ted_fillchar */
 	2,		/* menu_leftmargin */
 	1,		/* menu_rightmargin */
@@ -406,6 +406,40 @@ RSCFILE *rsc_new_file(const char *filename, const char *basename)
 
 /*** ---------------------------------------------------------------------- ***/
 
+static void rsc_lang_deletelist(rsc_lang **list)
+{
+	rsc_lang *lang, *next;
+	
+	for (lang = *list; lang; lang = next)
+	{
+		next = lang->next;
+		g_free(lang->id);
+		g_free(lang->filename);
+		g_free(lang);
+	}
+	*list = NULL;
+}
+
+/*** ---------------------------------------------------------------------- ***/
+
+_BOOL rsc_lang_add(rsc_lang **list, const char *id, const char *filename)
+{
+	rsc_lang *lang;
+	
+	while (*list)
+		list = &(*list)->next;
+	lang = g_new(rsc_lang, 1);
+	if (lang == NULL)
+		return FALSE;
+	lang->id = g_strdup(id);
+	lang->filename = g_strdup(filename);
+	lang->next = NULL;
+	*list = lang;
+	return TRUE;
+}
+	
+/*** ---------------------------------------------------------------------- ***/
+
 void rsc_file_delete(RSCFILE *file, _BOOL all)
 {
 	while (file->rsc_ntrees != 0)
@@ -426,9 +460,9 @@ void rsc_file_delete(RSCFILE *file, _BOOL all)
 	{
 #if 0 /* NYI here */
 		rsc_module_deletelist(&file->rsc_modules);
-		rsc_lang_deletelist(&file->rsc_langs);
 		g_free(file->rsc_extensions);
 #endif
+		rsc_lang_deletelist(&file->rsc_langs);
 		g_free(file->rsc_cmnt);
 		g_free(file->rsc_emutos_frstrcond_name);
 		g_free(file->rsc_emutos_frstrcond_string);
@@ -439,9 +473,7 @@ void rsc_file_delete(RSCFILE *file, _BOOL all)
 		g_free(file);
 	} else
 	{
-#if 0 /* NYI here */
 		rsc_lang_deletelist(&file->rsc_langs);
-#endif
 		g_free(file->rsc_cmnt);
 		g_free(file->rsc_emutos_frstrcond_name);
 		g_free(file->rsc_emutos_frstrcond_string);

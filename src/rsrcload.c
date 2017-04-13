@@ -1031,9 +1031,9 @@ RSCFILE *xrsrc_load(const char *filename, _UWORD flags)
 	rsc_init_file(file);
 	strcpy(file->rsc_rsxfilename, filename);
 	strcpy(file->rsc_rsxname, basename(filename));
+	buf += sizeof(RSCFILE);
 	if (error == RSC_OK)
 		file->rsc_rsm_crc = rsc_rsm_calc_crc(buf, filesize);
-	buf += sizeof(RSCFILE);
 	file->data = buf;
 	file->header = xrsc_header;
 	file->rsc_swap_flag = swap_flag;

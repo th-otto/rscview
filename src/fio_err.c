@@ -92,9 +92,9 @@ void warn_cicons(void)
 
 /*** ---------------------------------------------------------------------- ***/
 
-void warn_crc_mismatch(const char *filename)
+void warn_crc_mismatch(const char *filename, RSC_RSM_CRC header_crc, RSC_RSM_CRC file_crc)
 {
-	warn("%s: CRC does not match resource file", filename);
+	warn("%s: CRC $%04x does not match resource file $%04x", filename, header_crc, file_crc);
 }
 
 /*** ---------------------------------------------------------------------- ***/
@@ -124,3 +124,25 @@ void warn_interface_flags(const char *filename)
 	warn("%s: some flags have been interpreted as being written by INTRFACE", filename);
 }
 
+/*** ---------------------------------------------------------------------- ***/
+
+_BOOL ask_tree_notfound(_WORD trindex)
+{
+	fprintf(stdout, "Tree %d not found. Continue", trindex);
+	return TRUE;
+}
+
+/*** ---------------------------------------------------------------------- ***/
+
+_BOOL ask_object_notfound(_LONG ob_index, char *tree_name)
+{
+	fprintf(stdout, "No object #%ld in tree %s. Continue", ob_index, tree_name);
+	return TRUE;
+}
+
+/*** ---------------------------------------------------------------------- ***/
+
+void warn_rso_toonew(void)
+{
+	warn("RSO-File created by newer Version of ORCS");
+}

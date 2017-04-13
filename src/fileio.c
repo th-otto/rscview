@@ -9,6 +9,7 @@
 #include <time.h>
 #include "debug.h"
 #include "aesutils.h"
+#include "rso.h"
 
 FILE *ffp = NULL;
 const char *fname;
@@ -933,12 +934,603 @@ static _BOOL rsd_load(RSCFILE *file, const char *filename, _BOOL *def_found)
 /*** ---------------------------------------------------------------------- ***/
 /******************************************************************************/
 
+/*
+ *  load a .RSO definition file
+ */
+/*
+ * format of RSO file is:
+ *
+ * - header
+ * - file comments
+ * {
+ *	 - tree index
+ *	 - tree type
+ *	 - tree name
+ *	 - tree comments
+ *	 {
+ *	   - object index
+ *	   - object name
+ *	   - object comments
+ *	 }
+ *	 - MARK
+ * }
+ * - MARK
+ *
+ * where
+ *	 strings (names & comments) are stored with len byte & text
+ *	 comments continue until zero length
+ */
+
+static _UWORD checksum;
+
+#define reset_checksum() checksum = 0
+#define add_checksum(c) checksum = (((checksum << 1) | (checksum & 0x8000 ? 1 : 0)) + (c)) & 0xffff
+
+static _BOOL rso_cmntread(stringarray *cmnt)
+{
+	_UBYTE cmntbuf[COMMENTLINES][COMMENTLEN+1];
+	_WORD ncmnt;
+	_UBYTE len, rlen;
+	size_t total;
+	_WORD i;
+	_UBYTE *p;
+	
+	ncmnt = 0;
+	INPC(len);
+	total = 0;
+	while (len != 0)
+	{
+		if (ncmnt < COMMENTLINES)
+		{
+			rlen = len;
+			if (rlen > COMMENTLEN)
+			{
+				/* !!! issue warning comment too long */
+				rlen = COMMENTLEN;
+			}
+			FREAD(cmntbuf[ncmnt], rlen);
+			cmntbuf[ncmnt][rlen] = '\0';
+			ncmnt++;
+			total += rlen + 1;
+		} else
+		{
+			/* !!! issue warning too many lines */
+			rlen = 0;
+		}
+		if (rlen < len)
+			fseek(ffp, len - rlen, SEEK_CUR);
+		INPC(len);
+	}
+	if (total == 0)
+	{
+		*cmnt = NULL;
+		return TRUE;
+	}
+	*cmnt = p = g_new(_UBYTE, total + 1);
+	if (p == NULL)
+		return FALSE;
+	
+	for (i = 0; i < ncmnt; i++)
+	{
+		strcpy(p, cmntbuf[i]);
+		p += strlen(cmntbuf[i]) + 1;
+	}
+	*p = '\0';
+	return TRUE;
+}
+
+/*** ---------------------------------------------------------------------- ***/
+
+static _BOOL rso_nameread(_UBYTE *name, _WORD maxlen)
+{
+	_UBYTE len, rlen;
+
+	INPC(len);
+	rlen = len;
+	if (rlen > maxlen)
+	{
+		/* !!! issue warning, ask to truncate */
+	}
+	if (rlen > MAXNAMELEN)
+	{
+		/* !!! issue warning */
+		rlen = MAXNAMELEN;
+	}
+	FREAD(name, rlen);
+	name[rlen] = '\0';
+	if (rlen < len)
+		fseek(ffp, len - rlen, SEEK_CUR);
+	return TRUE;
+}
+
+/*** ---------------------------------------------------------------------- ***/
+
+static void update_checksum(const unsigned char *buf, _WORD bytes)
+{
+	_WORD i;
+	_UWORD c;
+
+	for (i = bytes; i > 0; )
+	{
+		c = (((_UWORD)buf[0]) << 8) | buf[1];
+		i -= 2;
+		if (i >= 0)
+			c |= buf[1];
+		add_checksum(c);
+		buf += 2;
+	}
+}
+
+/*** ---------------------------------------------------------------------- ***/
+
+static _BOOL __attribute_noinline__ inpwc(_UWORD *x)
+{
+	if (inpw(x) == FALSE)
+		return FALSE;
+	add_checksum(*x);
+	return TRUE;
+}
+
+/*** ---------------------------------------------------------------------- ***/
+
+static _BOOL __attribute_noinline__ inpl(_ULONG *x)
+{
+	_UWORD l1, l2;
+	
+	INPWC(l1);
+	INPWC(l2);
+	*x = ((_ULONG)l1 << 16) + (_ULONG)l2;
+	return TRUE;
+}
+
+/*** ---------------------------------------------------------------------- ***/
+
+static _UBYTE *rso_strread(void)
+{
+	_UWORD len;
+	_UBYTE *str;
+	
+	INPWC(len);
+	if (len == 0)
+		return NULL;
+	str = g_new(char, len + 1);
+	if (str == NULL)
+		return NULL;
+	if (test_read(str, len) == FALSE)
+	{
+		g_free(str);
+		return NULL;
+	}
+	str[len] = '\0';
+	update_checksum(str, len);
+	return str;
+}
+
+/*** ---------------------------------------------------------------------- ***/
+
+static _BOOL rso_read_header(RSO_HEADER *rso_header)
+{
+	memset(rso_header, 0, sizeof(*rso_header));
+	reset_checksum();
+	INPL(rso_header->rso_magic);
+	if (rso_header->rso_magic != RSO_MAGIC)
+	{
+		warn_def_damaged(fname);
+		return FALSE;
+	}
+	INPL(rso_header->rso_hsize);
+	INPWC(rso_header->rso_version);
+	if (rso_header->rso_version == 1)
+		rso_header->rso_hsize = RSO_VER1_SIZE;
+	if ((rso_header->rso_version == 1 && rso_header->rso_hsize != RSO_VER1_SIZE) ||
+		(rso_header->rso_version == 2 && rso_header->rso_hsize != RSO_VER2_SIZE) ||
+		(rso_header->rso_version == 3 && rso_header->rso_hsize != RSO_VER3_SIZE) ||
+		(rso_header->rso_version == 4 && rso_header->rso_hsize != RSO_VER4_SIZE) ||
+		(rso_header->rso_version == 5 && rso_header->rso_hsize != RSO_VER5_SIZE) ||
+		(rso_header->rso_version == 6 && rso_header->rso_hsize != RSO_VER6_SIZE) ||
+		(rso_header->rso_version == 7 && rso_header->rso_hsize != RSO_VER7_SIZE) ||
+		(rso_header->rso_version == 8 && rso_header->rso_hsize != RSO_VER8_SIZE) ||
+		(rso_header->rso_version == 9 && rso_header->rso_hsize != RSO_VER9_SIZE) ||
+		(rso_header->rso_version == 10 && rso_header->rso_hsize < RSO_VER10_MIN_SIZE)
+		)
+	{
+		warn_def_damaged(fname);
+		return FALSE;
+	}
+	INPL(rso_header->rso_size);
+	INPL(rso_header->rso_flags);
+	INPWC(rso_header->rso_namelen);
+	if (rso_header->rso_namelen > MAXNAMELEN)
+	{
+		/* !!! issue warning */
+		rso_header->rso_namelen = MAXNAMELEN;
+	}
+	INPWC(rso_header->rso_rule1.upper);
+	INPWC(rso_header->rso_rule1.lower);
+	INPWC(rso_header->rso_rule1.alpha);
+	INPWC(rso_header->rso_rule1.alnum);
+	FREAD(rso_header->rso_rule1.add, 40); update_checksum(rso_header->rso_rule1.add, 40);
+	FREAD(rso_header->rso_rule1.sub, 40); update_checksum(rso_header->rso_rule1.sub, 40);
+	INPL(rso_header->rso_rule1.charset[0]);
+	INPL(rso_header->rso_rule1.charset[1]);
+	INPL(rso_header->rso_rule1.charset[2]);
+	INPL(rso_header->rso_rule1.charset[3]);
+	INPL(rso_header->rso_rule1.charset[4]);
+	INPL(rso_header->rso_rule1.charset[5]);
+	INPL(rso_header->rso_rule1.charset[6]);
+	INPL(rso_header->rso_rule1.charset[7]);
+
+	INPWC(rso_header->rso_rule2.upper);
+	INPWC(rso_header->rso_rule2.lower);
+	INPWC(rso_header->rso_rule2.alpha);
+	INPWC(rso_header->rso_rule2.alnum);
+	FREAD(rso_header->rso_rule2.add, 40); update_checksum(rso_header->rso_rule2.add, 40);
+	FREAD(rso_header->rso_rule2.sub, 40); update_checksum(rso_header->rso_rule2.sub, 40);
+	INPL(rso_header->rso_rule2.charset[0]);
+	INPL(rso_header->rso_rule2.charset[1]);
+	INPL(rso_header->rso_rule2.charset[2]);
+	INPL(rso_header->rso_rule2.charset[3]);
+	INPL(rso_header->rso_rule2.charset[4]);
+	INPL(rso_header->rso_rule2.charset[5]);
+	INPL(rso_header->rso_rule2.charset[6]);
+	INPL(rso_header->rso_rule2.charset[7]);
+
+	rso_header->rso_ted_fillchar = op_rsc_opts.ted_fillchar;
+	rso_header->rso_edition = 1;
+	rso_header->rso_date_created = time(NULL);
+	rso_header->rso_date_changed = time(NULL);
+	rso_header->rso_menu_leftmargin = op_rsc_opts.menu_leftmargin;
+	rso_header->rso_menu_rightmargin = op_rsc_opts.menu_rightmargin;
+	rso_header->rso_menu_minspace = op_rsc_opts.menu_minspace;
+	rso_header->rso_menu_fillspace = op_rsc_opts.menu_fillspace;
+	rso_header->rso_flags2 = 0;
+	rso_header->rso_languages = 0;
+	rso_header->rso_rsm_crc = RSC_CRC_NONE;
+	rso_header->rso_modules = NULL;
+	rso_header->rso_langs = NULL;
+	
+	if (rso_header->rso_version >= 2)
+	{
+		if (rso_header->rso_version < 5)
+		{
+			_UWORD date, time;
+			
+			/* old format with dos date/time; should not happen anymore */
+			INPWC(date);
+			INPWC(time);
+			INPWC(date);
+			INPWC(time);
+		} else
+		{
+			INPL(rso_header->rso_date_created);
+			INPL(rso_header->rso_date_changed);
+		}
+		if (rso_header->rso_version >= 6)
+		{
+			INPWC(rso_header->rso_ted_fillchar);
+		}
+		if (rso_header->rso_version >= 7)
+		{
+			INPW(rso_header->rso_menu_leftmargin);
+			INPW(rso_header->rso_menu_rightmargin);
+			INPW(rso_header->rso_menu_minspace);
+			INPW(rso_header->rso_menu_fillspace);
+		}
+		if (rso_header->rso_version >= 8)
+		{
+			INPL(rso_header->rso_flags2);
+			INPL(rso_header->rso_languages);
+			/*
+			 * fix 2.11 bug which saved the unitialized memory pattern
+			 */
+			if (rso_header->rso_flags2 == 0xbbbbbbbbUL)
+				rso_header->rso_flags2 = 0;
+			if (rso_header->rso_languages == 0xbbbbbbbbUL)
+				rso_header->rso_languages = 0;
+		}
+		if (rso_header->rso_version >= 9)
+		{
+			FREAD(rso_header->rso_overlay, 32);
+			update_checksum(rso_header->rso_overlay, 32);
+		}
+		if (rso_header->rso_version >= 10)
+		{
+			_UWORD type;
+			_UWORD active;
+			rsc_module *mod;
+			char *id, *filename;
+			
+			INPWC(rso_header->rso_rsm_crc);
+			for (;;)
+			{
+				INPWC(type);
+				if (type == MOD_UNKNOWN)
+					break;
+				INPWC(active);
+				mod = g_new0(rsc_module, 1);
+				if (mod == NULL)
+					return FALSE;
+				mod->type = (module_type)type;
+				mod->id = rso_strread();
+				mod->name = rso_strread();
+				mod->param1 = rso_strread();
+				mod->param2 = rso_strread();
+				mod->param3 = rso_strread();
+				mod->param4 = rso_strread();
+				mod->param5 = rso_strread();
+				mod->active = active;
+				mod->for_all_layers = FALSE;
+				mod->next = rso_header->rso_modules;
+				rso_header->rso_modules = mod;
+			}
+			while ((id = rso_strread()) != NULL)
+			{
+				filename = rso_strread();
+				if (rsc_lang_add(&rso_header->rso_langs, id, filename) == FALSE)
+					return FALSE;
+			}
+		}
+		
+		INPL(rso_header->rso_edition);
+	}
+
+	INPW(rso_header->rso_checksum);
+	if (rso_header->rso_version > RSO_VERSION)
+	{
+		warn_rso_toonew();
+		fseek(ffp, rso_header->rso_hsize, 0);
+	} else
+	{
+		if (checksum != rso_header->rso_checksum)
+		{
+			warn_def_damaged(fname);
+			return FALSE;
+		}
+	}
+	
+	if (rso_header->rso_version == 1)
+		rso_header->rso_hsize = 0;
+	
+	return TRUE;
+}
+
+/*** ---------------------------------------------------------------------- ***/
+
+static _BOOL rso_obtree(RSCFILE *file, CONST _UBYTE *filename, RSCTREE *tree)
+{
+	_UBYTE namebuf[MAXNAMELEN+1];
+	stringarray cmntbuf;
+	_UWORD obindex;
+
+	INPW(obindex);
+	while (obindex != RSO_ENDMARK)
+	{
+		if (rso_nameread(namebuf, file->rsc_namelen) == FALSE ||
+			rso_cmntread(&cmntbuf) == FALSE)
+		{
+			warn_def_damaged(filename);
+			file_close(TRUE);
+			return FALSE;
+		}
+		if (tree == NULL || ob_setname(file, tree, obindex, namebuf, MAXNAMELEN+1) == FALSE)
+		{
+			g_free(cmntbuf);
+			if (tree != NULL && ask_object_notfound(obindex, tree->rt_name) == FALSE)
+			{
+				file_close(TRUE);
+				return FALSE;
+			}
+		}
+		INPW(obindex);
+	}
+	return TRUE;
+}
+
+/*** ---------------------------------------------------------------------- ***/
+
 static _BOOL rso_load(RSCFILE *file, const char *filename, _BOOL *def_found)
 {
-	(void) file;
-	(void) filename;
-	(void) def_found;
-	return FALSE;
+	RSCTREE *tree;
+	RSO_HEADER rso_header;
+	_UWORD trindex;
+	_UWORD trtype;
+	_ULONG mask;
+	_UBYTE namebuf[MAXNAMELEN+1];
+	stringarray cmntbuf;
+	
+	fname = filename;
+	if (file_open(filename, "rb") == FALSE)
+		return FALSE;
+	*def_found = TRUE;
+
+	if (rso_read_header(&rso_header) == FALSE)
+		return FALSE;
+
+	if (rso_header.rso_version < 4)
+		rso_header.rso_flags |= EXTOB_TO_RF(EXTOB_ORCS);
+	if (rso_header.rso_version >= 2)
+	{
+		file->rsc_date_created = rso_header.rso_date_created;
+		file->rsc_date_changed = rso_header.rso_date_changed;
+		file->rsc_edition = rso_header.rso_edition;
+	}
+	
+	/*
+	 * convert old-style RSO file which had neither RSC nor RSX flag set
+	 */
+	mask = RF_RSC | RF_RSX;
+	if ((rso_header.rso_flags & mask) != 0)
+		mask = 0;
+	file->rsc_flags = (file->rsc_flags & mask) | (rso_header.rso_flags & ~RF_EXTOB_MASK & ~mask);
+	file->rsc_flags2 = rso_header.rso_flags2;
+	
+	file->rsc_extob.mode = RF_TO_EXTOB(rso_header.rso_flags);
+	file->rsc_namelen = min(MAXNAMELEN, rso_header.rso_namelen);
+	file->rsc_rule1 = rso_header.rso_rule1;
+	file->rsc_rule2 = rso_header.rso_rule2;
+	file->rsc_opts.ted_fillchar = rso_header.rso_ted_fillchar;
+	file->rsc_opts.menu_leftmargin = rso_header.rso_menu_leftmargin;
+	file->rsc_opts.menu_rightmargin = rso_header.rso_menu_rightmargin;
+	file->rsc_opts.menu_minspace = rso_header.rso_menu_minspace;
+	file->rsc_opts.menu_fillspace = rso_header.rso_menu_fillspace;
+#if 0 /* not implemented here */
+	file->rsc_languages = rso_header.rso_languages;
+	g_free(file->rsc_extob.overlay_id);
+	file->rsc_extob.overlay_id = NULL;
+	if (!empty(rso_header.rso_overlay))
+		file->rsc_extob.overlay_id = g_strdup(rso_header.rso_overlay);
+
+	activate_modules(file, filename, &rso_header.rso_modules, FALSE);
+	file->rsc_langs = rso_header.rso_langs;
+#endif
+	
+	if (rso_cmntread(&file->rsc_cmnt) == FALSE)
+	{
+		warn_def_damaged(filename);
+		return FALSE;
+	}
+	
+	INPW(trindex);
+	while (trindex != RSO_ENDMARK)
+	{
+		INPW(trtype);
+		if (rso_nameread(namebuf, file->rsc_namelen) == FALSE)
+		{
+			warn_def_damaged(filename);
+			file_close(TRUE);
+			return FALSE;
+		}
+		if (rso_cmntread(&cmntbuf) == FALSE)
+		{
+			warn_def_damaged(filename);
+			file_close(TRUE);
+			return FALSE;
+		}
+		tree = rsc_tree_index(file, trindex, trtype);
+		if (tree == NULL)
+		{
+			switch (trtype)
+			{
+			case RT_DIALOG:
+			case RT_FREE:
+			case RT_UNKNOWN:
+			case RT_MENU:
+				g_free(cmntbuf);
+				cmntbuf = NULL;
+				if (ask_tree_notfound(trindex) == FALSE)
+				{
+					return FALSE;
+				}
+				if (rso_obtree(file, filename, NULL) == FALSE)
+					return FALSE;
+				break;
+			case RT_BUBBLEMORE:
+			case RT_BUBBLEUSER:
+#if 0 /* not implemented here */
+				if ((tree = bubbledef_add(file, filename, trtype, trindex, namebuf, NULL)) == NULL)
+				{
+					g_free(cmntbuf);
+					return FALSE;
+				}
+#endif
+				tree->rt_cmnt = cmntbuf;
+				break;
+			default:
+				g_free(cmntbuf);
+				cmntbuf = NULL;
+				if (ask_tree_notfound(trindex) == FALSE)
+				{
+					return FALSE;
+				}
+				break;
+			}
+		}
+		if (tree != NULL)
+		{
+			tree->rt_type = trtype;
+			strcpy(tree->rt_name, namebuf);
+			tree->rt_cmnt = cmntbuf;
+			cmntbuf = NULL;
+			switch (trtype)
+			{
+			case RT_DIALOG:
+			case RT_FREE:
+			case RT_UNKNOWN:
+				if (rso_obtree(file, filename, tree) == FALSE)
+					return FALSE;
+				break;
+			case RT_MENU:
+				if (rso_obtree(file, filename, tree) == FALSE)
+					return FALSE;
+				break;
+			case RT_BUBBLEMORE:
+			case RT_BUBBLEUSER:
+#if 0 /* not implemented here */
+				if (rso_bghread(file, filename, tree) == FALSE)
+					return FALSE;
+#endif
+				break;
+			default:
+				break;
+			}
+		} else
+		{
+			if (rso_obtree(file, filename, NULL) == FALSE)
+				return FALSE;
+		}
+		INPW(trindex);
+	}
+
+	/*
+	 * walk object trees once again for BubbleGem help strings
+	 */
+#if 0 /* not implemented here */
+	if (inpw(&trindex))
+	{
+		while (trindex != RSO_ENDMARK)
+		{
+			INPW(trtype);
+			tree = rsc_tree_index(file, trindex, trtype);
+			if (tree != NULL)
+			{
+				switch (trtype)
+				{
+				case RT_DIALOG:
+				case RT_FREE:
+				case RT_UNKNOWN:
+					if (rso_bghtree(file, filename, tree, tree->rt_objects.dial.di_tree) == FALSE)
+						return FALSE;
+					break;
+				case RT_MENU:
+					if (rso_bghtree(file, filename, tree, tree->rt_objects.menu.mn_tree) == FALSE)
+						return FALSE;
+					break;
+				case RT_FRSTR:
+				case RT_ALERT:
+					if (rso_bgh_alert(file, filename, tree) == FALSE)
+						return FALSE;
+					break;
+				default:
+					if (rso_bghtree(file, filename, NULL, NULL) == FALSE)
+						return FALSE;
+					break;
+				}
+			} else
+			{
+				if (rso_bghtree(file, filename, NULL, NULL) == FALSE)
+					return FALSE;
+			}
+			INPW(trindex);
+		}
+	}
+#endif
+	
+	if (rso_header.rso_rsm_crc != RSC_CRC_NONE && rso_header.rso_rsm_crc != file->rsc_rsm_crc)
+	{
+		warn_crc_mismatch(filename, rso_header.rso_rsm_crc, file->rsc_rsm_crc);
+	}
+
+	return file_close(TRUE);
 }
 
 /******************************************************************************/

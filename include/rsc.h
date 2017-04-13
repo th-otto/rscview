@@ -30,4 +30,6 @@ void rule_calc(NAMERULE *rule);
 _LONG bitblk_datasize(BITBLK *bit);
 _LONG iconblk_masksize(ICONBLK *icon);
 
+_BOOL rsc_lang_add(rsc_lang **list, const char *id, const char *filename);
+
 #endif /* __RSC_H__ */

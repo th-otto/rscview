@@ -287,6 +287,7 @@ BGHENTRY *bgh_idx(BGHINFO *bgh, _WORD idx);
 /* *_FIO.C */
 
 enum check_code { CHECK_ABORT, CHECK_OK, CHECK_APPEND };
+extern rsc_options op_rsc_opts;
 
 RSCFILE *load_all(const char *filename, _UWORD flags);
 enum check_code check_file(char *filename, const char *extension, _BOOL append_allowed);
@@ -319,7 +320,7 @@ void close_tree_window(RSCTREE *tree);
 void rsc_name_change(RSCFILE *file);
 void err_overlay_crashed(void);
 void warn_unknown_module(const char *filename, const char *id, const char *name);
-void warn_crc_mismatch(const char *filename);
+void warn_crc_mismatch(const char *filename, RSC_RSM_CRC header_crc, RSC_RSM_CRC file_crc);
 void warn_crc_string_mismatch(const char *filename);
 
 const char *ob_name(RSCFILE *file, RSCTREE *tree, _WORD ob);
