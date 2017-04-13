@@ -404,21 +404,45 @@ void rsc_file_delete(RSCFILE *file, _BOOL all)
 {
 	while (file->rsc_ntrees != 0)
 		rsc_tree_delete(file->rsc_treehead.rt_next);
+#if 0 /* NYI here */
+	for (i = 0; i < file->rsc_num_extensions; i++)
+	{
+		if (file->rsc_extensions[i].ext_size != 0)
+		{
+			_UBYTE *cp = (_UBYTE *)(file->rsc_extensions[i].ext_ptr);
+			g_free(cp);
+		}
+	}
+	g_free(file->rsc_extob.overlay_id);
+	file->rsc_extob.overlay_id = NULL;
+#endif
 	if (all)
 	{
+#if 0 /* NYI here */
+		rsc_module_deletelist(&file->rsc_modules);
+		rsc_lang_deletelist(&file->rsc_langs);
+		g_free(file->rsc_extensions);
+#endif
 		g_free(file->rsc_cmnt);
 		g_free(file->rsc_emutos_frstrcond_name);
 		g_free(file->rsc_emutos_frstrcond_string);
 		g_free(file->rsc_emutos_othercond_name);
 		g_free(file->rsc_emutos_othercond_string);
+		g_free(file->rsc_output_prefix);
+		g_free(file->rsc_output_basename);
 		g_free(file);
 	} else
 	{
+#if 0 /* NYI here */
+		rsc_lang_deletelist(&file->rsc_langs);
+#endif
 		g_free(file->rsc_cmnt);
 		g_free(file->rsc_emutos_frstrcond_name);
 		g_free(file->rsc_emutos_frstrcond_string);
 		g_free(file->rsc_emutos_othercond_name);
 		g_free(file->rsc_emutos_othercond_string);
+		g_free(file->rsc_output_prefix);
+		g_free(file->rsc_output_basename);
 		rsc_init_file(file);
 	}
 }
@@ -472,7 +496,7 @@ void rsc_remove_crc_string(RSCFILE *file)
 
 /*** ---------------------------------------------------------------------- ***/
 
-const char *ob_name(RSCFILE *file, OBJECT *tree, _WORD ob)
+const char *ob_name(RSCFILE *file, RSCTREE *tree, _WORD ob)
 {
 	UNUSED(file);
 	UNUSED(tree);
@@ -482,7 +506,7 @@ const char *ob_name(RSCFILE *file, OBJECT *tree, _WORD ob)
 
 /*** ---------------------------------------------------------------------- ***/
 
-const char *ob_cmnt(RSCFILE *file, OBJECT *tree, _WORD ob)
+const char *ob_cmnt(RSCFILE *file, RSCTREE *tree, _WORD ob)
 {
 	UNUSED(file);
 	UNUSED(tree);
@@ -492,16 +516,17 @@ const char *ob_cmnt(RSCFILE *file, OBJECT *tree, _WORD ob)
 
 /*** ---------------------------------------------------------------------- ***/
 
-static _LONG count_objs(OBJECT *tree, _WORD parent, _LONG idx, XRS_HEADER *xrsc_header, RSCFILE *file, rsc_counter *counter, _BOOL for_file)
+static _LONG count_objs(RSCTREE *rsctree, _WORD parent, _LONG idx, XRS_HEADER *xrsc_header, RSCFILE *file, rsc_counter *counter, _BOOL for_file)
 {
 	_WORD mob;
-
+	OBJECT *tree = rsctree->rt_objects.dial.di_tree;
+	
 	mob = parent == NIL ? ROOT : tree[parent].ob_head;
 	do
 	{
 		/* OB_INDEX(mob) = (_WORD)idx; */
 		idx++;
-		if (ob_name(file, tree, mob))
+		if (ob_name(file, rsctree, mob))
 			counter->nnames++;
 		switch (tree[mob].ob_type & OBTYPEMASK)
 		{
@@ -603,7 +628,7 @@ static _LONG count_objs(OBJECT *tree, _WORD parent, _LONG idx, XRS_HEADER *xrsc_
 			break;
 		}
 		if (tree[mob].ob_head != NIL)
-			idx = count_objs(tree, mob, idx, xrsc_header, file, counter, for_file);
+			idx = count_objs(rsctree, mob, idx, xrsc_header, file, counter, for_file);
 		mob = tree[mob].ob_next;
 		counter->total_size += FOR_FILE(RSC_SIZEOF_OBJECT, sizeof(OBJECT));
 	} while (mob != parent);
@@ -791,7 +816,7 @@ void count_trees(RSCFILE *file, XRS_HEADER *xrsc_header, rsc_counter *counter, _
 			}
 			if (ob != NULL)
 			{
-				xrsc_header->rsh_nobs += count_objs(ob, NIL, 0l, xrsc_header, file, counter, for_file);
+				xrsc_header->rsh_nobs += count_objs(tree, NIL, 0l, xrsc_header, file, counter, for_file);
 				tree->rt_index = xrsc_header->rsh_ntree++;
 				counter->nnames += 1;
 			}

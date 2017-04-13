@@ -7,6 +7,7 @@
 #include <mobject.h>
 #include <object.h>
 #include <s_endian.h>
+#include <time.h>
 #include "fileio.h"
 
 static char const default_header1[] = \
@@ -544,12 +545,13 @@ static _BOOL out_iconblk(ICONBLK *icon, int level)
 
 /*** ---------------------------------------------------------------------- ***/
 
-static _BOOL xml_ob_object(RSCFILE *file, XRS_HEADER *xrsc_header, OBJECT *tree, _WORD parent, _BOOL verbose, int level)
+static _BOOL xml_ob_object(RSCFILE *file, XRS_HEADER *xrsc_header, RSCTREE *rsctree, _WORD parent, _BOOL verbose, int level)
 {
 	_WORD ob;
 	_WORD x, y, w, h;
 	_WORD cw, ch;
 	_UWORD flags, state, type;
+	OBJECT *tree = rsctree->rt_objects.dial.di_tree;;
 	
 	ob = parent == NIL ? ROOT : tree[parent].ob_head;
 	GetTextSize(&cw, &ch);
@@ -564,9 +566,9 @@ static _BOOL xml_ob_object(RSCFILE *file, XRS_HEADER *xrsc_header, OBJECT *tree,
 		w = tree[ob].ob_width / cw;
 		h = tree[ob].ob_height / ch;
 		xml_indent(level);
-		output3("<object type=\"%s\" index=\"%d\" name=\"%s\">\n", type_name(type), ob, fixnull(ob_name(file, tree, ob)));
+		output3("<object type=\"%s\" index=\"%d\" name=\"%s\">\n", type_name(type), ob, fixnull(ob_name(file, rsctree, ob)));
 		if (do_comment)
-			xml_comment(ob_cmnt(file, tree, ob), level + 1);
+			xml_comment(ob_cmnt(file, rsctree, ob), level + 1);
 		xml_bgh(NULL, ob, level + 1);
 		xml_indent(level + 1); putprop("x", "%d", tree[ob].ob_x);
 		xml_indent(level + 1); putprop("y", "%d", tree[ob].ob_y);
@@ -703,7 +705,7 @@ static _BOOL xml_ob_object(RSCFILE *file, XRS_HEADER *xrsc_header, OBJECT *tree,
 		{
 			xml_indent(level + 1);
 			outstr("<child>\n");
-			if (xml_ob_object(file, xrsc_header, tree, ob, verbose, level + 2) == FALSE)
+			if (xml_ob_object(file, xrsc_header, rsctree, ob, verbose, level + 2) == FALSE)
 				return FALSE;
 			xml_indent(level + 1);
 			outstr("</child>\n");
@@ -757,7 +759,7 @@ static _BOOL xml_trees(RSCFILE *file, XRS_HEADER *xrsc_header, rsc_counter *coun
 				{
 					xml_comment(tree->rt_cmnt, 2);
 				}
-				if (xml_ob_object(file, xrsc_header, ob, NIL, verbose, 2) == FALSE)
+				if (xml_ob_object(file, xrsc_header, tree, NIL, verbose, 2) == FALSE)
 					return FALSE;
 				xml_indent(1); outstr("</tree>\n");
 			}
@@ -818,6 +820,9 @@ static _BOOL xml_trees(RSCFILE *file, XRS_HEADER *xrsc_header, rsc_counter *coun
 static _BOOL output_xml_data(RSCFILE *file, XRS_HEADER *xrsc_header, rsc_counter *counter, char *buf)
 {
 	_BOOL verbose;
+	_ULONG xrs_diff_size = xrsc_header->rsh_rssize <= (RS_THRESHOLD + XRS_DIFF_SIZE) ? XRS_DIFF_SIZE : 0;
+	char strbuf[40];
+	struct tm *tm;
 	
 	UNUSED(buf);
 	verbose = file->rsc_flags & RF_VERBOSE ? TRUE : FALSE;
@@ -826,15 +831,15 @@ static _BOOL output_xml_data(RSCFILE *file, XRS_HEADER *xrsc_header, rsc_counter
 	xml_indent(2); putprop("endian", "%s", (HOST_BYTE_ORDER == BYTE_ORDER_BIG_ENDIAN) == file->rsc_swap_flag ? "little" : "big");
 	xml_indent(2); putprop("version", "%u", xrsc_header->rsh_vrsn);
 	xml_indent(2); putprop("extversion", "%u", xrsc_header->rsh_extvrsn);
-	xml_indent(2); putprop("offset_objects", "%lu", xrsc_header->rsh_object);
-	xml_indent(2); putprop("offset_tedinfos", "%lu", xrsc_header->rsh_tedinfo);
-	xml_indent(2); putprop("offset_iconblks", "%lu", xrsc_header->rsh_iconblk);
-	xml_indent(2); putprop("offset_bitblks", "%lu", xrsc_header->rsh_bitblk);
-	xml_indent(2); putprop("offset_freestrings", "%lu", xrsc_header->rsh_frstr);
-	xml_indent(2); putprop("offset_strings", "%lu", xrsc_header->rsh_string);
-	xml_indent(2); putprop("offset_imagedata", "%lu", xrsc_header->rsh_imdata);
-	xml_indent(2); putprop("offset_freeimages", "%lu", xrsc_header->rsh_frimg);
-	xml_indent(2); putprop("offset_trees", "%lu", xrsc_header->rsh_trindex);
+	xml_indent(2); putprop("offset_objects", "%lu", xrsc_header->rsh_object - xrs_diff_size);
+	xml_indent(2); putprop("offset_tedinfos", "%lu", xrsc_header->rsh_tedinfo - xrs_diff_size);
+	xml_indent(2); putprop("offset_iconblks", "%lu", xrsc_header->rsh_iconblk - xrs_diff_size);
+	xml_indent(2); putprop("offset_bitblks", "%lu", xrsc_header->rsh_bitblk - xrs_diff_size);
+	xml_indent(2); putprop("offset_freestrings", "%lu", xrsc_header->rsh_frstr - xrs_diff_size);
+	xml_indent(2); putprop("offset_strings", "%lu", xrsc_header->rsh_string - xrs_diff_size);
+	xml_indent(2); putprop("offset_imagedata", "%lu", xrsc_header->rsh_imdata - xrs_diff_size);
+	xml_indent(2); putprop("offset_freeimages", "%lu", xrsc_header->rsh_frimg - xrs_diff_size);
+	xml_indent(2); putprop("offset_trees", "%lu", xrsc_header->rsh_trindex - xrs_diff_size);
 	xml_indent(2); putprop("count_objects", "%lu", xrsc_header->rsh_nobs);
 	xml_indent(2); putprop("count_trees", "%lu", xrsc_header->rsh_ntree);
 	xml_indent(2); putprop("count_tedinfos", "%lu", xrsc_header->rsh_nted);
@@ -842,8 +847,8 @@ static _BOOL output_xml_data(RSCFILE *file, XRS_HEADER *xrsc_header, rsc_counter
 	xml_indent(2); putprop("count_bitblks", "%lu", xrsc_header->rsh_nbb);
 	xml_indent(2); putprop("count_freestrings", "%lu", xrsc_header->rsh_nstring);
 	xml_indent(2); putprop("count_freeimages", "%lu", xrsc_header->rsh_nimages);
-	xml_indent(2); putprop("resource_size", "%lu", xrsc_header->rsh_rssize - (xrsc_header->rsh_rssize <= (RS_THRESHOLD + XRS_DIFF_SIZE) ? XRS_DIFF_SIZE : 0));
-	xml_indent(2); putprop("file_size", "%lu", xrsc_header->rsh_rssize - (xrsc_header->rsh_rssize <= (RS_THRESHOLD + XRS_DIFF_SIZE) ? XRS_DIFF_SIZE : 0) + counter->ctotal_size + counter->ext_size);
+	xml_indent(2); putprop("resource_size", "%lu", xrsc_header->rsh_rssize - xrs_diff_size);
+	xml_indent(2); putprop("file_size", "%lu", xrsc_header->rsh_rssize - xrs_diff_size + counter->ctotal_size + counter->ext_size);
 	xml_indent(2); putprop("count_strings", "%lu", file->rsc_nstrings);
 	xml_indent(2); putprop("count_userblks", "%lu", file->rsc_nuserblks);
 	xml_indent(2); putprop("count_ciconblks", "%lu", file->rsc_nciconblks);
@@ -885,14 +890,62 @@ static _BOOL output_xml_data(RSCFILE *file, XRS_HEADER *xrsc_header, rsc_counter
 	xml_indent(2); putflag("out_nopvalopt", file->rsc_flags2 & RF_NOPVALOPT);
 	xml_indent(2); putflag("out_static", file->rsc_flags2 & RF_STATIC);
 	xml_indent(2); putflag("out_romable", file->rsc_flags2 & RF_ROMABLE);
+	xml_indent(2); putflag("out_imagewords", file->rsc_flags2 & RF_IMAGEWORDS);
+	xml_indent(2); putprop("namelen", "%d", file->rsc_namelen);
+	xml_indent(2); outstr("<namerule type=\"first\">\n");
+	xml_indent(3); putprop("upper", "%d", file->rsc_rule1.upper);
+	xml_indent(3); putprop("lower", "%d", file->rsc_rule1.lower);
+	xml_indent(3); putprop("alpha", "%d", file->rsc_rule1.alpha);
+	xml_indent(3); putprop("alnum", "%d", file->rsc_rule1.alnum);
+	xml_indent(3); xml_quotestring("add", file->rsc_rule1.add, -1);
+	xml_indent(3); xml_quotestring("sub", file->rsc_rule1.sub, -1);
+	xml_indent(2); outstr("</namerule>\n");
+	xml_indent(2); outstr("<namerule type=\"other\">\n");
+	xml_indent(3); putprop("upper", "%d", file->rsc_rule2.upper);
+	xml_indent(3); putprop("lower", "%d", file->rsc_rule2.lower);
+	xml_indent(3); putprop("alpha", "%d", file->rsc_rule2.alpha);
+	xml_indent(3); putprop("alnum", "%d", file->rsc_rule2.alnum);
+	xml_indent(3); xml_quotestring("add", file->rsc_rule2.add, -1);
+	xml_indent(3); xml_quotestring("sub", file->rsc_rule2.sub, -1);
+	xml_indent(2); outstr("</namerule>\n");
 	xml_indent(2); putprop("fillchar", "%d", file->rsc_opts.ted_fillchar);
 	xml_indent(2); putprop("menu_leftmargin", "%d", file->rsc_opts.menu_leftmargin);
 	xml_indent(2); putprop("menu_rightmargin", "%d", file->rsc_opts.menu_rightmargin);
 	xml_indent(2); putprop("menu_minspace", "%d", file->rsc_opts.menu_minspace);
 	xml_indent(2); putprop("menu_fillspace", "%d", file->rsc_opts.menu_fillspace);
+	tm = gmtime(&file->rsc_date_created);
+	sprintf(strbuf, "%04d-%02d-%02d %02d:%02d:%02d", tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec);
+	xml_indent(2); putprop("date_created", "%s", strbuf);
+	tm = gmtime(&file->rsc_date_changed);
+	sprintf(strbuf, "%04d-%02d-%02d %02d:%02d:%02d", tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec);
+	xml_indent(2); putprop("date_changed", "%s", strbuf);
+	xml_indent(2); putprop("edition", "%lu", file->rsc_edition);
 	xml_indent(2); putprop("crc", "%u", file->rsc_rsm_crc);
 	xml_indent(1); outstr("</options>\n");
 	
+#if 0
+	/* NYI here */
+	if (rsc_haspalette(file))
+	{
+		_LONG entries, i;
+		_UWORD *data;
+		
+		xml_indent(1); outstr("<palette>\n");
+		entries = file->rsc_extensions[RSC_EXT_PALETTE].ext_size / 8;
+		data = (_UWORD *)file->rsc_extensions[RSC_EXT_PALETTE].ext_ptr;
+		for (i = 0; i < entries; i++, data += 4)
+		{
+			xml_indent(2); outstr("<color>\n");
+			xml_indent(3); putprop("red", "%d", data[0]);
+			xml_indent(3); putprop("green", "%d", data[1]);
+			xml_indent(3); putprop("blue", "%d", data[2]);
+			xml_indent(3); putprop("index", "%d", data[3]);
+			xml_indent(2); outstr("</color>\n");
+		}
+		xml_indent(1); outstr("</palette>\n");
+	}
+#endif
+
 	if (xml_trees(file, xrsc_header, counter, verbose) == FALSE)
 		return FALSE;
 	

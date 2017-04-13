@@ -320,8 +320,8 @@ void warn_unknown_module(const char *filename, const char *id, const char *name)
 void warn_crc_mismatch(const char *filename);
 void warn_crc_string_mismatch(const char *filename);
 
-const char *ob_name(RSCFILE *file, OBJECT *tree, _WORD ob);
-const char *ob_cmnt(RSCFILE *file, OBJECT *tree, _WORD ob);
+const char *ob_name(RSCFILE *file, RSCTREE *tree, _WORD ob);
+const char *ob_cmnt(RSCFILE *file, RSCTREE *tree, _WORD ob);
 RSCTREE *rsc_tree_index(RSCFILE *file, _UWORD idx, _UWORD type);
 
 #endif /* __MOBJECT_H__ */

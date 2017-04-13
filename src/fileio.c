@@ -6,6 +6,7 @@
 #include <ro_mem.h>
 #include "fileio.h"
 #include <rsc.h>
+#include <time.h>
 #include "debug.h"
 
 FILE *ffp = NULL;
@@ -418,38 +419,19 @@ static _BOOL rsc_load_trees(RSCFILE *file)
 
 /*** ---------------------------------------------------------------------- ***/
 
-static _BOOL is_emutos_desktop(RSCFILE *file)
-{
-	RSCTREE *tree;
-	OBJECT *ob;
-	
-#define ADDINFO 3
-
-	if (strcasecmp(rsx_basename(file->rsc_rsxname), "desktop") != 0)
-		return FALSE;
-	if ((tree = rsc_tree_index(file, ADDINFO, RT_UNKNOWN)) == NULL || tree->rt_type != RT_DIALOG)
-		return FALSE;
-	ob = tree->rt_objects.dial.di_tree + 2;
-	if (ob->ob_type != G_STRING)
-		return FALSE;
-	if (strcmp(ob->ob_spec.free_string, "- EmuTOS -") != 0)
-		return FALSE;
-	
-#undef ADDINFO
-	return TRUE;
-}
-
-/*** ---------------------------------------------------------------------- ***/
-
 static _BOOL is_emutos_aes(RSCFILE *file)
 {
+	RSCTREE *tree;
+	
 	if (strcasecmp(rsx_basename(file->rsc_rsxname), "gem") != 0 &&
 		strcasecmp(rsx_basename(file->rsc_rsxname), "gem_rsc") != 0)
 		return FALSE;
 	/*
 	 * check for exactly 3 dialogs (fileselector, alert template & desktop)
 	 */
-	if (rsc_tree_index(file, 2, RT_DIALOG) == NULL)
+	if ((tree = rsc_tree_index(file, 2, RT_DIALOG)) == NULL)
+		return FALSE;
+	if (Objc_Count(tree->rt_objects.dial.di_tree, ROOT) != 3)
 		return FALSE;
 	if (rsc_tree_index(file, 3, RT_DIALOG) != NULL)
 		return FALSE;
@@ -478,6 +460,272 @@ static _BOOL is_emutos_icon(RSCFILE *file)
 
 /*** ---------------------------------------------------------------------- ***/
 
+static _BOOL is_emutos_desktop(RSCFILE *file)
+{
+	RSCTREE *rsctree;
+	OBJECT *ob;
+
+#define ADMENU 0
+#define ADFFINFO 1
+
+#define ADDINFO 3
+#define DELABEL 4
+#define DEVERSN 5
+#define DECOPYRT 7
+
+#define ADCPYDEL 7
+
+#define STFOINFO 4
+#define STDELETE 7
+
+	if (strcasecmp(rsx_basename(file->rsc_rsxname), "desktop") != 0)
+		return FALSE;
+	if ((rsctree = rsc_tree_index(file, ADDINFO, RT_UNKNOWN)) == NULL || rsctree->rt_type != RT_DIALOG)
+		return FALSE;
+	if (Objc_Count(rsctree->rt_objects.dial.di_tree, ROOT) < 10)
+		return FALSE;
+	ob = rsctree->rt_objects.dial.di_tree + 2;
+	if (ob->ob_type != G_STRING)
+		return FALSE;
+	if (strcmp(ob->ob_spec.free_string, "- EmuTOS -") != 0)
+		return FALSE;
+	ob = rsctree->rt_objects.dial.di_tree + DELABEL;
+	if (ob->ob_type != G_STRING)
+		return FALSE;
+	
+	return TRUE;
+}
+
+/*** ---------------------------------------------------------------------- ***/
+
+#define gettext(x) x
+
+static void xlate_obj_array(OBJECT *obj_array, _LONG nobs)
+{
+	OBJECT *obj;
+
+	for (obj = obj_array; --nobs >= 0; obj++)
+	{
+		switch (obj->ob_type)
+		{
+		case G_TEXT:
+		case G_BOXTEXT:
+		case G_FTEXT:
+		case G_FBOXTEXT:
+			obj->ob_spec.tedinfo->te_ptmplt = gettext(obj->ob_spec.tedinfo->te_ptmplt);
+			break;
+		case G_STRING:
+		case G_BUTTON:
+		case G_TITLE:
+			obj->ob_spec.free_string = gettext(obj->ob_spec.free_string);
+			break;
+		default:
+			break;
+		}
+	}
+}
+
+/*** ---------------------------------------------------------------------- ***/
+
+#define CENTRE_ALIGNED  0x8000
+#define RIGHT_ALIGNED   0x4000
+
+/*
+ *  Align text objects according to special values in ob_flags
+ *
+ *  Translations typically have a length different from the original
+ *  English text.  In order to keep dialogs looking tidy in all
+ *  languages, it is often useful to centre- or right-align text
+ *  objects.  The AES does not provide an easy way of doing this
+ *  (alignment in TEDINFO objects affects the text within the object,
+ *  as well as object positioning).
+ *
+ *  To allow centre- or right-alignment alignment of text objects,
+ *  we steal unused bits in ob_flags to indicate the required
+ *  alignment.  Note that this does not cause any incompatibilities
+ *  because this extra function is performed outside the AES, and
+ *  only for the internal desktop resource.  Furthermore, we zero
+ *  out the stolen bits after performing the alignment.
+ *
+ *  Also note that this aligns the *object*, not the text within
+ *  the object.  It is perfectly reasonable (and common) to have
+ *  left-aligned text within a right-aligned TEDINFO object.
+ */
+static void align_objects(OBJECT *obj_array, int nobj)
+{
+	OBJECT *obj;
+	char *p;
+	_WORD len;		 /* string length in pixels */
+	_WORD wchar, hchar;
+	
+	GetTextSize(&wchar, &hchar);
+	for (obj = obj_array; --nobj >= 0; obj++)
+	{
+		switch(obj->ob_type)
+		{
+		case G_STRING:
+		case G_TEXT:
+		case G_FTEXT:
+		case G_BOXTEXT:
+		case G_FBOXTEXT:
+			if (obj->ob_type == G_STRING)
+				p = obj->ob_spec.free_string;
+			else
+				p = obj->ob_spec.tedinfo->te_ptmplt;
+			len = strlen(p) * wchar;
+			if (obj->ob_flags & CENTRE_ALIGNED)
+			{
+				obj->ob_x += (obj->ob_width - len) / 2;
+				if (obj->ob_x < 0)
+					obj->ob_x = 0;
+				obj->ob_width = len;
+			} else if (obj->ob_flags & RIGHT_ALIGNED)
+			{
+				obj->ob_x += obj->ob_width - len;
+				if (obj->ob_x < 0)
+					obj->ob_x = 0;
+				obj->ob_width = len;
+			}
+			obj->ob_flags &= ~(CENTRE_ALIGNED | RIGHT_ALIGNED);
+			break;
+		default:
+			break;
+		}
+	}
+}
+
+/*
+ *  Horizontally centre dialog title: this is done dynamically to
+ *  handle translated titles.
+ *
+ *  If object 1 of a tree is a G_STRING and its y position equals
+ *  one character height, we assume it's the title.
+ */
+static void centre_title(OBJECT *root)
+{
+	OBJECT *title;
+	_WORD len;
+	_WORD wchar, hchar;
+	
+	GetTextSize(&wchar, &hchar);
+
+	title = root + 1;
+
+	if (title->ob_type == G_STRING && title->ob_y == hchar)
+	{
+		len = strlen(title->ob_spec.free_string) * wchar;
+		if (len > root->ob_width)
+			len = root->ob_width;
+		title->ob_x = (root->ob_width - len) / 2;
+	}
+}
+
+/*** ---------------------------------------------------------------------- ***/
+
+static void centre_titles(RSCFILE *file)
+{
+	_ULONG i;
+	
+	for (i = 0; i < file->header.rsh_ntree; i++)
+		centre_title(file->rs_trindex[i]);
+}
+
+/*** ---------------------------------------------------------------------- ***/
+
+static void adjust_menu(OBJECT *obj_array)
+{
+#define OBJ(i) (&obj_array[i])
+
+	int i;	/* index in the menu bar */
+	int n, x;
+	OBJECT *menu = OBJ(0);
+	OBJECT *mbar = OBJ(OBJ(menu->ob_head)->ob_head);
+	OBJECT *title;
+
+	/*
+	 * first, set ob_x & ob_width for all the menu headings, and
+	 * determine the required width of the (translated) menu bar.
+	 */
+	for (i = mbar->ob_head, title = OBJ(i), x = 0; i <= mbar->ob_tail; i++, title++, x += n)
+	{
+		n = strlen(title->ob_spec.free_string);
+		title->ob_x = x;
+		title->ob_width = n;
+	}
+	mbar->ob_width = x;
+
+	KDEBUG(("desktop menu bar: x=0x%04x, w=0x%04x\n",mbar->ob_x,mbar->ob_width));
+#undef OBJ
+}
+
+static void emutos_desktop_fix(RSCFILE *file)
+{
+    OBJECT *tree = file->rs_trindex[ADDINFO];
+	static char version[10];
+	static char copyright_year[5];
+	static char empty[1];
+	time_t now;
+	struct tm *tm;
+	_WORD wchar, hchar;
+	
+	GetTextSize(&wchar, &hchar);
+	
+	now = time(NULL);
+	tm = localtime(&now);
+	sprintf(version, "%04d%02d%02d", tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday);
+	sprintf(copyright_year, "%04d", tm->tm_year + 1900);
+	
+    /* translate strings in objects */
+    xlate_obj_array(file->rs_object, file->header.rsh_nobs);
+
+    /* insert the version number */
+    tree[DEVERSN].ob_spec.free_string = version;
+
+    /* slightly adjust the about box for a timestamp build */
+    if (version[1] != '.')
+    {
+        tree[DELABEL].ob_spec.free_string = empty;  /* remove the word "Version" */
+        tree[DEVERSN].ob_x -= 6 * wchar;          /* and move the start of the string */
+    }
+
+    /* insert the version number */
+    tree[DECOPYRT].ob_spec.free_string = copyright_year;
+
+    /* adjust the size and coordinates of menu items */
+    adjust_menu(file->rs_trindex[ADMENU]);
+
+    /*
+     * perform special object alignment - this must be done after
+     * translation and coordinate fixing
+     */
+    align_objects(file->rs_object, file->header.rsh_nobs);
+    
+    tree = file->rs_trindex[ADFFINFO];
+    tree[1].ob_spec.free_string = file->rs_frstr[STFOINFO];
+    
+    tree = file->rs_trindex[ADCPYDEL];
+    tree[1].ob_spec.free_string = file->rs_frstr[STDELETE];
+    
+    centre_titles(file);
+}
+
+
+#undef ADMENU
+#undef ADFFINFO
+#undef ADDINFO
+#undef DELABEL
+#undef DEVERSN
+#undef DECOPYRT
+
+static void emutos_aes_fix(RSCFILE *file)
+{
+    /* translate strings in objects */
+    xlate_obj_array(file->rs_object, file->header.rsh_nobs);
+	centre_titles(file);
+}
+
+/*** ---------------------------------------------------------------------- ***/
+
 RSCFILE *load_all(const char *filename, _UWORD flags)
 {
 	RSCFILE *file;
@@ -500,6 +748,7 @@ RSCFILE *load_all(const char *filename, _UWORD flags)
 		file->rsc_emutos_othercond_name = g_strdup("ADTTREZ");
 		file->rsc_emutos_othercond_string = g_strdup("#ifndef TARGET_192");
 		nf_debugprintf("EmuTOS desktop resource loaded\n");
+		emutos_desktop_fix(file);
 	} else if (is_emutos_icon(file))
 	{
 		file->rsc_emutos = EMUTOS_ICONS;
@@ -515,8 +764,11 @@ RSCFILE *load_all(const char *filename, _UWORD flags)
 		file->rsc_output_basename = g_strdup("gem_rsc");
 		file->rsc_flags2 |= RF_ROMABLE | RF_IMAGEWORDS;
 		file->rsc_flags |= RF_CSOURCE2;
+		file->rsc_emutos_othercond_name = g_strdup("APPS");
+		file->rsc_emutos_othercond_string = g_strdup("#if 0");
 		nf_debugprintf("EmuTOS gem resource loaded\n");
+		emutos_aes_fix(file);
 	}
-		
+	
 	return file; 
 }
