@@ -243,11 +243,15 @@ static void rsc_tree_dispose(RSCTREE *tree)
 		tree->rt_objects.menu.mn_tree = NULL;
 		break;
 	case RT_FRSTR:
+#if 0
 		g_free(tree->rt_objects.str.fr_str);
+#endif
 		bgh_delete(tree->rt_objects.str.fr_bgh);
 		break;
 	case RT_ALERT:
+#if 0
 		g_free(tree->rt_objects.alert.al_str);
+#endif
 		bgh_delete(tree->rt_objects.alert.al_bgh);
 		break;
 	case RT_FRIMG:

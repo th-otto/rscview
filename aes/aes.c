@@ -162,6 +162,7 @@ static _WORD crysbind(AESPB *pb)
 		aestrace("appl_exit()");
 		AES_PARAMS(19,0,1,0,0);
 		ap_exit();
+		aes_exit();
 		break;
 
 	case APPL_CONTROL:

@@ -6802,6 +6802,7 @@ static int vdi_v_write_png(VWK *v, VDIPB *pb)
 		fclose(info->outfile);
 	}
 	writepng_exit(info);
+	free(filename);
 	V_INTOUT(pb, 0) = rc;
 	V_NINTOUT(pb, 1);
 	V_NPTSOUT(pb, 0);

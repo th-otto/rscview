@@ -5,6 +5,7 @@
 #include <errno.h>
 #include "nls.h"
 #include "fileio.h"
+#include "rsc.h"
 #include "ws.h"
 #include "debug.h"
 
@@ -432,6 +433,7 @@ int main(int argc, char **argv)
 			
 			close_screen();
 			
+			rsc_file_delete(file, FALSE);
 			xrsrc_free(file);
 		} else
 		{
