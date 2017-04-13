@@ -488,16 +488,168 @@ static _BOOL hrd_load(RSCFILE *file, const char *filename, _BOOL *def_found)
 	return FALSE;
 }
 
-static _BOOL dfn_load(RSCFILE *file, const char *filename, _BOOL *def_found)
+/******************************************************************************/
+/*** ---------------------------------------------------------------------- ***/
+/******************************************************************************/
+
+static _BOOL dfn_nameinfo_read(NAMEINFO *nameinfo)
 {
-	(void) file;
-	(void) filename;
-	(void) def_found;
-	return FALSE;
+	_WORD c, c2;
+	_WORD i;
+
+	/*
+	 * DFN has count in little-endian format
+	 */
+	if ((c = fgetc(ffp)) == EOF)
+		return FALSE;
+	if ((c2 = fgetc(ffp)) == EOF)
+		return FALSE;
+	nameinfo->na_count = (c2 << 8) + c;
+	INPC(nameinfo->na_obidx);
+	INPC(nameinfo->na_treeidx);
+	INPC(nameinfo->na_treetype);
+	INPC(nameinfo->na_nametype);
+	for (i = 0; i < RSDNAMELEN; i++)
+	{
+		INPC(nameinfo->na_name[i]);
+	}
+	return TRUE;
 }
 
 /*** ---------------------------------------------------------------------- ***/
 
+static _BOOL dfn_load(RSCFILE *file, const char *filename, _BOOL *def_found)
+{
+	NAMEINFO nameinfo;
+	RSCTREE *tree;
+	OBJECT *ob;
+	_WORD i, count;
+	_BOOL treename;
+	_UWORD type;
+	
+	fname = filename;
+	if (file_open(filename, "rb") == FALSE)
+		return FALSE;
+	*def_found = TRUE;
+	if (dfn_nameinfo_read(&nameinfo) == FALSE)
+		return file_close(FALSE);
+	file->rsc_flags |= RF_DFN;
+	file->rsc_namelen = min(MAXNAMELEN, RSDNAMELEN);
+	count = nameinfo.na_count;
+	for (i = count; i--; )
+	{
+		tree = NULL;
+		treename = TRUE;
+		type = RT_UNKNOWN;
+		switch ((nameinfo.na_nametype << 8) | nameinfo.na_treetype)
+		{
+		case 0x0000:
+			type = RT_UNKNOWN;
+			tree = rsc_tree_index(file, nameinfo.na_obidx, type);
+			break;
+		case 0x0001:
+			type = RT_FREE; /* RT_PANEL in RCS */
+			tree = rsc_tree_index(file, nameinfo.na_obidx, type);
+			break;
+		case 0x0002:
+			type = RT_MENU;
+			tree = rsc_tree_index(file, nameinfo.na_obidx, type);
+			break;
+		case 0x0003:
+			type = RT_DIALOG;
+			tree = rsc_tree_index(file, nameinfo.na_obidx, type);
+			break;
+		case 0x0004:
+			type = RT_ALERT;
+			tree = rsc_tree_index(file, nameinfo.na_obidx, type);
+			break;
+		case 0x0005:
+			type = RT_FRSTR;
+			tree = rsc_tree_index(file, nameinfo.na_obidx, type);
+			break;
+		case 0x0101:
+			type = RT_FRSTR;
+			tree = rsc_tree_index(file, nameinfo.na_obidx, type);
+			break;
+		case 0x0102:
+		case 0x0006:
+			type = RT_FRIMG;
+			tree = rsc_tree_index(file, nameinfo.na_obidx, type);
+			if (tree != NULL && is_mouseform(tree->rt_objects.bit))
+				type = RT_MOUSE;
+			break;
+		case 0x0100:
+			tree = rsc_tree_index(file, nameinfo.na_treeidx, RT_UNKNOWN);
+			treename = FALSE;
+			break;
+		default:
+			type = RT_UNKNOWN;
+			tree = rsc_tree_index(file, nameinfo.na_obidx, type);
+			break;
+		}
+		if (tree != NULL)
+		{
+			if (treename)
+			{
+				tree->rt_type = type;
+				strmaxcpy(tree->rt_name, min(RSDNAMELEN,MAXNAMELEN) + 1, nameinfo.na_name);
+			} else
+			{
+				ob = NULL;
+				switch (tree->rt_type)
+				{
+					case RT_DIALOG:
+					case RT_FREE:
+					case RT_UNKNOWN: ob = tree->rt_objects.dial.di_tree; break;
+					case RT_MENU: ob = tree->rt_objects.menu.mn_tree; break;
+					case RT_FRSTR:
+					case RT_ALERT:
+					case RT_FRIMG:
+					case RT_MOUSE:
+						break;
+					default:
+						warn_def_damaged(filename);
+						file_close(TRUE);
+						return FALSE;
+				}
+				if (ob == NULL ||
+					ob_setname(file, tree, nameinfo.na_obidx, nameinfo.na_name, min(RSDNAMELEN,MAXNAMELEN) + 1) == FALSE)
+				{
+					nf_debugprintf("object not found: %3d: nametype=%d treetype=%d treeidx=%d obidx=%d %-8.8s\n",
+						count - i - 1,
+						nameinfo.na_nametype,
+						nameinfo.na_treetype,
+						nameinfo.na_treeidx,
+						nameinfo.na_obidx,
+						nameinfo.na_name);
+				}
+			}
+		} else
+		{
+			nf_debugprintf("tree not found: %3d: nametype=%d treetype=%d treeidx=%d obidx=%d %-8.8s\n",
+				count - i - 1,
+				nameinfo.na_nametype,
+				nameinfo.na_treetype,
+				nameinfo.na_treeidx,
+				nameinfo.na_obidx,
+				nameinfo.na_name);
+		}
+		if (dfn_nameinfo_read(&nameinfo) == FALSE &&
+			(ferror(ffp) || i != 0))
+		{
+			return file_close(FALSE);
+		}
+	}
+	return file_close(TRUE);
+}
+
+/******************************************************************************/
+/*** ---------------------------------------------------------------------- ***/
+/******************************************************************************/
+
+/*
+ *  load a .DEF/.RSD definition file
+ */
 static _BOOL rsd_nameinfo_read(NAMEINFO *nameinfo)
 {
 	/*
@@ -530,7 +682,6 @@ static _BOOL rsd_load(RSCFILE *file, const char *filename, _BOOL *def_found)
 
 	if (rsd_nameinfo_read(&nameinfo) == FALSE)
 		return FALSE;
-	file->rsc_flags |= /* nameinfo.na_flags | */ RF_DEF | RF_NRSC;
 	file->rsc_namelen = min(MAXNAMELEN, RSDNAMELEN);
 	lasttype = (_UWORD)-1;
 	for (i = nameinfo.na_count; i--; )

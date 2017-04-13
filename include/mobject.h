@@ -325,6 +325,6 @@ void warn_crc_string_mismatch(const char *filename);
 const char *ob_name(RSCFILE *file, RSCTREE *tree, _WORD ob);
 const char *ob_cmnt(RSCFILE *file, RSCTREE *tree, _WORD ob);
 RSCTREE *rsc_tree_index(RSCFILE *file, _UWORD idx, _UWORD type);
-void ob_setname(RSCFILE *file, RSCTREE *tree, _WORD ob, const char *name, size_t maxlen);
+_BOOL ob_setname(RSCFILE *file, RSCTREE *tree, _WORD ob, const char *name, size_t maxlen);
 
 #endif /* __MOBJECT_H__ */

@@ -165,8 +165,6 @@ extern _BOOL (*rsc_sdl_source_func)(RSCFILE *file, rsc_counter *counter, char *f
 extern _BOOL (*rsc_xml_source_func)(RSCFILE *file, rsc_counter *counter, char *filename, char *buf);
 extern _BOOL (*rsc_bgh_source_func)(RSCFILE *file, rsc_counter *counter, char *filename, char *buf);
 
-extern void (*read_info_func)(const char *filename);
-
 void xrsc_get_header(XRS_HEADER *xrsc_header, const char *buf);
 char *rsx_basename(const char *);
 _BOOL file_create(const char *filename, const char *mode);

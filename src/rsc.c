@@ -516,14 +516,15 @@ const char *ob_name(RSCFILE *file, RSCTREE *tree, _WORD ob)
 
 /*** ---------------------------------------------------------------------- ***/
 
-void ob_setname(RSCFILE *file, RSCTREE *tree, _WORD ob, const char *name, size_t maxlen)
+_BOOL ob_setname(RSCFILE *file, RSCTREE *tree, _WORD ob, const char *name, size_t maxlen)
 {
 	char *p;
 	
 	if (file == NULL || tree == NULL || ob < 0 || ob >= tree->rt_nobs)
-		return;
+		return FALSE;
 	p = tree->rt_obnames + ob * (MAXNAMELEN + 1);
 	strmaxcpy(p, maxlen, name);
+	return TRUE;
 }
 
 /*** ---------------------------------------------------------------------- ***/
