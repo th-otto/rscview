@@ -966,3 +966,23 @@ _BOOL is_mouseform(BITBLK *bit)
 		return FALSE;
 	return TRUE;
 }
+
+/*** ---------------------------------------------------------------------- ***/
+
+/* functions to query the lang database and to set the lang */
+
+_BOOL nls_set_lang(RSCFILE *file, const char *id)
+{
+	rsc_lang *lang;
+
+	for (lang = file->rsc_langs; lang != NULL; lang = lang->next)
+	{
+		if (strcmp(id, lang->id) == 0)
+		{
+	    	file->rsc_nls_domain.hash = lang->hash;
+			gettext_init(&file->rsc_nls_domain);
+			return TRUE;
+	    }
+	}
+	return FALSE;
+}

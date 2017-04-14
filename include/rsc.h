@@ -31,5 +31,6 @@ _LONG bitblk_datasize(BITBLK *bit);
 _LONG iconblk_masksize(ICONBLK *icon);
 
 _BOOL rsc_lang_add(rsc_lang **list, const char *id, const char *filename);
+_BOOL nls_set_lang(RSCFILE *file, const char *id);
 
 #endif /* __RSC_H__ */

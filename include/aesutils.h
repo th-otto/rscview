@@ -2,6 +2,7 @@
 #define __AESUTILS_H__
 
 #include <stdarg.h>
+#include <nls.h>
 
 #undef min
 #undef max
@@ -56,6 +57,8 @@ unsigned int reverse(unsigned int index);
 _BOOL streq(const char *p1, const char *p2);
 _WORD inf_gindex(OBJECT *tree, _UWORD baseobj, _UWORD numobj);
 _WORD inf_what(OBJECT *tree, _WORD ok);
+
+void xlate_obj_array(nls_domain *domain, OBJECT *obj_array, _LONG nobs);
 
 #undef toupper
 int toupper(int ch);

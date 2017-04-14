@@ -1616,12 +1616,10 @@ static _BOOL is_emutos_desktop(RSCFILE *file)
 
 /*** ---------------------------------------------------------------------- ***/
 
-#define gettext(x) x
-
-static void xlate_obj_array(OBJECT *obj_array, _LONG nobs)
+void xlate_obj_array(nls_domain *domain, OBJECT *obj_array, _LONG nobs)
 {
 	OBJECT *obj;
-
+	
 	for (obj = obj_array; --nobs >= 0; obj++)
 	{
 		switch (obj->ob_type)
@@ -1630,12 +1628,12 @@ static void xlate_obj_array(OBJECT *obj_array, _LONG nobs)
 		case G_BOXTEXT:
 		case G_FTEXT:
 		case G_FBOXTEXT:
-			obj->ob_spec.tedinfo->te_ptmplt = gettext(obj->ob_spec.tedinfo->te_ptmplt);
+			obj->ob_spec.tedinfo->te_ptmplt = dgettext(domain, obj->ob_spec.tedinfo->te_ptmplt);
 			break;
 		case G_STRING:
 		case G_BUTTON:
 		case G_TITLE:
-			obj->ob_spec.free_string = gettext(obj->ob_spec.free_string);
+			obj->ob_spec.free_string = dgettext(domain, obj->ob_spec.free_string);
 			break;
 		default:
 			break;
@@ -1794,7 +1792,7 @@ static void emutos_desktop_fix(RSCFILE *file)
 	sprintf(copyright_year, "%04d", tm->tm_year + 1900);
 	
     /* translate strings in objects */
-    xlate_obj_array(file->rs_object, file->header.rsh_nobs);
+    xlate_obj_array(&file->rsc_nls_domain, file->rs_object, file->header.rsh_nobs);
 
     /* insert the version number */
     tree[DEVERSN].ob_spec.free_string = version;
@@ -1838,7 +1836,7 @@ static void emutos_desktop_fix(RSCFILE *file)
 static void emutos_aes_fix(RSCFILE *file)
 {
     /* translate strings in objects */
-    xlate_obj_array(file->rs_object, file->header.rsh_nobs);
+    xlate_obj_array(&file->rsc_nls_domain, file->rs_object, file->header.rsh_nobs);
 	centre_titles(file);
 }
 

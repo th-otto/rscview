@@ -15,6 +15,9 @@ char const program_name[] = "rscview";
 char const program_version[] = VERSION;
 char const program_date[] = "28.03.2017";
 
+nls_domain nls_default_domain = { "rscview", NULL };
+
+
 /*
  * gui variables
  */

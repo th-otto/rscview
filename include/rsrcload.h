@@ -10,6 +10,7 @@
 #include <xrsrc.h>
 #include <mobject.h>
 #include <extob.h>
+#include "nls.h"
 
 EXTERN_C_BEG
 
@@ -54,9 +55,10 @@ typedef struct _namerule {
 
 typedef struct rsc_lang rsc_lang;
 struct rsc_lang {
-	char *id;
-	char *filename;
-	rsc_lang *next;
+	char *id;			/* name of language */
+	char *filename;		/* associated file */
+	const char *const *const *hash;		/* hash of strings for this language */
+	rsc_lang *next;		
 };
 	
 struct _rscfile {
@@ -119,6 +121,7 @@ struct _rscfile {
 	_LONG rsc_nstrings;         /* total number of strings */
 	_LONG rsc_nimages;			/* total number of images */
 	_LONG rsc_nuserblks;		/* number of USERBLK structs */
+	nls_domain rsc_nls_domain;
 };
 
 void GetTextSize(_WORD *width, _WORD *height);

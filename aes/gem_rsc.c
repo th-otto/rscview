@@ -13,6 +13,8 @@ const BITBLK *const *aes_rsc_bitblk = rs_frimg;
 static char msg_str[MAX_LINENUM][MAX_LINELEN+1];
 static char msg_but[MAX_BUTNUM][MAX_BUTLEN+1];
 
+static nls_domain aes_domain = { "aes", NULL };
+
 _BOOL rsc_read(void)
 {
 	OBJECT *tree;
@@ -21,6 +23,9 @@ _BOOL rsc_read(void)
     /* Copy data from ROM to RAM: */
 	memcpy(rs_object, rs_object_rom, sizeof(rs_object));
 	memcpy(rs_tedinfo, rs_tedinfo_rom, sizeof(rs_tedinfo));
+
+    /* translate strings in objects */
+    xlate_obj_array(&aes_domain, rs_object, NUM_OBS);
 
 	/*
 	 * Set up message & button buffers for form_alert().
@@ -42,5 +47,5 @@ void rsc_free(void)
 /* Get a string from the GEM-RSC */
 char *rs_str(_UWORD stnum)
 {
-    return (char *)NO_CONST(_(aes_rsc_string[stnum]));
+    return dgettext(&aes_domain, aes_rsc_string[stnum]);
 }

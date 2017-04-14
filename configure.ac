@@ -566,6 +566,7 @@ AC_CONFIG_FILES([
 Makefile
 data/Makefile
 gemlib/Makefile
+po/Makefile
 aes/Makefile
 vdi/Makefile
 util/Makefile
