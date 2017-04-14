@@ -2,13 +2,17 @@ include $(top_srcdir)/config.mk
 
 INCLUDES += -I$(srcdir)
 
-noinst_PROGRAMS = fntdump
+noinst_PROGRAMS = fntdump bug
 
 CC = $(BUILD_CC)
 EXEEXT = $(BUILD_EXEEXTT)
 
 fntdump_SOURCES = \
 	fntdump.c \
+	$(empty)
+
+bug_SOURCES = \
+	bug.c \
 	$(empty)
 
 BUILT_SOURCES = font_8x16.c font_8x8.c font_6x8.c
