@@ -19,6 +19,7 @@ rscview_SOURCES = \
 	bghio.c \
 	w_draw.c \
 	fio_err.c \
+	pofile.c \
 	$(empty)
 
 rscview_LDADD = -L../aes -L../vdi -L../gemlib -L../util -laes -lgem -lvdi -laes -lgem -lvdi -lutil

@@ -243,7 +243,7 @@ static char desktop_string_61[] = N_("OK");
 static char desktop_string_62[] = N_("Cancel");
 static char desktop_string_63[] = N_("DISK INFORMATION");
 static char desktop_string_64[] = "@";
-static char desktop_string_65[] = N_("Drive identifier: _:");
+static char desktop_string_65[] = N_("Drive identifier:     _");
 static char desktop_string_66[] = "A";
 static char desktop_string_67[] = "@2345678901";
 static char desktop_string_68[] = N_("Disk label: ________.___");
@@ -498,36 +498,37 @@ static char desktop_string_314[] = N_("TRASH");
 static char desktop_string_315[] = N_("-More-");
 static char desktop_string_316[] = N_("-End of file-");
 static char desktop_string_317[] = N_("-File read error-");
-static char desktop_string_318[] = N_("[2][Switch resolution?][Yes|No]");
-static char desktop_string_319[] = N_("[2][Show this document?][Show|Cancel]");
-static char desktop_string_320[] = N_("[1][This document type has no|associated application.][  OK  ]");
-static char desktop_string_321[] = N_("[1][The GEM Desktop has no more|windows.  Please close a|window that you are not|using.][  OK  ]");
-static char desktop_string_322[] = N_("[3][You cannot copy a parent folder|into one of its child folders.][  OK  ]");
-static char desktop_string_323[] = N_("[3][Invalid copy operation.][  OK  ]");
-static char desktop_string_324[] = N_("[2][Abort this operation?][  Yes  |  No  ]");
-static char desktop_string_325[] = N_("[2][Do you want to delete all|the files on drive %c: ?][Yes| No ]");
-static char desktop_string_326[] = N_("[1][Sorry, the desktop cannot|install any more icons|or applications.][  OK  ]");
-static char desktop_string_327[] = N_("[2][You cannot create a folder|with that name. Please retry|with a new name, or cancel.][Cancel|Retry]");
-static char desktop_string_328[] = N_("[1][This disk does not have enough|room for this operation.][  OK  ]");
-static char desktop_string_329[] = N_("[3][Cannot create EMUDESK.INF.][  OK  ]");
-static char desktop_string_330[] = N_("[3][You cannot create or|access a folder this far|down the directory path.][  OK  ]");
-static char desktop_string_331[] = N_("[3][You cannot create or access|a file or folder with that|name, because the pathname|is too long.][  OK  ]");
-static char desktop_string_332[] = N_("[1][You cannot open the trash|can icon into a window.][  OK  ]");
-static char desktop_string_333[] = N_("[1][The trash can is used to|permanently delete files|or folders.][  OK  ]");
-static char desktop_string_334[] = N_("[1][You cannot drag applications,|files or folders onto the|Desktop.][  OK  ]");
-static char desktop_string_335[] = N_("[1][You cannot drag the trash can|icon into a window.][  OK  ]");
-static char desktop_string_336[] = N_("[1][You cannot place this|icon over another icon.][  OK  ]");
-static char desktop_string_337[] = N_("[2][Save Desktop?][  OK  |Cancel]");
-static char desktop_string_338[] = N_("[2][Do you want to remove icons|or delete files?][Icons|Files|Cancel]");
-static char desktop_string_339[] = N_("[1][Invalid function key value.][  OK  ]");
-static char desktop_string_340[] = N_("[2][Function key already assigned.|Do you want to reassign it?][  OK  |Cancel]");
-static char desktop_string_341[] = N_("[3][Not enough memory to|initialise EmuDesk.|You must reboot.][OK]");
-static char desktop_string_342[] = N_("[2][%s not found.|Do you want to remove the|icon or locate the icon?][Remove|Locate|Cancel]");
+static char desktop_string_318[] = N_("Locate item");
+static char desktop_string_319[] = N_("[2][Switch resolution?][Yes|No]");
+static char desktop_string_320[] = N_("[2][Show this document?][Show|Cancel]");
+static char desktop_string_321[] = N_("[1][This document type has no|associated application.][  OK  ]");
+static char desktop_string_322[] = N_("[1][The GEM Desktop has no more|windows.  Please close a|window that you are not|using.][  OK  ]");
+static char desktop_string_323[] = N_("[3][You cannot copy a parent folder|into one of its child folders.][  OK  ]");
+static char desktop_string_324[] = N_("[3][Invalid copy operation.][  OK  ]");
+static char desktop_string_325[] = N_("[2][Abort this operation?][  Yes  |  No  ]");
+static char desktop_string_326[] = N_("[2][Do you want to delete all|the files on drive %c: ?][Yes| No ]");
+static char desktop_string_327[] = N_("[1][Sorry, the desktop cannot|install any more icons|or applications.][  OK  ]");
+static char desktop_string_328[] = N_("[2][You cannot create a folder|with that name. Please retry|with a new name, or cancel.][Cancel|Retry]");
+static char desktop_string_329[] = N_("[1][This disk does not have enough|room for this operation.][  OK  ]");
+static char desktop_string_330[] = N_("[3][Cannot create EMUDESK.INF.][  OK  ]");
+static char desktop_string_331[] = N_("[3][You cannot create or|access a folder this far|down the directory path.][  OK  ]");
+static char desktop_string_332[] = N_("[3][You cannot create or access|a file or folder with that|name, because the pathname|is too long.][  OK  ]");
+static char desktop_string_333[] = N_("[1][You cannot open the trash|can icon into a window.][  OK  ]");
+static char desktop_string_334[] = N_("[1][The trash can is used to|permanently delete files|or folders.][  OK  ]");
+static char desktop_string_335[] = N_("[1][You cannot drag applications,|files or folders onto the|Desktop.][  OK  ]");
+static char desktop_string_336[] = N_("[1][You cannot drag the trash can|icon into a window.][  OK  ]");
+static char desktop_string_337[] = N_("[1][You cannot place this|icon over another icon.][  OK  ]");
+static char desktop_string_338[] = N_("[2][Save Desktop?][  OK  |Cancel]");
+static char desktop_string_339[] = N_("[2][Do you want to remove icons|or delete files?][Icons|Files|Cancel]");
+static char desktop_string_340[] = N_("[1][Invalid function key value.][  OK  ]");
+static char desktop_string_341[] = N_("[2][Function key already assigned.|Do you want to reassign it?][  OK  |Cancel]");
+static char desktop_string_342[] = N_("[3][Not enough memory to|initialise EmuDesk.|You must reboot.][OK]");
 #ifndef TARGET_192
-static char desktop_string_343[] = N_("[1][Please select icon type.][Desktop|Window|Cancel]");
-static char desktop_string_344[] = N_("[1][No matching file type.][  OK  ]");
-static char desktop_string_345[] = N_("[3][Formatting error. The target|disk may be write-protected|or unusable.][Retry|Abort]");
-static char desktop_string_346[] = N_("[1][This disk has %ld bytes|available to the user.][ Continue | Quit ]");
+static char desktop_string_343[] = N_("[2][%s not found.|Do you want to remove the|icon or locate the item?][Remove|Locate|Cancel]");
+static char desktop_string_344[] = N_("[1][Please select icon type.][Desktop|Window|Cancel]");
+static char desktop_string_345[] = N_("[1][No matching file type.][  OK  ]");
+static char desktop_string_346[] = N_("[3][Formatting error. The target|disk may be write-protected|or unusable.][Retry|Abort]");
+static char desktop_string_347[] = N_("[1][This disk has %ld bytes|available to the user.][ Continue | Quit ]");
 #endif
 
 
@@ -603,6 +604,7 @@ char *desk_rs_fstr[] = {
 	desktop_string_344,
 	desktop_string_345,
 	desktop_string_346,
+	desktop_string_347,
 #endif
 };
 
@@ -620,7 +622,7 @@ static TEDINFO rs_tedinfo[NUM_TI] = {
 	{ desktop_string_49, desktop_string_50, desktop_string_51, IBM, 0, TE_RIGHT, 0x1100, 0x0, 0, 7,15 }, /* FFTIME */
 	{ desktop_string_52, desktop_string_53, desktop_string_54, IBM, 0, TE_RIGHT, 0x1100, 0x0, 0, 6,25 }, /* FFNUMFOL */
 	{ desktop_string_55, desktop_string_56, desktop_string_57, IBM, 0, TE_RIGHT, 0x1100, 0x0, 0, 6,23 }, /* FFNUMFIL */
-	{ desktop_string_64, desktop_string_65, desktop_string_66, IBM, 0, TE_CNTR, 0x1100, 0x0, 0, 2,21 }, /* DIDRIVE */
+	{ desktop_string_64, desktop_string_65, desktop_string_66, IBM, 0, TE_RIGHT, 0x1100, 0x0, 0, 2,24 }, /* DIDRIVE */
 	{ desktop_string_67, desktop_string_68, desktop_string_69, IBM, 0, TE_LEFT, 0x1100, 0x0, 0, 12,25 }, /* DIVOLUME */
 	{ desktop_string_70, desktop_string_71, desktop_string_72, IBM, 0, TE_RIGHT, 0x1100, 0x0, 0, 6,25 }, /* DINFOLDS */
 	{ desktop_string_73, desktop_string_74, desktop_string_75, IBM, 0, TE_RIGHT, 0x1100, 0x0, 0, 6,23 }, /* DINFILES */
@@ -718,7 +720,7 @@ static OBJECT rs_object[NUM_OBS] = {
 
 	{ -1, 1, 8, G_BOX, OF_NONE, OS_OUTLINED, C_UNION(0x11100L), 0,0, 38,12 },
 	{ 2, -1, -1, G_STRING, OF_NONE, OS_NORMAL, C_UNION(desktop_string_63), 3,1, 16,1 }, /* DITITLE */
-	{ 3, -1, -1, G_FBOXTEXT, 0x8000, OS_NORMAL, C_UNION(&rs_tedinfo[6]), 2,3, 32,1 }, /* DIDRIVE */
+	{ 3, -1, -1, G_FBOXTEXT, 0x4000, OS_NORMAL, C_UNION(&rs_tedinfo[6]), 2,3, 32,1 }, /* DIDRIVE */
 	{ 4, -1, -1, G_FBOXTEXT, 0x4000, OS_NORMAL, C_UNION(&rs_tedinfo[7]), 2,4, 32,1 }, /* DIVOLUME */
 	{ 5, -1, -1, G_FBOXTEXT, OF_NONE, OS_NORMAL, C_UNION(&rs_tedinfo[8]), 2,5, 32,1 }, /* DINFOLDS */
 	{ 6, -1, -1, G_FBOXTEXT, OF_NONE, OS_NORMAL, C_UNION(&rs_tedinfo[9]), 2,6, 32,1 }, /* DINFILES */

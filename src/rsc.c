@@ -12,6 +12,7 @@
 #include <fileio.h>
 #include <time.h>
 #include "aesutils.h"
+#include "pofile.h"
 
 rsc_options op_rsc_opts = {
 	'@',	/* ted_fillchar */
@@ -456,6 +457,7 @@ void rsc_file_delete(RSCFILE *file, _BOOL all)
 	g_free(file->rsc_extob.overlay_id);
 	file->rsc_extob.overlay_id = NULL;
 #endif
+	po_delete_hash(&file->rsc_nls_domain);
 	if (all)
 	{
 #if 0 /* NYI here */

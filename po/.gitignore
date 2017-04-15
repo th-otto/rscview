@@ -1,0 +1,8 @@
+*.pot
+*.po
+*.png
+*.rsc
+*.rsh
+*.rso
+*.h
+*.xml

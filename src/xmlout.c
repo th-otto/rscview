@@ -740,7 +740,21 @@ static _BOOL xml_trees(RSCFILE *file, XRS_HEADER *xrsc_header, rsc_counter *coun
 	RSCTREE *tree;
 	OBJECT *ob;
 	char *str;
+	const char *lang1;
+	const char *lang;
+	const char *lang2;
 	
+	if (file->rsc_nls_domain.lang)
+	{
+		lang1 = " lang=\"";
+		lang2 = "\"";
+		lang = file->rsc_nls_domain.lang;
+	} else
+	{
+		lang1 = "";
+		lang2 = "";
+		lang = "";
+	}
 	FOR_ALL_RSC(file, tree)
 	{
 		switch (tree->rt_type)
@@ -755,7 +769,7 @@ static _BOOL xml_trees(RSCFILE *file, XRS_HEADER *xrsc_header, rsc_counter *coun
 				ob = tree->rt_objects.dial.di_tree;
 			if (ob != NULL)
 			{
-				xml_indent(1); output3("<tree index=\"%ld\" name=\"%s\" type=\"%s\">\n", tree->rt_index, tree->rt_name, rtype_name_short(tree->rt_type));
+				xml_indent(1); fprintf(ffp, "<tree index=\"%ld\" name=\"%s\" type=\"%s\"%s%s%s>\n", tree->rt_index, tree->rt_name, rtype_name_short(tree->rt_type), lang1, lang, lang2);
 				if (do_comment)
 				{
 					xml_comment(tree->rt_cmnt, 2);
@@ -768,7 +782,8 @@ static _BOOL xml_trees(RSCFILE *file, XRS_HEADER *xrsc_header, rsc_counter *coun
 		case RT_FRSTR:
 		case RT_ALERT:
 			str = tree->rt_type == RT_ALERT ? tree->rt_objects.alert.al_str : tree->rt_objects.str.fr_str;
-			xml_indent(1); output3("<freestring index=\"%ld\" name=\"%s\" type=\"%s\">\n", tree->rt_index, tree->rt_name, rtype_name_short(tree->rt_type));
+			str = dgettext(&file->rsc_nls_domain, str);
+			xml_indent(1); fprintf(ffp, "<freestring index=\"%ld\" name=\"%s\" type=\"%s\"%s%s%s>\n", tree->rt_index, tree->rt_name, rtype_name_short(tree->rt_type), lang1, lang, lang2);
 			if (do_comment)
 			{
 				xml_comment(tree->rt_cmnt, 2);
@@ -779,7 +794,7 @@ static _BOOL xml_trees(RSCFILE *file, XRS_HEADER *xrsc_header, rsc_counter *coun
 			break;
 		case RT_FRIMG:
 		case RT_MOUSE:
-			xml_indent(1); output3("<freeimage index=\"%ld\" name=\"%s\" type=\"%s\">\n", tree->rt_index, tree->rt_name, rtype_name_short(tree->rt_type));
+			xml_indent(1); fprintf(ffp, "<freeimage index=\"%ld\" name=\"%s\" type=\"%s\"%s%s%s>\n", tree->rt_index, tree->rt_name, rtype_name_short(tree->rt_type), lang1, lang, lang2);
 			if (do_comment)
 			{
 				xml_comment(tree->rt_cmnt, 2);
@@ -789,7 +804,7 @@ static _BOOL xml_trees(RSCFILE *file, XRS_HEADER *xrsc_header, rsc_counter *coun
 			break;
 		case RT_BUBBLEMORE:
 		case RT_BUBBLEUSER:
-			xml_indent(1); output3("<bubble index=\"%ld\" name=\"%s\" type=\"%s\">\n", tree->rt_index, tree->rt_name, rtype_name_short(tree->rt_type));
+			xml_indent(1); fprintf(ffp, "<bubble index=\"%ld\" name=\"%s\" type=\"%s\"%s%s%s>\n", tree->rt_index, tree->rt_name, rtype_name_short(tree->rt_type), lang1, lang, lang2);
 			if (do_comment)
 			{
 				xml_comment(tree->rt_cmnt, 2);

@@ -21,6 +21,7 @@
 
 typedef struct _nls_domain {
 	const char *domain;
+	const char *lang;
 	const char *const *const *hash;
 } nls_domain;
 

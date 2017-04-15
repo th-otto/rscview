@@ -41,8 +41,6 @@
  * TODO list
  * - better algorithm for merging po files (keep the order of entries)
  * - parse_po_file is a mess
- * - memory is not freed correctly, esp. after xstrdup
- * - use strerror() to report errors
  * - use #~ for old entries
  * - split this into proper files
  * - finish translate command
@@ -53,6 +51,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdarg.h>
+#include <errno.h>
 #include <time.h>
 
 #define VERSION "0.2e"
@@ -71,7 +70,6 @@
 
 #define PO_DIR "../po/"
 
-#define HERE fprintf(stderr, "%s:%d\n", __FUNCTION__, __LINE__);
 #define UNUSED(x) (void)(x)				/* Unused variable */
 #define ARRAY_SIZE(array) ((int)(sizeof(array)/sizeof(array[0])))
 
@@ -867,6 +865,7 @@ static int inextsh(IFILE *f)
 	}
 }
 
+
 /* returns the next logical char, in C syntax */
 static int inextc(IFILE *f)
 {
@@ -1282,7 +1281,7 @@ static gboolean parse_c_file(char *fname, const parse_c_action *pca, void *self)
 	
 	if (f == NULL)
 	{
-		warn("could not open file '%s'", fname);
+		error("could not open file '%s': %s", fname, strerror(errno));
 		return FALSE;
 	}
 
@@ -1412,11 +1411,7 @@ static int underscore_length(const char *s)
 
 	for (; *s; s++)
 		if (*s == '_')
-			break;
-
-	for (; *s; s++, len++)
-		if (*s != '_' && *s != '.')
-			break;
+			len++;
 
 	return len;
 }
@@ -1427,7 +1422,7 @@ static int underscore_length(const char *s)
  */
 
 __attribute__((__warn_unused_result__))
-static gboolean parse_po_file(const char *fname, oh *o, int ignore_ae)
+static gboolean parse_po_file(const char *fname, oh *o, gboolean ignore_ae)
 {
 	int c;
 	IFILE *f;
@@ -1706,6 +1701,10 @@ errout:
 
 
 
+/*
+ * parse OIPL (one item per line) simple files
+ */
+
 static void free_oipl_file(da *d)
 {
 	int i, len;
@@ -1719,10 +1718,6 @@ static void free_oipl_file(da *d)
 	}
 }
 
-/*
- * parse OIPL (one item per line) simple files
- */
-
 __attribute__((__warn_unused_result__))
 static gboolean parse_oipl_file(const char *fname, da *d)
 {
@@ -1732,7 +1727,7 @@ static gboolean parse_oipl_file(const char *fname, da *d)
 	f = ifopen(fname);
 	if (f == NULL)
 	{
-		error("could not open %s", fname);
+		error("could not open %s: %s", fname, strerror(errno));
 		return FALSE;
 	}
 	for (;;)
@@ -1867,7 +1862,7 @@ static void print_alert_warning(int code, char *lang, char *key)
 
 static int print_canon(FILE *f, const char *t, const char *prefix, gboolean encode_extended_ascii)
 {
-	unsigned a;
+	unsigned int a;
 	int translate = 0;
 	int rc = 0;
 
@@ -1974,8 +1969,8 @@ static int print_canon(FILE *f, const char *t, const char *prefix, gboolean enco
 			/* fallthrough */
 #endif /* CANON_GEM_ALERT */
 		default:
-			a = ((unsigned) (*t)) & 0xFF;
-			if (a < ' ' || a == 0x7f || (encode_extended_ascii && a >= 128))
+			a = ((unsigned char) (*t)) & 0xFF;
+			if (a < ' ' || a == 0x7f || (encode_extended_ascii && a >= 0x80))
 			{
 				/* control character */
 				fprintf(f, "\\%03o", a);
@@ -2092,7 +2087,7 @@ static void print_po_file(FILE *f, oh *o)
  */
 
 __attribute__((__warn_unused_result__))
-static gboolean update(char *fname)
+static gboolean update(const char *fname)
 {
 	oh *o1, *o2 = NULL, *o = NULL;
 	poe *e1, *e2, *e;
@@ -2107,7 +2102,7 @@ static gboolean update(char *fname)
 	
 	/* get the reference first, before renaming the file */
 	o1 = o_new();
-	if (parse_po_file(PO_DIR "messages.pot", o1, 0) == FALSE)
+	if (parse_po_file(PO_DIR "messages.pot", o1, FALSE) == FALSE)
 		goto errout;
 
 	/* rename the po file (backup) */
@@ -2124,7 +2119,7 @@ static gboolean update(char *fname)
 
 	/* parse the po file */
 	o2 = o_new();
-	if (parse_po_file(bfname, o2, 0) == FALSE)
+	if (parse_po_file(bfname, o2, FALSE) == FALSE)
 		goto errout;
 
 	/* scan o1 and o2, merging the two */
@@ -2170,7 +2165,7 @@ static gboolean update(char *fname)
 		if (e2->kind == KIND_COMM)
 		{
 			o_add(o, e2);
-		} else if (e2->msgid.key[0] == 0)
+		} else if (e2->msgid.key[0] == '\0')
 		{
 			/* the old admin entry - do nothing */
 		} else
@@ -2204,7 +2199,7 @@ static gboolean update(char *fname)
 		e1 = o_nth(o1, i1);
 		if (e1->kind == KIND_NORM)
 		{
-			if (e1->msgid.key[0] != 0)
+			if (e1->msgid.key[0] != '\0')
 			{
 				e = o_find(o2, e1->msgid.key);
 				if (!e)
@@ -2223,10 +2218,12 @@ static gboolean update(char *fname)
 	f = fopen(fname, "w");
 	if (f == NULL)
 	{
-		fatal("could not open %s", fname);
+		error("could not open %s: %s", fname, strerror(errno));
+	} else
+	{
+		print_po_file(f, o);
+		retval = TRUE;
 	}
-	print_po_file(f, o);
-	retval = TRUE;
 
 errout:
 	if (f)
@@ -2284,7 +2281,7 @@ static gboolean xgettext(void)
 	f = fopen(fname, "w");
 	if (f == NULL)
 	{
-		error("couldn't create %s", fname);
+		error("couldn't create %s: %s", fname, strerror(errno));
 		retval = FALSE;
 		goto errout;
 	}
@@ -2313,7 +2310,7 @@ struct charset_alias
 	const char *alias;
 };
 
-const struct charset_alias charsets[] = {
+static struct charset_alias const charsets[] = {
  	{ "latin1", "ISO-8859-1" },
 	{ "latin2", "ISO-8859-2" },
 	{ "latin9", "ISO-8859-15" },
@@ -2517,7 +2514,7 @@ struct converter_info
 	converter_t func;
 };
 
-static const struct converter_info converters[] = {
+static struct converter_info const converters[] = {
 	{ "latin1", "atarist", latin1_to_atarist },
 };
 
@@ -2563,10 +2560,10 @@ static converter_t get_converter(const char *from, const char *to)
 #define TH_MASK (TH_SIZE - 1)
 #define TH_BMASK ((1 << (16 - TH_BITS)) - 1)
 
-static int compute_th_value(const char *t)
+static unsigned int compute_th_value(const char *t)
 {
 	const unsigned char *u = (const unsigned char *) t;
-	unsigned a, b;
+	unsigned int a, b;
 
 	a = 0;
 	while (*u)
@@ -2637,13 +2634,13 @@ static gboolean make(void)
 		goto errout;
 
 	oref = o_new();
-	if (parse_po_file(PO_DIR "messages.pot", oref, 1) == FALSE)
+	if (parse_po_file(PO_DIR "messages.pot", oref, TRUE) == FALSE)
 		goto errout;
 
 	f = fopen(LANGS_C, "w");
 	if (f == NULL)
 	{
-		error("cannot open " LANGS_C);
+		error("cannot open " LANGS_C ": %s", strerror(errno));
 		goto errout;
 	}
 
@@ -2692,7 +2689,7 @@ static gboolean make(void)
 		/* clear target hash */
 		for (j = 0; j < TH_SIZE; j++)
 		{
-			th[j] = 0;
+			th[j] = NULL;
 		}
 
 		/* obtain destination charset from LINGUAS */
@@ -2706,10 +2703,11 @@ static gboolean make(void)
 		/* read translations */
 		o = o_new();
 		sprintf(tmp, PO_DIR "%s.po", lang);
-		if (parse_po_file(tmp, o, 0) == FALSE)
+		if (parse_po_file(tmp, o, FALSE) == FALSE)
 			goto errout;
 
-		{								/* get the source charset from the po file */
+		/* get the source charset from the po file */
+		{
 			ae_t a = { NULL, NULL, NULL, NULL };
 			poe *e = o_find(o, "");
 
@@ -2738,9 +2736,9 @@ static gboolean make(void)
 				eref = o_find(oref, e->msgid.key);
 				if (eref)
 				{
-					int a = compute_th_value(e->msgid.key);
+					unsigned int a = compute_th_value(e->msgid.key);
 
-					if (th[a] == 0)
+					if (th[a] == NULL)
 					{
 						th[a] = da_new();
 					}
@@ -2764,7 +2762,7 @@ static gboolean make(void)
 		fprintf(f, "/*\n * hash table for lang %s.\n */\n\n", lang);
 		for (j = 0; j < TH_SIZE; j++)
 		{
-			if (th[j] != 0)
+			if (th[j] != NULL)
 			{
 				int ii, nn, rc;
 
@@ -2820,7 +2818,7 @@ static const struct lang_info lang_%s = { \"%s\", msg_%s };\n", t, t, t);
 	retval = TRUE;
 
 errout:
-	da_free(langs);
+	free_oipl_file(langs);
 	if (f)
 		fclose(f);
 	free_oipl_file(d);
@@ -2858,7 +2856,7 @@ static gboolean translate(char *lang, char *from)
 	p.f = fopen(to, "w");
 	if (p.f == NULL)
 	{
-		warn("cannot create %s\n", to);
+		warn("cannot create %s: %s", to, strerror(errno));
 		goto errout;
 	}
 	g_free(to);
@@ -2900,7 +2898,7 @@ static gboolean translate(char *lang, char *from)
 	/* read all translations */
 	p.o = o_new();
 	sprintf(po, PO_DIR "%s.po", lang);
-	if (parse_po_file(po, p.o, 0) == FALSE)
+	if (parse_po_file(po, p.o, FALSE) == FALSE)
 		goto errout;
 
 	{									/* get the source charset from the po file */

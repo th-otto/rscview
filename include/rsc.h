@@ -12,6 +12,21 @@
 #  include <mobject.h>
 #endif
 
+/*
+ * Menue-Indices
+ */
+/* the box containing the whole menubar */
+#define menu_the_bar(menu) (menu[ROOT].ob_head)
+/* the ibox containing the titles */
+#define menu_the_active(menu) (menu[menu_the_bar(menu)].ob_head)
+/* the first title entry */
+#define menu_the_first(menu) (menu[menu_the_active(menu)].ob_head)
+/* the last title entry */
+#define menu_the_last(menu) (menu[menu_the_active(menu)].ob_tail)
+/* the ibox containing the menu subboxes */
+#define menu_the_menus(menu) (menu[menu_the_bar(menu)].ob_next)
+
+
 
 void rsc_init_file(RSCFILE *file);
 void rsc_count_all(RSCFILE *file);

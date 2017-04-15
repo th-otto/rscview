@@ -15,7 +15,7 @@ char const program_name[] = "rscview";
 char const program_version[] = VERSION;
 char const program_date[] = "28.03.2017";
 
-nls_domain nls_default_domain = { "rscview", NULL };
+nls_domain nls_default_domain = { "rscview", NULL, NULL };
 
 
 /*
@@ -43,21 +43,6 @@ void GetTextSize(_WORD *wchar, _WORD *hchar)
 	*hchar = gl_hchar;
 }
 
-
-
-/*
- * Menue-Indices
- */
-/* the box containing the whole menubar */
-#define menu_the_bar(menu) (menu[ROOT].ob_head)
-/* the ibox containing the titles */
-#define menu_the_active(menu) (menu[menu_the_bar(menu)].ob_head)
-/* the first title entry */
-#define menu_the_first(menu) (menu[menu_the_active(menu)].ob_head)
-/* the last title entry */
-#define menu_the_last(menu) (menu[menu_the_active(menu)].ob_tail)
-/* the ibox containing the menu subboxes */
-#define menu_the_menus(menu) (menu[menu_the_bar(menu)].ob_next)
 
 
 static void open_screen(void)
@@ -298,6 +283,7 @@ static _BOOL draw_alert(RSCTREE *tree)
 	str = tree->rt_objects.alert.al_str;	
 	if (str == NULL)
 		return FALSE;
+	str = dgettext(&tree->rt_file->rsc_nls_domain, str);
 	
 	clear_screen(tree->rt_name);
 	/*
@@ -360,6 +346,7 @@ static _BOOL draw_all_trees(RSCFILE *file)
 static struct option const long_options[] = {
 	{ "xml", no_argument, NULL, 'X' },
 	{ "verbose", no_argument, NULL, 'v' },
+	{ "lang", required_argument, NULL, 'l' },
 	{ "version", no_argument, NULL, 'V' },
 	{ "help", no_argument, NULL, 'h' },
 	{ NULL, no_argument, NULL, 0 }
@@ -385,13 +372,18 @@ int main(int argc, char **argv)
 	const char *filename;
 	int exit_status = EXIT_SUCCESS;
 	rsc_counter counter;
+	const char *lang = NULL;
 	
-	while ((c = getopt_long_only(argc, argv, "vXhV", long_options, NULL)) != EOF)
+	while ((c = getopt_long_only(argc, argv, "l:vXhV", long_options, NULL)) != EOF)
 	{
 		switch (c)
 		{
 		case 'X':
 			xml_out = TRUE;
+			break;
+		
+		case 'l':
+			lang = optarg;
 			break;
 		
 		case 'v':
@@ -430,7 +422,7 @@ int main(int argc, char **argv)
 	while (optind < argc)
 	{
 		filename = argv[optind++];
-		file = load_all(filename, XRSC_SAFETY_CHECKS);
+		file = load_all(filename, lang, XRSC_SAFETY_CHECKS);
 		if (file != NULL)
 		{
 			if (xml_out)

@@ -5,11 +5,12 @@
 #include <object.h>
 #include <ro_mem.h>
 #include "fileio.h"
-#include <rsc.h>
+#include "rsc.h"
 #include <time.h>
 #include "debug.h"
 #include "aesutils.h"
 #include "rso.h"
+#include "pofile.h"
 
 FILE *ffp = NULL;
 const char *fname;
@@ -1616,23 +1617,43 @@ static _BOOL is_emutos_desktop(RSCFILE *file)
 
 /*** ---------------------------------------------------------------------- ***/
 
-void xlate_obj_array(nls_domain *domain, OBJECT *obj_array, _LONG nobs)
+/*
+ *  trims trailing spaces from string
+ */
+static void trim_spaces(char *string)
+{
+	char *p;
+
+	for (p = string + strlen(string) - 1; p >= string; p--)
+		if (*p != ' ')
+			break;
+	p[1] = '\0';
+}
+
+/*** ---------------------------------------------------------------------- ***/
+
+void xlate_obj_array(nls_domain *domain, OBJECT *obj_array, _LONG nobs, _BOOL trim_strings)
 {
 	OBJECT *obj;
 	
 	for (obj = obj_array; --nobs >= 0; obj++)
 	{
-		switch (obj->ob_type)
+		_WORD type = obj->ob_type & OBTYPEMASK;
+		switch (type)
 		{
 		case G_TEXT:
-		case G_BOXTEXT:
 		case G_FTEXT:
+			obj->ob_spec.tedinfo->te_ptext = dgettext(domain, obj->ob_spec.tedinfo->te_ptext);
+			break;
+		case G_BOXTEXT:
 		case G_FBOXTEXT:
 			obj->ob_spec.tedinfo->te_ptmplt = dgettext(domain, obj->ob_spec.tedinfo->te_ptmplt);
 			break;
 		case G_STRING:
 		case G_BUTTON:
 		case G_TITLE:
+			if (type == G_STRING && trim_strings)
+				trim_spaces(obj->ob_spec.free_string);
 			obj->ob_spec.free_string = dgettext(domain, obj->ob_spec.free_string);
 			break;
 		default:
@@ -1673,19 +1694,23 @@ static void align_objects(OBJECT *obj_array, int nobj)
 	char *p;
 	_WORD len;		 /* string length in pixels */
 	_WORD wchar, hchar;
+	_WORD type;
 	
 	GetTextSize(&wchar, &hchar);
 	for (obj = obj_array; --nobj >= 0; obj++)
 	{
-		switch(obj->ob_type)
+		type = obj->ob_type & OBTYPEMASK;
+		switch (type)
 		{
 		case G_STRING:
 		case G_TEXT:
 		case G_FTEXT:
 		case G_BOXTEXT:
 		case G_FBOXTEXT:
-			if (obj->ob_type == G_STRING)
+			if (type == G_STRING)
 				p = obj->ob_spec.free_string;
+			else if (type == G_BOXTEXT || type == G_TEXT)
+				p = obj->ob_spec.tedinfo->te_ptext;
 			else
 				p = obj->ob_spec.tedinfo->te_ptmplt;
 			len = strlen(p) * wchar;
@@ -1748,35 +1773,76 @@ static void centre_titles(RSCFILE *file)
 
 /*** ---------------------------------------------------------------------- ***/
 
-static void adjust_menu(OBJECT *obj_array)
+/*
+ *  Change the sizes of the menus after translation
+ */
+static void adjust_menu(OBJECT *menu)
 {
-#define OBJ(i) (&obj_array[i])
-
-	int i;	/* index in the menu bar */
+	_WORD i, j;	/* index in the menu bar */
 	int n, x;
-	OBJECT *menu = OBJ(0);
-	OBJECT *mbar = OBJ(OBJ(menu->ob_head)->ob_head);
+	_WORD mbar = menu_the_active(menu);
+	_WORD the_menus;
 	OBJECT *title;
+	_WORD wchar, hchar;
+	
+	GetTextSize(&wchar, &hchar);
 
 	/*
 	 * first, set ob_x & ob_width for all the menu headings, and
 	 * determine the required width of the (translated) menu bar.
 	 */
-	for (i = mbar->ob_head, title = OBJ(i), x = 0; i <= mbar->ob_tail; i++, title++, x += n)
+	for (i = menu[mbar].ob_head, x = 0; i != mbar; i = menu[i].ob_next, x += n)
 	{
-		n = strlen(title->ob_spec.free_string);
+		title = &menu[i];
+		n = strlen(title->ob_spec.free_string) * wchar;
 		title->ob_x = x;
 		title->ob_width = n;
 	}
-	mbar->ob_width = x;
+	menu[mbar].ob_width = x;
 
+	/*
+	 * finally we can set ob_x and ob_width for the pulldown objects within the menu
+	 */
+	the_menus = menu_the_menus(menu);
+	j = menu[the_menus].ob_head;
+	for (i = menu[mbar].ob_head; i != mbar; i = menu[i].ob_next)
+	{
+		int k, m;
+		OBJECT *dropbox = &menu[j];
+
+		title = &menu[i];
+		/* find widest object under this menu heading */
+		for (k = dropbox->ob_head, m = 0; k != j; k = menu[k].ob_next)
+		{
+			OBJECT *item = &menu[k];
+			int l = strlen(item->ob_spec.free_string) * wchar;
+			if (m < l)
+				m = l;
+		}
+		dropbox->ob_x = menu[mbar].ob_x + title->ob_x;
+
+		/* make sure the menu is not too far on the right of the screen */
+#if 0
+		if (dropbox->ob_x + m >= width)
+		{
+			dropbox->ob_x = width - m - 1;
+		}
+#endif
+
+		for (k = dropbox->ob_head; k != j; k = menu[k].ob_next)
+		{
+			menu[k].ob_width = m;
+		}
+		dropbox->ob_width = m;
+
+		j = dropbox->ob_next;
+	}
 	KDEBUG(("desktop menu bar: x=0x%04x, w=0x%04x\n",mbar->ob_x,mbar->ob_width));
-#undef OBJ
 }
 
 static void emutos_desktop_fix(RSCFILE *file)
 {
-    OBJECT *tree = file->rs_trindex[ADDINFO];
+	OBJECT *tree = file->rs_trindex[ADDINFO];
 	static char version[10];
 	static char copyright_year[5];
 	static char empty[1];
@@ -1791,38 +1857,35 @@ static void emutos_desktop_fix(RSCFILE *file)
 	sprintf(version, "%04d%02d%02d", tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday);
 	sprintf(copyright_year, "%04d", tm->tm_year + 1900);
 	
-    /* translate strings in objects */
-    xlate_obj_array(&file->rsc_nls_domain, file->rs_object, file->header.rsh_nobs);
+	/* insert the version number */
+	tree[DEVERSN].ob_spec.free_string = version;
 
-    /* insert the version number */
-    tree[DEVERSN].ob_spec.free_string = version;
+	/* slightly adjust the about box for a timestamp build */
+	if (version[1] != '.')
+	{
+		tree[DELABEL].ob_spec.free_string = empty;	/* remove the word "Version" */
+		tree[DEVERSN].ob_x -= 6 * wchar;		  /* and move the start of the string */
+	}
 
-    /* slightly adjust the about box for a timestamp build */
-    if (version[1] != '.')
-    {
-        tree[DELABEL].ob_spec.free_string = empty;  /* remove the word "Version" */
-        tree[DEVERSN].ob_x -= 6 * wchar;          /* and move the start of the string */
-    }
+	/* insert the version number */
+	tree[DECOPYRT].ob_spec.free_string = copyright_year;
 
-    /* insert the version number */
-    tree[DECOPYRT].ob_spec.free_string = copyright_year;
+	/* adjust the size and coordinates of menu items */
+	adjust_menu(file->rs_trindex[ADMENU]);
 
-    /* adjust the size and coordinates of menu items */
-    adjust_menu(file->rs_trindex[ADMENU]);
-
-    /*
-     * perform special object alignment - this must be done after
-     * translation and coordinate fixing
-     */
-    align_objects(file->rs_object, file->header.rsh_nobs);
-    
-    tree = file->rs_trindex[ADFFINFO];
-    tree[1].ob_spec.free_string = file->rs_frstr[STFOINFO];
-    
-    tree = file->rs_trindex[ADCPYDEL];
-    tree[1].ob_spec.free_string = file->rs_frstr[STDELETE];
-    
-    centre_titles(file);
+	/*
+	 * perform special object alignment - this must be done after
+	 * translation and coordinate fixing
+	 */
+	align_objects(file->rs_object, file->header.rsh_nobs);
+	
+	tree = file->rs_trindex[ADFFINFO];
+	tree[1].ob_spec.free_string = file->rs_frstr[STFOINFO];
+	
+	tree = file->rs_trindex[ADCPYDEL];
+	tree[1].ob_spec.free_string = file->rs_frstr[STDELETE];
+	
+	centre_titles(file);
 }
 
 
@@ -1835,14 +1898,12 @@ static void emutos_desktop_fix(RSCFILE *file)
 
 static void emutos_aes_fix(RSCFILE *file)
 {
-    /* translate strings in objects */
-    xlate_obj_array(&file->rsc_nls_domain, file->rs_object, file->header.rsh_nobs);
 	centre_titles(file);
 }
 
 /*** ---------------------------------------------------------------------- ***/
 
-RSCFILE *load_all(const char *file_name, _UWORD flags)
+RSCFILE *load_all(const char *file_name, const char *lang, _UWORD flags)
 {
 	RSCFILE *file;
 	char filename[PATH_MAX];
@@ -1880,7 +1941,6 @@ RSCFILE *load_all(const char *file_name, _UWORD flags)
 		file->rsc_emutos_othercond_name = g_strdup("ADTTREZ");
 		file->rsc_emutos_othercond_string = g_strdup("#ifndef TARGET_192");
 		nf_debugprintf("EmuTOS desktop resource loaded\n");
-		emutos_desktop_fix(file);
 	} else if (is_emutos_icon(file))
 	{
 		file->rsc_emutos = EMUTOS_ICONS;
@@ -1899,7 +1959,27 @@ RSCFILE *load_all(const char *file_name, _UWORD flags)
 		file->rsc_emutos_othercond_name = g_strdup("APPS");
 		file->rsc_emutos_othercond_string = g_strdup("#if 0");
 		nf_debugprintf("EmuTOS gem resource loaded\n");
+	}
+	
+	/* translate strings in objects */
+	if (lang)
+	{
+		po_create_hash(lang, &file->rsc_nls_domain);
+		gettext_init(&file->rsc_nls_domain);
+		xlate_obj_array(&file->rsc_nls_domain, file->rs_object, file->header.rsh_nobs, TRUE);
+	}
+	
+	switch (file->rsc_emutos)
+	{
+	case EMUTOS_AES:
 		emutos_aes_fix(file);
+		break;
+	case EMUTOS_DESK:
+		emutos_desktop_fix(file);
+		break;
+	case EMUTOS_ICONS:
+	case EMUTOS_NONE:
+		break;
 	}
 	
 	status = FALSE;
