@@ -71,12 +71,30 @@ static VWK *vwk[MAX_VWK];
 static pel framebuffer[vdi_w * vdi_h];
 #define pixel(x, y) framebuffer[(y) * v->width + (x)]
 
-#include "../data/font_6x8.c"
-#include "../data/font_8x8.c"
-#include "../data/font_8x16.c"
+#include "../data/fnt_st_6x8.c"
+#include "../data/fnt_st_8x8.c"
+#include "../data/fnt_st_8x16.c"
+#include "../data/fnt_l9_6x8.c"
+#include "../data/fnt_l9_8x8.c"
+#include "../data/fnt_l9_8x16.c"
+#include "../data/fnt_l2_6x8.c"
+#include "../data/fnt_l2_8x8.c"
+#include "../data/fnt_l2_8x16.c"
+#include "../data/fnt_gr_6x8.c"
+#include "../data/fnt_gr_8x8.c"
+#include "../data/fnt_gr_8x16.c"
+#include "../data/fnt_ru_6x8.c"
+#include "../data/fnt_ru_8x8.c"
+#include "../data/fnt_ru_8x16.c"
 
-static FONT_DESC sysfont[SYSFONTS];
-static const FONT_HDR *const sysfonthdrs[SYSFONTS] = { &fnt_st_6x8, &fnt_st_8x8, &fnt_st_8x16 };
+static FONT_DESC sysfont[SYSFONTS * NLSFONTSETS];
+static const FONT_HDR *const sysfonthdrs[SYSFONTS * NLSFONTSETS] = {
+	&fnt_st_6x8, &fnt_st_8x8, &fnt_st_8x16,
+	&fnt_l9_6x8, &fnt_l9_8x8, &fnt_l9_8x16,
+	&fnt_l2_6x8, &fnt_l2_8x8, &fnt_l2_8x16,
+	&fnt_gr_6x8, &fnt_gr_8x8, &fnt_gr_8x16,
+	&fnt_ru_6x8, &fnt_ru_8x8, &fnt_ru_8x16,
+};
 
 static int xvdi_debug;
 
@@ -1887,7 +1905,7 @@ static void change_font(VWK *v, int i)
 	if (IS_SCREEN_V(v))
 	{
 	}
-	v->font_index = i;
+	v->font_index = (v->font_id - 1) * SYSFONTS + i;
 }
 
 /******************************************************************************/
@@ -1967,11 +1985,18 @@ static int vdi_vst_font(VWK *v, VDIPB *pb)
 {
 	_WORD *control = PV_CONTROL(pb);
 	_WORD *intout = PV_INTOUT(pb);
-
+	_WORD id = *PV_INTIN(pb);
+	_WORD index;
+	
 	UNUSED(v);
-	V("vst_font[%d]: %d", v->handle, *PV_INTIN(pb));
+	V("vst_font[%d]: %d", v->handle, id);
 
-	V_INTOUT(pb, 0) = SYSTEM_FONT_ID;
+	if (id < 1 || id > NLSFONTSETS)
+		id = SYSTEM_FONT_ID;
+	V_INTOUT(pb, 0) = id;
+	index = v->font_index % SYSFONTS;
+	v->font_id = id;
+	change_font(v, index);
 	V_NINTOUT(pb, 1);
 	V_NPTSOUT(pb, 0);
 	return VDI_DONE;
@@ -2187,7 +2212,7 @@ static int vdi_vqt_attributes(VWK *v, VDIPB *pb)
 	sf = &sysfont[v->font_index];
 	V("vqt_attributes[%d] -> %dx%d", v->handle, sf->cellwidth, sf->cellheight);
 
-	V_INTOUT(pb, 0) = SYSTEM_FONT_ID;
+	V_INTOUT(pb, 0) = v->font_id;
 	V_INTOUT(pb, 1) = v->text_color;
 	V_INTOUT(pb, 2) = v->text_rotation;
 	V_INTOUT(pb, 3) = v->h_align;
@@ -2256,12 +2281,14 @@ static int vdi_vqt_name(VWK *v, VDIPB *pb)
 	_WORD *intout = PV_INTOUT(pb);
 	const char *s;
 	int i;
+	FONT_DESC *sf;
 	
 	UNUSED(v);
 	V("vqt_name[%d]: %d", v->handle, *PV_INTIN(pb));
 
-	V_INTOUT(pb, 0) = SYSTEM_FONT_ID;
-	s = SYSTEM_FONT_NAME;
+	V_INTOUT(pb, 0) = v->font_id;
+	sf = &sysfont[(v->font_id - 1) * SYSFONTS];
+	s = sf->name;
 	for (i = 1; *s && i < (VDI_FONTNAMESIZE + 1); i++, s++)
 		V_INTOUT(pb, i) = *s;
 	for (; i < (VDI_FONTNAMESIZE + 1); i++)
@@ -5954,7 +5981,7 @@ static void vdi_reset_vars(void)
 	}
 
 	/* Now load the system font: */
-	for (i = 0; i < SYSFONTS; i++)
+	for (i = 0; i < SYSFONTS * NLSFONTSETS; i++)
 	{
 		x_get_font_props(&sysfont[i], sysfonthdrs[i]);
 	}
@@ -6128,6 +6155,7 @@ static VWK *init_vwk(VDIPB *pb, int h, int phys_wk, int width, int height, int p
 	v->mapmode = MAP_ATARI;
 	v->pairmode = 0;
 	v->kern_offset = 0;
+	v->font_id = SYSTEM_FONT_ID;
 	change_font(v, vdi_h >= 400 ? 2 : 1);
 
 	m = V_INTIN(pb, 7);

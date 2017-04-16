@@ -388,6 +388,8 @@ typedef struct oh
 {
 	hash *h;
 	da *d;
+	/* the font id needed to display translated entries */
+	int to_charset;
 } oh;
 
 
@@ -397,6 +399,7 @@ static oh *o_new(void)
 
 	o->h = h_new();
 	o->d = da_new();
+	o->to_charset = -1;
 	return o;
 }
 
@@ -1181,14 +1184,6 @@ errout:
  * charsets
  */
 
-/* Indexes of font sets inside font_sets[] */
-#define CHARSET_L9 0
-#define CHARSET_L2 1
-#define CHARSET_GR 2
-#define CHARSET_RU 3
-#define CHARSET_ST 4
-#define CHARSET_L1 5
-
 struct charset_alias
 {
 	const char *name;
@@ -1445,7 +1440,7 @@ static struct converter_info const converters[] = {
  * orginally build by genctables.awk, from po/LINGUAS
  */
 static struct lang_info const languages[] = {
-    { "us", CHARSET_ST },
+    { "en", CHARSET_ST },
     { "de", CHARSET_ST },
     { "fr", CHARSET_ST },
     { "cs", CHARSET_L2 },
@@ -1454,14 +1449,13 @@ static struct lang_info const languages[] = {
     { "fi", CHARSET_ST },
     { "ru", CHARSET_RU },
     { "it", CHARSET_ST },
-    { "uk", CHARSET_ST },
     { "no", CHARSET_ST },
     { "se", CHARSET_ST },
     { "sv", CHARSET_ST },
 };
 
 
-static const char *get_language_charset(const char *lang)
+static int get_language_charset(const char *lang)
 {
 	int i;
 	int n = ARRAY_SIZE(languages);
@@ -1470,7 +1464,7 @@ static const char *get_language_charset(const char *lang)
 	{
 		if (strcmp(languages[i].name, lang) == 0)
 		{
-			return get_charset_name(languages[i].fontcharset);
+			return languages[i].fontcharset;
 		}
 	}
 	warn("unknown language %s.", lang);
@@ -1479,18 +1473,17 @@ static const char *get_language_charset(const char *lang)
 	{
 		fprintf(stderr, "  %s\n", languages[i].name);
 	}
-	return "unknown";
+	return -1;
 }
 
 
-static converter_t get_converter(const char *from, const char *to)
+static converter_t get_converter(const char *from, int to_id)
 {
 	int i;
-	int from_id, to_id;
+	int from_id;
 	int n = ARRAY_SIZE(converters);
 
 	from_id = get_canon_cset_name(from);
-	to_id = get_canon_cset_name(to);
 	
 	if (from_id == to_id)
 	{
@@ -1504,7 +1497,7 @@ static converter_t get_converter(const char *from, const char *to)
 			return converters[i].func;
 		}
 	}
-	warn("unknown charset conversion %s..%s.", from, to);
+	warn("unknown charset conversion %s..%s.", from, get_charset_name(to_id));
 	fprintf(stderr, "known conversions are:\n");
 	for (i = 0; i < n; i++)
 	{
@@ -1529,7 +1522,6 @@ static oh *po_load(const char *lang)
 	int numuntransl = 0;				/* number of untranslated entries */
 	gboolean retval = FALSE;
 	char *from_charset = NULL;
-	const char *to_charset;
 	char *fname;
 	str *s;
 	converter_t converter;
@@ -1558,9 +1550,9 @@ static oh *po_load(const char *lang)
 			from_charset = g_strdup(a.charset);
 		}
 		free_pot_ae(&a);
-		to_charset = get_language_charset(lang);
+		o->to_charset = get_language_charset(lang);
 	}
-	converter = get_converter(from_charset, to_charset);
+	converter = get_converter(from_charset, o->to_charset);
 	
 	n = o_len(o);
 	for (i = 0; i < n; i++)
@@ -1656,22 +1648,24 @@ gboolean po_create_hash(const char *lang, nls_domain *domain)
 			char **t;
 			
 			nn = da_len(th[i]);
-			hash[i] = t = g_new(char *, nn + 1);
+			t = g_new(char *, nn + 1);
+			hash[i] = t;
 			for (ii = 0; ii < nn; ii += 2)
 			{
 				t[ii] = g_strdup((char *)da_nth(th[i], ii));
 				t[ii + 1] = g_strdup((char *)da_nth(th[i], ii + 1));
 			}			
 			da_free(th[i]);
-			/* add a sentinel so we know how much to free */
-			hash[nn] = NULL;
+			/* terminate the list of translatable string */
+			t[nn] = NULL;
 		}
 	}
 	
-	o_free(o, TRUE);
-	
 	domain->lang = lang;
+	domain->fontset = o->to_charset;
 	domain->hash = (const char *const *const *)hash;
+	
+	o_free(o, TRUE);
 	
 	return TRUE;
 }

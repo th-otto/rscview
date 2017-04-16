@@ -447,7 +447,8 @@ int vdi_cursconf(_WORD func, _WORD rate);
 void vdi_cursblink(void);
 
 
-#define SYSFONTS 3
+#define SYSFONTS    3
+#define NLSFONTSETS 5
 
 #define SUPPORTED_EFFECTS (TXT_THICKENED | TXT_LIGHT | TXT_SKEWED | TXT_UNDERLINED | TXT_OUTLINED)
 
@@ -624,6 +625,7 @@ struct _vwk
 
 	int text_color;
 	int text_rotation;
+	int font_id;
 	int font_index;
 	int font_yoff;
 	int font_xoff;

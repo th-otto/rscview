@@ -15,7 +15,7 @@ char const program_name[] = "rscview";
 char const program_version[] = VERSION;
 char const program_date[] = "28.03.2017";
 
-nls_domain nls_default_domain = { "rscview", NULL, NULL };
+nls_domain nls_default_domain = { "rscview", NULL, CHARSET_ST, NULL };
 
 
 /*
@@ -127,7 +127,7 @@ static _WORD write_png(RSCTREE *tree, _WORD x, _WORD y, _WORD w, _WORD h)
 	vs_clip(vdi_handle, 1, pxy);
 	strcpy(basename, tree->rt_name);
 	str_lwr(basename);
-	sprintf(filename, "%s.png", basename);
+	sprintf(filename, "%03ld_%s.png", tree->rt_index, basename);
 	err = v_write_png(vdi_handle, filename);
 	if (err != 0)
 		nf_debugprintf("write_png: %s: %s\n", filename, strerror(err));
@@ -436,10 +436,13 @@ int main(int argc, char **argv)
 			}
 			
 			open_screen();
+			vst_font(vdi_handle, file->rsc_nls_domain.fontset);
+			vst_font(phys_handle, file->rsc_nls_domain.fontset);
 			
 			if (draw_all_trees(file) == FALSE)
 				exit_status = EXIT_FAILURE;
 			
+			vst_font(phys_handle, 1);
 			close_screen();
 			
 			rsc_file_delete(file, FALSE);

@@ -22,6 +22,7 @@ static char const program_name[] = "fntdump";
 static gboolean info = FALSE;
 static gboolean verbose = FALSE;
 static gboolean quiet = FALSE;
+static int override_id = 0;
 
 
 #ifndef EXIT_FAILURE
@@ -407,7 +408,7 @@ static void fnttoc(UB *b, int l, FILE *out, const char *filename, const char *na
 
 	fprintf(out, "\n");
 	fprintf(out, "FONT_HDR const %s = {\n", name);
-	fprintf(out, "\t%d,\t\t/* font_id */\n", LOAD_UW(h + 0));
+	fprintf(out, "\t%d,\t\t/* font_id */\n", override_id ? override_id : LOAD_UW(h + 0));
 	fprintf(out, "\t%d,\t\t/* point */\n", LOAD_UW(h + 2));
 	fprintf(out, "\t\"%s\",\t\t/* name */\n", facename_buf);
 	fprintf(out, "\t%u,\t\t/* first_ade */\n", firstc);
@@ -447,6 +448,7 @@ static struct option const long_options[] = {
 	{ "verbose", no_argument, NULL, 'v' },
 	{ "quiet", no_argument, NULL, 'q' },
 	{ "name", required_argument, NULL, 'n' },
+	{ "id", required_argument, NULL, 'I' },
 	{ "help", no_argument, NULL, 'h' },
 	{ "version", no_argument, NULL, 'V' },
 	{ NULL, no_argument, NULL, 0 }
@@ -472,12 +474,15 @@ int main(int argc, char **argv)
 	const char *name = "fnt_st";
 	int c;
 	
-	while ((c = getopt_long(argc, argv, "tivqn:hV", long_options, NULL)) != EOF)
+	while ((c = getopt_long(argc, argv, "tiI:vqn:hV", long_options, NULL)) != EOF)
 	{
 		switch (c)
 		{
 		case 'i':
 			info = TRUE;
+			break;
+		case 'I':
+			override_id = (int)strtol(optarg, NULL, 0);
 			break;
 		case 'v':
 			verbose = TRUE;

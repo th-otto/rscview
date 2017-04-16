@@ -4,5 +4,6 @@
 *.rsc
 *.rsh
 *.rso
+*.def
 *.h
 *.xml

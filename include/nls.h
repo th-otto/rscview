@@ -19,9 +19,18 @@
 
 #define N_(a) a
 
+/* Indexes of font sets inside font_sets[] */
+#define CHARSET_ST 1
+#define CHARSET_L9 2
+#define CHARSET_L2 3
+#define CHARSET_GR 4
+#define CHARSET_RU 5
+#define CHARSET_L1 6
+
 typedef struct _nls_domain {
 	const char *domain;
 	const char *lang;
+	int fontset;
 	const char *const *const *hash;
 } nls_domain;
 

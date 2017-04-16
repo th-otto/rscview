@@ -13,7 +13,7 @@ const BITBLK *const *aes_rsc_bitblk = rs_frimg;
 static char msg_str[MAX_LINENUM][MAX_LINELEN+1];
 static char msg_but[MAX_BUTNUM][MAX_BUTLEN+1];
 
-static nls_domain aes_domain = { "aes", NULL, NULL };
+static nls_domain aes_domain = { "aes", NULL, CHARSET_ST, NULL };
 
 _BOOL rsc_read(void)
 {

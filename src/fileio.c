@@ -1880,10 +1880,10 @@ static void emutos_desktop_fix(RSCFILE *file)
 	align_objects(file->rs_object, file->header.rsh_nobs);
 	
 	tree = file->rs_trindex[ADFFINFO];
-	tree[1].ob_spec.free_string = file->rs_frstr[STFOINFO];
+	tree[1].ob_spec.free_string = dgettext(&file->rsc_nls_domain, file->rs_frstr[STFOINFO]);
 	
 	tree = file->rs_trindex[ADCPYDEL];
-	tree[1].ob_spec.free_string = file->rs_frstr[STDELETE];
+	tree[1].ob_spec.free_string = dgettext(&file->rsc_nls_domain, file->rs_frstr[STDELETE]);
 	
 	centre_titles(file);
 }
@@ -1962,7 +1962,7 @@ RSCFILE *load_all(const char *file_name, const char *lang, _UWORD flags)
 	}
 	
 	/* translate strings in objects */
-	if (lang)
+	if (lang && strcmp(lang, "en") != 0)
 	{
 		po_create_hash(lang, &file->rsc_nls_domain);
 		gettext_init(&file->rsc_nls_domain);
