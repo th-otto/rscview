@@ -130,7 +130,9 @@ static _WORD write_png(RSCTREE *tree, _WORD x, _WORD y, _WORD w, _WORD h)
 	sprintf(filename, "%03ld_%s.png", tree->rt_index, basename);
 	err = v_write_png(vdi_handle, filename);
 	if (err != 0)
-		nf_debugprintf("write_png: %s: %s\n", filename, strerror(err));
+	{
+		KINFO(("write_png: %s: %s\n", filename, strerror(err)));
+	}
 	return err;
 }
 
@@ -356,7 +358,14 @@ static struct option const long_options[] = {
 
 static void usage(FILE *fp)
 {
-	fprintf(fp, _("Usage: %s <file...>\n"), program_name);
+	fprintf(fp, _("%s - Create png files from GEM resource files\n"), program_name);
+	fprintf(fp, _("Usage: %s [<options>] <file...>\n"), program_name);
+	fprintf(fp, _("Options:\n"));
+	fprintf(fp, _("   -v, --verbose      emit some progress messages\n"));
+	fprintf(fp, _("   -l, --lang <lang>  read <lang>.po for translation\n")); 
+	fprintf(fp, _("   -p, --podir <dir>  lookup po-files in <dir>\n"));
+	fprintf(fp, _("       --version      print version and exit\n"));
+	fprintf(fp, _("       --help         print this help and exit\n"));
 }
 
 
@@ -415,7 +424,7 @@ int main(int argc, char **argv)
 	
 	if (optind >= argc)
 	{
-		fprintf(stderr, _("%s: missing arguments\n"), program_name);
+		errout(_("%s: missing arguments\n"), program_name);
 		return EXIT_FAILURE;
 	}
 	

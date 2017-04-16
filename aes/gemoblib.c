@@ -1059,7 +1059,7 @@ _BOOL ob_delete(OBJECT *tree, _WORD obj)
 		prev = get_prev(tree, parent, obj);
 		if (prev == NIL)  /* object not found */
 		{
-			nf_debugprintf("objc_delete() failed: object %d not found\n", obj);
+			KINFO(("objc_delete() failed: object %d not found\n", obj));
 			return 0;
 		}
 		tree[prev].ob_next = nextsib;

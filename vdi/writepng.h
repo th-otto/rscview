@@ -70,12 +70,6 @@
 #  define MIN(a,b)  ((a) < (b)? (a) : (b))
 #endif
 
-#ifdef DEBUG
-#  define Trace(x)  {fprintf x ; fflush(stderr); fflush(stdout);}
-#else
-#  define Trace(x)  ;
-#endif
-
 typedef struct _writepng_info {
 	double gamma;
 	long width;

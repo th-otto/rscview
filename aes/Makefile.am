@@ -32,7 +32,6 @@ libaes_a_SOURCES = \
 	gemwmlib.c \
 	gemwrect.c \
 	aesutils.c \
-	nls.c \
 	\
 	gem_rsc.c gem_rsc.rsc gem_rsc.rso gem_rsc.rsh gem_rsc.h \
 	\

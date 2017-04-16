@@ -393,7 +393,7 @@ void gsx_start(void)
 	gl_height = gl_clip.g_h = gl_ws.ws_yres + 1;
 	gl_nplanes = gsx_nplanes();
 
- 	nf_debugprintf("VDI video mode = %dx%d %d-bit\n", gl_width, gl_height, gl_nplanes);
+ 	KDEBUG(("VDI video mode = %dx%d %d-bit\n", gl_width, gl_height, gl_nplanes));
 
 	/*
 	 * The driver may have more than two fonts. The large font
@@ -415,7 +415,7 @@ void gsx_start(void)
 	if (gl_wbox < gl_wchar + 2)
 		gl_wbox = gl_wchar + 2;
 
-	nf_debugprintf("gsx_start(): gl_wchar=%d, gl_hchar=%d, gl_wbox=%d, gl_hbox=%d\n", gl_wchar, gl_hchar, gl_wbox, gl_hbox);
+	KDEBUG(("gsx_start(): gl_wchar=%d, gl_hchar=%d, gl_wbox=%d, gl_hbox=%d\n", gl_wchar, gl_hchar, gl_wbox, gl_hbox));
 
 	vsl_type(gl_handle, USERLINE);
 	vsl_width(gl_handle, 1);
@@ -489,7 +489,7 @@ _WORD gsx_tcalc(_WORD font, const char *ptext, _WORD *ptextw, _WORD *ptexth, _WO
 	
 	if (hc == 0)
 	{
-		nf_debugprintf("gsx_tcalc: ERROR: font neither IBM nor SMALL\n");
+		KINFO(("gsx_tcalc: ERROR: font neither IBM nor SMALL\n"));
 		*ptextw = 0;
 		*ptexth = 0;
 		return 0;
@@ -527,7 +527,7 @@ void gsx_tblt(_WORD tb_f, _WORD x, _WORD y, const _WORD *wtext, _WORD tb_nc)
 		y += gl_hsptschar;
 	} else
 	{
-		nf_debugprintf("gsx_tblt: ERROR: font neither IBM nor SMALL\n");
+		KINFO(("gsx_tblt: ERROR: font neither IBM nor SMALL\n"));
 		return;
 	}
 

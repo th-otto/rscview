@@ -6,7 +6,10 @@ INCLUDES += -I$(srcdir)
 
 noinst_LIBRARIES = libutil.a
 
-libutil_a_SOURCES =
+libutil_a_SOURCES = \
+	debug.c \
+	nls.c \
+	$(empty)
 
 if OS_UNIX
 libutil_a_SOURCES += \

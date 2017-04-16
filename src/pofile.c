@@ -26,9 +26,9 @@ static void warn(const char *fmt, ...)
 	va_list ap;
 
 	va_start(ap, fmt);
-	fprintf(stderr, "Warning: ");
-	vfprintf(stderr, fmt, ap);
-	fprintf(stderr, "\n");
+	errout("Warning: ");
+	erroutv(fmt, ap);
+	errout("\n");
 	va_end(ap);
 }
 
@@ -38,9 +38,9 @@ static void fatal(const char *fmt, ...)
 	va_list ap;
 
 	va_start(ap, fmt);
-	fprintf(stderr, "Fatal: ");
-	vfprintf(stderr, fmt, ap);
-	fprintf(stderr, "\n");
+	errout("Fatal: ");
+	erroutv(fmt, ap);
+	errout("\n");
 	va_end(ap);
 	exit(EXIT_FAILURE);
 }
@@ -51,9 +51,9 @@ static void error(const char *fmt, ...)
 	va_list ap;
 
 	va_start(ap, fmt);
-	fprintf(stderr, "Error: ");
-	vfprintf(stderr, fmt, ap);
-	fprintf(stderr, "\n");
+	errout("Error: ");
+	erroutv(fmt, ap);
+	errout("\n");
 	va_end(ap);
 }
 
@@ -1232,10 +1232,10 @@ static int get_canon_cset_name(const char *name)
 		}
 	}
 	warn("unknown charset name %s", name);
-	fprintf(stderr, "known charsets are:\n");
+	errout("known charsets are:\n");
 	for (i = 0; i < n; i++)
 	{
-		fprintf(stderr, "  %s\n", charsets[i].name);
+		errout("  %s\n", charsets[i].name);
 	}
 	return -1;
 }
@@ -1468,10 +1468,10 @@ static int get_language_charset(const char *lang)
 		}
 	}
 	warn("unknown language %s.", lang);
-	fprintf(stderr, "known languages are:\n");
+	errout("known languages are:\n");
 	for (i = 0; i < n; i++)
 	{
-		fprintf(stderr, "  %s\n", languages[i].name);
+		errout("  %s\n", languages[i].name);
 	}
 	return -1;
 }
@@ -1498,10 +1498,10 @@ static converter_t get_converter(const char *from, int to_id)
 		}
 	}
 	warn("unknown charset conversion %s..%s.", from, get_charset_name(to_id));
-	fprintf(stderr, "known conversions are:\n");
+	errout("known conversions are:\n");
 	for (i = 0; i < n; i++)
 	{
-		fprintf(stderr, "  %s..%s\n", get_charset_name(converters[i].from), get_charset_name(converters[i].to));
+		errout("  %s..%s\n", get_charset_name(converters[i].from), get_charset_name(converters[i].to));
 	}
 	return converter_noop;
 }
@@ -1587,7 +1587,7 @@ static oh *po_load(const char *lang, const char *po_dir)
 	}
 
 	/* print stats */
-	nf_debugprintf("translated %d, untranslated %d\n", numtransl, numuntransl);
+	KINFO(("translated %d, untranslated %d\n", numtransl, numuntransl));
 	retval = TRUE;
 	
 errout:

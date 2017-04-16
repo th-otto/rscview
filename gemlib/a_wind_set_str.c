@@ -32,7 +32,7 @@ short wind_set_str (short WindowHandle, short What, const char *str)
 	case WF_NEWDESK:
 		break;
 	default:
-		nf_debugprintf("wind_set_str() called for type %d\n", What);
+		KINFO(("wind_set_str() called for type %d\n", What));
 		break;
 	}
 	

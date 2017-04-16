@@ -31,7 +31,7 @@ static void aestrace(const char *message)
 		*dest++ = *src++;
 	*dest++ = '\0';
 
-	nf_debugprintf("AES: %s: %s\n", appname, message);
+	KINFO(("AES: %s: %s\n", appname, message));
 }
 #else
 #define aestrace(a)
@@ -43,7 +43,7 @@ static void aestrace(const char *message)
 		OUT_LEN < nintout || \
 		AIN_LEN < naddrin || \
 		AOUT_LEN < naddrout) { \
-		nf_debugprintf("AES(%d): wrong #parameters\n", opcode); \
+		KINFO(("AES(%d): wrong #parameters\n", opcode)); \
 	}
 
 

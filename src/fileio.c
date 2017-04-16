@@ -670,7 +670,7 @@ static _BOOL hrd_load(RSCFILE *file, const char *filename, _BOOL *def_found)
 			/* from erd; can't convince interface to produce such an entry */
 			break;
 		default:
-			nf_debugprintf("unknown hrd entry type %u: %-*.*s\n", entry.entry_type, HRD_NAMELEN, HRD_NAMELEN, entry.hrd_name);
+			KINFO(("unknown hrd entry type %u: %-*.*s\n", entry.entry_type, HRD_NAMELEN, HRD_NAMELEN, entry.hrd_name));
 			break;
 		}
 	}
@@ -810,24 +810,24 @@ static _BOOL dfn_load(RSCFILE *file, const char *filename, _BOOL *def_found)
 				if (ob == NULL ||
 					ob_setname(file, tree, nameinfo.na_obidx, nameinfo.na_name, min(RSDNAMELEN,MAXNAMELEN) + 1) == FALSE)
 				{
-					nf_debugprintf("object not found: %3d: nametype=%d treetype=%d treeidx=%d obidx=%d %-8.8s\n",
+					KINFO(("object not found: %3d: nametype=%d treetype=%d treeidx=%d obidx=%d %-8.8s\n",
 						count - i - 1,
 						nameinfo.na_nametype,
 						nameinfo.na_treetype,
 						nameinfo.na_treeidx,
 						nameinfo.na_obidx,
-						nameinfo.na_name);
+						nameinfo.na_name));
 				}
 			}
 		} else
 		{
-			nf_debugprintf("tree not found: %3d: nametype=%d treetype=%d treeidx=%d obidx=%d %-8.8s\n",
+			KINFO(("tree not found: %3d: nametype=%d treetype=%d treeidx=%d obidx=%d %-8.8s\n",
 				count - i - 1,
 				nameinfo.na_nametype,
 				nameinfo.na_treetype,
 				nameinfo.na_treeidx,
 				nameinfo.na_obidx,
-				nameinfo.na_name);
+				nameinfo.na_name));
 		}
 		if (dfn_nameinfo_read(&nameinfo) == FALSE &&
 			(ferror(ffp) || i != 0))
@@ -1940,7 +1940,7 @@ RSCFILE *load_all(const char *file_name, const char *lang, _UWORD flags, const c
 		file->rsc_emutos_frstrcond_string = g_strdup("#ifndef TARGET_192");
 		file->rsc_emutos_othercond_name = g_strdup("ADTTREZ");
 		file->rsc_emutos_othercond_string = g_strdup("#ifndef TARGET_192");
-		nf_debugprintf("EmuTOS desktop resource loaded\n");
+		KINFO(("EmuTOS desktop resource loaded\n"));
 	} else if (is_emutos_icon(file))
 	{
 		file->rsc_emutos = EMUTOS_ICONS;
@@ -1948,7 +1948,7 @@ RSCFILE *load_all(const char *file_name, const char *lang, _UWORD flags, const c
 		file->rsc_output_basename = g_strdup("icons");
 		file->rsc_flags2 |= RF_ROMABLE | RF_IMAGEWORDS;
 		file->rsc_flags |= RF_CSOURCE2;
-		nf_debugprintf("EmuTOS icons resource loaded\n");
+		KINFO(("EmuTOS icons resource loaded\n"));
 	} else if (is_emutos_aes(file))
 	{
 		file->rsc_emutos = EMUTOS_AES;
@@ -1958,7 +1958,7 @@ RSCFILE *load_all(const char *file_name, const char *lang, _UWORD flags, const c
 		file->rsc_flags |= RF_CSOURCE2;
 		file->rsc_emutos_othercond_name = g_strdup("APPS");
 		file->rsc_emutos_othercond_string = g_strdup("#if 0");
-		nf_debugprintf("EmuTOS gem resource loaded\n");
+		KINFO(("EmuTOS gem resource loaded\n"));
 	}
 	
 	/* translate strings in objects */

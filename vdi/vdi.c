@@ -6209,7 +6209,7 @@ static int vdi_alloc_handle(void)
 	for (handle = 0; handle < MAX_VWK; handle++)
 		if (vwk[handle] == NULL)
 			return handle;
-	nf_debugprintf("VDI: out of handles\n");
+	KINFO(("VDI: out of handles\n"));
 	return -1;
 }
 
@@ -7177,7 +7177,7 @@ static int vdi_v_opnvwk(VDIPB *pb)
 
 	if (phys_handle < 0)
 	{
-		nf_debugprintf("v_opnvwk: no workstation yet\n");
+		KINFO(("v_opnvwk: no workstation yet\n"));
 		return VDI_DONE;
 	}
 	V_HANDLE(pb) = vdi_alloc_handle();

@@ -302,11 +302,11 @@ wind_get (short WindowHandle, short What,
 		{
 		case WF_INFO:
 		case WF_NAME:
-			nf_debugprintf("wind_get() with string not supported on this machine, use wind_get_str() instead\n");
+			KINFO(("wind_get() with string not supported on this machine, use wind_get_str() instead\n"));
 			return 0;
 		case WF_NEWDESK:
 		case WF_SCREEN:
-			nf_debugprintf("wind_get() with OBJECT ptr not supported on this machine, use wind_get_ptr() instead\n");
+			KINFO(("wind_get() with OBJECT ptr not supported on this machine, use wind_get_ptr() instead\n"));
 			return 0;
 		}
 	}

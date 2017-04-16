@@ -285,10 +285,10 @@ short wind_set (short WindowHandle, short What,
 		{
 		case WF_INFO:
 		case WF_NAME:
-			nf_debugprintf("wind_set() with string not supported on this machine, use wind_set_str() instead\n");
+			KINFO(("wind_set() with string not supported on this machine, use wind_set_str() instead\n"));
 			break;
 		case WF_NEWDESK:
-			nf_debugprintf("wind_set() with OBJECT ptr not supported on this machine, use wind_set_ptr() instead\n");
+			KINFO(("wind_set() with OBJECT ptr not supported on this machine, use wind_set_ptr() instead\n"));
 			break;
 		}
 		return 0;

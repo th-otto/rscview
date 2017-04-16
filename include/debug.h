@@ -5,25 +5,20 @@
 #ifndef __DEBUG_H__
 #define __DEBUG_H__
 
+#include <stdarg.h>
+
 #ifndef __PORTAB_H__
 #  include <portab.h>
 #endif
 
-#ifdef OS_ATARI
-#include <mint/arch/nf_ops.h>
-#else
-#ifndef SPEC_DEBUG
-#define nf_debugprintf(format...)
-#endif
-#endif
-
 EXTERN_C_BEG
 
-#if !defined(OS_ATARI) && defined(SPEC_DEBUG)
-void nf_debugprintf(const char *format, ...) __attribute__((format(printf, 1, 2)));
-#endif
+void set_errout_handler(void (*handler)(void *data, const char *format, va_list args), void *data);
 
-#define KINFO(args) nf_debugprintf args
+void errout(const char *format, ...) __attribute__((format(printf, 1, 2)));
+void erroutv(const char *format, va_list args) __attribute__((format(printf, 1, 0)));
+
+#define KINFO(args) errout args
 
 #ifdef ENABLE_KDEBUG
 #define KDEBUG(args) KINFO(args)

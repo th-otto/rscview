@@ -17,12 +17,12 @@ short wind_set_ptr (short WindowHandle, short What, void *p1, void *p2)
 	case WF_NEWDESK:
 		if (sizeof(void *) > 4 && p2 != NULL)
 		{
-			nf_debugprintf("wind_set_ptr() with 2 ptr not supported on this machine\n");
+			KINFO(("wind_set_ptr() with 2 ptr not supported on this machine\n"));
 			return 0;
 		}
 		break;
 	default:
-		nf_debugprintf("wind_set_str() called for type %d\n", What);
+		KINFO(("wind_set_str() called for type %d\n", What));
 		break;
 	}
 	

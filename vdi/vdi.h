@@ -799,7 +799,7 @@ typedef struct _font_desc {
 
 #if TRACE_VDI
 #include "debug.h"
-#define V(fmt, ...) nf_debugprintf("VDI: " fmt "\n", ## __VA_ARGS__)
+#define V(fmt, ...) debugout("VDI: " fmt "\n", ## __VA_ARGS__)
 #else
 #define V(fmt, ...)
 #endif

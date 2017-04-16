@@ -415,7 +415,7 @@ static void bb_set(_WORD sx, _WORD sy, _WORD sw, _WORD sh, _WORD *pts1, _WORD *p
 		/* issue warning message for backup only, not for subsequent restore */
 		if (pdst == &gl_tmp)
 		{
-			nf_debugprintf("Menu/alert buffer too small: need at least %ld bytes\n", size);
+			KINFO(("Menu/alert buffer too small: need at least %ld bytes\n", size));
 		}
 	}
 

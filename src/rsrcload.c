@@ -438,14 +438,14 @@ static _BOOL xrsc_flip_data(RSCFILE *file, _ULONG filesize)
 				offset = OFFSET(p->ib_pmask, file->data, _ULONG);
 				if ((offset + words + words) > filesize)
 				{
-					nf_debugprintf("flip_data: iconblk[%u]: ip_pmask $%lx out of range\n", i, offset);
+					KINFO(("flip_data: iconblk[%u]: ip_pmask $%lx out of range\n", i, offset));
 					*p = empty_icon;
 					continue;
 				}
 				offset = OFFSET(p->ib_pdata, file->data, _ULONG);
 				if ((offset + words + words) > filesize)
 				{
-					nf_debugprintf("flip_data: iconblk[%u]: ip_pdata $%lx out of range\n", i, offset);
+					KINFO(("flip_data: iconblk[%u]: ip_pdata $%lx out of range\n", i, offset));
 					*p = empty_icon;
 					continue;
 				}
@@ -468,7 +468,7 @@ static _BOOL xrsc_flip_data(RSCFILE *file, _ULONG filesize)
 				offset = OFFSET(pbitblk->bi_pdata, file->data, _ULONG);
 				if ((offset + words + words) > filesize)
 				{
-					nf_debugprintf("flip_data: bitblk[%u]: bi_pdata $%lx out of range\n", i, offset);
+					KINFO(("flip_data: bitblk[%u]: bi_pdata $%lx out of range\n", i, offset));
 					*pbitblk = empty_bit;
 					continue;
 				}
@@ -604,7 +604,7 @@ static _BOOL xrsc_flip_rsc(RSCFILE *file, _ULONG filesize)
 			if (header->rsh_object > header->rsh_rssize ||
 				(header->rsh_nobs > 0 && header->rsh_object + header->rsh_nobs * RSC_SIZEOF_OBJECT > header->rsh_rssize))
 			{
-				nf_debugprintf("swap: rsh_object %lx[%lx] out of range\n", header->rsh_object, header->rsh_nobs);
+				KINFO(("swap: rsh_object %lx[%lx] out of range\n", header->rsh_object, header->rsh_nobs));
 				return FALSE;
 			}
 		}
@@ -870,19 +870,19 @@ static void report_problem(XRS_HEADER *xrsc_header, const char *what, _LONG offs
 		*whats_wrong = what;
 	if (offset == 0)
 	{
-		nf_debugprintf("%s: offset is NULL\n", what);
+		KINFO(("%s: offset is NULL\n", what));
 	} else if (offset < (_LONG)RSC_SIZEOF_RS_HEADER)
 	{
-		nf_debugprintf("%s: offset $%lx points to RSC file header\n", what, offset);
+		KINFO(("%s: offset $%lx points to RSC file header\n", what, offset));
 	} else if (offset >= L(xrsc_header->rsh_rssize))
 	{
-		nf_debugprintf("%s: offset $%lx is beyond EOF\n", what, offset);
+		KINFO(("%s: offset $%lx is beyond EOF\n", what, offset));
 	} else if (offset & 1)
 	{
-		nf_debugprintf("%s: offset $%lx is odd\n", what, offset);
+		KINFO(("%s: offset $%lx is odd\n", what, offset));
 	} else
 	{
-		nf_debugprintf("%s: offset $%lx\n", what, offset);
+		KINFO(("%s: offset $%lx\n", what, offset));
 	}
 }
 
@@ -945,7 +945,7 @@ RSCFILE *xrsrc_load(const char *filename, _UWORD flags)
 	
 	if (error == RSC_OK && fread(headerbuf, 1, sizeof(headerbuf), fp) != sizeof(headerbuf))
 	{
-		nf_debugprintf("reading header failed\n");
+		KINFO(("reading header failed\n"));
 		error = RSC_ERROR;
 	}
 	
@@ -964,7 +964,7 @@ RSCFILE *xrsrc_load(const char *filename, _UWORD flags)
 				{
 					if (filesize > 65534l && !(rs_header.rsh_vrsn & RSC_EXT_FLAG))
 					{
-						nf_debugprintf("normal header && filesize >64k but no extension flag set\n");
+						KINFO(("normal header && filesize >64k but no extension flag set\n"));
 						error = RSC_NORSC;
 					} else
 					{
@@ -978,7 +978,7 @@ RSCFILE *xrsrc_load(const char *filename, _UWORD flags)
 				} else
 #endif
 				{
-					nf_debugprintf("header check failed\n");
+					KINFO(("header check failed\n"));
 					error = RSC_NORSC;
 				}
 			} else
@@ -989,7 +989,7 @@ RSCFILE *xrsrc_load(const char *filename, _UWORD flags)
 		{
 			if (filesize > 65534l && !(rs_header.rsh_vrsn & RSC_EXT_FLAG))
 			{
-				nf_debugprintf("normal header && filesize >64k but no extension flag set\n");
+				KINFO(("normal header && filesize >64k but no extension flag set\n"));
 				error = RSC_NORSC;
 			} else
 			{
@@ -1002,7 +1002,7 @@ RSCFILE *xrsrc_load(const char *filename, _UWORD flags)
 		if (test_xrsc_header(&xrsc_header, filesize) == FALSE ||
 			fseek(fp, 0l, SEEK_SET) != 0)
 		{
-			nf_debugprintf("xrsc_header check failed\n");
+			KINFO(("xrsc_header check failed\n"));
 			error = RSC_NORSC;
 		}
 	}
@@ -1045,7 +1045,7 @@ RSCFILE *xrsrc_load(const char *filename, _UWORD flags)
 	{
 		if (intel_2_m68k(file, filesize) == FALSE)
 		{
-			nf_debugprintf("flipping resource failed\n");
+			KINFO(("flipping resource failed\n"));
 			warn_damaged(filename, "Data");
 			error = RSC_ABORT;
 		}
@@ -1348,7 +1348,7 @@ RSCFILE *xrsrc_load(const char *filename, _UWORD flags)
 						offset < file->header.rsh_object ||
 						offset >= file->header.rsh_object + file->header.rsh_nobs * RSC_SIZEOF_OBJECT)
 					{
-						nf_debugprintf("tree offset[%lu] out of range: $%lx\n", UObj, offset);
+						KINFO(("tree offset[%lu] out of range: $%lx\n", UObj, offset));
 						warn_damaged(filename, "Trees");
 						*dst = &empty_object;
 					} else
@@ -1581,7 +1581,7 @@ RSCFILE *xrsrc_load(const char *filename, _UWORD flags)
 					offset = get_long(src);
 					if (CHECK_SIZE(offset, filesize))
 					{
-						nf_debugprintf("string offset[%lu] out of range: $%lx\n", UObj, offset);
+						KINFO(("string offset[%lu] out of range: $%lx\n", UObj, offset));
 						warn_damaged(filename, "Strings");
 						*dst = empty;
 					} else
@@ -1624,7 +1624,7 @@ RSCFILE *xrsrc_load(const char *filename, _UWORD flags)
 						offset < file->header.rsh_bitblk ||
 						offset >= file->header.rsh_bitblk + file->header.rsh_nbb * RSC_SIZEOF_BITBLK)
 					{
-						nf_debugprintf("image offset[%lu] out of range: $%lx\n", UObj, offset);
+						KINFO(("image offset[%lu] out of range: $%lx\n", UObj, offset));
 						warn_damaged(filename, "Images");
 						*dst = &empty_bit;
 					} else
@@ -1952,7 +1952,7 @@ RSCFILE *xrsrc_load(const char *filename, _UWORD flags)
 			
 			default:
 				whats_wrong = "unknown object type";
-				nf_debugprintf("%s\n", whats_wrong);
+				KINFO(("%s\n", whats_wrong));
 				break;
 			}
 		}
@@ -2019,7 +2019,7 @@ RSCFILE *xrsrc_load(const char *filename, _UWORD flags)
 		
 		if (file->rsc_opts.crc_string && crc != crc_for_string)
 		{
-			nf_debugprintf("orsc_load: crc: calculated $%04x, in file $%04x\n", crc, crc_for_string);
+			KINFO(("orsc_load: crc: calculated $%04x, in file $%04x\n", crc, crc_for_string));
 			warn_crc_string_mismatch(filename);
 		} else if (file->rsc_opts.crc_string)
 		{

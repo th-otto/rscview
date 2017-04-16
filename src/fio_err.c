@@ -15,10 +15,10 @@ static void error(const char *msg, ...)
 	va_list args;
 	
 	va_start(args, msg);
-	fprintf(stderr, "%s: error: ", program_name);
-	vfprintf(stderr, msg, args);
+	errout("%s: error: ", program_name);
+	erroutv(msg, args);
 	va_end(args);
-	fprintf(stderr, "\n");
+	errout("\n");
 }
 
 /*** ---------------------------------------------------------------------- ***/
@@ -28,10 +28,10 @@ static void warn(const char *msg, ...)
 	va_list args;
 	
 	va_start(args, msg);
-	fprintf(stderr, "%s: warning: ", program_name);
-	vfprintf(stderr, msg, args);
+	errout("%s: warning: ", program_name);
+	erroutv(msg, args);
 	va_end(args);
-	fprintf(stderr, "\n");
+	errout("\n");
 }
 
 /*** ---------------------------------------------------------------------- ***/
