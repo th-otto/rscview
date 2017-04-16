@@ -149,7 +149,6 @@ void writepng_exit(writepng_info *wpnginfo)
 int writepng_output(writepng_info *wpnginfo)
 {
 	unsigned long srcrowbytes;
-	unsigned long dstrowbytes;
 	int rc;
 	
 	if (wpnginfo == NULL || wpnginfo->image_data == NULL || wpnginfo->outfile == NULL)
@@ -171,7 +170,6 @@ int writepng_output(writepng_info *wpnginfo)
 		else
 			srcrowbytes = wpnginfo->width * 4;
 	}
-	dstrowbytes = srcrowbytes;
 	
 	rc = 0;
 	if (wpnginfo->interlaced)

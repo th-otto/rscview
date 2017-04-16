@@ -88,6 +88,12 @@ static __inline int32_t *__aes_intout_long(short n, short *aes_intout)
 }
 #define aes_intout_long(n)  *__aes_intout_long(n, aes_intout)
 
+static __inline void **__aes_intout_ptr(short n, short *aes_intout)
+{
+	return ((void **)(aes_intout   +n));
+}
+#define aes_intout_ptr(n, t)  *((t *)__aes_intout_ptr(n, aes_intout))
+
 #else
 
 #define aes_intout_long(n)  *((int32_t *)(aes_intout+(n)))

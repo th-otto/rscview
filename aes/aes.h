@@ -619,8 +619,8 @@ _BOOL deskmain(void);
 #define ct_chgown(a, b) (void)(a); (void)(b)
 #define sound(a, b, c)
 #define fq()
-#define ev_multi(flags, mo1, mo2, count, parm, mebuff, rets) (rets[0] = 0, rets[1] = 0, rets[2] = 0, rets[3] = 0, rets[5] = 0, rets[4] = 0x1c0d, MU_KEYBD)
-#define ev_button(a, b, c, rets) rets[0] = 0
+#define ev_multi(flags, mo1, mo2, count, parm, mebuff, rets) (rets[0] = 0, rets[1] = 0, rets[2] = 0, rets[3] = 0, rets[5] = 0, rets[4] = 0x1c0d, (void)(mo1), (void)(rets), MU_KEYBD)
+#define ev_button(a, b, c, rets) (void)(rets)
 #define ap_rdwr(a, b, c, d) (void)(b)
 #define sh_find(name) 1
 #define dsptch()

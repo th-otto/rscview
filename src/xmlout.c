@@ -7,7 +7,6 @@
 #include <mobject.h>
 #include <object.h>
 #include <s_endian.h>
-#include <time.h>
 #include "fileio.h"
 #include "rsc.h"
 

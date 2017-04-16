@@ -347,9 +347,6 @@ you loose
 /* #include <_nfile.h> */
 /* #include <locale.h> */
 
-#ifdef __GNUC__
-#include <path_max.h>
-#endif
 #define ALL_FILE_MASK "*.*"
 
 #undef UNUSED

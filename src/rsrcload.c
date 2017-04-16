@@ -10,6 +10,10 @@
 #include <w_draw.h>
 #include <rsc.h>
 #include "fileio.h"
+#ifdef __MINGW32__
+#include <libgen.h>
+#define basename(x) basename((char *)NO_CONST(x))
+#endif
 
 #undef max
 #define max(a, b) ((a) > (b) ? (a) : (b))

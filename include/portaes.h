@@ -2009,6 +2009,7 @@ typedef struct
 	long	flags;		/* since MagiC 6.  only used if the extended mode #SHW_XMDFLAGS is set*/
 } XSHW_COMMAND;
 
+#undef environ
 /* Geneva */
 typedef struct
 {

@@ -11,6 +11,10 @@
 #include "aesutils.h"
 #include "rso.h"
 #include "pofile.h"
+#ifdef __MINGW32__
+#include <libgen.h>
+#define basename(x) basename((char *)NO_CONST(x))
+#endif
 
 FILE *ffp = NULL;
 const char *fname;

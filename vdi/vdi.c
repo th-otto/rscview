@@ -1,4 +1,5 @@
 #include "vdi.h"
+#include <stdio.h>
 #include "debug.h"
 #include "vdimaps.h"
 #include "gemdos.h"
@@ -180,7 +181,7 @@ static struct {
 #define XBUF(func, ...)
 
 #define vdi_draw_polygons(gc, points, n) \
-	XBUF(XFillPolygon, gc, points, n, Complex, CoordModeOrigin)
+	(void)(points); XBUF(XFillPolygon, gc, points, n, Complex, CoordModeOrigin)
 
 #define VDI_SET_POINT(p, _x, _y) p.x = _x, p.y = _y
 
@@ -474,6 +475,8 @@ static void v_show_alpha_cursor(VWK *v)
 		return;
 	x = vt52->ax * vt52->acw;
 	y = vt52->ay * vt52->ach;
+	(void) x;
+	(void) y;
 	vt52->cursor_inverse = TRUE;
 	vt52->blink_count = vt52->blink_rate;
 }
@@ -489,6 +492,8 @@ static void v_hide_alpha_cursor(VWK *v)
 		return;
 	x = vt52->ax * vt52->acw;
 	y = vt52->ay * vt52->ach;
+	(void) x;
+	(void) y;
 	vt52->cursor_inverse = FALSE;
 	vt52->blink_count = vt52->blink_rate;
 }
@@ -3642,6 +3647,12 @@ static int vdi_v_curtext(VWK *v, VDIPB *pb)
 				fg = FIX_COLOR(vt52->afg);
 				bg = FIX_COLOR(vt52->abg);
 			}
+			(void) x;
+			(void) y;
+			(void) items;
+			(void) n;
+			(void) fg;
+			(void) bg;
 			XBUF(XDrawImageString16, x, y, (XChar2b *)items, n);
 			v_show_alpha_cursor(v);
 		}

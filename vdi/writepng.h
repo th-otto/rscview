@@ -56,9 +56,8 @@
 #ifndef __WRITEPNG_H__
 #define __WRITEPNG_H__ 1
 
-#include <pngconf.h>
+#include <png.h>
 #include <setjmp.h>
-#include <png.h>						/* libpng header, includes setjmp.h */
 
 #ifndef TRUE
 #  define TRUE 1

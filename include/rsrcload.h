@@ -10,6 +10,7 @@
 #include <xrsrc.h>
 #include <mobject.h>
 #include <extob.h>
+#include <time.h>
 #include "nls.h"
 
 EXTERN_C_BEG
@@ -104,8 +105,8 @@ struct _rscfile {
 	char *rsc_emutos_othercond_string;
 	char *rsc_output_prefix;
 	char *rsc_output_basename;
-	_ULONG rsc_date_created;
-	_ULONG rsc_date_changed;
+	time_t rsc_date_created;
+	time_t rsc_date_changed;
 	_LONG rsc_edition;
 	_BOOL rsc_swap_flag;		/* TRUE if file has been swapped when loading */
 	_BOOL rsc_xrsc_flag;		/* TRUE if we need an extended header */

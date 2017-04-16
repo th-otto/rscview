@@ -17,6 +17,12 @@ libutil_a_SOURCES += \
 	$(empty)
 endif
 
+if OS_WIN32
+libutil_a_SOURCES += \
+	sys/unix/gemdos.c \
+	$(empty)
+endif
+
 if OS_TOS
 libutil_a_SOURCES += \
 	sys/tos/fclose.c \

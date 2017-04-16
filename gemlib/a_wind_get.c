@@ -336,7 +336,7 @@ wind_get (short WindowHandle, short What,
 	
 	if (What == WF_SCREEN || What == WF_NEWDESK)
 	{
-		*((void **)W1) = *((void **)&aes_intout[1]);
+		*((void **)W1) = aes_intout_ptr(1, void *);
 		if (W2 && What == WF_NEWDESK)
 			*W2 = aes_intout[N_PTRINTS + 1];
 	} else if (What == WF_INFO || What == WF_NAME) {
