@@ -289,7 +289,7 @@ BGHENTRY *bgh_idx(BGHINFO *bgh, _WORD idx);
 enum check_code { CHECK_ABORT, CHECK_OK, CHECK_APPEND };
 extern rsc_options op_rsc_opts;
 
-RSCFILE *load_all(const char *filename, const char *lang, _UWORD flags);
+RSCFILE *load_all(const char *filename, const char *lang, _UWORD flags, const char *po_dir);
 enum check_code check_file(char *filename, const char *extension, _BOOL append_allowed);
 _BOOL save_all(RSCFILE *file, const char *filename);
 void err_nota_rsc(const char *filename);

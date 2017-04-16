@@ -1903,7 +1903,7 @@ static void emutos_aes_fix(RSCFILE *file)
 
 /*** ---------------------------------------------------------------------- ***/
 
-RSCFILE *load_all(const char *file_name, const char *lang, _UWORD flags)
+RSCFILE *load_all(const char *file_name, const char *lang, _UWORD flags, const char *po_dir)
 {
 	RSCFILE *file;
 	char filename[PATH_MAX];
@@ -1964,7 +1964,7 @@ RSCFILE *load_all(const char *file_name, const char *lang, _UWORD flags)
 	/* translate strings in objects */
 	if (lang && strcmp(lang, "en") != 0)
 	{
-		po_create_hash(lang, &file->rsc_nls_domain);
+		po_create_hash(lang, &file->rsc_nls_domain, po_dir);
 		gettext_init(&file->rsc_nls_domain);
 		xlate_obj_array(&file->rsc_nls_domain, file->rs_object, file->header.rsh_nobs, TRUE);
 	}

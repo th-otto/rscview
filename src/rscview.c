@@ -347,6 +347,7 @@ static struct option const long_options[] = {
 	{ "xml", no_argument, NULL, 'X' },
 	{ "verbose", no_argument, NULL, 'v' },
 	{ "lang", required_argument, NULL, 'l' },
+	{ "podir", required_argument, NULL, 'p' },
 	{ "version", no_argument, NULL, 'V' },
 	{ "help", no_argument, NULL, 'h' },
 	{ NULL, no_argument, NULL, 0 }
@@ -373,8 +374,9 @@ int main(int argc, char **argv)
 	int exit_status = EXIT_SUCCESS;
 	rsc_counter counter;
 	const char *lang = NULL;
+	const char *po_dir = NULL;
 	
-	while ((c = getopt_long_only(argc, argv, "l:vXhV", long_options, NULL)) != EOF)
+	while ((c = getopt_long_only(argc, argv, "l:p:vXhV", long_options, NULL)) != EOF)
 	{
 		switch (c)
 		{
@@ -384,6 +386,10 @@ int main(int argc, char **argv)
 		
 		case 'l':
 			lang = optarg;
+			break;
+		
+		case 'p':
+			po_dir = optarg;
 			break;
 		
 		case 'v':
@@ -422,7 +428,7 @@ int main(int argc, char **argv)
 	while (optind < argc)
 	{
 		filename = argv[optind++];
-		file = load_all(filename, lang, XRSC_SAFETY_CHECKS);
+		file = load_all(filename, lang, XRSC_SAFETY_CHECKS, po_dir);
 		if (file != NULL)
 		{
 			if (xml_out)

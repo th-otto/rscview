@@ -1512,7 +1512,7 @@ static converter_t get_converter(const char *from, int to_id)
  */
 
 __attribute__((__warn_unused_result__))
-static oh *po_load(const char *lang)
+static oh *po_load(const char *lang, const char *po_dir)
 {
 	oh *o;
 	poe *e;
@@ -1526,8 +1526,14 @@ static oh *po_load(const char *lang)
 	str *s;
 	converter_t converter;
 	
+	if (po_dir == NULL)
+		po_dir = PO_DIR;
+	
 	s = s_new();
-	s_addstr(s, PO_DIR);
+	s_addstr(s, po_dir);
+	i = strlen(po_dir);
+	if (i > 0 && po_dir[i - 1] != '/')
+		s_addstr(s, "/");
 	s_addstr(s, lang);
 	s_addstr(s, ".po");
 	fname = s_detach(s);
@@ -1604,14 +1610,14 @@ errout:
 #define TH_BITS 10
 #define TH_SIZE (1 << TH_BITS)
 
-gboolean po_create_hash(const char *lang, nls_domain *domain)
+gboolean po_create_hash(const char *lang, nls_domain *domain, const char *po_dir)
 {
 	oh *o;
 	da *th[TH_SIZE];
 	int i, n;
 	char ***hash;
 	
-	o = po_load(lang);
+	o = po_load(lang, po_dir);
 	if (o == NULL)
 		return FALSE;
 	
