@@ -330,7 +330,7 @@ static _BOOL draw_alert(RSCTREE *tree)
 static _BOOL draw_all_trees(RSCFILE *file)
 {
 	RSCTREE *tree;
-	_BOOL ret;
+	_BOOL ret = TRUE;
 	
 	FOR_ALL_RSC(file, tree)
 	{
