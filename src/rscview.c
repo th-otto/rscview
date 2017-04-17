@@ -9,11 +9,12 @@
 #include "rsc.h"
 #include "ws.h"
 #include "debug.h"
+#include "pofile.h"
 
 
 char const program_name[] = "rscview";
 char const program_version[] = VERSION;
-char const program_date[] = "16.04.2017";
+char const program_date[] = "17.04.2017";
 
 nls_domain nls_default_domain = { "rscview", NULL, CHARSET_ST, NULL };
 
@@ -35,6 +36,7 @@ static WS ws;
  */
 static _BOOL xml_out = FALSE;
 static _BOOL verbose = FALSE;
+static const char *pngdir;
 
 
 void GetTextSize(_WORD *wchar, _WORD *hchar)
@@ -117,6 +119,7 @@ static _WORD write_png(RSCTREE *tree, _WORD x, _WORD y, _WORD w, _WORD h)
 	char basename[MAXNAMELEN + 1];
 	char filename[PATH_MAX];
 	_WORD err;
+	char *p;
 	
 	if (verbose)
 		printf("%s %ld %s: %dx%d\n", rtype_name(tree->rt_type), tree->rt_index, tree->rt_name, w, h);
@@ -127,7 +130,21 @@ static _WORD write_png(RSCTREE *tree, _WORD x, _WORD y, _WORD w, _WORD h)
 	vs_clip(vdi_handle, 1, pxy);
 	strcpy(basename, tree->rt_name);
 	str_lwr(basename);
-	sprintf(filename, "%03ld_%s.png", tree->rt_index, basename);
+	p = filename;
+	if (pngdir)
+	{
+		int len;
+		
+		strcpy(p, pngdir);
+		len = strlen(p);
+		p += len;
+		if (len > 0 && p[-1] != '/')
+			*p++ = '/';
+	}
+	if (tree->rt_file->rsc_nls_domain.lang)
+		sprintf(p, "%03ld_%s_%s.png", tree->rt_index, tree->rt_file->rsc_nls_domain.lang, basename);
+	else
+		sprintf(p, "%03ld_%s.png", tree->rt_index, basename);
 	err = v_write_png(vdi_handle, filename);
 	if (err != 0)
 	{
@@ -289,8 +306,8 @@ static _BOOL draw_alert(RSCTREE *tree)
 	
 	clear_screen(tree->rt_name);
 	/*
-	 * call our special version that only displays dialog,
-	 * and does not restore screen
+	 * call our special version that only displays the dialog,
+	 * and does not restore the screen background.
 	 */
 	form_alert_ex(1, str, 1 | (tree->rt_file->rsc_emutos != EMUTOS_NONE ? 2 : 0));
 	/*
@@ -350,6 +367,8 @@ static struct option const long_options[] = {
 	{ "verbose", no_argument, NULL, 'v' },
 	{ "lang", required_argument, NULL, 'l' },
 	{ "podir", required_argument, NULL, 'p' },
+	{ "pngdir", required_argument, NULL, 'P' },
+	{ "charset", required_argument, NULL, 'c' },
 	{ "version", no_argument, NULL, 'V' },
 	{ "help", no_argument, NULL, 'h' },
 	{ NULL, no_argument, NULL, 0 }
@@ -361,11 +380,13 @@ static void usage(FILE *fp)
 	fprintf(fp, _("%s - Create png files from GEM resource files\n"), program_name);
 	fprintf(fp, _("Usage: %s [<options>] <file...>\n"), program_name);
 	fprintf(fp, _("Options:\n"));
-	fprintf(fp, _("   -v, --verbose      emit some progress messages\n"));
-	fprintf(fp, _("   -l, --lang <lang>  read <lang>.po for translation\n")); 
-	fprintf(fp, _("   -p, --podir <dir>  lookup po-files in <dir>\n"));
-	fprintf(fp, _("       --version      print version and exit\n"));
-	fprintf(fp, _("       --help         print this help and exit\n"));
+	fprintf(fp, _("   -v, --verbose        emit some progress messages\n"));
+	fprintf(fp, _("   -l, --lang <lang>    read <lang>.po for translation\n")); 
+	fprintf(fp, _("   -p, --podir <dir>    lookup po-files in <dir>\n"));
+	fprintf(fp, _("   -c, --charset <name> use <charset> for display, overriding entry from po-file\n"));
+	fprintf(fp, _("   -P, --pngdir <dir>   write output files to <dir>\n"));
+	fprintf(fp, _("       --version        print version and exit\n"));
+	fprintf(fp, _("       --help           print this help and exit\n"));
 }
 
 
@@ -381,11 +402,11 @@ int main(int argc, char **argv)
 	RSCFILE *file;
 	const char *filename;
 	int exit_status = EXIT_SUCCESS;
-	rsc_counter counter;
 	const char *lang = NULL;
 	const char *po_dir = NULL;
+	const char *charset = NULL;
 	
-	while ((c = getopt_long_only(argc, argv, "l:p:vXhV", long_options, NULL)) != EOF)
+	while ((c = getopt_long_only(argc, argv, "c:l:p:p:vXhV", long_options, NULL)) != EOF)
 	{
 		switch (c)
 		{
@@ -393,12 +414,20 @@ int main(int argc, char **argv)
 			xml_out = TRUE;
 			break;
 		
+		case 'c':
+			charset = optarg;
+			break;
+			
 		case 'l':
 			lang = optarg;
 			break;
 		
 		case 'p':
 			po_dir = optarg;
+			break;
+		
+		case 'P':
+			pngdir = optarg;
 			break;
 		
 		case 'v':
@@ -440,9 +469,16 @@ int main(int argc, char **argv)
 		file = load_all(filename, lang, XRSC_SAFETY_CHECKS, po_dir);
 		if (file != NULL)
 		{
+			if (charset)
+			{
+				int cset = po_get_charset_id(charset);
+				if (cset >= 0)
+					file->rsc_nls_domain.fontset = cset;
+			}
 			if (xml_out)
 			{
 				char outfilename[PATH_MAX];
+				rsc_counter counter;
 				
 				strcpy(outfilename, file->rsc_rsxfilename);
 				set_extension(outfilename, "xml");

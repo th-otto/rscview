@@ -370,6 +370,7 @@ void rsc_init_file(RSCFILE *file)
 	file->rsc_crc_for_string = RSC_CRC_NONE;
 	file->had_rsm_hdr = FALSE;
 	file->need_rsm_hdr = FALSE;
+	file->rsc_nls_domain.fontset = CHARSET_ST;
 }
 
 /*** ---------------------------------------------------------------------- ***/

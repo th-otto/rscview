@@ -1944,7 +1944,7 @@ RSCFILE *load_all(const char *file_name, const char *lang, _UWORD flags, const c
 		file->rsc_emutos_frstrcond_string = g_strdup("#ifndef TARGET_192");
 		file->rsc_emutos_othercond_name = g_strdup("ADTTREZ");
 		file->rsc_emutos_othercond_string = g_strdup("#ifndef TARGET_192");
-		KINFO(("EmuTOS desktop resource loaded\n"));
+		KDEBUG(("EmuTOS desktop resource loaded\n"));
 	} else if (is_emutos_icon(file))
 	{
 		file->rsc_emutos = EMUTOS_ICONS;
@@ -1952,7 +1952,7 @@ RSCFILE *load_all(const char *file_name, const char *lang, _UWORD flags, const c
 		file->rsc_output_basename = g_strdup("icons");
 		file->rsc_flags2 |= RF_ROMABLE | RF_IMAGEWORDS;
 		file->rsc_flags |= RF_CSOURCE2;
-		KINFO(("EmuTOS icons resource loaded\n"));
+		KDEBUG(("EmuTOS icons resource loaded\n"));
 	} else if (is_emutos_aes(file))
 	{
 		file->rsc_emutos = EMUTOS_AES;
@@ -1962,15 +1962,19 @@ RSCFILE *load_all(const char *file_name, const char *lang, _UWORD flags, const c
 		file->rsc_flags |= RF_CSOURCE2;
 		file->rsc_emutos_othercond_name = g_strdup("APPS");
 		file->rsc_emutos_othercond_string = g_strdup("#if 0");
-		KINFO(("EmuTOS gem resource loaded\n"));
+		KDEBUG(("EmuTOS gem resource loaded\n"));
 	}
 	
 	/* translate strings in objects */
-	if (lang && strcmp(lang, "en") != 0)
+	if (lang)
 	{
-		po_create_hash(lang, &file->rsc_nls_domain, po_dir);
-		gettext_init(&file->rsc_nls_domain);
-		xlate_obj_array(&file->rsc_nls_domain, file->rs_object, file->header.rsh_nobs, TRUE);
+		file->rsc_nls_domain.lang = lang;
+		if (strcmp(lang, "en") != 0)
+		{
+			po_create_hash(lang, &file->rsc_nls_domain, po_dir);
+			gettext_init(&file->rsc_nls_domain);
+			xlate_obj_array(&file->rsc_nls_domain, file->rs_object, file->header.rsh_nobs, TRUE);
+		}
 	}
 	
 	switch (file->rsc_emutos)

@@ -77,7 +77,7 @@ static void *xmalloc(size_t s)
 	void *a = calloc(1, s);
 
 	if (a == NULL)
-		fatal("memory");
+		fatal("%s", strerror(errno));
 	return a;
 }
 
@@ -86,7 +86,7 @@ static void *xrealloc(void *b, size_t s)
 	void *a = realloc(b, s);
 
 	if (a == NULL)
-		fatal("memory");
+		fatal("%s", strerror(errno));
 	return a;
 }
 
@@ -900,7 +900,6 @@ static int underscore_length(const char *s)
 /*
  * parse po files
  */
-
 __attribute__((__warn_unused_result__))
 static gboolean parse_po_file(const char *fname, oh *o, gboolean ignore_ae)
 {
@@ -1202,24 +1201,9 @@ static struct charset_alias const charsets[] = {
 	{ "atarist", CHARSET_ST }
 };
 
-static const char *get_charset_name(int id)
-{
-	int i;
-	int n = ARRAY_SIZE(charsets);
-
-	for (i = 0; i < n; i++)
-	{
-		if (charsets[i].id == id)
-		{
-			return charsets[i].name;
-		}
-	}
-	return "unknown";
-}
-
 
 /* resolve any known alias */
-static int get_canon_cset_name(const char *name)
+int po_get_charset_id(const char *name)
 {
 	int i;
 	int n = ARRAY_SIZE(charsets);
@@ -1239,6 +1223,26 @@ static int get_canon_cset_name(const char *name)
 	}
 	return -1;
 }
+
+/*
+ * opposite of po_get_charset_id.
+ * Only used for error reporting.
+ */
+static const char *get_charset_name(int id)
+{
+	int i;
+	int n = ARRAY_SIZE(charsets);
+
+	for (i = 0; i < n; i++)
+	{
+		if (charsets[i].id == id)
+		{
+			return charsets[i].name;
+		}
+	}
+	return "unknown";
+}
+
 
 /*
  * charset conversion
@@ -1437,7 +1441,7 @@ static struct converter_info const converters[] = {
 };
 
 /*
- * orginally build by genctables.awk, from po/LINGUAS
+ * originally build by genctables.awk, from po/LINGUAS
  */
 static struct lang_info const languages[] = {
     { "en", CHARSET_ST },
@@ -1483,7 +1487,7 @@ static converter_t get_converter(const char *from, int to_id)
 	int from_id;
 	int n = ARRAY_SIZE(converters);
 
-	from_id = get_canon_cset_name(from);
+	from_id = po_get_charset_id(from);
 	
 	if (from_id == to_id)
 	{
@@ -1508,11 +1512,10 @@ static converter_t get_converter(const char *from, int to_id)
 
 
 /*
- * update po file against messages.pot
+ * load po file
  */
-
 __attribute__((__warn_unused_result__))
-static oh *po_load(const char *lang, const char *po_dir)
+static oh *po_load(nls_domain *domain, const char *po_dir)
 {
 	oh *o;
 	poe *e;
@@ -1534,7 +1537,7 @@ static oh *po_load(const char *lang, const char *po_dir)
 	i = strlen(po_dir);
 	if (i > 0 && po_dir[i - 1] != '/')
 		s_addstr(s, "/");
-	s_addstr(s, lang);
+	s_addstr(s, domain->lang);
 	s_addstr(s, ".po");
 	fname = s_detach(s);
 	
@@ -1556,7 +1559,8 @@ static oh *po_load(const char *lang, const char *po_dir)
 			from_charset = g_strdup(a.charset);
 		}
 		free_pot_ae(&a);
-		o->to_charset = get_language_charset(lang);
+		o->to_charset = get_language_charset(domain->lang);
+		domain->fontset = o->to_charset;
 	}
 	converter = get_converter(from_charset, o->to_charset);
 	
@@ -1617,7 +1621,8 @@ gboolean po_create_hash(const char *lang, nls_domain *domain, const char *po_dir
 	int i, n;
 	char ***hash;
 	
-	o = po_load(lang, po_dir);
+	domain->lang = lang;
+	o = po_load(domain, po_dir);
 	if (o == NULL)
 		return FALSE;
 	
@@ -1667,8 +1672,6 @@ gboolean po_create_hash(const char *lang, nls_domain *domain, const char *po_dir
 		}
 	}
 	
-	domain->lang = lang;
-	domain->fontset = o->to_charset;
 	domain->hash = (const char *const *const *)hash;
 	
 	o_free(o, TRUE);
