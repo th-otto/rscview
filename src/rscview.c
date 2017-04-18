@@ -4,17 +4,19 @@
 #include <getopt.h>
 #include <errno.h>
 #include <ctype.h>
+#include <sys/stat.h>
 #include "nls.h"
 #include "fileio.h"
 #include "rsc.h"
 #include "ws.h"
 #include "debug.h"
 #include "pofile.h"
+#include "../vdi/writepng.h"
 
 
 char const program_name[] = "rscview";
 char const program_version[] = VERSION;
-char const program_date[] = "17.04.2017";
+char const program_date[] = "18.04.2017";
 
 nls_domain nls_default_domain = { "rscview", NULL, CHARSET_ST, NULL };
 
@@ -135,6 +137,11 @@ static _WORD write_png(RSCTREE *tree, _WORD x, _WORD y, _WORD w, _WORD h)
 	{
 		int len;
 		
+#ifdef _WIN32
+		(void) _mkdir(pngdir);
+#else
+		(void) mkdir(pngdir, 0755);
+#endif
 		strcpy(p, pngdir);
 		len = strlen(p);
 		p += len;
@@ -390,9 +397,16 @@ static void usage(FILE *fp)
 }
 
 
+static void stdout_handler(void *data, const char *fmt, va_list args)
+{
+	vfprintf((FILE *)data, fmt, args);
+}
+
 static void print_version(void)
 {
 	printf(_("%s version %s, %s\n"), program_name, program_version, program_date);
+	set_errout_handler(stdout_handler, stdout);
+	writepng_version_info();
 }
 
 
@@ -406,7 +420,7 @@ int main(int argc, char **argv)
 	const char *po_dir = NULL;
 	const char *charset = NULL;
 	
-	while ((c = getopt_long_only(argc, argv, "c:l:p:p:vXhV", long_options, NULL)) != EOF)
+	while ((c = getopt_long_only(argc, argv, "c:l:p:P:vXhV", long_options, NULL)) != EOF)
 	{
 		switch (c)
 		{

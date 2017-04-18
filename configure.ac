@@ -1,7 +1,7 @@
 AC_PREREQ(2.59)
 m4_define(RSCVIEW_MAJOR_VERSION, 1)
-m4_define(RSCVIEW_MINOR_VERSION, 00)
-m4_define(RSCVIEW_DATE, 28.03.2017)
+m4_define(RSCVIEW_MINOR_VERSION, 01)
+m4_define(RSCVIEW_DATE, 18.04.2017)
 m4_define(RSCVIEW_VERSION, RSCVIEW_MAJOR_VERSION.RSCVIEW_MINOR_VERSION)
 
 AC_INIT(rscview, RSCVIEW_VERSION, [https://sourceforge.net/projects/thotto.u/bugs/],,[https://sourceforge.net/projects/thotto.u/files/])
