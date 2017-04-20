@@ -13,12 +13,17 @@
 
 EXTERN_C_BEG
 
-void set_errout_handler(void (*handler)(void *data, const char *format, va_list args), void *data);
+typedef void (*errout_handler)(void *data, const char *format, va_list args);
+
+errout_handler set_errout_handler(errout_handler handler, void *data);
 
 void errout(const char *format, ...) __attribute__((format(printf, 1, 2)));
 void erroutv(const char *format, va_list args) __attribute__((format(printf, 1, 0)));
 
-#define KINFO(args) errout args
+void debugout(const char *format, ...) __attribute__((format(printf, 1, 2)));
+void debugoutv(const char *format, va_list args) __attribute__((format(printf, 1, 0)));
+
+#define KINFO(args) debugout args
 
 #ifdef ENABLE_KDEBUG
 #define KDEBUG(args) KINFO(args)

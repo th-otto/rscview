@@ -287,9 +287,12 @@ static void gsx_resetmb(void)
 }
 
 
-#ifndef OS_ATARI
-
 /* AES mouse wheel handler called by the VDI */
+#ifdef OS_ATARI
+void aes_wheel(void)
+{
+}
+#else
 void aes_wheel(_WORD wheel_number, _WORD wheel_amount)
 {
 #if NYI
@@ -298,8 +301,15 @@ void aes_wheel(_WORD wheel_number, _WORD wheel_amount)
 	(void) wheel_number;
 	(void) wheel_amount;
 }
+#endif
+
 
 /* AES button handler called by the VDI */
+#ifdef OS_ATARI
+void far_bcha(void)
+{
+}
+#else
 void far_bcha(_WORD newmask)
 {
 #if NYI
@@ -307,9 +317,15 @@ void far_bcha(_WORD newmask)
 #endif
 	(void) newmask;
 }
+#endif
 
 
 /* AES mouse handler called by the VDI */
+#ifdef OS_ATARI
+void far_mcha(void)
+{
+}
+#else
 void far_mcha(_WORD x, _WORD y)
 {
 #if NYI
@@ -318,6 +334,8 @@ void far_mcha(_WORD x, _WORD y)
 	(void) x;
 	(void) y;
 }
+#endif
+
 
 /* AES timer handler called by the VDI */
 void tikcod(void)
@@ -343,8 +361,6 @@ void tikcod(void)
 	(*tiksav)();
 #endif
 }
-
-#endif
 
 
 void gsx_init(void)

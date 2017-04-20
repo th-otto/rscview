@@ -18,5 +18,6 @@ short appl_exit(void)
 {
 	AES_PARAMS(19,0,1,0,0);
 
-	return AES_TRAP(aes_params);
+	AES_TRAP(aes_params);
+	return aes_intout[0];
 }

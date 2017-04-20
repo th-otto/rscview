@@ -26,5 +26,6 @@ endif
 if OS_TOS
 libutil_a_SOURCES += \
 	sys/tos/fclose.c \
+	sys/tos/gemdos.c \
 	$(empty)
 endif

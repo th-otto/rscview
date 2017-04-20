@@ -61,7 +61,7 @@ static VEX_WHEELV user_wheel;
 #define CTAB_ID 0xbadc0de1
 
 
-#ifdef OS_ATARI
+#if defined(OS_ATARI) && 0
 #define SCREEN_BASE (*((void **)0x44e))
 #else
 #define SCREEN_BASE 0

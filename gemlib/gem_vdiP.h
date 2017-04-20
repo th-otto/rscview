@@ -117,7 +117,7 @@ static __inline void **__vdi_control_ptr(short n, short *vdi_control)
 
 #endif
 
-#if defined(__GNUC__) && defined(__mc68000__)
+#if defined(__GNUC__) && defined(__mc68000__) && !defined(PRIVATE_VDI)
 
 #if defined(__GNUC_INLINE__) && (__GNUC__ > 2 || __GNUC_MINOR__ > 5)
 

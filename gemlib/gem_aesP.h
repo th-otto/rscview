@@ -41,7 +41,7 @@
 
 #define N_PTRINTS (sizeof(void *) / sizeof(short))
 
-#if defined(__GNUC__) && defined(__mc68000__)
+#if defined(__GNUC__) && defined(__mc68000__) && !defined(PRIVATE_AES)
 
 #define _AES_TRAP(pb) \
 	__asm__ volatile ( \

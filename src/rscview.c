@@ -498,18 +498,19 @@ int main(int argc, char **argv)
 				set_extension(outfilename, "xml");
 				if (rsc_xml_source(file, &counter, outfilename, file->data) == FALSE)
 					exit_status = EXIT_FAILURE;
+			} else
+			{
+				open_screen();
+				vst_font(vdi_handle, file->rsc_nls_domain.fontset);
+				vst_font(phys_handle, file->rsc_nls_domain.fontset);
+				
+				if (draw_all_trees(file) == FALSE)
+					exit_status = EXIT_FAILURE;
+				
+				vst_font(phys_handle, 1);
+				close_screen();
 			}
-			
-			open_screen();
-			vst_font(vdi_handle, file->rsc_nls_domain.fontset);
-			vst_font(phys_handle, file->rsc_nls_domain.fontset);
-			
-			if (draw_all_trees(file) == FALSE)
-				exit_status = EXIT_FAILURE;
-			
-			vst_font(phys_handle, 1);
-			close_screen();
-			
+							
 			rsc_file_delete(file, FALSE);
 			xrsrc_free(file);
 		} else
