@@ -15,8 +15,8 @@
 
 
 char const program_name[] = "rscview";
-char const program_version[] = VERSION;
-char const program_date[] = "18.04.2017";
+char const program_version[] = RSCVIEW_VERSION;
+char const program_date[] = RSCVIEW_DATE;
 
 nls_domain nls_default_domain = { "rscview", NULL, CHARSET_ST, NULL };
 
