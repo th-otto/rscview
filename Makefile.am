@@ -17,7 +17,7 @@ DOWNLOADS=$(HOME)/webgo24/home/www/download
 bindist:
 	$(MAKE) clean
 	./configure $(CONFIGURE_ARGS) --host=$(CROSS_WIN32_HOST)
-	$(MAKE)
+	$(MAKE) -j8
 	-mkdir $(TMPDIR)
 	$(CROSS_WIN32_PREFIX)strip src/rscview.exe
 	cp -a src/rscview.exe $(TMPDIR)
@@ -28,11 +28,11 @@ bindist:
 	(cd $(TMPDIR)/..; zip -r $(DOWNLOADS)/rscview-$(VERSION)-win32.zip rscview)
 	$(MAKE) clean
 	./configure $(CONFIGURE_ARGS) --host=$(CROSS_MINT_HOST)
-	$(MAKE)
+	$(MAKE) -j8
 	$(CROSS_MINT_PREFIX)strip src/rscview
 	(cd src; mv rscview rscview.ttp; zip -r $(DOWNLOADS)/rscview-$(VERSION)-mint.zip rscview.ttp; rm -f rscview.ttp)
 	$(MAKE) clean
 	./configure $(CONFIGURE_ARGS)
-	$(MAKE)
+	$(MAKE) -j8
 	strip src/rscview
 	(cd src; tar cvfj $(DOWNLOADS)/rscview-$(VERSION)-linux.tar.bz2 rscview)

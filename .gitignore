@@ -51,6 +51,7 @@ core
 bla.*
 aaa.cfg
 src/rscview
+src/rscview.cgi
 *.uls
 udo_fc.*
 udo_fo.*

@@ -3,6 +3,7 @@
 #include "config.h"
 #include <gem.h>
 #include <object.h>
+#include <ctype.h>
 #include <ro_mem.h>
 #include "fileio.h"
 #include "rsc.h"
@@ -11,10 +12,6 @@
 #include "aesutils.h"
 #include "rso.h"
 #include "pofile.h"
-#ifdef __MINGW32__
-#include <libgen.h>
-#define basename(x) basename((char *)NO_CONST(x))
-#endif
 
 FILE *ffp = NULL;
 const char *fname;
@@ -300,12 +297,65 @@ char *rsx_basename(const char *name)
 
 /*** ---------------------------------------------------------------------- ***/
 
+char *rsc_path_get_dirname(const char *path)
+{
+	const char *base;
+	char *dir;
+	char *ptr;
+	
+	if (path == NULL)
+		return NULL;
+	base = rsc_basename(path);
+	dir = g_strndup(path, base - path);
+	ptr = dir + strlen(dir);
+	while (ptr > dir && G_IS_DIR_SEPARATOR(ptr[-1]))
+		*--ptr = '\0';
+	return dir;
+}
+
+/*** ---------------------------------------------------------------------- ***/
+
+const char *rsc_basename(const char *path)
+{
+	const char *p;
+	const char *base = NULL;
+	
+	if (path == NULL)
+		return path;
+	p = path;
+	while (*p != '\0')
+	{
+		if (G_IS_DIR_SEPARATOR(*p))
+			base = p + 1;
+		++p;
+	}
+	if (base != NULL)
+		return base;
+	
+	if (isalpha(path[0]) && path[1] == ':')
+	{
+    	/* can only be X:name, without slash */
+    	path += 2;
+	}
+	
+	return path;
+}
+
+/*** ---------------------------------------------------------------------- ***/
+
+char *rsc_path_get_basename(const char *path)
+{
+	return g_strdup(rsc_basename(path));
+}
+
+/*** ---------------------------------------------------------------------- ***/
+
 void set_extension(char *filename, const char *ext)
 {
 	const char *p;
 	char *p2;
 
-	p = basename(filename);
+	p = rsc_basename(filename);
 	if ((p2 = strrchr(p, '.')) == NULL)
 	{
 		strncat(filename, ".", PATH_MAX);

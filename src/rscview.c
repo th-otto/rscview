@@ -1,10 +1,10 @@
 #include "config.h"
 #include <gem.h>
-#include <w_draw.h>
 #include <getopt.h>
 #include <errno.h>
 #include <ctype.h>
 #include <sys/stat.h>
+#include "portvdi.h"
 #include "nls.h"
 #include "fileio.h"
 #include "rsc.h"
@@ -40,6 +40,9 @@ static _BOOL xml_out = FALSE;
 static _BOOL verbose = FALSE;
 static const char *pngdir;
 
+/*****************************************************************************/
+/* ------------------------------------------------------------------------- */
+/*****************************************************************************/
 
 void GetTextSize(_WORD *wchar, _WORD *hchar)
 {
@@ -47,7 +50,9 @@ void GetTextSize(_WORD *wchar, _WORD *hchar)
 	*hchar = gl_hchar;
 }
 
-
+/*****************************************************************************/
+/* ------------------------------------------------------------------------- */
+/*****************************************************************************/
 
 static void open_screen(void)
 {
@@ -74,12 +79,14 @@ static void open_screen(void)
 	vsf_color(vdi_handle, WHITE);
 }
 
+/* ------------------------------------------------------------------------- */
 
 static void close_screen(void)
 {
 	v_clsvwk(vdi_handle);
 }
 
+/* ------------------------------------------------------------------------- */
 
 static void clear_screen(char *title)
 {
@@ -104,6 +111,7 @@ static void clear_screen(char *title)
 	objc_draw(desktop, ROOT, MAX_DEPTH, 0, 0, desk.g_x + desk.g_w, desk.g_y + desk.g_h);
 }
 
+/* ------------------------------------------------------------------------- */
 
 static void str_lwr(char *name)
 {
@@ -114,6 +122,7 @@ static void str_lwr(char *name)
 	}
 }
 
+/* ------------------------------------------------------------------------- */
 
 static _WORD write_png(RSCTREE *tree, _WORD x, _WORD y, _WORD w, _WORD h)
 {
@@ -160,6 +169,9 @@ static _WORD write_png(RSCTREE *tree, _WORD x, _WORD y, _WORD w, _WORD h)
 	return err;
 }
 
+/*****************************************************************************/
+/* ------------------------------------------------------------------------- */
+/*****************************************************************************/
 
 static _BOOL draw_dialog(RSCTREE *tree)
 {
@@ -187,6 +199,7 @@ static _BOOL draw_dialog(RSCTREE *tree)
 	return err == 0;
 }
 
+/* ------------------------------------------------------------------------- */
 
 static _BOOL draw_menu(RSCTREE *tree)
 {
@@ -289,6 +302,7 @@ static _BOOL draw_menu(RSCTREE *tree)
 	return err == 0;
 }
 
+/* ------------------------------------------------------------------------- */
 
 static _BOOL draw_string(RSCTREE *tree)
 {
@@ -298,6 +312,7 @@ static _BOOL draw_string(RSCTREE *tree)
 	return TRUE;
 }
 
+/* ------------------------------------------------------------------------- */
 
 static _BOOL draw_alert(RSCTREE *tree)
 {
@@ -333,6 +348,7 @@ static _BOOL draw_alert(RSCTREE *tree)
 	return err == 0;
 }
 
+/* ------------------------------------------------------------------------- */
 
 static _BOOL draw_all_trees(RSCFILE *file)
 {
@@ -368,6 +384,9 @@ static _BOOL draw_all_trees(RSCFILE *file)
 	return ret;
 }
 
+/*****************************************************************************/
+/* ------------------------------------------------------------------------- */
+/*****************************************************************************/
 
 static struct option const long_options[] = {
 	{ "xml", no_argument, NULL, 'X' },
@@ -381,6 +400,7 @@ static struct option const long_options[] = {
 	{ NULL, no_argument, NULL, 0 }
 };
 
+/* ------------------------------------------------------------------------- */
 
 static void usage(FILE *fp)
 {
@@ -396,11 +416,14 @@ static void usage(FILE *fp)
 	fprintf(fp, _("       --help           print this help and exit\n"));
 }
 
+/* ------------------------------------------------------------------------- */
 
 static void stdout_handler(void *data, const char *fmt, va_list args)
 {
 	vfprintf((FILE *)data, fmt, args);
 }
+
+/* ------------------------------------------------------------------------- */
 
 static void print_version(void)
 {
@@ -409,6 +432,7 @@ static void print_version(void)
 	writepng_version_info();
 }
 
+/* ------------------------------------------------------------------------- */
 
 int main(int argc, char **argv)
 {

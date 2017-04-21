@@ -471,7 +471,7 @@ AC_SYS_LARGEFILE
 AC_HEADER_STAT
 AC_CHECK_FUNCS([select fcntl uname gethostname nice setpriority getcwd getwd putenv sbrk sync \
      getcwd munmap putenv setenv setlocale strchr strcasecmp strdup __argz_count __argz_stringify __argz_next \
-     sigaction syslog realpath setrlimit lstat \
+     sigaction syslog realpath setrlimit lstat mktemp mkstemp mkstemps \
      snprintf vasprintf vsnprintf stpcpy mempcpy strtoul wcsnlen mbrtowc wcrtomb strsignal getrlimit setrlimit \
      select usleep nap getcwd getwd strstr gettimeofday strerror ftime getmntinfo vfork uname gethostname XExtendedMaxRequestSize])
 
@@ -542,6 +542,15 @@ if test "$GCC" = "yes" -a "$enable_fatal_warnings" = "yes"; then
 	CXXFLAGS="$CXXFLAGS -Werror"
 fi
 ])
+
+###############################################################################
+#
+#       Curl support
+#
+###############################################################################
+
+AM_PATH_CURL
+AM_CONDITIONAL(HAVE_CURL, test "$no_curl" = "")
 
 # compute the final value of X_LIBS
 #

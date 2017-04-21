@@ -168,6 +168,9 @@ extern _BOOL (*rsc_bgh_source_func)(RSCFILE *file, rsc_counter *counter, char *f
 
 void xrsc_get_header(XRS_HEADER *xrsc_header, const char *buf);
 char *rsx_basename(const char *);
+const char *rsc_basename(const char *path);
+char *rsc_path_get_basename(const char *path);
+char *rsc_path_get_dirname(const char *path);
 _BOOL file_create(const char *filename, const char *mode);
 _BOOL file_open(const char *filename, const char *mode);
 _BOOL file_close(_BOOL status);
@@ -286,10 +289,6 @@ _BOOL output_source_file(
 	const char *default_file,
 	_BOOL (*output_data)(RSCFILE *file, XRS_HEADER *xrsc_header, rsc_counter *counter, char *buf),
 	_BOOL (*output_name)(RSCFILE *file, XRS_HEADER *xrsc_header, rsc_counter *counter));
-
-#define empty(p) ((p) == NULL || *(p) == '\0')
-#define fixnull(p) ((p) ? (p) : "")
-#define printnull(p) ((p) ? (p) : "(nil)")
 
 void err_fopen(const char *fname);
 void err_fread(const char *fname);

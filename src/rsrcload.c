@@ -7,7 +7,6 @@
 #include <xrsrc.h>
 #include <rsrcload.h>
 #include <ro_mem.h>
-#include <w_draw.h>
 #include <rsc.h>
 #include "fileio.h"
 #ifdef __MINGW32__
@@ -888,6 +887,14 @@ static void report_problem(XRS_HEADER *xrsc_header, const char *what, _LONG offs
 	{
 		KINFO(("%s: offset $%lx\n", what, offset));
 	}
+}
+
+/*** ---------------------------------------------------------------------- ***/
+
+_BOOL W_Cicon_Setpalette(_WORD *palette)
+{
+	UNUSED(palette);
+	return TRUE;
 }
 
 /*** ---------------------------------------------------------------------- ***/

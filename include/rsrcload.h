@@ -138,6 +138,7 @@ _BOOL xrsrc_gaddr(RSCFILE *file, _WORD type, _WORD idx, void *gaddr);
 _BOOL xrsrc_saddr(RSCFILE *file, _WORD type, _WORD idx, void *saddr);
 _WORD xrsrc_obfix(OBJECT *re_otree, _WORD re_oobject);
 
+_BOOL W_Cicon_Setpalette(_WORD *palette);
 
 EXTERN_C_END
 

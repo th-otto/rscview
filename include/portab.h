@@ -575,8 +575,24 @@ void purec_fclose(FILE *fp);
 #  define _BOOL int				/* 2 valued (true/false)	   */
 #endif
 
+#ifndef G_GNUC_EXTENSION
+#ifdef __GNUC__
+#define G_GNUC_EXTENSION __extension__
+#else
+#define G_GNUC_EXTENSION
+#endif
+#endif
+
 #ifndef HAVE_GLIB
 typedef int gboolean;
+G_GNUC_EXTENSION typedef signed long long gint64;
+G_GNUC_EXTENSION typedef unsigned long long guint64;
+typedef size_t gsize;
+#if defined(_WIN64) || defined(__WIN64__) || defined(_M_X64) || defined(_M_AMD64)
+typedef gint64 gssize;
+#else
+typedef long gssize;
+#endif
 #endif
 
 #if defined(ULONG_MAX) && ULONG_MAX > 0x7ffffffful
