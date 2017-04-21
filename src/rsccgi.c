@@ -80,29 +80,9 @@ void GetTextSize(_WORD *wchar, _WORD *hchar)
 /* ------------------------------------------------------------------------- */
 /*****************************************************************************/
 
-
 static void write_strout(GString *s, FILE *outfp)
 {
 	fwrite(s->str, 1, s->len, outfp);
-}
-
-static void html_out_header(RSCFILE *file, rsc_opts *opts, GString *out, const char *title, _WORD treeindex, gboolean for_error)
-{
-	(void) file;
-	(void) opts;
-	(void) out;
-	(void) title;
-	(void) treeindex;
-	(void) for_error;
-}
-
-static void html_out_trailer(RSCFILE *file, rsc_opts *opts, GString *out, _WORD treeindex, gboolean for_error)
-{
-	(void) file;
-	(void) opts;
-	(void) out;
-	(void) treeindex;
-	(void) for_error;
 }
 
 /*****************************************************************************/
@@ -443,42 +423,47 @@ static _BOOL draw_all_trees(RSCFILE *file)
 /* ------------------------------------------------------------------------- */
 /*****************************************************************************/
 
-static gboolean display_tree(const char *filename, rsc_opts *opts, GString *body, _WORD treeindex)
+static gboolean display_tree(const char *filename, rsc_opts *opts, GString *out, _WORD treeindex)
 {
 	RSCFILE *file;
 	const char *po_dir = NULL;
 	gboolean retval = FALSE;
 	
-	appl_init();
-	
-	(void) body;
 	(void) treeindex;
 
+	file = load_all(filename, opts->lang, XRSC_SAFETY_CHECKS, po_dir);
+	if (file == NULL)
+	{
+		html_out_header(NULL, opts, out, _("404 Not Found"), -1, TRUE);
+		g_string_append_printf(out, "%s: %s\n", rsc_basename(filename), strerror(errno));
+		html_out_trailer(NULL, opts, out, -1, TRUE);
+		return FALSE;
+	}
+
+	appl_init();
+	
 	menu_register(-1, program_name);
 	phys_handle = graf_handle(&gl_wchar, &gl_hchar, &gl_wbox, &gl_hbox);
 	wind_get(DESK, WF_WORKXYWH, &desk.g_x, &desk.g_y, &desk.g_w, &desk.g_h);
 
-	file = load_all(filename, opts->lang, XRSC_SAFETY_CHECKS, po_dir);
-	if (file != NULL)
+	if (opts->charset)
 	{
-		if (opts->charset)
-		{
-			int cset = po_get_charset_id(opts->charset);
-			if (cset >= 0)
-				file->rsc_nls_domain.fontset = cset;
-		}
-		open_screen();
-		vst_font(vdi_handle, file->rsc_nls_domain.fontset);
-		vst_font(phys_handle, file->rsc_nls_domain.fontset);
-		
-		retval = draw_all_trees(file);
-		
-		vst_font(phys_handle, 1);
-		close_screen();
-
-		rsc_file_delete(file, FALSE);
-		xrsrc_free(file);
+		int cset = po_get_charset_id(opts->charset);
+		if (cset >= 0)
+			file->rsc_nls_domain.fontset = cset;
 	}
+
+	open_screen();
+	vst_font(vdi_handle, file->rsc_nls_domain.fontset);
+	vst_font(phys_handle, file->rsc_nls_domain.fontset);
+	
+	retval = draw_all_trees(file);
+	
+	vst_font(phys_handle, 1);
+	close_screen();
+
+	rsc_file_delete(file, FALSE);
+	xrsrc_free(file);
 
 	appl_exit();
 		

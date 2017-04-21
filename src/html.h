@@ -27,3 +27,5 @@ typedef struct _rsc_opts {
 char *html_quote_name(const char *name, unsigned int flags);
 gboolean uri_has_scheme(const char *uri);
 void html_out_response_header(FILE *out, unsigned long len, gboolean xml);
+void html_out_header(RSCFILE *file, rsc_opts *opts, GString *out, const char *title, _WORD treeindex, gboolean for_error);
+void html_out_trailer(RSCFILE *file, rsc_opts *opts, GString *out, _WORD treeindex, gboolean for_error);

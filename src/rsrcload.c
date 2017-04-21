@@ -8,6 +8,7 @@
 #include <rsrcload.h>
 #include <ro_mem.h>
 #include <rsc.h>
+#include <errno.h>
 #include "fileio.h"
 #ifdef __MINGW32__
 #include <libgen.h>
@@ -1069,9 +1070,14 @@ RSCFILE *xrsrc_load(const char *filename, _UWORD flags)
 		break;
 	case RSC_NORSC:
 		err_nota_rsc(filename);
+		errno = EINVAL;
 		break;
 	case RSC_ERROR:
 		err_fread(filename);
+		errno = EIO;
+		break;
+	case RSC_ABORT:
+		errno = EFAULT;
 		break;
 	}
 	if (error != RSC_OK)

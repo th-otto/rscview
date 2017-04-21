@@ -5,3 +5,4 @@
 #include <portaes.h>
 #include <stdint.h>
 #include <rsrcload.h>
+#include <ro_mem.h>

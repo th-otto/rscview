@@ -9,7 +9,6 @@ libgem_a_SOURCES = \
 	gem_vdiP.h \
 	gem_aesP.h \
 	mt_gem.h \
-	mt_gemx.h \
 	\
 	a_appl_exit.c \
 	a_appl_init.c \
