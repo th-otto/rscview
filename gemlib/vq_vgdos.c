@@ -1,6 +1,6 @@
 #include "gem_vdiP.h"
 
-#ifdef __GNUC__
+#if defined(__GNUC__) && defined(__m68000__) && !defined(PRIVATE_VDI)
 
 long vq_vgdos(void)
 {
@@ -15,5 +15,9 @@ long vq_vgdos(void)
 	);
 	return x;
 }
+
+#else
+
+extern int _I_dont_care_that_ISO_C_forbids_an_empty_source_file_;
 
 #endif

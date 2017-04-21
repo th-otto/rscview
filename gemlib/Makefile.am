@@ -9,6 +9,8 @@ libgem_a_SOURCES = \
 	gem_vdiP.h \
 	gem_aesP.h \
 	mt_gem.h \
+	gem.h \
+	aes.c \
 	\
 	a_appl_exit.c \
 	a_appl_init.c \
@@ -31,6 +33,7 @@ libgem_a_SOURCES = \
 	a_wind_set.c \
 	a_wind_set_int.c \
 	a_wind_set_str.c \
+	a_wind_set_ptr.c \
 	a_wind_update.c \
 	\
 	rc_copy.c \
@@ -219,6 +222,11 @@ libgem_a_SOURCES = \
 	n_v_bez_on.c \
 	n_v_bez_con.c \
 	n_v_bez_qual.c \
+	n_v_create_driver_info.c \
+	n_v_delete_driver_info.c \
+	n_v_opnprn.c \
+	n_v_read_default_settings.c \
+	n_v_write_default_settings.c \
 	n_v_clsbm.c \
 	n_v_color2nearest.c \
 	n_v_color2value.c \
@@ -245,6 +253,78 @@ libgem_a_SOURCES = \
 	n_v_resize_bm.c \
 	n_v_setrgb.c \
 	n_v_value2color.c \
+	n_vq_ctab.c \
+	n_vq_ctab_entry.c \
+	n_vq_ctab_id.c \
+	n_vq_devinfo.c \
+	n_vq_dflt_ctab.c \
+	n_vq_ext_devinfo.c \
+	n_vq_hilite_color.c \
+	n_vq_margins.c \
+	n_vq_max_color.c \
+	n_vq_min_color.c \
+	n_vq_prn_scaling.c \
+	n_vq_px_format.c \
+	n_vq_scrninfo.c \
+	n_vq_weight_color.c \
+	n_vqf_bg_color.c \
+	n_vqf_fg_color.c \
+	n_vql_bg_color.c \
+	n_vql_fg_color.c \
+	n_vqm_bg_color.c \
+	n_vqm_fg_color.c \
+	n_vqr_bg_color.c \
+	n_vqr_fg_color.c \
+	n_vqt_advance.c \
+	n_vqt_advance32.c \
+	n_vqt_bg_color.c \
+	n_vqt_char_index.c \
+	n_vqt_devinfo.c \
+	n_vqt_ext_name.c \
+	n_vqt_f_extent.c \
+	n_vqt_f_extent16.c \
+	n_vqt_f_extent16n.c \
+	n_vqt_f_extentn.c \
+	n_vqt_fg_color.c \
+	n_vqt_fontheader.c \
+	n_vqt_name_and_id.c \
+	n_vqt_pairkern.c \
+	n_vqt_real_extent.c \
+	n_vqt_real_extentn.c \
+	n_vqt_trackkern.c \
+	n_vqt_xfntinfo.c \
+	n_vr_transfer_bits.c \
+	n_vs_ctab.c \
+	n_vs_ctab_entry.c \
+	n_vs_dflt_ctab.c \
+	n_vs_ctab_entry.c \
+	n_vs_dflt_ctab.c \
+	n_vs_document_info.c \
+	n_vs_hilite_color.c \
+	n_vs_max_color.c \
+	n_vs_min_color.c \
+	n_vs_weight_color.c \
+	n_vsf_bg_color.c \
+	n_vsf_fg_color.c \
+	n_vsl_bg_color.c \
+	n_vsl_fg_color.c \
+	n_vsm_bg_color.c \
+	n_vsm_fg_color.c \
+	n_vsr_bg_color.c \
+	n_vsr_fg_color.c \
+	n_vst_arbpt.c \
+	n_vst_arbpt32.c \
+	n_vst_bg_color.c \
+	n_vst_charmap.c \
+	n_vst_fg_color.c \
+	n_vst_kern.c \
+	n_vst_map_mode.c \
+	n_vst_name.c \
+	n_vst_setsize.c \
+	n_vst_setsize32.c \
+	n_vst_skew.c \
+	n_vst_track_offset.c \
+	n_vst_width.c \
 	\
 	vdi_array2str.c \
 	vdi_str2array.c \
@@ -253,5 +333,7 @@ libgem_a_SOURCES = \
 	vdi_dummy.c \
 	\
 	vq_gdos.c \
+	vq_vgdos.c \
+	vdi.c \
 	\
 	$(empty)

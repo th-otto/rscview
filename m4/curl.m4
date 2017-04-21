@@ -5,6 +5,7 @@ AC_DEFUN([AM_PATH_CURL],
 [dnl 
 dnl Get the cflags and libraries
 dnl
+AC_REQUIRE([AC_PROG_PKGCONFIG])
 AC_ARG_WITH(curl,
    [AC_HELP_STRING(--with-curl=PFX, [Prefix where libcurl is installed (optional)])],
    [curl_prefix="$withval"],

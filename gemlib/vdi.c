@@ -1,6 +1,6 @@
 #include "gem_vdiP.h"
 
-#if defined(__GNUC__) && defined(__mc68000__)
+#if defined(__GNUC__) && defined(__mc68000__) && !defined(PRIVATE_VDI)
 
 void vdi(VDIPB *pb)
 {

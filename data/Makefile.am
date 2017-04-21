@@ -68,6 +68,12 @@ fnt_ru_8x8.c: $(srcdir)/fntru09.fnt fntdump$(EXEEXT)
 fnt_ru_6x8.c: $(srcdir)/fntru08.fnt fntdump$(EXEEXT)
 	$(AM_V_GEN)./fntdump$(EXEEXT) -n fnt_ru_6x8 -I 5 $< > $@.$$$$ && mv $@.$$$$ $@ || { $(RM) $@.$$$$; false; }
 
-EXTRA_DIST += system08.fnt system09.fnt system10.fnt
+EXTRA_DIST += \
+	system08.fnt system09.fnt system10.fnt system20.fnt \
+	fntl908.fnt fntl909.fnt fntl910.fnt \
+	fntl208.fnt fntl209.fnt fntl210.fnt \
+	fntgr08.fnt fntgr09.fnt fntgr10.fnt \
+	fntru08.fnt fntru09.fnt fntru10.fnt \
+	$(empty)
 
 CLEANFILES += $(BUILT_SOURCES)

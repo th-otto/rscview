@@ -17,5 +17,9 @@ aes.pot: ../aes/gem_rsc.rsh
 		--output=$@ \
 		$^
 
-aes_de.po: aes.pot de.po
-	$(MSGMERGE) -o $@ de.po $<
+aes_de.po: aes.pot $(srcdir)/de.po
+	$(MSGMERGE) -o $@ $(srcdir)/de.po $<
+
+EXTRA_DIST += LINGUAS de.po
+
+DISTCLEANFILES += $(BUILT_SOURCES)

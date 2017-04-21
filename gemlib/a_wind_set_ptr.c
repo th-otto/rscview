@@ -1,4 +1,5 @@
 #include "gem_aesP.h"
+#include "debug.h"
 
 short wind_set_ptr (short WindowHandle, short What, void *p1, void *p2)
 {

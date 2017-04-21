@@ -3,7 +3,7 @@ ACLOCAL_AMFLAGS = -I m4
 
 SUBDIRS = data gemlib po aes vdi util src
 
-DIST_SUBDIRS = $(SUBDIRS) include www
+EXTRA_DIST = include
 
 CROSS_WIN32_HOST = i686-pc-mingw32
 CROSS_WIN32_PREFIX = $(CROSS_WIN32_HOST)-
@@ -35,4 +35,16 @@ bindist:
 	./configure $(CONFIGURE_ARGS)
 	$(MAKE) -j8
 	strip src/rscview
-	(cd src; tar cvfj $(DOWNLOADS)/rscview-$(VERSION)-linux.tar.bz2 rscview)
+	(cd src; \
+	 set -- `ldd rscview | sed -n 's/.*\(libpng.*\) => \([^ ]*\).*/\1 \2/p'`; \
+	 so=$$1; \
+	 f=`readlink -f $$2`; \
+	 cp -a $$f $$so; tar cvfj $(DOWNLOADS)/rscview-$(VERSION)-linux.tar.bz2 rscview $$so; rm $$so)
+
+bd:
+	strip src/rscview
+	(cd src; \
+	 set -- `ldd rscview | sed -n 's/.*\(libpng.*\) => \([^ ]*\).*/\1 \2/p'`; \
+	 so=$$1; \
+	 f=`readlink -f $$2`; \
+	 cp -a $$f $$so; tar cvfj $(DOWNLOADS)/rscview-$(VERSION)-linux.tar.bz2 rscview $$so; rm $$so)

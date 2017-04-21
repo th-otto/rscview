@@ -15,7 +15,7 @@ SRVDIR = /srv/www/htdocs/rscview
 LIBS += -lpng -lz
 
 rscview_SOURCES = \
-	fileio.h \
+	fileio.h rso.h \
 	rscview.c \
 	rsrcload.c \
 	xmlout.c \
@@ -24,12 +24,12 @@ rscview_SOURCES = \
 	fileio.c \
 	bghio.c \
 	fio_err.c \
-	pofile.c \
+	pofile.c pofile.h \
 	glib.c \
 	$(empty)
 
 rscview_cgi_SOURCES = \
-	fileio.h \
+	fileio.h rso.h \
 	rsccgi.c \
 	rsrcload.c \
 	xmlout.c \
@@ -38,7 +38,7 @@ rscview_cgi_SOURCES = \
 	fileio.c \
 	bghio.c \
 	fio_err.c \
-	pofile.c \
+	pofile.c pofile.h \
 	glib.c \
 	cgic.c cgic.h \
 	html.c html.h \
@@ -46,9 +46,15 @@ rscview_cgi_SOURCES = \
 
 rscview_LDADD = -L../aes -L../vdi -L../gemlib -L../util -laes -lgem -lvdi -laes -lgem -lvdi -lutil
 rscview_DEPENDENCIES = $(GEMLIBS)
+if OS_UNIX
+rscview_LDFLAGS=-Wl,-rpath,'$$ORIGIN:$$ORIGIN/../lib64:$$ORIGIN/../lib'
+endif
 
 rscview_cgi_LDADD = -L../aes -L../vdi -L../gemlib -L../util -laes -lgem -lvdi -laes -lgem -lvdi -lutil $(GLIB_LIBS) $(CURL_LIBS)
 rscview_cgi_DEPENDENCIES = $(GEMLIBS)
+if OS_UNIX
+rscview_cgi_LDFLAGS=-Wl,-rpath,'$$ORIGIN:$$ORIGIN/../lib64:$$ORIGIN/../lib'
+endif
 rscview.cgi$(EXEEXT): $(rscview_cgi_OBJECTS) $(rscview_cgi_DEPENDENCIES) $(EXTRA_rscview_cgi_DEPENDENCIES) 
 	@rm -f rscview.cgi$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(rscview_cgi_OBJECTS) $(rscview_cgi_LDADD) $(LIBS)
