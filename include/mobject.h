@@ -152,6 +152,7 @@ typedef struct _rsc_ext {
 #undef RT_DIALOG
 #endif
 
+#define RT_ANY          (_UWORD)(-1)
 #define RT_UNKNOWN		0	/* unknown type */
 #define RT_FREE         1	/* free (handled as dialog) */
 #define RT_MENU         2	/* menu bar */

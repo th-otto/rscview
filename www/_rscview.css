@@ -10,33 +10,9 @@ a:link, a:visited {
   text-decoration: underline;
 }
 /* style used to display links to popup nodes */
-a:link.hypview_popup, a:visited.hypview_popup {
+a:link.rscview_popup, a:visited.rscview_popup {
   color: #00ff00;
   text-decoration: none;
-}
-/* style used to display links to external pages */
-a:link.hypview_xref, a:visited.hypview_xref {
-  color: #000080;
-}
-/* style used to display links to system commands */
-a:link.hypview_system, a:visited.hypview_system {
-  color: #ff00ff;
-}
-/* style used to display links to rx commands */
-a:link.hypview_rx, a:visited.hypview_rx {
-  color: #7e217e;
-}
-/* style used to display links to rxs commands */
-a:link.hypview_rxs, a:visited.hypview_rxs {
-  color: #790b79;
-}
-/* style used to display links to 'quit' */
-a:link.hypview_quit, a:visited.hypview_quit {
-  color: #ff0000;
-}
-/* style used to display links to 'close' */
-a:link.hypview_close, a:visited.hypview_close {
-  color: #ff0000;
 }
 /* style used to display links to illegal pages */
 a:link.hypview_error, a:visited.hypview_error {
@@ -136,18 +112,6 @@ li {
   top: 34px;
   padding: 3px 6px;
 }
-/* style used for the body of the cross references dropdown */
-.hypview_dropdown_xrefs {
-  background-color: #ffffff;
-  color: #000000;
-  z-index:5;
-  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
-  border: solid 1px;
-  display:none;
-  position:fixed;left:200px;
-  top: 34px;
-  padding: 3px 6px;
-}
 /* style used for error messages */
 .hypview_error_note {
 }
@@ -159,20 +123,10 @@ li {
 .hypview_dropdown:hover .hypview_dropdown_pnode {
   display:block;
 }
-/* style used for @line and @box elements */
-.hypview_graphics {
-  margin: 0;
-  position: absolute;
-  display: inline;
-  z-index:-1;
-}
 /* style used for @image elements */
 .hypview_image {
   margin: 0;
   z-index:-1;
 }
-/* style used for @limage elements */
-.hypview_limage {
-  margin: 0;
-  z-index:-1;
-}
+
+/* style used to display links to illegal pages */

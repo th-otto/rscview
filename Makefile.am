@@ -3,7 +3,9 @@ ACLOCAL_AMFLAGS = -I m4
 
 SUBDIRS = data gemlib po aes vdi util src
 
-EXTRA_DIST = include
+EXTRA_DIST = \
+	include \
+	doc/license.txt
 
 CROSS_WIN32_HOST = i686-pc-mingw32
 CROSS_WIN32_PREFIX = $(CROSS_WIN32_HOST)-

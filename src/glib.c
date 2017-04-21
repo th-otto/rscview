@@ -402,6 +402,37 @@ int g_ascii_strcasecmp(const char *s1, const char *s2)
 
 /*** ---------------------------------------------------------------------- ***/
 
+/**
+ * g_ascii_strdown:
+ * @str: a string
+ * @len: length of @str in bytes, or -1 if @str is nul-terminated
+ *
+ * Converts all upper case ASCII letters to lower case ASCII letters.
+ *
+ * Returns: a newly-allocated string, with all the upper case
+ *     characters in @str converted to lower case, with semantics that
+ *     exactly match g_ascii_tolower(). (Note that this is unlike the
+ *     old g_strdown(), which modified the string in place.)
+ */
+char *g_ascii_strdown(const char *str, gssize len)
+{
+	char *result, *s;
+
+	if (str == NULL)
+		return NULL;
+
+	if (len < 0)
+		len = strlen(str);
+
+	result = g_strndup(str, len);
+	for (s = result; *s; s++)
+		*s = TOLOWER(*s);
+
+	return result;
+}
+
+/*** ---------------------------------------------------------------------- ***/
+
 int g_ascii_strncasecmp(const char *s1, const char *s2, size_t n)
 {
 	int c1, c2;
@@ -734,8 +765,10 @@ char *g_string_free(GString *string, gboolean free_segment)
 		g_free(string->str);
 		segment = NULL;
 	} else
+	{
 		segment = string->str;
-
+	}
+	
 	g_free(string);
 
 	return segment;
@@ -889,5 +922,80 @@ void convslash(char *str)
 			p++;
 		}
 	}
+}
+
+/*** ---------------------------------------------------------------------- ***/
+
+#define CONTINUATION_CHAR                           \
+  if ((*(const unsigned char *)p & 0xc0) != 0x80) /* 10xxxxxx */ \
+    goto error;                                     \
+  val <<= 6;                                        \
+  val |= (*(const unsigned char *)p) & 0x3f
+
+#define UNICODE_VALID(Char)                   \
+    ((Char) < 0x110000UL &&                     \
+     (((Char) & 0xFFFFF800UL) != 0xD800UL) &&     \
+     ((Char) < 0xFDD0UL || (Char) > 0xFDEFUL) &&  \
+     ((Char) & 0xFFFEUL) != 0xFFFEUL)
+
+const char *g_utf8_getchar(const char *p, unsigned int *ch)
+{
+	const char *last;
+
+	if (*(const unsigned char *) p < 0x80)
+	{
+		*ch = *(const unsigned char *) p;
+		return p + 1;
+	}
+	last = p;
+	if ((*(const unsigned char *) p & 0xe0) == 0xc0)	/* 110xxxxx */
+	{
+		if ((*(const unsigned char *) p & 0x1e) == 0)
+			goto error;
+		*ch = (*(const unsigned char *) p & 0x1f) << 6;
+		p++;
+		if ((*(const unsigned char *) p & 0xc0) != 0x80)	/* 10xxxxxx */
+			goto error;
+		*ch |= (*(const unsigned char *) p) & 0x3f;
+	} else
+	{
+		unsigned int val = 0;
+		unsigned int min = 0;
+		
+		if ((*(const unsigned char *) p & 0xf0) == 0xe0)	/* 1110xxxx */
+		{
+			min = (1 << 11);
+			val = *(const unsigned char *) p & 0x0f;
+			goto TWO_REMAINING;
+		} else if ((*(const unsigned char *) p & 0xf8) == 0xf0)	/* 11110xxx */
+		{
+			min = (1 << 16);
+			val = *(const unsigned char *) p & 0x07;
+		} else
+		{
+			goto error;
+		}
+		
+		p++;
+		CONTINUATION_CHAR;
+	  TWO_REMAINING:
+		p++;
+		CONTINUATION_CHAR;
+		p++;
+		CONTINUATION_CHAR;
+
+		if (val < min)
+			goto error;
+
+		if (!UNICODE_VALID(val))
+			goto error;
+		*ch = val;
+	}
+
+	return p + 1;
+
+  error:
+    *ch = 0xffff;
+	return last + 1;
 }
 

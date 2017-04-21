@@ -16,14 +16,34 @@
 #define QUOTE_UNICODE    0x0040
 #define QUOTE_NOLTR      0x0080
 
+/* UTF-8 of \u00a9 */
+#define S_COPYRIGHT_SIGN "\xC2\xA9"
+
+#define RSCVIEW_COPYRIGHT "Copyright " S_COPYRIGHT_SIGN " 1991-" RELEASE_YEAR " by Thorsten Otto"
+
+#define RSC_EXT_HTML ".html"
+#define RSC_EXT_PNG  ".png"
+
 typedef struct _rsc_opts {
 	FILE *errorfile;
+	gboolean for_cgi;
 	gboolean cgi_cached;
 	gboolean use_xhtml;
+	gboolean to_xml;
+	gboolean hidemenu;
 	char *lang;
 	const char *charset;
+	char *output_dir;
+	int verbose;
+	FILE *outfile;
 } rsc_opts;
 
+extern const char *cgi_scriptname;
+extern char *html_referer_url;
+
+void html_init(rsc_opts *opts);
+
+void write_strout(GString *s, FILE *outfp);
 char *html_quote_name(const char *name, unsigned int flags);
 gboolean uri_has_scheme(const char *uri);
 void html_out_response_header(FILE *out, unsigned long len, gboolean xml);

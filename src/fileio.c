@@ -203,6 +203,11 @@ RSCTREE *rsc_tree_index(RSCFILE *file, _UWORD idx, _UWORD type)
 				break;
 			}
 			break;
+		case RT_ANY:
+			if (idx == 0)
+				return tree;
+			idx--;
+			break;
 		default:
 			return NULL;
 		}
@@ -441,7 +446,7 @@ static _BOOL Form_Al_is_Str_Ok(const char *str)
 #endif
 		(str = strchr(str + 4, ']')) != NULL &&
 		str[1] == '[' &&
-		(str = strchr (str + 2, ']')) != NULL &&
+		(str = strchr(str + 2, ']')) != NULL &&
 		str[1] == '\0')
 		return TRUE;
 	return FALSE;

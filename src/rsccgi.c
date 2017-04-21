@@ -62,8 +62,6 @@ struct curl_parms {
 	char *cachedir;
 };
 
-static char *html_referer_url;
-static const char *cgi_scriptname = "rscview.cgi";
 
 
 /*****************************************************************************/
@@ -74,15 +72,6 @@ void GetTextSize(_WORD *wchar, _WORD *hchar)
 {
 	*wchar = gl_wchar;
 	*hchar = gl_hchar;
-}
-
-/*****************************************************************************/
-/* ------------------------------------------------------------------------- */
-/*****************************************************************************/
-
-static void write_strout(GString *s, FILE *outfp)
-{
-	fwrite(s->str, 1, s->len, outfp);
 }
 
 /*****************************************************************************/
@@ -561,13 +550,20 @@ int main(void)
 	
 	opts->cgi_cached = FALSE;
 	opts->use_xhtml = FALSE;
+	opts->to_xml = FALSE;
 	opts->charset = NULL;
+	opts->hidemenu = FALSE;
+	opts->for_cgi = TRUE;
+	opts->verbose = 0;
+	opts->outfile = out;
 	opts->errorfile = fopen("rscview.log", "a");
 	if (opts->errorfile == NULL)
 		opts->errorfile = stderr;
 	else
 		dup2(fileno(opts->errorfile), 2);
 	set_errout_handler(stdout_handler, opts->errorfile);
+
+	html_init(opts);
 
 	body = g_string_new(NULL);
 	cgiInit(body);

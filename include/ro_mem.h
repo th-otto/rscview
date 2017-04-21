@@ -132,6 +132,7 @@ char *g_strndup(const char *, size_t n);
 int g_ascii_strcasecmp(const char *s1, const char *s2);
 int g_ascii_strncasecmp(const char *s1, const char *s2, size_t n);
 char *g_strconcat(const char *, ...);
+char *g_ascii_strdown(const char *str, gssize len);
 
 char *g_strchomp(char *str);
 char *g_strchug(char *str);
@@ -186,6 +187,7 @@ char *g_strdup0(const char *str);
 char *g_strvdup(const char *str);
 
 void convslash(char *str);
+const char *g_utf8_getchar(const char *p, unsigned int *ch);
 
 #define empty(str) ((str) == NULL || *(str) == '\0')
 #define fixnull(str) ((str) != NULL ? (str) : "")
