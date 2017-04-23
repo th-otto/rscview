@@ -44,10 +44,12 @@ void rsc_tree_count(RSCFILE *file)
 	RSCTREE *tree;
 	_LONG ntrees, nimages, nstrings;
 	_LONG bghmore, bghuser;
+	_LONG number;
 	
-	ntrees = nimages = nstrings = bghmore = bghuser = 0;
+	ntrees = nimages = nstrings = bghmore = bghuser = number = 0;
 	FOR_ALL_RSC(file, tree)
 	{
+		tree->rt_number = number++;
 		switch (tree->rt_type)
 		{
 		case RT_DIALOG:

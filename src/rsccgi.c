@@ -52,14 +52,12 @@ static WS ws;
  * program options
  */
 static _BOOL verbose = FALSE;
-static const char *pngdir;
 static char const cgi_cachedir[] = "cache";
 
 struct curl_parms {
 	const char *filename;
 	FILE *fp;
 	rsc_opts *opts;
-	char *cachedir;
 };
 
 
@@ -137,24 +135,13 @@ static void clear_screen(char *title)
 
 /* ------------------------------------------------------------------------- */
 
-static void str_lwr(char *name)
-{
-	while (*name)
-	{
-		*name = tolower(*name);
-		name++;
-	}
-}
-
-/* ------------------------------------------------------------------------- */
-
-static _WORD write_png(RSCTREE *tree, _WORD x, _WORD y, _WORD w, _WORD h)
+static _WORD write_png(RSCTREE *tree, rsc_opts *opts, _WORD x, _WORD y, _WORD w, _WORD h)
 {
 	_WORD pxy[4];
-	char basename[MAXNAMELEN + 1];
-	char filename[PATH_MAX];
+	char *basename;
+	char namebuf[PATH_MAX];
+	char *filename;
 	_WORD err;
-	char *p;
 	
 	if (verbose)
 		printf("%s %ld %s: %dx%d\n", rtype_name(tree->rt_type), tree->rt_index, tree->rt_name, w, h);
@@ -163,33 +150,19 @@ static _WORD write_png(RSCTREE *tree, _WORD x, _WORD y, _WORD w, _WORD h)
 	pxy[2] = x + w - 1;
 	pxy[3] = y + h - 1;
 	vs_clip(vdi_handle, 1, pxy);
-	strcpy(basename, tree->rt_name);
-	str_lwr(basename);
-	p = filename;
-	if (pngdir)
-	{
-		int len;
-		
-#ifdef _WIN32
-		(void) _mkdir(pngdir);
-#else
-		(void) mkdir(pngdir, 0755);
-#endif
-		strcpy(p, pngdir);
-		len = strlen(p);
-		p += len;
-		if (len > 0 && p[-1] != '/')
-			*p++ = '/';
-	}
+	basename = g_ascii_strdown(tree->rt_name, STR0TERM);
 	if (tree->rt_file->rsc_nls_domain.lang)
-		sprintf(p, "%03ld_%s_%s.png", tree->rt_index, tree->rt_file->rsc_nls_domain.lang, basename);
+		sprintf(namebuf, "%03ld_%s_%s.png", tree->rt_index, tree->rt_file->rsc_nls_domain.lang, basename);
 	else
-		sprintf(p, "%03ld_%s.png", tree->rt_index, basename);
+		sprintf(namebuf, "%03ld_%s.png", tree->rt_index, basename);
+	filename = g_build_filename(opts->output_dir, namebuf, NULL);
 	err = v_write_png(vdi_handle, filename);
 	if (err != 0)
 	{
 		KINFO(("write_png: %s: %s\n", filename, strerror(err)));
 	}
+	g_free(filename);
+	g_free(basename);
 	return err;
 }
 
@@ -197,7 +170,7 @@ static _WORD write_png(RSCTREE *tree, _WORD x, _WORD y, _WORD w, _WORD h)
 /* ------------------------------------------------------------------------- */
 /*****************************************************************************/
 
-static _BOOL draw_dialog(RSCTREE *tree)
+static _BOOL draw_dialog(RSCTREE *tree, rsc_opts *opts)
 {
 	OBJECT *ob;
 	_WORD x, y, w, h;
@@ -215,7 +188,7 @@ static _BOOL draw_dialog(RSCTREE *tree)
 	
 	objc_draw(ob, ROOT, MAX_DEPTH, x, y, w, h);
 	
-	err = write_png(tree, x, y, w, h);
+	err = write_png(tree, opts, x, y, w, h);
 
 	form_dial(FMD_FINISH, x, y, w, h, x, y, w, h);
 	wind_update(END_UPDATE);
@@ -225,7 +198,7 @@ static _BOOL draw_dialog(RSCTREE *tree)
 
 /* ------------------------------------------------------------------------- */
 
-static _BOOL draw_menu(RSCTREE *tree)
+static _BOOL draw_menu(RSCTREE *tree, rsc_opts *opts)
 {
 	OBJECT *ob;
 	_WORD thebar;
@@ -317,7 +290,7 @@ static _BOOL draw_menu(RSCTREE *tree)
 			maxy = my;
 	} while (menubox != themenus);
 	
-	err = write_png(tree, 0, 0, maxx, maxy);
+	err = write_png(tree, opts, 0, 0, maxx, maxy);
 
 	menu_bar(ob, FALSE);
 	form_dial(FMD_FINISH, x, y, w, h, x, y, w, h);
@@ -328,9 +301,10 @@ static _BOOL draw_menu(RSCTREE *tree)
 
 /* ------------------------------------------------------------------------- */
 
-static _BOOL draw_string(RSCTREE *tree)
+static _BOOL draw_string(RSCTREE *tree, rsc_opts *opts)
 {
 	/* can't do much here */
+	UNUSED(opts);
 	if (verbose)
 		printf("%s %ld %s\n", rtype_name(tree->rt_type), tree->rt_index, tree->rt_name);
 	return TRUE;
@@ -338,7 +312,7 @@ static _BOOL draw_string(RSCTREE *tree)
 
 /* ------------------------------------------------------------------------- */
 
-static _BOOL draw_alert(RSCTREE *tree)
+static _BOOL draw_alert(RSCTREE *tree, rsc_opts *opts)
 {
 	const char *str;
 	_WORD err;
@@ -365,7 +339,7 @@ static _BOOL draw_alert(RSCTREE *tree)
 	w = wo[47] - x + 1;
 	h = wo[48] - y + 1;
 	
-	err = write_png(tree, x, y, w, h);
+	err = write_png(tree, opts, x, y, w, h);
 
 	form_dial(FMD_FINISH, x, y, w, h, x, y, w, h);
 	
@@ -374,7 +348,7 @@ static _BOOL draw_alert(RSCTREE *tree)
 
 /* ------------------------------------------------------------------------- */
 
-static _BOOL draw_all_trees(RSCFILE *file)
+static _BOOL draw_all_trees(RSCFILE *file, rsc_opts *opts)
 {
 	RSCTREE *tree;
 	_BOOL ret = TRUE;
@@ -386,16 +360,16 @@ static _BOOL draw_all_trees(RSCFILE *file)
 		case RT_DIALOG:
 		case RT_FREE:
 		case RT_UNKNOWN:
-			ret &= draw_dialog(tree);
+			ret &= draw_dialog(tree, opts);
 			break;
 		case RT_MENU:
-			ret &= draw_menu(tree);
+			ret &= draw_menu(tree, opts);
 			break;
 		case RT_FRSTR:
-			ret &= draw_string(tree);
+			ret &= draw_string(tree, opts);
 			break;
 		case RT_ALERT:
-			ret &= draw_alert(tree);
+			ret &= draw_alert(tree, opts);
 			break;
 		case RT_FRIMG:
 		case RT_MOUSE:
@@ -446,10 +420,13 @@ static gboolean display_tree(const char *filename, rsc_opts *opts, GString *out,
 	vst_font(vdi_handle, file->rsc_nls_domain.fontset);
 	vst_font(phys_handle, file->rsc_nls_domain.fontset);
 	
-	retval = draw_all_trees(file);
+	retval = draw_all_trees(file, opts);
 	
 	vst_font(phys_handle, 1);
 	close_screen();
+
+	html_out_header(file, opts, out, rsc_basename(filename), treeindex, FALSE);
+	html_out_trailer(file, opts, out, treeindex, FALSE);
 
 	rsc_file_delete(file, FALSE);
 	xrsrc_free(file);
@@ -472,11 +449,6 @@ static size_t mycurl_write_callback(char *ptr, size_t size, size_t nmemb, void *
 	if (parms->fp == NULL)
 	{
 		parms->fp = fopen(parms->filename, "wb");
-		if (parms->fp == NULL && errno == ENOENT)
-		{
-			mkdir(parms->cachedir, 0750);
-			parms->fp = fopen(parms->filename, "wb");
-		}
 		if (parms->fp == NULL)
 			fprintf(parms->opts->errorfile, "%s: %s\n", parms->filename, strerror(errno));
 	}
@@ -537,6 +509,119 @@ static void stdout_handler(void *data, const char *fmt, va_list args)
 
 /* ------------------------------------------------------------------------- */
 
+static const char *currdate(void)
+{
+	struct tm *tm;
+	static char buf[40];
+	time_t t;
+	t = time(NULL);
+	tm = localtime(&t);
+	strftime(buf, sizeof(buf), "%Y-%m-%d %H:%M:%S", tm);
+	return buf;
+}
+
+/* ------------------------------------------------------------------------- */
+
+static char *curl_download(CURL *curl, rsc_opts *opts, GString *body, const char *filename)
+{
+	char *local_filename;
+	struct stat st;
+	long unmet;
+	long respcode;
+	CURLcode curlcode;
+	double size;
+	char err[CURL_ERROR_SIZE];
+	char *content_type;
+	struct curl_parms parms;
+	
+	curl_easy_setopt(curl, CURLOPT_URL, filename);
+	curl_easy_setopt(curl, CURLOPT_REFERER, filename);
+	local_filename = g_build_filename(parms.opts->output_dir, rsc_basename(filename), NULL);
+	parms.filename = local_filename;
+	parms.fp = NULL;
+	parms.opts = opts;
+	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, mycurl_write_callback);
+	curl_easy_setopt(curl, CURLOPT_WRITEDATA, &parms);
+	curl_easy_setopt(curl, CURLOPT_STDERR, opts->errorfile);
+	curl_easy_setopt(curl, CURLOPT_PROTOCOLS, ALLOWED_PROTOS);
+	curl_easy_setopt(curl, CURLOPT_ENCODING, "");
+	curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, (long)1);
+	curl_easy_setopt(curl, CURLOPT_FILETIME, (long)1);
+	curl_easy_setopt(curl, CURLOPT_DEBUGFUNCTION, mycurl_trace);
+	curl_easy_setopt(curl, CURLOPT_DEBUGDATA, &parms);
+	*err = 0;
+	curl_easy_setopt(curl, CURLOPT_ERRORBUFFER, err);
+	
+	/* set this to 1 to activate debug code above */
+	curl_easy_setopt(curl, CURLOPT_VERBOSE, (long)0);
+
+	if (stat(local_filename, &st) == 0)
+	{
+		curlcode = curl_easy_setopt(curl, CURLOPT_TIMECONDITION, (long)CURL_TIMECOND_IFMODSINCE);
+		curlcode = curl_easy_setopt(curl, CURLOPT_TIMEVALUE, (long)st.st_mtime);
+	}
+	
+	/*
+	 * TODO: reject attempts to connect to local addresses
+	 */
+	curlcode = curl_easy_perform(curl);
+	
+	respcode = 0;
+	unmet = -1;
+	size = 0;
+	content_type = NULL;
+	curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &respcode);
+	curl_easy_getinfo(curl, CURLINFO_CONDITION_UNMET, &unmet);
+	curl_easy_getinfo(curl, CURLINFO_SIZE_DOWNLOAD, &size);
+	curl_easy_getinfo(curl, CURLINFO_CONTENT_TYPE, &content_type);
+	fprintf(opts->errorfile, "%s: GET from %s, url=%s, curl=%d, resp=%ld, size=%ld\n", currdate(), fixnull(cgiRemoteHost), filename, curlcode, respcode, (long)size);
+	
+	if (parms.fp)
+	{
+		fclose(parms.fp);
+		parms.fp = NULL;
+	}
+	
+	if (curlcode != CURLE_OK)
+	{
+		html_out_header(NULL, opts, body, err, -1, TRUE);
+		g_string_append_printf(body, "%s:\n%s", _("Download error"), err);
+		html_out_trailer(NULL, opts, body, -1, TRUE);
+		unlink(local_filename);
+		g_free(local_filename);
+		local_filename = NULL;
+	} else if ((respcode != 200 && respcode != 304) ||
+		(respcode == 200 && (content_type == NULL || strcmp(content_type, "text/plain") != 0)))
+	{
+		/* most likely the downloaded data will contain the error page */
+		parms.fp = fopen(local_filename, "rb");
+		if (parms.fp != NULL)
+		{
+			size_t nread;
+			
+			while ((nread = fread(err, 1, sizeof(err), parms.fp)) > 0)
+				g_string_append_len(body, err, nread);
+			fclose(parms.fp);
+		}
+		unlink(local_filename);
+		g_free(local_filename);
+		local_filename = NULL;
+	} else
+	{
+		long ft = -1;
+		if (curl_easy_getinfo(curl, CURLINFO_FILETIME, &ft) == CURLE_OK && ft != -1)
+		{
+			struct utimbuf ut;
+			ut.actime = ut.modtime = ft;
+			utime(local_filename, &ut);
+		}
+	}
+	
+	return local_filename;
+}
+
+/* ------------------------------------------------------------------------- */
+
 int main(void)
 {
 	int exit_status = EXIT_SUCCESS;
@@ -563,10 +648,20 @@ int main(void)
 		dup2(fileno(opts->errorfile), 2);
 	set_errout_handler(stdout_handler, opts->errorfile);
 
-	html_init(opts);
-
 	body = g_string_new(NULL);
 	cgiInit(body);
+
+	{
+		opts->output_dir = g_build_filename(cgi_cachedir, cgiRemoteAddr, NULL);
+
+		if (mkdir(cgi_cachedir, 0750) < 0 && errno != EEXIST)
+			fprintf(opts->errorfile, "%s: %s\n", cgi_cachedir, strerror(errno));
+		if (mkdir(opts->output_dir, 0750) < 0 && errno != EEXIST)
+			fprintf(opts->errorfile, "%s: %s\n", opts->output_dir, strerror(errno));
+	}
+	
+	html_init(opts);
+
 	if (cgiAccept && strstr(cgiAccept, "application/xhtml+xml") != NULL)
 		opts->use_xhtml = TRUE;
 
@@ -583,6 +678,9 @@ int main(void)
 	{
 		treeindex = (int)strtoul(val, NULL, 10);
 		g_free(val);
+	} else
+	{
+		treeindex = 0;
 	}
 	
 	if (g_ascii_strcasecmp(cgiRequestMethod, "GET") == 0)
@@ -623,115 +721,21 @@ int main(void)
 				exit_status = EXIT_FAILURE;
 			} else
 			{
-				char *dir;
 				char *local_filename;
-				struct curl_parms parms;
-				struct stat st;
-				long unmet;
-				long respcode;
-				CURLcode curlcode;
-				double size;
-				char err[CURL_ERROR_SIZE];
-				char *content_type;
 				
-				dir = rsc_path_get_dirname(cgiScriptFilename);
-				parms.cachedir = g_build_filename(dir, cgi_cachedir, NULL);
-				g_free(dir);
 				if (opts->cgi_cached)
 				{
 					html_referer_url = g_strdup(rsc_basename(filename));
-					local_filename = g_build_filename(parms.cachedir, html_referer_url, NULL);
+					local_filename = g_build_filename(opts->output_dir, html_referer_url, NULL);
 					g_free(filename);
 					filename = local_filename;
 				} else
 				{
 					html_referer_url = g_strdup(filename);
-					curl_easy_setopt(curl, CURLOPT_URL, filename);
-					curl_easy_setopt(curl, CURLOPT_REFERER, filename);
-					local_filename = g_build_filename(parms.cachedir, rsc_basename(filename), NULL);
-					parms.filename = local_filename;
-					parms.fp = NULL;
-					parms.opts = opts;
-					curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, mycurl_write_callback);
-					curl_easy_setopt(curl, CURLOPT_WRITEDATA, &parms);
-					curl_easy_setopt(curl, CURLOPT_STDERR, opts->errorfile);
-					curl_easy_setopt(curl, CURLOPT_PROTOCOLS, ALLOWED_PROTOS);
-					curl_easy_setopt(curl, CURLOPT_ENCODING, "");
-					curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, (long)1);
-					curl_easy_setopt(curl, CURLOPT_FILETIME, (long)1);
-					curl_easy_setopt(curl, CURLOPT_DEBUGFUNCTION, mycurl_trace);
-					curl_easy_setopt(curl, CURLOPT_DEBUGDATA, &parms);
-					*err = 0;
-					curl_easy_setopt(curl, CURLOPT_ERRORBUFFER, err);
-					
-					/* set this to 1 to activate debug code above */
-					curl_easy_setopt(curl, CURLOPT_VERBOSE, (long)0);
-	
-					if (stat(local_filename, &st) == 0)
-					{
-						curlcode = curl_easy_setopt(curl, CURLOPT_TIMECONDITION, (long)CURL_TIMECOND_IFMODSINCE);
-						curlcode = curl_easy_setopt(curl, CURLOPT_TIMEVALUE, (long)st.st_mtime);
-					}
-					
-					/*
-					 * TODO: reject attempts to connect to local addresses
-					 */
-					curlcode = curl_easy_perform(curl);
-					
-					respcode = 0;
-					unmet = -1;
-					size = 0;
-					content_type = NULL;
-					curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &respcode);
-					curl_easy_getinfo(curl, CURLINFO_CONDITION_UNMET, &unmet);
-					curl_easy_getinfo(curl, CURLINFO_SIZE_DOWNLOAD, &size);
-					curl_easy_getinfo(curl, CURLINFO_CONTENT_TYPE, &content_type);
-					fprintf(opts->errorfile, "GET from %s, url=%s, curl=%d, resp=%ld, size=%ld\n", fixnull(cgiRemoteHost), filename, curlcode, respcode, (long)size);
-					
-					if (parms.fp)
-					{
-						fclose(parms.fp);
-						parms.fp = NULL;
-					}
-					
-					if (curlcode != CURLE_OK)
-					{
-						html_out_header(NULL, opts, body, err, -1, TRUE);
-						g_string_append_printf(body, "%s:\n%s", _("Download error"), err);
-						html_out_trailer(NULL, opts, body, -1, TRUE);
-						unlink(local_filename);
-						g_free(local_filename);
-						local_filename = NULL;
-					} else if ((respcode != 200 && respcode != 304) ||
-						(respcode == 200 && (content_type == NULL || strcmp(content_type, "text/plain") != 0)))
-					{
-						/* most likely the downloaded data will contain the error page */
-						parms.fp = fopen(local_filename, "rb");
-						if (parms.fp != NULL)
-						{
-							size_t nread;
-							
-							while ((nread = fread(err, 1, sizeof(err), parms.fp)) > 0)
-								g_string_append_len(body, err, nread);
-							fclose(parms.fp);
-						}
-						unlink(local_filename);
-						g_free(local_filename);
-						local_filename = NULL;
-					} else
-					{
-						long ft = -1;
-						if (curl_easy_getinfo(curl, CURLINFO_FILETIME, &ft) == CURLE_OK && ft != -1)
-						{
-							struct utimbuf ut;
-							ut.actime = ut.modtime = ft;
-							utime(local_filename, &ut);
-						}
-					}
+					local_filename = curl_download(curl, opts, body, filename);
 					g_free(filename);
 					filename = local_filename;
 				}
-				g_free(parms.cachedir);
 			}
 		}
 		if (filename && exit_status == EXIT_SUCCESS)
@@ -769,8 +773,6 @@ int main(void)
 			html_out_trailer(NULL, opts, body, -1, TRUE);
 		} else
 		{
-			char *dir = rsc_path_get_dirname(cgiScriptFilename);
-			char *cachedir = g_build_filename(dir, cgi_cachedir, NULL);
 			FILE *fp;
 			char *local_filename;
 			const char *data;
@@ -782,7 +784,7 @@ int main(void)
 				{
 				int fd;
 				filename = g_strdup("tmpfile.XXXXXX.hyp");
-				local_filename = g_build_filename(cachedir, rsc_basename(filename), NULL);
+				local_filename = g_build_filename(opts->output_dir, rsc_basename(filename), NULL);
 				fd = mkstemps(local_filename, 4);
 				if (fd > 0)
 					close(fd);
@@ -791,34 +793,32 @@ int main(void)
 				{
 				int fd;
 				filename = g_strdup("tmpfile.hyp.XXXXXX");
-				local_filename = g_build_filename(cachedir, rsc_basename(filename), NULL);
+				local_filename = g_build_filename(opts->output_dir, rsc_basename(filename), NULL);
 				fd = mkstemp(local_filename);
 				if (fd > 0)
 					close(fd);
 				}
 #else
 				filename = g_strdup("tmpfile.hyp.XXXXXX");
-				local_filename = g_build_filename(cachedir, rsc_basename(filename), NULL);
+				local_filename = g_build_filename(opts->output_dir, rsc_basename(filename), NULL);
 				mktemp(local_filename);
 #endif
 			} else
 			{
-				local_filename = g_build_filename(cachedir, rsc_basename(filename), NULL);
+				local_filename = g_build_filename(opts->output_dir, rsc_basename(filename), NULL);
 			}
-			g_free(dir);
 
-			fprintf(opts->errorfile, "POST from %s, file=%s, size=%d\n", fixnull(cgiRemoteHost), rsc_basename(filename), len);
+			fprintf(opts->errorfile, "%s: POST from %s, file=%s, size=%d\n", currdate(), fixnull(cgiRemoteHost), rsc_basename(filename), len);
 
 			fp = fopen(local_filename, "wb");
-			if (fp == NULL && errno == ENOENT)
-			{
-				mkdir(cachedir, 0750);
-				fp = fopen(local_filename, "wb");
-			}
-
 			if (fp == NULL)
 			{
-				fprintf(opts->errorfile, "%s: %s\n", local_filename, strerror(errno));
+				const char *err = strerror(errno);
+				fprintf(opts->errorfile, "%s: %s\n", local_filename, err);
+				html_out_header(NULL, opts, body, _("404 Not Found"), -1, TRUE);
+				g_string_append_printf(body, "%s: %s\n", rsc_basename(filename), err);
+				html_out_trailer(NULL, opts, body, -1, TRUE);
+				exit_status = EXIT_FAILURE;
 			} else
 			{
 				data = cgiFormFileData("file", &len);
@@ -831,7 +831,6 @@ int main(void)
 					exit_status = EXIT_FAILURE;
 				}
 			}
-			g_free(cachedir);
 			g_free(local_filename);
 		}
 		g_free(filename);
@@ -849,6 +848,7 @@ int main(void)
 	{
 		fclose(opts->errorfile);
 	}
+	g_free(opts->output_dir);
 	
 	if (curl)
 	{

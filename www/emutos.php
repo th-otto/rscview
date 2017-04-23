@@ -1,3 +1,7 @@
+<?php
+error_reporting(E_ALL);
+ini_set("display_errors", 1);
+?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
           "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xml:lang="en" lang="en" xmlns="http://www.w3.org/1999/xhtml">
@@ -40,84 +44,73 @@ p {
 <hr />
 
 <table>
+<?php
+include('vars.php');
+read_linguas('tmp/LINGUAS');
+foreach ($linguas as $lang)
+{
+	echo "<tr valign=\"bottom\">\n";
+	echo "<td>\n";
+	$lang = $lang['lang'];
+	$trans = $languages[$lang];
+	if (!$trans)
+	{
+		$en = $lang;
+		$native = $lang;
+	} else
+	{
+		$en = $trans['en'];
+		$native = $trans['native'];
+	}
+	echo "<p><img src=\"images/$lang.gif\" width=\"32\" height=\"21\" alt=\"$en\" />$en";
+	if ($en != $native)
+	{
+		echo " / $native";
+	}
+	echo "</p>\n";
+	echo "</td>\n";
+	echo "<td><a href=\"$lang/index.php\">Desktop</a></td>\n";
+	echo "<td><a href=\"$lang/aes.php\">AES</a></td>\n";
+	echo "</tr>\n";
+	$stat = stat("$lang/index.php");
+	if (!$stat)
+	{
+		$out = fopen("$lang/index.php");
+		fputs($out, "<?php\n");
+		fputs($out, "\$lang = \"$en\";\n");
+		fputs($out, "\$pngdir = '.';\n");
+		fputs($out, "\$which = 'desktop';\n");
+		fputs($out, "include('../lang.php');\n");
+		fputs($out, "?>\n");
+		fclose($out);
+	}
+	$stat = stat("$lang/aes.php");
+	if (!$stat)
+	{
+		$out = fopen("$lang/aes.php");
+		fputs($out, "<?php\n");
+		fputs($out, "\$lang = \"$en\";\n");
+		fputs($out, "\$pngdir = 'aes';\n");
+		fputs($out, "\$which = 'AES';\n");
+		fputs($out, "include('../lang.php');\n");
+		fputs($out, "?>\n");
+		fclose($out);
+	}
+}
+?>
 <tr valign="bottom">
 <td>
-<p><img src="images/en.gif" width="32" height="21" alt="English" />English</p>
+<p><br />All languages (table)</p>
 </td>
-<td><a href="en/index.php">Desktop</a></td>
-<td><a href="en/aes.php">AES</a></td>
+<td><a href="all_desk.php?type=table">Desktop</a></td>
+<td><a href="all_aes.php?type=table">AES</a></td>
 </tr>
-
 <tr valign="bottom">
 <td>
-<p><img src="images/de.gif" width="32" height="21" alt="German" />German / Deutsch</p>
+<p><br />All languages (list)</p>
 </td>
-<td><a href="de/index.php">Desktop</a></td>
-<td><a href="de/aes.php">AES</a></td>
-</tr>
-
-<tr valign="bottom">
-<td>
-<p><img src="images/cs.gif" width="32" height="21" alt="Czech" />Czech / &#268;e&#353;tina</p>
-</td>
-<td><a href="cs/index.php">Desktop</a></td>
-<td><a href="cs/aes.php">AES</a></td>
-</tr>
-
-<tr valign="bottom">
-<td>
-<p><img src="images/es.gif" width="32" height="21" alt="Spanish" />Spanish / Espa&#241;ol</p>
-</td>
-<td><a href="es/index.php">Desktop</a></td>
-<td><a href="es/aes.php">AES</a></td>
-</tr>
-
-<tr valign="bottom">
-<td>
-<p><img src="images/fi.gif" width="32" height="21" alt="Finnish" />Finnish / Suomalainen</p>
-</td>
-<td><a href="fi/index.php">Desktop</a></td>
-<td><a href="fi/aes.php">AES</a></td>
-</tr>
-
-<tr valign="bottom">
-<td>
-<p><img src="images/fr.gif" width="32" height="21" alt="French" />French / Fran&#231;ais</p>
-</td>
-<td><a href="fr/index.php">Desktop</a></td>
-<td><a href="fr/aes.php">AES</a></td>
-</tr>
-
-<tr valign="bottom">
-<td>
-<p><img src="images/gr.gif" width="32" height="21" alt="Greek" />Greek / &#917;&#955;&#955;&#951;&#957;&#953;&#954;&#940;</p>
-</td>
-<td><a href="gr/index.php">Desktop</a></td>
-<td><a href="gr/aes.php">AES</a></td>
-</tr>
-
-<tr valign="bottom">
-<td>
-<p><img src="images/it.gif" width="32" height="21" alt="Italian" />Italian / Italiano</p>
-</td>
-<td><a href="it/index.php">Desktop</a></td>
-<td><a href="it/aes.php">AES</a></td>
-</tr>
-
-<tr valign="bottom">
-<td>
-<p><img src="images/ru.gif" width="32" height="21" alt="Russian" />Russian / &#1056;&#1091;&#1089;&#1089;&#1082;&#1080;&#1081;</p>
-</td>
-<td><a href="ru/index.php">Desktop</a></td>
-<td><a href="ru/aes.php">AES</a></td>
-</tr>
-
-<tr valign="bottom">
-<td>
-<p><br />All languages</p>
-</td>
-<td><a href="all_desk.php">Desktop</a></td>
-<td><a href="all_aes.php">AES</a></td>
+<td><a href="all_desk.php?type=list">Desktop</a></td>
+<td><a href="all_aes.php?type=list">AES</a></td>
 </tr>
 
 <tr valign="bottom">
@@ -164,11 +157,26 @@ p {
 <br />
 <br />
 
+<table>
+<tr>
+<td>
 <form action="update.php" method="get" id="emudeskform">
 <fieldset>
 <input id="updateemudesk" style="background-color: #cccccc; font-weight: bold;" type="submit" value="Update from GitHub" />
 </fieldset>
 </form>
+</td>
+
+<td>
+<form action="viewlog.php" method="get" id="viewlogform">
+<fieldset>
+<input id="viewlog" style="background-color: #cccccc; font-weight: bold;" type="submit" value="View logfile" />
+</fieldset>
+</form>
+</td>
+
+</tr>
+</table>
 
 <div style="text-align:center">
 <p>

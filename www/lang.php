@@ -19,34 +19,13 @@ echo "<h1>EmuTOS $which resources - $lang</h1>\n";
 <hr />
 
 <?php
-function cmp_name($a, $b)
+include('vars.php');
+read_pngs($pngdir);
+foreach ($files as $entry)
 {
-	if ($a > $b)
-		return 1;
-	if ($a < $b)
-		return -1;
-	return 0;
-}
-if ($dir = opendir($pngdir))
-{
-	$files = array();
-	while (false !== ($entry = readdir($dir))) {
-		if ($entry == ".") continue;
-		if ($entry == "..") continue;
-		if (!fnmatch("*.png", $entry)) continue;
-	    $files[] = $entry;
-    }
- 	closedir($dir);
-    usort($files, 'cmp_name');
-    foreach ($files as $entry)
-    {
-    	$name = $entry;
-		if (preg_match('/^[0-9]+_[a-z][a-z]_(.*)\.png/', $entry, $matches))
-			$name = strtoupper($matches[1]);
-		else if (preg_match('/^[0-9]+_(.*)\.png/', $entry, $matches))
-			$name = strtoupper($matches[1]);
-		echo '<p>' . $name . ':<br /><img src="' . $pngdir . '/' . $entry . '" alt="' . $name . '" />' . "</p>\n";
-	}
+	$name = $entry['name'];
+	$file = $entry['file'];
+	echo "<p>$name:<br /><img src=\"$pngdir/$file\" alt=\"$name\" /></p>\n";
 }
 ?>
 
@@ -55,7 +34,7 @@ if ($dir = opendir($pngdir))
 
 <div style="text-align:center">
 <p>
-<a href="../emutos.html"> <img src="../images/home1.gif" width="180" height="60" style="border:0" alt="Back" /></a>
+<a href="../emutos.php"> <img src="../images/home1.gif" width="180" height="60" style="border:0" alt="Back" /></a>
 </p>
 </div>
 

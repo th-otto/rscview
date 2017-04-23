@@ -37,22 +37,15 @@ static gboolean js_written = FALSE;
 /*
  * style names used
  */
-static char const html_attr_bold_style[] = "hypview_attr_bold";
-static char const html_attr_light_style[] = "hypview_attr_light";
-static char const html_attr_italic_style[] = "hypview_attr_italic";
-static char const html_attr_underlined_style[] = "hypview_attr_underlined";
-static char const html_attr_outlined_style[] = "hypview_attr_outlined";
-static char const html_attr_shadowed_style[] = "hypview_attr_shadowed";
-static char const html_toolbar_style[] = "hypview_nav_toolbar";
-static char const html_nav_img_style[] = "hypview_nav_img";
-static char const html_node_style[] = "hypview_node";
-static char const html_pnode_style[] = "hypview_pnode";
-static char const html_dropdown_pnode_style[] = "hypview_dropdown_pnode";
-static char const html_dropdown_info_style[] = "hypview_dropdown_info";
-static char const html_error_note_style[] = "hypview_error_note";
-static char const html_popup_link_style[] = "hypview_popup";
-static char const html_dropdown_style[] = "hypview_dropdown";
-static char const html_image_style[] = "hypview_image";
+static char const html_toolbar_style[] = "rscview_nav_toolbar";
+static char const html_nav_img_style[] = "rscview_nav_img";
+static char const html_node_style[] = "rscview_node";
+static char const html_pnode_style[] = "rscview_pnode";
+static char const html_dropdown_pnode_style[] = "rscview_dropdown_pnode";
+static char const html_dropdown_info_style[] = "rscview_dropdown_info";
+static char const html_error_note_style[] = "rscview_error_note";
+static char const html_dropdown_style[] = "rscview_dropdown";
+static char const html_image_style[] = "rscview_image";
 
 static char const html_nav_back_png[] = "images/iback.png";
 static char const html_nav_prev_png[] = "images/iprev.png";
@@ -770,48 +763,10 @@ static gboolean html_out_stylesheet(rsc_opts *opts, GString *outstr, gboolean do
 	g_string_append_printf(out, "  color: %s;\n", COLOR_TEXT);
 	g_string_append(out, "}\n");
 	
-	g_string_append(out, "/* style used to display links to internal nodes */\n");
+	g_string_append(out, "/* style used to display links */\n");
 	g_string_append(out, "a:link, a:visited {\n");
 	g_string_append_printf(out, "  color: %s;\n", COLOR_LINK);
 	g_string_append(out, "  text-decoration: underline;\n");
-	g_string_append(out, "}\n");
-	
-	g_string_append(out, "/* style used to display links to popup nodes */\n");
-	g_string_append_printf(out, "a:link.%s, a:visited.%s {\n", html_popup_link_style, html_popup_link_style);
-	g_string_append_printf(out, "  color: %s;\n", COLOR_POPUP);
-	g_string_append(out, "  text-decoration: none;\n");
-	g_string_append(out, "}\n");
-	
-	g_string_append(out, "/* style used to display outlined text @{O} */\n");
-	g_string_append_printf(out, ".%s {\n", html_attr_outlined_style);
-	g_string_append_printf(out, "  color: %s;\n", COLOR_BG);
-	g_string_append_printf(out, "  text-shadow: -1px -1px 0 %s, 1px -1px 0 %s, -1px 1px 0 %s, 1px 1px 0 %s;\n",
-			COLOR_TEXT, COLOR_TEXT, COLOR_TEXT, COLOR_TEXT);
-	g_string_append(out, "}\n");
-	
-	g_string_append(out, "/* style used to display italic text @{I} */\n");
-	g_string_append_printf(out, ".%s {\n", html_attr_italic_style);
-	g_string_append(out, "  font-style: italic;\n");
-	g_string_append(out, "}\n");
-	
-	g_string_append(out, "/* style used to display bold text @{B} */\n");
-	g_string_append_printf(out, ".%s {\n", html_attr_bold_style);
-	g_string_append(out, "  font-weight: bold;\n");
-	g_string_append(out, "}\n");
-	
-	g_string_append(out, "/* style used to display underlined text @{U} */\n");
-	g_string_append_printf(out, ".%s {\n", html_attr_underlined_style);
-	g_string_append(out, "  text-decoration: underline;\n");
-	g_string_append(out, "}\n");
-	
-	g_string_append(out, "/* style used to display shadowed text @{S} */\n");
-	g_string_append_printf(out, ".%s {\n", html_attr_shadowed_style);
-	g_string_append_printf(out, "  text-shadow: 1px 1px 0 %s;\n", COLOR_TEXT);
-	g_string_append(out, "}\n");
-	
-	g_string_append(out, "/* style used to display ghosted text @{G} */\n");
-	g_string_append_printf(out, ".%s {\n", html_attr_light_style);
-	g_string_append_printf(out, "  color: %s;\n", COLOR_GHOSTED);
 	g_string_append(out, "}\n");
 	
 	g_string_append(out, "ul {\n");
@@ -906,12 +861,6 @@ static gboolean html_out_stylesheet(rsc_opts *opts, GString *outstr, gboolean do
 	g_string_append(out, "  display:block;\n");
 	g_string_append(out, "}\n");
 	
-	g_string_append(out, "/* style used for @image elements */\n");
-	g_string_append_printf(out, ".%s {\n", html_image_style);
-	g_string_append(out, "  margin: 0;\n");
-	g_string_append(out, "  z-index:-1;\n");
-	g_string_append(out, "}\n");
-
 	if (do_inline)
 	{
 		g_string_append(out, "</style>\n");
@@ -1263,9 +1212,10 @@ void html_out_header(RSCFILE *file, rsc_opts *opts, GString *out, const char *ti
 
 void html_out_trailer(RSCFILE *file, rsc_opts *opts, GString *out, _WORD treeindex, gboolean for_error)
 {
-	RSCTREE *tree = file ? rsc_tree_index(file, treeindex, RT_ANY) : NULL;
+	/* RSCTREE *tree = file ? rsc_tree_index(file, treeindex, RT_ANY) : NULL; */
 
 	UNUSED(opts);
+	UNUSED(treeindex);
 	if (for_error)
 	{
 		g_string_append(out, "</p>\n");
@@ -1274,7 +1224,7 @@ void html_out_trailer(RSCFILE *file, rsc_opts *opts, GString *out, _WORD treeind
 	{
 		g_string_append(out, "</pre>\n");
 		g_string_append(out, "</div>\n");
-		if (tree != NULL)
+		if (file != NULL)
 			g_string_append(out, "</div>\n");
 	}
 #if 0
