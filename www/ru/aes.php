@@ -1,6 +1,6 @@
 <?php
 $lang = "Russian";
-$pngdir = '.';
-$which = 'desktop';
+$pngdir = 'aes';
+$which = 'AES';
 include('../lang.php');
 ?>

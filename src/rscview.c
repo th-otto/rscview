@@ -133,7 +133,7 @@ static _WORD write_png(RSCTREE *tree, _WORD x, _WORD y, _WORD w, _WORD h)
 	char *p;
 	
 	if (verbose)
-		printf("%s %ld %s: %dx%d\n", rtype_name(tree->rt_type), tree->rt_index, tree->rt_name, w, h);
+		printf("%s %ld %s: %dx%d\n", rtype_name(tree->rt_type), tree->rt_number, tree->rt_name, w, h);
 	pxy[0] = x;
 	pxy[1] = y;
 	pxy[2] = x + w - 1;
@@ -158,9 +158,9 @@ static _WORD write_png(RSCTREE *tree, _WORD x, _WORD y, _WORD w, _WORD h)
 			*p++ = '/';
 	}
 	if (tree->rt_file->rsc_nls_domain.lang)
-		sprintf(p, "%03ld_%s_%s.png", tree->rt_index, tree->rt_file->rsc_nls_domain.lang, basename);
+		sprintf(p, "%03ld_%s_%s.png", tree->rt_number, tree->rt_file->rsc_nls_domain.lang, basename);
 	else
-		sprintf(p, "%03ld_%s.png", tree->rt_index, basename);
+		sprintf(p, "%03ld_%s.png", tree->rt_number, basename);
 	err = v_write_png(vdi_handle, filename);
 	if (err != 0)
 	{
@@ -308,7 +308,7 @@ static _BOOL draw_string(RSCTREE *tree)
 {
 	/* can't do much here */
 	if (verbose)
-		printf("%s %ld %s\n", rtype_name(tree->rt_type), tree->rt_index, tree->rt_name);
+		printf("%s %ld %s\n", rtype_name(tree->rt_type), tree->rt_number, tree->rt_name);
 	return TRUE;
 }
 

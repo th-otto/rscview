@@ -112,7 +112,8 @@ struct _rsctree {
 		BITBLK *bit;				/* RT_FRIMG/RT_MOUSE */
 		BGHINFO *bgh;				/* RT_BUBBLEMORE/RT_BUBBLEUSER */
 	} rt_objects;					/* OBJECT structs */
-	_LONG rt_index;                 /* tree index */
+	_LONG rt_index;                 /* tree index, depending on type */
+	_LONG rt_number;                /* tree index, absolute */
 	RSCFILE *rt_file;				/* backward link to file */
 	RSCTREE *rt_next;				/* next in linked list of file */
 	RSCTREE *rt_prev;				/* previous in linked list of file */

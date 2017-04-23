@@ -1,6 +1,6 @@
 <?php
-$lang = "Spanish";
+$lang = "All Languages";
 $pngdir = '.';
-$which = 'desktop';
+$which = 'Icons';
 include('../lang.php');
 ?>
