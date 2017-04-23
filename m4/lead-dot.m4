@@ -1,1 +1,0 @@
-/usr/share/aclocal-1.15/lead-dot.m4

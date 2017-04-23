@@ -1,1 +1,0 @@
-/usr/share/aclocal-1.15/amversion.m4
