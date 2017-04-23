@@ -1718,6 +1718,12 @@ static void free_oipl_file(da *d)
 	}
 }
 
+
+/*
+ * read a simple textfile,
+ * ignoring lines that start with a #,
+ * and empty lines
+ */
 __attribute__((__warn_unused_result__))
 static gboolean parse_oipl_file(const char *fname, da *d)
 {
@@ -1765,7 +1771,8 @@ static gboolean parse_oipl_file(const char *fname, da *d)
 
 			while (c != EOF && c != '\n')
 			{
-				s_addch(s, c);
+				if (c != '\r')
+					s_addch(s, c);
 				c = inextsh(f);
 			}
 			da_add(d, s_detach(s));

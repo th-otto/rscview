@@ -17,3 +17,6 @@ get rid of gl_awind
 
 optimize gr_scale from Pacific
 change gr_xor to grect
+
+bug: parse_linguas_itme:
+    >= z is wrong

@@ -11,7 +11,7 @@
 #include "ws.h"
 #include "debug.h"
 #include "pofile.h"
-#include "../vdi/writepng.h"
+#include "../vdi/writepng.h" /* for writepng_version_info */
 
 
 char const program_name[] = "rscview";
@@ -495,6 +495,7 @@ int main(int argc, char **argv)
 		return EXIT_FAILURE;
 	}
 	
+	po_init(po_dir);
 	appl_init();
 	
 	menu_register(-1, program_name);
@@ -544,6 +545,7 @@ int main(int argc, char **argv)
 	}
 	
 	appl_exit();
+	po_exit();
 		
 	return exit_status;
 }

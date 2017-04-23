@@ -49,6 +49,16 @@ rscview_DEPENDENCIES = $(GEMLIBS)
 if OS_UNIX
 rscview_LDFLAGS=-Wl,-rpath,'$$ORIGIN:$$ORIGIN/../lib64:$$ORIGIN/../lib'
 endif
+rscview$(EXEEXT): $(rscview_OBJECTS) $(rscview_DEPENDENCIES) $(EXTRA_rscview_DEPENDENCIES) 
+	@rm -f rscview$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(rscview_OBJECTS) $(rscview_LDADD) $(LIBS)
+if !CROSS_COMPILING
+	$(AM_V_at)if test -d "$(SRVDIR)"; then \
+	   echo "installing $@ in $(SRVDIR)"; \
+	   cp -a $@ "$(SRVDIR)/rscview"; \
+	fi
+endif
+
 
 rscview_cgi_LDADD = -L../aes -L../vdi -L../gemlib -L../util -laes -lgem -lvdi -laes -lgem -lvdi -lutil $(GLIB_LIBS) $(CURL_LIBS)
 rscview_cgi_DEPENDENCIES = $(GEMLIBS)

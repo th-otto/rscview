@@ -11,6 +11,23 @@
 #include "debug.h"
 
 
+struct lang_info
+{
+	char *name;
+	int fontcharset;
+	int in_use;
+};
+
+typedef struct da
+{
+	int size;
+	void **buf;
+	int len;
+} da;
+
+static da *languages;
+
+
 #define PO_DIR "../po/"
 
 #define ARRAY_SIZE(array) ((int)(sizeof(array)/sizeof(array[0])))
@@ -120,14 +137,6 @@ static char *xstrdup(const char *s)
 /*
  * da - dynamic array
  */
-
-typedef struct da
-{
-	int size;
-	void **buf;
-	int len;
-} da;
-
 #define DA_SIZE 1000
 
 static void da_grow(da *d)
@@ -402,6 +411,7 @@ static oh *o_new(void)
 	o->to_charset = -1;
 	return o;
 }
+
 
 static void poe_free(poe *e)
 {
@@ -874,6 +884,103 @@ static int get_c_string(IFILE *f, str *s)
 			s_addch(s, c);
 		}
 	}
+}
+
+
+/*
+ * read a simple textfile,
+ * ignoring lines that start with a #,
+ * and empty lines
+ */
+typedef void (*parse_oipl_callback)(da *d, char *str, int arg);
+
+__attribute__((__warn_unused_result__))
+static gboolean parse_oipl_file(const char *fname, da *d, parse_oipl_callback func, int arg)
+{
+	int c;
+	IFILE *f;
+
+	f = ifopen(fname);
+	if (f == NULL)
+	{
+		error("could not open %s: %s", fname, strerror(errno));
+		return FALSE;
+	}
+	for (;;)
+	{
+		c = inextsh(f);
+		if (c == EOF)
+		{
+			break;
+		} else if (c == '#')
+		{
+			while (c != EOF && c != '\n')
+			{
+				c = inextsh(f);
+			}
+		} else if (c == ' ' || c == '\t')
+		{
+			while (c == ' ' || c == '\t')
+			{
+				c = inextsh(f);
+			}
+			if (c != EOF && c != '\n')
+			{
+				warn("syntax error in %s line %d", fname, f->lineno);
+				while (c != EOF && c != '\n')
+				{
+					c = inextsh(f);
+				}
+			}
+		} else if (c == '\n')
+		{
+			continue;
+		} else
+		{
+			str *s = s_new();
+
+			while (c != EOF && c != '\n')
+			{
+				if (c != '\r')
+					s_addch(s, c);
+				c = inextsh(f);
+			}
+			func(d, s_detach(s), arg);
+		}
+	}
+	ifclose(f);
+	return TRUE;
+}
+
+
+/* decomposes a string <lang><white><encoding>, adding
+ * a lang_info item from it to the array
+ */
+static void parse_linguas_item(da *d, char *s, int in_use)
+{
+	struct lang_info *info;
+	char *p = s;
+	int id;
+	
+	while (is_letter(*p) || *p == '_')
+		p++; 
+	if (p > s && is_white(*p))
+	{
+		*p++ = '\0';
+		while (is_white(*p))
+			p++;
+		if ((id = po_get_charset_id(p)) >= 0)
+		{
+			info = g_new(struct lang_info, 1);
+			info->fontcharset = id;
+			info->name = s;
+			info->in_use = in_use;
+			da_add(d, info);
+			return;
+		}
+	}
+	warn("LINGUAS: bad lang/charset specification \"%s\"", s);
+	g_free(s);
 }
 
 
@@ -1409,12 +1516,6 @@ static void latin1_to_atarist(char *s)
 }
 
 
-struct lang_info
-{
-	const char *name;
-	int fontcharset;
-};
-
 static void converter_noop(char *s)
 {
 	UNUSED(s);
@@ -1440,42 +1541,39 @@ static struct converter_info const converters[] = {
 	{ CHARSET_L1, CHARSET_ST, latin1_to_atarist },
 };
 
-/*
- * originally build by genctables.awk, from po/LINGUAS
- */
-static struct lang_info const languages[] = {
-    { "en", CHARSET_ST },
-    { "de", CHARSET_ST },
-    { "fr", CHARSET_ST },
-    { "cs", CHARSET_L2 },
-    { "gr", CHARSET_GR },
-    { "es", CHARSET_L9 },
-    { "fi", CHARSET_ST },
-    { "ru", CHARSET_RU },
-    { "it", CHARSET_ST },
-    { "no", CHARSET_ST },
-    { "se", CHARSET_ST },
-    { "sv", CHARSET_ST },
-};
+
+
+static const struct lang_info *get_language_info(const char *lang)
+{
+	int i;
+	int n = da_len(languages);
+
+	for (i = 0; i < n; i++)
+	{
+		const struct lang_info *info = (const struct lang_info *)da_nth(languages, i);
+		if (strcmp(info->name, lang) == 0)
+		{
+			return info;
+		}
+	}
+	return NULL;
+}
 
 
 static int get_language_charset(const char *lang)
 {
-	int i;
-	int n = ARRAY_SIZE(languages);
-
-	for (i = 0; i < n; i++)
-	{
-		if (strcmp(languages[i].name, lang) == 0)
-		{
-			return languages[i].fontcharset;
-		}
-	}
+	const struct lang_info *info = get_language_info(lang);
+	int i, n;
+	
+	if (info != NULL)
+		return info->fontcharset;
 	warn("unknown language %s.", lang);
 	errout("known languages are:\n");
+	n = da_len(languages);
 	for (i = 0; i < n; i++)
 	{
-		errout("  %s\n", languages[i].name);
+		info = (const struct lang_info *)da_nth(languages, i);
+		errout("  %s\n", info->name);
 	}
 	return -1;
 }
@@ -1508,6 +1606,68 @@ static converter_t get_converter(const char *from, int to_id)
 		errout("  %s..%s\n", get_charset_name(converters[i].from), get_charset_name(converters[i].to));
 	}
 	return converter_noop;
+}
+
+
+void po_init(const char *po_dir)
+{
+	str *s;
+	da *d;
+	int i;
+	char *fname;
+	
+	if (languages != NULL)
+		return;
+	if (po_dir == NULL)
+		return;
+	s = s_new();
+	s_addstr(s, po_dir);
+	i = strlen(po_dir);
+	if (i > 0 && po_dir[i - 1] != '/')
+		s_addstr(s, "/");
+	s_addstr(s, "LINGUAS");
+	fname = s_detach(s);
+	d = da_new();
+	if (!parse_oipl_file(fname, d, parse_linguas_item, TRUE))
+	{
+		/*
+		 * construct a list of languages as fallback
+		 */
+		parse_linguas_item(d, g_strdup("en atarist"), FALSE);
+		parse_linguas_item(d, g_strdup("de atarist"), FALSE);
+		parse_linguas_item(d, g_strdup("fr atarist"), FALSE);
+		parse_linguas_item(d, g_strdup("fi atarist"), FALSE);
+		parse_linguas_item(d, g_strdup("it atarist"), FALSE);
+		parse_linguas_item(d, g_strdup("nn atarist"), FALSE);
+		parse_linguas_item(d, g_strdup("sv atarist"), FALSE);
+		parse_linguas_item(d, g_strdup("cs latin2"), FALSE);
+		parse_linguas_item(d, g_strdup("es latin9 "), FALSE);
+		parse_linguas_item(d, g_strdup("ru russian-atarist"), FALSE);
+		parse_linguas_item(d, g_strdup("gr cp737"), FALSE); /* deprecated */
+		parse_linguas_item(d, g_strdup("el cp737"), FALSE);
+	}
+	languages = d;
+	g_free(fname);
+}
+
+
+void po_exit(void)
+{
+	int i, n;
+	da *d;
+	
+	d = languages;
+	if (d == NULL)
+		return;
+	n = da_len(d);
+	for (i = 0; i < n; i++)
+	{
+		struct lang_info *info = (struct lang_info *)da_nth(d, i);
+		g_free(info->name);
+		g_free(info);
+	}
+	da_free(d);
+	languages = NULL;
 }
 
 
