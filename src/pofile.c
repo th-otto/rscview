@@ -992,7 +992,7 @@ static void parse_linguas_item(da *d, char *s, int in_use)
  * this is designed to catch simple typos that translators might make when
  * translating tedinfo strings.
  */
-static int underscore_length(const char *s)
+static inline int underscore_length(const char *s)
 {
 	int len = 0;
 
@@ -1250,9 +1250,11 @@ static gboolean parse_po_file(const char *fname, oh *o, gboolean ignore_ae)
 		{
 			e = poe_new(s_detach(msgid));
 			e->msgstr = s_detach(msgstr);
+#if 0 /* check now done in xlate_file */
 			if (e->msgstr && strlen(e->msgstr))		/* really translating */
 				if (underscore_length(e->msgid.key) != underscore_length(e->msgstr))
 					warn("%s: underscores appear invalid for translation of '%s'", fname, e->msgid.key);
+#endif
 			if (refstr)
 			{
 				e->refstr = s_detach(refstr);
@@ -1358,164 +1360,6 @@ static const char *get_charset_name(int id)
 /*
  * iso_to_atari : convert in situ iso latin 1 to atari ST encoding
  */
-
-static const unsigned char i2a[] = {
-	0x00, '?',	/* EURO SIGN */
-	0x00, '?',	/* UNDEFINED */
-	0x00, '?',	/* SINGLE LOW-9 QUOTATION MARK */
-	0x00, '?',	/* LATIN SMALL LETTER F WITH HOOK */
-	0x00, '?',	/* DOUBLE LOW-9 QUOTATION MARK */
-	0x00, '?',	/* HORIZONTAL ELLIPSIS */
-	0x00, '?',	/* DAGGER */
-	0x00, '?',	/* DOUBLE DAGGER */
-	0x00, '?',	/* MODIFIER LETTER CIRCUMFLEX ACCENT */
-	0x00, '?',	/* PER MILLE SIGN */
-	0x00, '?',	/* LATIN CAPITAL LETTER S WITH CARON */
-	0x00, '?',	/* SINGLE LEFT-POINTING ANGLE QUOTATION MARK */
-	0x00, '?',	/* LATIN CAPITAL LIGATURE OE */
-	0x00, '?',	/* UNDEFINED */
-	0x00, '?',	/* LATIN CAPITAL LETTER Z WITH CARON */
-	0x00, '?',	/* UNDEFINED */
-	0x00, '?',	/* UNDEFINED */
-	0x00, '?',	/* LEFT SINGLE QUOTATION MARK */
-	0x00, '?',	/* RIGHT SINGLE QUOTATION MARK */
-	0x00, '?',	/* LEFT DOUBLE QUOTATION MARK */
-	0x00, '?',	/* RIGHT DOUBLE QUOTATION MARK */
-	0x00, '?',	/* BULLET */
-	0x00, '?',	/* EN DASH */
-	0x00, '?',	/* EM DASH */
-	0x00, '?',	/* SMALL TILDE */
-	0x00, '?',	/* TRADE MARK SIGN */
-	0x00, '?',	/* LATIN SMALL LETTER S WITH CARON */
-	0x00, '?',	/* SINGLE RIGHT-POINTING ANGLE QUOTATION MARK */
-	0x00, '?',	/* LATIN SMALL LIGATURE OE */
-	0x00, '?',	/* UNDEFINED */
-	0x00, '?',	/* LATIN SMALL LETTER Z WITH CARON */
-	0x00, '?',	/* LATIN CAPITAL LETTER Y WITH DIAERESIS */
-	0x00, ' ',	/*    NO-BREAK SPACE */
-	0xad, '?',	/* !` INVERTED EXCLAMATION MARK */
-	0x9b, '?',	/* \cent CENT SIGN */
-	0x9c, '?',	/* \pound POUND SIGN */
-	0x00, '?',	/* CURRENCY SIGN */
-	0x9d, '?',	/* \yen YEN SIGN */
-	0x00, '|',	/* BROKEN BAR */
-	0xdd, '?',	/* PARAGRAPH SIGN, SECTION SIGN */
-	0xb9, '?',	/* DIAERESIS */
-	0xbd, '?',	/* COPYRIGHT SIGN */
-	0xa6, '?',	/* a_ FEMININE ORDINAL INDICATOR */
-	0xae, '?',	/* `` LEFT-POINTING DOUBLE ANGLE QUOTATION MARK */
-	0xaa, '?',	/* \neg NOT SIGN */
-	0x00, '-',	/* SOFT HYPHEN */
-	0xbe, '?',	/* REGISTERED SIGN */
-	0xff, '?',	/* MACRON */
-	0xf8, '?',	/* \deg DEGREE SIGN */
-	0xf1, '?',	/* +- PLUS-MINUS SIGN */
-	0xfd, '?',	/* ^2 SUPERSCRIPT TWO */
-	0xfe, '?',	/* ^3 SUPERSCRIPT THREE */
-	0xba, '?',	/* ACUTE ACCENT */
-	0xe6, '?',	/* MICRO SIGN */
-	0xbc, '?',	/* PILCROW SIGN */
-	0xfa, '?',	/* \cdot MIDDLE DOT */
-	0x00, '?',	/* CEDILLA */
-	0x00, '?',	/* ^1 SUPERSCRIPT ONE */
-	0xa7, '?',	/* o_ MASCULINE ORDINAL INDICATOR */
-	0xaf, '?',	/* '' RIGHT-POINTING DOUBLE ANGLE QUOTATION MARK */
-	0xac, '?',	/* 1/4 VULGAR FRACTION ONE QUARTER */
-	0xab, '?',	/* 1/2 VULGAR FRACTION ONE HALF */
-	0x00, '?',	/* NOT SIGN */
-	0xa8, '?',	/* ?' INVERTED QUESTION MARK */
-	0xb6, '?',	/* A` LATIN CAPITAL LETTER A WITH GRAVE */
-	0x00, 'A',	/* A' LATIN CAPITAL LETTER A WITH ACUTE */
-	0x00, 'A',	/* A^ LATIN CAPITAL LETTER A WITH CIRCUMFLEX */
-	0xB7, '?',	/* A~ LATIN CAPITAL LETTER A WITH TILDE */
-	0x8e, '?',	/* A" LATIN CAPITAL LETTER A WITH DIAERESIS */
-	0x8f, '?',	/* AA LATIN CAPITAL LETTER A WITH RING ABOVE */
-	0x92, '?',	/* AE LATIN CAPITAL LETTER AE */
-	0x80, '?',	/* C, LATIN CAPITAL LETTER C WITH CEDILLA */
-	0x00, 'E',	/* E` LATIN CAPITAL LETTER E WITH GRAVE */
-	0x90, '?',	/* E' LATIN CAPITAL LETTER E WITH ACUTE */
-	0x00, 'E',	/* E^ LATIN CAPITAL LETTER E WITH CIRCUMFLEX */
-	0x00, 'E',	/* E" LATIN CAPITAL LETTER E WITH DIAERESIS */
-	0x00, 'I',	/* I` LATIN CAPITAL LETTER I WITH GRAVE */
-	0x00, 'I',	/* I' LATIN CAPITAL LETTER I WITH ACUTE */
-	0x00, 'I',	/* I^ LATIN CAPITAL LETTER I WITH CIRCUMFLEX */
-	0x00, 'I',	/* I" LATIN CAPITAL LETTER I WITH DIAERESIS */
-	0x00, '?',	/* LATIN CAPITAL LETTER ETH */
-	0xa5, '?',	/* N~ LATIN CAPITAL LETTER N WITH TILDE */
-	0x00, 'O',	/* O` LATIN CAPITAL LETTER O WITH GRAVE */
-	0x00, 'O',	/* O' LATIN CAPITAL LETTER O WITH ACUTE */
-	0x00, 'O',	/* O^ LATIN CAPITAL LETTER O WITH CIRCUMFLEX */
-	0xb8, '?',	/* O~ LATIN CAPITAL LETTER O WITH TILDE */
-	0x99, '?',	/* O" LATIN CAPITAL LETTER O WITH DIAERESIS */
-	0x00, 'x',	/* MULTIPLICATION SIGN */
-	0xb2, '?',	/* O/ LATIN CAPITAL LETTER O WITH STROKE */
-	0x00, 'U',	/* U` LATIN CAPITAL LETTER U WITH GRAVE */
-	0x00, 'U',	/* U' LATIN CAPITAL LETTER U WITH ACUTE */
-	0x00, 'U',	/* U^ LATIN CAPITAL LETTER U WITH CIRCUMFLEX */
-	0x9a, '?',	/* U" LATIN CAPITAL LETTER U WITH DIAERESIS */
-	0x00, 'Y',	/* Y` LATIN CAPITAL LETTER Y WITH ACUTE */
-	0x00, '?',	/* LATIN CAPITAL LETTER THORN */
-	0x9e, '?',	/* \ss LATIN SMALL LETTER SHARP S */
-	0x85, '?',	/* a` LATIN SMALL LETTER A WITH GRAVE */
-	0xa0, '?',	/* a' LATIN SMALL LETTER A WITH ACUTE */
-	0x83, '?',	/* a^ LATIN SMALL LETTER A WITH CIRCUMFLEX */
-	0xb0, '?',	/* a~ LATIN SMALL LETTER A WITH TILDE */
-	0x84, '?',	/* a" LATIN SMALL LETTER A WITH DIAERESIS */
-	0x86, '?',	/* aa LATIN SMALL LETTER A WITH RING ABOVE */
-	0x91, '?',	/* ae LATIN SMALL LETTER AE */
-	0x87, '?',	/* c, LATIN SMALL LETTER C WITH CEDILLA */
-	0x8a, '?',	/* e` LATIN SMALL LETTER E WITH GRAVE */
-	0x82, '?',	/* e' LATIN SMALL LETTER E WITH ACUTE */
-	0x88, '?',	/* e^ LATIN SMALL LETTER E WITH CIRCUMFLEX */
-	0x89, '?',	/* e^ LATIN SMALL LETTER E WITH CIRCUMFLEX */
-	0x8d, '?',	/* i` LATIN SMALL LETTER I WITH GRAVE */
-	0xa1, '?',	/* i' LATIN SMALL LETTER I WITH ACUTE */
-	0x8c, '?',	/* i^ LATIN SMALL LETTER I WITH CIRCUMFLEX */
-	0x8b, '?',	/* i" LATIN SMALL LETTER I WITH DIAERESIS */
-	0x00, '?',	/* LATIN SMALL LETTER ETH  */
-	0xa4, '?',	/* n~ LATIN SMALL LETTER N WITH TILDE */
-	0x95, '?',	/* o` LATIN SMALL LETTER O WITH GRAVE */
-	0xa2, '?',	/* o' LATIN SMALL LETTER O WITH ACUTE */
-	0x93, '?',	/* o^ LATIN SMALL LETTER O WITH CIRCUMFLEX */
-	0xb1, '?',	/* o~ LATIN SMALL LETTER O WITH TILDE */
-	0x94, '?',	/* o" LATIN SMALL LETTER O WITH DIAERESIS */
-	0xf6, '?',	/* \div DIVISION SIGN */
-	0xb3, '?',	/* o/ LATIN SMALL LETTER O WITH STROKE */
-	0x97, '?',	/* u` LATIN SMALL LETTER U WITH GRAVE */
-	0xa3, '?',	/* u' LATIN SMALL LETTER U WITH ACUTE */
-	0x96, '?',	/* u^ LATIN SMALL LETTER U WITH CIRCUMFLEX */
-	0x81, '?',	/* u" LATIN SMALL LETTER U WITH DIAERESIS */
-	0x00, 'y',	/* Y' LATIN SMALL LETTER Y WITH ACUTE */
-	0x00, '?',	/* LATIN SMALL LETTER THORN */
-	0x98, '?'	/* y" LATIN SMALL LETTER Y WITH DIAERESIS */
-};
-
-static void latin1_to_atarist(char *s)
-{
-	unsigned int c, newc;
-	int warned = 0;
-
-	while ((c = (unsigned char) (*s) & 0xFF) != 0)
-	{
-		if (c >= 0x80)
-		{
-			newc = i2a[(c - 0x80) << 1];
-			if (newc == 0)
-			{
-				newc = i2a[((c - 0x80) << 1) + 1];
-				if (!warned)
-				{
-					warn("untranslatable character $%02x in %s, using '%c' instead", c, s, newc);
-					warned = 1;
-				}
-			}
-			*s = newc;
-		}
-		s++;
-	}
-}
-
-
 static void converter_noop(char *s)
 {
 	UNUSED(s);
@@ -1540,7 +1384,6 @@ struct converter_info
 static struct converter_info const converters[] = {
 	{ CHARSET_L1, CHARSET_ST, latin1_to_atarist },
 };
-
 
 
 static const struct lang_info *get_language_info(const char *lang)

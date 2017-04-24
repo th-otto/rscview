@@ -1691,32 +1691,95 @@ static void trim_spaces(char *string)
 
 /*** ---------------------------------------------------------------------- ***/
 
-void xlate_obj_array(nls_domain *domain, OBJECT *obj_array, _LONG nobs, _BOOL trim_strings)
+static int underscore_length(const char *s)
+{
+	int len = 0;
+
+	for (; *s; s++)
+		if (*s == '_')
+			len++;
+
+	return len;
+}
+
+/*** ---------------------------------------------------------------------- ***/
+
+static void xlate_file(RSCFILE *file, _BOOL trim_strings)
 {
 	OBJECT *obj;
+	nls_domain *domain = &file->rsc_nls_domain;
+	_ULONG i;
+	_WORD j;
+	_WORD wchar, hchar;
 	
-	for (obj = obj_array; --nobs >= 0; obj++)
+	GetTextSize(&wchar, &hchar);
+	for (i = 0; i < file->header.rsh_ntree; i++)
 	{
-		_WORD type = obj->ob_type & OBTYPEMASK;
-		switch (type)
+		RSCTREE *tree = rsc_tree_index(file, i, RT_UNKNOWN);
+		
+		for (obj = file->rs_trindex[i], j = 0; ; obj++, j++)
 		{
-		case G_TEXT:
-		case G_FTEXT:
-			obj->ob_spec.tedinfo->te_ptext = dgettext(domain, obj->ob_spec.tedinfo->te_ptext);
-			break;
-		case G_BOXTEXT:
-		case G_FBOXTEXT:
-			obj->ob_spec.tedinfo->te_ptmplt = dgettext(domain, obj->ob_spec.tedinfo->te_ptmplt);
-			break;
-		case G_STRING:
-		case G_BUTTON:
-		case G_TITLE:
-			if (type == G_STRING && trim_strings)
-				trim_spaces(obj->ob_spec.free_string);
-			obj->ob_spec.free_string = dgettext(domain, obj->ob_spec.free_string);
-			break;
-		default:
-			break;
+			_WORD type = obj->ob_type & OBTYPEMASK;
+			char **p = NULL;
+			switch (type)
+			{
+			case G_TEXT:
+			case G_BOXTEXT:
+				p = &obj->ob_spec.tedinfo->te_ptext;
+				break;
+			case G_FTEXT:
+			case G_FBOXTEXT:
+				p = &obj->ob_spec.tedinfo->te_ptmplt;
+				break;
+			case G_STRING:
+			case G_BUTTON:
+			case G_TITLE:
+				p = &obj->ob_spec.free_string;
+				if (type == G_STRING && trim_strings)
+					trim_spaces(*p);
+				break;
+			default:
+				break;
+			}
+			if (p)
+			{
+				char *newstr = dgettext(domain, *p);
+				/*
+				 * for EmuTOS, do not check strings in menus,
+				 * as they are adjusted later
+				 */
+				if (file->rsc_emutos == EMUTOS_NONE || tree->rt_type != RT_MENU)
+				{
+					_WORD maxw = obj->ob_width / wchar;
+					/*
+					 * for dialog title objects, use the ROOTs objects width
+					 */
+					if (file->rsc_emutos != EMUTOS_NONE && type == G_STRING && obj->ob_y == hchar)
+						maxw = file->rs_trindex[i][ROOT].ob_width / wchar;
+					if ((int)strlen(newstr) > maxw)
+					{
+						const char *name = ob_name_or_index(file, tree, j);
+						char *utf8 = nls_conv_to_utf8(domain->fontset, newstr, STR0TERM);
+						KINFO(("tree %s, object %s: translation '%s' exceeds max object width of %d\n",
+							tree->rt_name, name, utf8, maxw));
+						g_free(utf8);
+					}
+				}
+				if (type == G_FTEXT || type == G_FBOXTEXT)
+				{
+					if (underscore_length(*p) != underscore_length(newstr))
+					{
+						const char *name = ob_name_or_index(file, tree, j);
+						char *utf8 = nls_conv_to_utf8(domain->fontset, newstr, STR0TERM);
+						KINFO(("tree %s, object %s: underscores appear invalid for translation of '%s' to '%s'\n",
+							tree->rt_name, name, *p, utf8));
+						g_free(utf8);
+					}
+				}
+				*p = newstr;
+			}
+			if (obj->ob_flags & OF_LASTOB)
+				break;
 		}
 	}
 }
@@ -1835,14 +1898,16 @@ static void centre_titles(RSCFILE *file)
 /*
  *  Change the sizes of the menus after translation
  */
-static void adjust_menu(OBJECT *menu)
+static void adjust_menu(RSCFILE *file, _WORD treeindex)
 {
+	OBJECT *menu = file->rs_trindex[treeindex];
 	_WORD i, j;	/* index in the menu bar */
 	int n, x;
 	_WORD mbar = menu_the_active(menu);
 	_WORD the_menus;
 	OBJECT *title;
 	_WORD wchar, hchar;
+	RSCTREE *tree = rsc_tree_index(file, treeindex, RT_UNKNOWN);
 	
 	GetTextSize(&wchar, &hchar);
 
@@ -1868,13 +1933,34 @@ static void adjust_menu(OBJECT *menu)
 	{
 		int k, m;
 		OBJECT *dropbox = &menu[j];
-
+		_WORD separator_width;
+		
 		title = &menu[i];
 		/* find widest object under this menu heading */
+		separator_width = 0;
 		for (k = dropbox->ob_head, m = 0; k != j; k = menu[k].ob_next)
 		{
 			OBJECT *item = &menu[k];
-			int l = strlen(item->ob_spec.free_string) * wchar;
+			int l;
+			
+			/*
+			 * english strings where not translated,
+			 * trim their spaces now.
+			 */
+			if (file->rsc_nls_domain.lang && strcmp(file->rsc_nls_domain.lang, "en") == 0)
+				trim_spaces(item->ob_spec.free_string);
+			l = strlen(item->ob_spec.free_string);
+			
+			if ((item->ob_state & OS_DISABLED) && *item->ob_spec.free_string == '-')
+			{
+				if (separator_width != 0 && l != separator_width)
+				{
+					KINFO(("tree %s, object %s: mismatch in separator length (was %d, now %d)\n",
+						tree->rt_name, ob_name_or_index(file, tree, k), separator_width, l));
+				}
+				separator_width = l;
+			}
+			l *= wchar;
 			if (m < l)
 				m = l;
 		}
@@ -1890,7 +1976,23 @@ static void adjust_menu(OBJECT *menu)
 
 		for (k = dropbox->ob_head; k != j; k = menu[k].ob_next)
 		{
-			menu[k].ob_width = m;
+			OBJECT *item = &menu[k];
+			const char *str = item->ob_spec.free_string;
+			int l = strlen(str);
+			
+			item->ob_width = m;
+			/*
+			 * if there is a separator, the string should not exceeds its length
+			 */
+			if (separator_width != 0 && (l + 1) > separator_width &&
+				!((item->ob_state & OS_DISABLED) && *item->ob_spec.free_string == '-'))
+			{
+				const char *name = ob_name_or_index(file, tree, k);
+				char *utf8 = nls_conv_to_utf8(file->rsc_nls_domain.fontset, str, STR0TERM);
+				KINFO(("tree %s, object %s: translation '%s' exceeds max menu width of %d\n",
+					tree->rt_name, name, utf8, separator_width));
+				g_free(utf8);
+			}
 		}
 		dropbox->ob_width = m;
 
@@ -1930,7 +2032,7 @@ static void emutos_desktop_fix(RSCFILE *file)
 	tree[DECOPYRT].ob_spec.free_string = copyright_year;
 
 	/* adjust the size and coordinates of menu items */
-	adjust_menu(file->rs_trindex[ADMENU]);
+	adjust_menu(file, ADMENU);
 
 	/*
 	 * perform special object alignment - this must be done after
@@ -2020,31 +2122,6 @@ RSCFILE *load_all(const char *file_name, const char *lang, _UWORD flags, const c
 		KDEBUG(("EmuTOS gem resource loaded\n"));
 	}
 	
-	/* translate strings in objects */
-	if (lang)
-	{
-		file->rsc_nls_domain.lang = lang;
-		if (strcmp(lang, "en") != 0)
-		{
-			po_create_hash(lang, &file->rsc_nls_domain, po_dir);
-			gettext_init(&file->rsc_nls_domain);
-			xlate_obj_array(&file->rsc_nls_domain, file->rs_object, file->header.rsh_nobs, TRUE);
-		}
-	}
-	
-	switch (file->rsc_emutos)
-	{
-	case EMUTOS_AES:
-		emutos_aes_fix(file);
-		break;
-	case EMUTOS_DESK:
-		emutos_desktop_fix(file);
-		break;
-	case EMUTOS_ICONS:
-	case EMUTOS_NONE:
-		break;
-	}
-	
 	status = FALSE;
 	strcpy(filename, file_name);
 	def_found = FALSE;
@@ -2061,6 +2138,31 @@ RSCFILE *load_all(const char *file_name, const char *lang, _UWORD flags, const c
 		state++;
 	}
 
+	/* translate strings in objects */
+	if (lang)
+	{
+		file->rsc_nls_domain.lang = lang;
+		if (strcmp(lang, "en") != 0)
+		{
+			po_create_hash(lang, &file->rsc_nls_domain, po_dir);
+			gettext_init(&file->rsc_nls_domain);
+			xlate_file(file, TRUE);
+		}
+	}
+	
+	switch (file->rsc_emutos)
+	{
+	case EMUTOS_AES:
+		emutos_aes_fix(file);
+		break;
+	case EMUTOS_DESK:
+		emutos_desktop_fix(file);
+		break;
+	case EMUTOS_ICONS:
+	case EMUTOS_NONE:
+		break;
+	}
+	
 	if (!(file->rsc_flags & RF_RSO))
 	{
 		rule_calc(&file->rsc_rule1);

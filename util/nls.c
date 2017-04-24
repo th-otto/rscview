@@ -2,6 +2,7 @@
 #include <gem.h>
 #include <time.h>
 #include "debug.h"
+#include "aesutils.h"
 
 /* 1024 entries, means at least 8 KB, plus 8 bytes per string,
  * plus the lengths of strings
@@ -88,4 +89,51 @@ char *dgettext(const nls_domain *domain, const char *key)
 #else
 	return (char *)NO_CONST(key);
 #endif
+}
+
+/*** ---------------------------------------------------------------------- ***/
+
+/*
+ *  trims trailing spaces from string
+ */
+static void trim_spaces(char *string)
+{
+	char *p;
+
+	for (p = string + strlen(string) - 1; p >= string; p--)
+		if (*p != ' ')
+			break;
+	p[1] = '\0';
+}
+
+/*** ---------------------------------------------------------------------- ***/
+
+void xlate_obj_array(nls_domain *domain, OBJECT *obj_array, _LONG nobs, _BOOL trim_strings)
+{
+	OBJECT *obj;
+	
+	for (obj = obj_array; --nobs >= 0; obj++)
+	{
+		_WORD type = obj->ob_type & OBTYPEMASK;
+		switch (type)
+		{
+		case G_TEXT:
+		case G_FTEXT:
+			obj->ob_spec.tedinfo->te_ptext = dgettext(domain, obj->ob_spec.tedinfo->te_ptext);
+			break;
+		case G_BOXTEXT:
+		case G_FBOXTEXT:
+			obj->ob_spec.tedinfo->te_ptmplt = dgettext(domain, obj->ob_spec.tedinfo->te_ptmplt);
+			break;
+		case G_STRING:
+		case G_BUTTON:
+		case G_TITLE:
+			if (type == G_STRING && trim_strings)
+				trim_spaces(obj->ob_spec.free_string);
+			obj->ob_spec.free_string = dgettext(domain, obj->ob_spec.free_string);
+			break;
+		default:
+			break;
+		}
+	}
 }
