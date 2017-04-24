@@ -1702,9 +1702,10 @@ errout:
 
 
 /*
- * parse OIPL (one item per line) simple files
+ * read a simple textfile (one item per line),
+ * ignoring lines that start with a #,
+ * and empty lines
  */
-
 static void free_oipl_file(da *d)
 {
 	int i, len;
@@ -1719,11 +1720,6 @@ static void free_oipl_file(da *d)
 }
 
 
-/*
- * read a simple textfile,
- * ignoring lines that start with a #,
- * and empty lines
- */
 __attribute__((__warn_unused_result__))
 static gboolean parse_oipl_file(const char *fname, da *d)
 {

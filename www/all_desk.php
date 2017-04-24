@@ -27,7 +27,7 @@ echo "<h1>EmuTOS $which resources - $lang</h1>\n";
 include('vars.php');
 read_linguas('tmp/LINGUAS');
 read_pngs('en');
-if ($_GET['type'] == 'table')
+if (isset($_GET['type']) && $_GET['type'] == 'table')
 {
 	echo "<table>\n";
 	echo "<tr valign=\"bottom\">\n";

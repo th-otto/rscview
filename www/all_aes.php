@@ -2,6 +2,7 @@
 $lang = "All Languages";
 $pngdir = 'aes';
 $which = 'AES';
+$top = '.';
 ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
           "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
@@ -23,12 +24,11 @@ echo "<h1>EmuTOS $which resources - $lang</h1>\n";
 ?>
 <hr />
 
-<table>
 <?php
 include('vars.php');
 read_linguas('tmp/LINGUAS');
 read_pngs('en/aes');
-if ($_GET['type'] == 'table')
+if (isset($_GET['type']) && $_GET['type'] == 'table')
 {
 	echo "<table>\n";
 	echo "<tr valign=\"bottom\">\n";
@@ -64,6 +64,24 @@ if ($_GET['type'] == 'table')
 	echo "</table>\n";
 } else
 {
+	echo "<table>\n";
+	foreach ($files as $entry)
+	{
+		$name = $entry['name'];
+		$file = $entry['file'];
+		echo "<tr valign=\"bottom\"><td>$name:</td></tr>\n";
+		foreach ($linguas as $lang)
+		{
+			$lang = $lang['lang'];
+			$trans = $languages[$lang];
+			$en = $trans['en'];
+			$native = $trans['native'];
+			$file = preg_replace('/([0-9]+)_[a-z][a-z]_(.*)\.png/', '${1}_' . $lang . '_${2}.png', $file);
+			echo "<tr valign=\"top\"><td><img src=\"images/$lang.gif\" width=\"32\" height=\"21\" alt=\"$en\" /></td>";
+			echo "<td><img src=\"$lang/aes/$file\" alt=\"$name\" /></td></tr>\n";
+		}
+	}
+	echo "</table>\n";
 }
 ?>
 

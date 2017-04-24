@@ -79,6 +79,7 @@ foreach ($linguas as $lang)
 		fputs($out, "<?php\n");
 		fputs($out, "\$lang = \"$en\";\n");
 		fputs($out, "\$pngdir = '.';\n");
+		fputs($out, "\$top = '..';\n");
 		fputs($out, "\$which = 'desktop';\n");
 		fputs($out, "include('../lang.php');\n");
 		fputs($out, "?>\n");
@@ -91,6 +92,7 @@ foreach ($linguas as $lang)
 		fputs($out, "<?php\n");
 		fputs($out, "\$lang = \"$en\";\n");
 		fputs($out, "\$pngdir = 'aes';\n");
+		fputs($out, "\$top = '..';\n");
 		fputs($out, "\$which = 'AES';\n");
 		fputs($out, "include('../lang.php');\n");
 		fputs($out, "?>\n");
@@ -130,27 +132,27 @@ foreach ($linguas as $lang)
 
 <p>Atari-ST encoding, used for English, German, French, Finnish and Italian.
 
-<a href="fonts/font8x16_atarist_small.png">Original Size</a>
+<a href="fonts/font8x16_atarist_small.html">Original Size</a>
 <a href="fonts/font8x16_atarist_large.html">Large Size</a></p>
 
 <p>Latin2 encoding, used for Czech.
 
-<a href="fonts/font8x16_latin2_small.png">Original Size</a>
+<a href="fonts/font8x16_latin2_small.html">Original Size</a>
 <a href="fonts/font8x16_latin2_large.html">Large Size</a></p>
 
 <p>Latin9 encoding, used for Spanish.
 
-<a href="fonts/font8x16_latin9_small.png">Original Size</a>
+<a href="fonts/font8x16_latin9_small.html">Original Size</a>
 <a href="fonts/font8x16_latin9_large.html">Large Size</a></p>
 
 <p>cp737 encoding, used for Greek.
 
-<a href="fonts/font8x16_greek_small.png">Original Size</a>
+<a href="fonts/font8x16_greek_small.html">Original Size</a>
 <a href="fonts/font8x16_greek_large.html">Large Size</a></p>
 
 <p>russian-atarist encoding, used for Russian.
 
-<a href="fonts/font8x16_russian_small.png">Original Size</a>
+<a href="fonts/font8x16_russian_small.html">Original Size</a>
 <a href="fonts/font8x16_russian_large.html">Large Size</a></p>
 
 
