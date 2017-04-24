@@ -27,6 +27,7 @@ echo "<html xml:lang=\"en\" lang=\"en\" xmlns=\"http://www.w3.org/1999/xhtml\">\
 echo "<head>\n";
 echo "<meta http-equiv=\"content-type\" content=\"text/html;charset=UTF-8\" />\n";
 echo "<pre>\n";
+
 flush();
 ob_start("log_output");
 
@@ -34,56 +35,61 @@ $top = getcwd();
 
 chdir('tmp');
 
-echo "getting LINGUAS\n";
-ob_flush(); flush();
-$rsc = file_get_contents($github . 'po/LINGUAS');
-file_put_contents('LINGUAS', $rsc);
-read_linguas('LINGUAS', 1);
-ob_flush(); flush();
-
-echo "getting desk/desktop.rsc\n";
-ob_flush(); flush();
-$rsc = file_get_contents($github . 'desk/desktop.rsc');
-file_put_contents('desktop.rsc', $rsc);
-ob_flush(); flush();
-echo "getting desk/desktop.def\n";
-ob_flush(); flush();
-$def = file_get_contents($github . 'desk/desktop.def');
-file_put_contents('desktop.def', $def);
-ob_flush(); flush();
-
-echo "getting desk/icon.rsc\n";
-ob_flush(); flush();
-$rsc = file_get_contents($github . 'desk/icon.rsc');
-file_put_contents('icon.rsc', $rsc);
-ob_flush(); flush();
-echo "getting desk/icon.def\n";
-ob_flush(); flush();
-$def = file_get_contents($github . 'desk/icon.def');
-file_put_contents('icon.def', $def);
-ob_flush(); flush();
-
-echo "getting aes/gem.rsc\n";
-ob_flush(); flush();
-$rsc = file_get_contents($github . 'aes/gem.rsc');
-file_put_contents('gem.rsc', $rsc);
-ob_flush(); flush();
-echo "getting aes/gem.def\n";
-$def = file_get_contents($github . 'aes/gem.def');
-file_put_contents('gem.def', $def);
-ob_flush(); flush();
-
-foreach ($linguas as $lang)
+if (!isset($_GET['download']) || $_GET['download'] != 0)
 {
-	$lang = $lang['lang'];
-	if ($lang != 'en')
+	echo "getting LINGUAS\n";
+	ob_flush(); flush();
+	$rsc = file_get_contents($github . 'po/LINGUAS');
+	file_put_contents('LINGUAS', $rsc);
+	read_linguas('LINGUAS', 1);
+	ob_flush(); flush();
+	
+	echo "getting desk/desktop.rsc\n";
+	ob_flush(); flush();
+	$rsc = file_get_contents($github . 'desk/desktop.rsc');
+	file_put_contents('desktop.rsc', $rsc);
+	ob_flush(); flush();
+	echo "getting desk/desktop.def\n";
+	ob_flush(); flush();
+	$def = file_get_contents($github . 'desk/desktop.def');
+	file_put_contents('desktop.def', $def);
+	ob_flush(); flush();
+	
+	echo "getting desk/icon.rsc\n";
+	ob_flush(); flush();
+	$rsc = file_get_contents($github . 'desk/icon.rsc');
+	file_put_contents('icon.rsc', $rsc);
+	ob_flush(); flush();
+	echo "getting desk/icon.def\n";
+	ob_flush(); flush();
+	$def = file_get_contents($github . 'desk/icon.def');
+	file_put_contents('icon.def', $def);
+	ob_flush(); flush();
+	
+	echo "getting aes/gem.rsc\n";
+	ob_flush(); flush();
+	$rsc = file_get_contents($github . 'aes/gem.rsc');
+	file_put_contents('gem.rsc', $rsc);
+	ob_flush(); flush();
+	echo "getting aes/gem.def\n";
+	$def = file_get_contents($github . 'aes/gem.def');
+	file_put_contents('gem.def', $def);
+	ob_flush(); flush();
+	
+	foreach ($linguas as $lang)
 	{
-		echo "getting $lang.po\n";
-		$po = file_get_contents($github . 'po/' . $lang . '.po');
-		file_put_contents($lang . '.po', $po);
+		$lang = $lang['lang'];
+		if ($lang != 'en')
+		{
+			echo "getting $lang.po\n";
+			$po = file_get_contents($github . 'po/' . $lang . '.po');
+			file_put_contents($lang . '.po', $po);
+		}
 	}
+} else {
+	read_linguas('LINGUAS', 1);
 }
-
+	
 foreach ($linguas as $lang)
 {
 	$lang = $lang['lang'];

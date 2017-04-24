@@ -90,7 +90,7 @@ static void open_screen(void)
 	vsf_interior(vdi_handle, FIS_SOLID);
 	vsf_perimeter(vdi_handle, FALSE);
 	vswr_mode(vdi_handle, MD_REPLACE);
-	vsf_color(vdi_handle, GREEN);
+	vsf_color(vdi_handle, G_GREEN);
 	
 	pxy[0] = 0;
 	pxy[1] = 0;
@@ -117,7 +117,7 @@ static void clear_screen(char *title)
 		NULL, empty, empty, IBM, 1, TE_CNTR, 0x1100, 0x0, 1, 2,1
 	};
 	static OBJECT desktop[] = {
-		{ NIL, 1, 2, G_BOX, OF_NONE, OS_NORMAL, { OBSPEC_MAKE(0, 0, G_BLACK, G_BLACK, TRUE, IP_SOLID, GREEN) }, 0, 0, 0, 0 },
+		{ NIL, 1, 2, G_BOX, OF_NONE, OS_NORMAL, { OBSPEC_MAKE(0, 0, G_BLACK, G_BLACK, TRUE, IP_SOLID, G_GREEN) }, 0, 0, 0, 0 },
 		{ 2, NIL, NIL, G_BOX, OF_NONE, OS_NORMAL, { OBSPEC_MAKE(0, -1, G_BLACK, G_BLACK, FALSE, IP_HOLLOW, G_WHITE) }, 0, 0, 0, 0 },
 		{ 0, NIL, NIL, G_TEXT, OF_LASTOB, OS_NORMAL, { (_LONG_PTR)&tedinfo }, 0, 0, 0, 0 },
 	};
