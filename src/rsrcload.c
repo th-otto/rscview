@@ -918,7 +918,6 @@ RSCFILE *xrsrc_load(const char *filename, _UWORD flags)
 	FILE *fp;
 	_ULONG filesize;
 	RSCFILE *file;
-	_ULONG n_cicons;
 	_ULONG n_userblks;
 	_ULONG offset;
 	_ULONG idx;
@@ -1135,9 +1134,11 @@ RSCFILE *xrsrc_load(const char *filename, _UWORD flags)
 		if ((uint32_t)p[RSC_EXT_FILESIZE] != filesize)
 		{
 			ok = FALSE;
+			KINFO(("extension hdr filesize %ld does not match real filesize %ld\n", (long)p[RSC_EXT_FILESIZE], filesize));
 		} else if (p[RSC_EXT_CICONBLK] < 0 || (uint32_t)p[RSC_EXT_CICONBLK] >= filesize)
 		{
 			ok = FALSE;
+			report_problem(&file->header, "extension hdr ciconblk offset out of range\n", (long)p[RSC_EXT_CICONBLK], &whats_wrong);
 		} else
 		{
 			int32_t *cp = p + RSC_EXT_CICONBLK + 1;
@@ -1677,7 +1678,6 @@ RSCFILE *xrsrc_load(const char *filename, _UWORD flags)
 		}
 	}
 
-	n_cicons = 0;
 	n_userblks = 0;
 	{
 		OBJECT *rs_object = file->rs_object;
@@ -1781,6 +1781,7 @@ RSCFILE *xrsrc_load(const char *filename, _UWORD flags)
 					CICONBLK *cicon;
 					_LONG size;
 					char *p;
+					char *sp;
 					_LONG num_cicons;
 
 					offset = OFFSET(cicon_p, buf, _LONG);
@@ -1791,7 +1792,7 @@ RSCFILE *xrsrc_load(const char *filename, _UWORD flags)
 						return NULL;
 					}
 					cicon = cicon_p;
-					cicon_p++;
+					cicon_p = (CICONBLK *)((char *)cicon + RSC_SIZEOF_CICONBLK);
 					if (swap_flag)
 					{
 						flip_iconblk((char *) cicon);
@@ -1827,6 +1828,12 @@ RSCFILE *xrsrc_load(const char *filename, _UWORD flags)
 					p += (size_t)size;
 					cicon->monoblk.ib_pmask = (_WORD *)p;
 					p += (size_t)size;
+					if (p > (buf + (size_t)filesize))
+					{
+						report_problem(&xrsc_header, "color icon data out of range", p - buf, &whats_wrong);
+						xrsrc_free(file);
+						return NULL;
+					}
 #if FLIP_DATA
 					if (swap_flag)
 					{
@@ -1852,6 +1859,7 @@ RSCFILE *xrsrc_load(const char *filename, _UWORD flags)
 					}
 					p += CICON_STR_SIZE;
 					dp = (CICON *)p;
+					sp = p;
 					num_cicons = (_LONG)(intptr_t)(cicon->mainlist);
 					if (p > (buf + (size_t)filesize))
 					{
@@ -1864,20 +1872,24 @@ RSCFILE *xrsrc_load(const char *filename, _UWORD flags)
 						cicon->mainlist = NULL;
 					} else
 					{
-						if (file->allocated & RSC_ALLOC_CICONBLK)
-						{
-							file->rs_cicon = g_renew(CICON, file->rs_cicon, n_cicons + num_cicons);
-							if (file->rs_cicon == NULL)
-							{
-								xrsrc_free(file);
-								return NULL;
-							}
-							dp = &file->rs_cicon[n_cicons];
-							n_cicons += num_cicons;
-						}
-						cicon->mainlist = dp;
+						CICON **link_p;
+						
+						link_p = &cicon->mainlist;
 						while (num_cicons != 0)
 						{
+							if (file->allocated & RSC_ALLOC_CICONBLK)
+							{
+								dp = g_new(CICON, 1);
+								if (dp == NULL)
+								{
+									xrsrc_free(file);
+									return NULL;
+								}
+							}
+							*link_p = dp;
+							dp->next_res = NULL;
+							link_p = &dp->next_res;
+							
 							offset = OFFSET(p, buf, _LONG);
 							if (offset >= filesize)
 							{
@@ -1892,6 +1904,12 @@ RSCFILE *xrsrc_load(const char *filename, _UWORD flags)
 							p += (size_t)(size * dp->num_planes);
 							dp->col_mask = (_WORD *)p;
 							p += (size_t)size;
+							offset = OFFSET(p, buf, _LONG);
+							if (offset > filesize)
+							{
+								report_problem(&xrsc_header, "color icon data out of range", offset, &whats_wrong);
+								break;
+							}
 #if FLIP_DATA
 							if (swap_flag)
 							{
@@ -1899,12 +1917,20 @@ RSCFILE *xrsrc_load(const char *filename, _UWORD flags)
 								flip_image(size / 2, dp->col_mask);
 							}
 #endif
-							if (dp->sel_data != NULL)
+							/* get sel_data pointer */
+							offset = get_long(sp + 10);
+							if (offset != 0)
 							{
 								dp->sel_data = (_WORD *)p;
 								p += (size_t)(size * dp->num_planes);
 								dp->sel_mask = (_WORD *)p;
 								p += (size_t)size;
+								offset = OFFSET(p, buf, _LONG);
+								if (offset > filesize)
+								{
+									report_problem(&xrsc_header, "color icon data out of range", offset, &whats_wrong);
+									break;
+								}
 #if FLIP_DATA
 								if (swap_flag)
 								{
@@ -1918,17 +1944,9 @@ RSCFILE *xrsrc_load(const char *filename, _UWORD flags)
 								dp->sel_mask = NULL;
 							}
 							num_cicons--;
-							if (num_cicons == 0)
-							{
-								dp->next_res = NULL;
-							} else
-							{
-								dp->next_res = (CICON *)p;
-							}
-							if (file->allocated & RSC_ALLOC_CICONBLK)
-								dp++;
-							else
-								dp = (CICON *)p;
+
+							dp = (CICON *)p;
+							sp = p;
 							offset = OFFSET(p, buf, _LONG);
 							if (offset > filesize)
 							{
@@ -2067,6 +2085,24 @@ _BOOL xrsrc_free(RSCFILE *file)
 {
 	if (file == NULL)
 		return FALSE;
+	if (file->allocated & RSC_ALLOC_CICONBLK)
+	{
+		_ULONG i;
+		OBJECT *obj;
+		CICON *p, *next;
+		for (i = 0, obj = file->rs_object; i < file->header.rsh_nobs; i++, obj++)
+		{
+			if ((obj->ob_type & OBTYPEMASK) == G_CICON)
+			{
+				for (p = obj->ob_spec.ciconblk->mainlist; p; p = next)
+				{
+					next = p->next_res;
+					g_free(p);
+				}
+			}
+		}
+		g_free(file->rs_ciconblk);
+	}
 	if (file->allocated & RSC_ALLOC_TRINDEX)
 		g_free(file->rs_trindex);
 	if (file->allocated & RSC_ALLOC_OBJECT)
@@ -2081,11 +2117,6 @@ _BOOL xrsrc_free(RSCFILE *file)
 		g_free(file->rs_frstr);
 	if (file->allocated & RSC_ALLOC_FRIMG)
 		g_free(file->rs_frimg);
-	if (file->allocated & RSC_ALLOC_CICONBLK)
-	{
-		g_free(file->rs_ciconblk);
-		g_free(file->rs_cicon);
-	}
 	if (file->allocated & RSC_ALLOC_USERBLK)
 		g_free(file->rs_userblk);
 	g_free(file);

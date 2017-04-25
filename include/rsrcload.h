@@ -84,7 +84,6 @@ struct _rscfile {
 	char **rs_frstr;
 	BITBLK **rs_frimg;
 	CICONBLK *rs_ciconblk;
-	CICON *rs_cicon;
 	USERBLK *rs_userblk;
 
 	_LONG rsc_ntrees;			/* number of RSCTREEs */

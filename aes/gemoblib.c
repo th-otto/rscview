@@ -967,7 +967,7 @@ _WORD ob_find(OBJECT *tree, _WORD currobj, _WORD depth, _WORD mx, _WORD my)
 			lastfound = currobj;
 
 			childobj = tree[currobj].ob_tail;
-			if ((childobj != NIL) && depth)
+			if (childobj != NIL && depth)
 			{
 				currobj = childobj;
 				depth--;
@@ -1403,6 +1403,7 @@ static void tran_check(_WORD *saddr, _WORD *daddr, int w, int h, int nplanes)
 }
 
 
+#if 0 /* not used */
 /*	Takes a list of icons and returns the first icon that 
  *	has the same number of planes.  Returns a null pointer if no match.
  */
@@ -1420,17 +1421,18 @@ CICON *match_planes(CICON *iconlist, int planes)
 	}
 	return tempicon;
 }
+#endif
 
 
 /*	Takes a list of icons and returns the first icon that 
  *	has equal or smaller planes.  Returns a null pointer if no match.
  */
-CICON *find_eq_or_less(CICON *iconlist, int planes)
+static CICON *find_eq_or_less(CICON *iconlist, int planes)
 {
 	CICON *tempicon, *lasticon;
 
 	tempicon = iconlist;
-	lasticon = 0L;
+	lasticon = NULL;
 	while (tempicon)
 	{
 		if (tempicon->num_planes == planes)
@@ -1473,126 +1475,12 @@ static void convert_mask(_WORD *mask, _WORD *dst_mask, _WORD width, _WORD height
 }
 
 
-/*
- *	Routine to draw a color icon, which is a graphic image with a text
- *	string underneath it.  Note that this routine is very similar to
- *	gr_icon().   It has an extra parameter which is the list of color
- *	icons for different resolutions.
- */
-void gr_cicon(_WORD state, _WORD *pmask, _WORD *pdata, const char *ptext, _WORD ch, _WORD chx, _WORD chy, GRECT *pi, GRECT *pt, CICONBLK *cicon)
-{
-	_WORD fgcol, bgcol, tmp;
-	/* crack the color/char definition word */
-	CICON *color;
-	int col_select;						/* is there a color select icon */
-
-	/* color = match_planes( cicon->mainlist, gl_nplanes ); */
-	/* Don't need this routine since mainlist is patched to
-	 * contain the icon for this resolution.
-	 */
-	color = cicon->mainlist;
-
-	fgcol = (ch >> 12) & 0x000f;
-	bgcol = (ch >> 8) & 0x000f;
-	ch &= 0x0ff;
-	/* invert if selected */
-	if (state & SELECTED)
-	{
-		tmp = fgcol;
-		fgcol = bgcol;
-		bgcol = tmp;
-	}
-
-	col_select = 0;
-	/* substitue mask if color avail */
-	if (color)
-	{
-		if ((state & SELECTED) && color->sel_data)
-		{
-			col_select = 1;
-			pdata = color->sel_data;
-			pmask = color->sel_mask;
-		} else
-		{
-			pdata = color->col_data;
-			pmask = color->col_mask;
-		}
-		if (state & SELECTED)
-		{
-			tmp = fgcol;
-			fgcol = bgcol;
-			bgcol = tmp;
-		}
-	}
-
-	/* do mask unless its on */
-	/* a white background */
-	if (!((state & WHITEBAK) && (bgcol == WHITE)))
-	{
-		/* for pixel-packed mode, must blit in black (to zero out backgd) */
-		if ((gl_nplanes == 16) && (color))
-			gsx_blt(pmask, 0, 0, pi->g_w / 8, 0x0L, pi->g_x, pi->g_y,
-					gl_width / 8, pi->g_w, pi->g_h, MD_TRANS, 1, fgcol);
-		else
-			gsx_blt(pmask, 0, 0, pi->g_w / 8, 0x0L, pi->g_x, pi->g_y,
-					gl_width / 8, pi->g_w, pi->g_h, MD_TRANS, bgcol, fgcol);
-
-		/* only print bar if string is not null */
-		if (ptext[0])
-		{
-			if (color && (state & SELECTED))
-				gr_rect(fgcol, IP_SOLID, pt);
-			else
-				gr_rect(bgcol, IP_SOLID, pt);
-		}
-	}
-
-	/* draw the data */
-	if (color)
-	{
-		/* NOTE: The call below is commented out because it does a transform form
-		 * on the color data every time it is drawn.  The code in the color icon 
-		 * resource load should do all of the transforms.  Uncomment this line for
-		 * testing purposes only.
-		 */
-		/* my_trans( pdata, pi->g_w/8, pdata,pi->g_w/8,pi->g_h ); */
-
-		gsx_cblt(pdata, 0, 0, pi->g_w / 8, 0x0L, pi->g_x, pi->g_y, gl_width / 8, pi->g_w, pi->g_h, S_OR_D, color->num_planes);
-		if (state & SELECTED)
-		{
-			tmp = fgcol;
-			fgcol = bgcol;
-			bgcol = tmp;
-			if (!col_select)
-			{							/* check if we need to darken */
-				convert_mask(pmask, gl_colmask, pi->g_w, pi->g_h);
-				gsx_blt(gl_colmask, 0, 0, pi->g_w / 8, 0x0L, pi->g_x, pi->g_y,
-						gl_width / 8, pi->g_w, pi->g_h, MD_TRANS, 1, 0);
-			}
-		}
-	} else
-	{
-		gsx_blt(pdata, 0, 0, pi->g_w / 8, 0x0L, pi->g_x, pi->g_y,
-				gl_width / 8, pi->g_w, pi->g_h, MD_TRANS, fgcol, bgcol);
-	}
-	
-	/* draw the character */
-	gsx_attr(TRUE, MD_TRANS, fgcol);
-	if (ch)
-	{
-		gsx_tblt(SMALL, pi->g_x + chx, pi->g_y + chy, &ch, 1);
-	}
-	/* draw the label */
-	gr_gtext(TE_CNTR, SMALL, ptext, pt);
-}
-
-
 /*	Takes the blit code and makes sure that the number of planes is
  *	set.  This code was taken from gsx_blt() and modified so that the
  *	number of planes is passed in and the source and destination MFDB's
  *	had that value set correctly.  Otherwise, it is the same code.
  */
-void gsx_cblt(_WORD * saddr, _UWORD sx, _UWORD sy, _UWORD swb, _WORD *daddr, _UWORD dx, _UWORD dy, _UWORD dwb, _UWORD w, _UWORD h, _UWORD rule, _WORD numplanes)
+static void gsx_cblt(_WORD * saddr, _UWORD sx, _UWORD sy, _UWORD swb, _WORD *daddr, _UWORD dx, _UWORD dy, _UWORD dwb, _UWORD w, _UWORD h, _UWORD rule, _WORD numplanes)
 {
 	_WORD ppts[8];
 	MFDB gl_src, gl_dst;
@@ -1615,6 +1503,116 @@ void gsx_cblt(_WORD * saddr, _UWORD sx, _UWORD sy, _UWORD swb, _WORD *daddr, _UW
 	ppts[7] = dy + h - 1;
 	vro_cpyfm(gl_handle, rule, ppts, &gl_src, &gl_dst);
 	gsx_mon();
+}
+
+
+/*
+ *	Routine to draw a color icon, which is a graphic image with a text
+ *	string underneath it.  Note that this routine is very similar to
+ *	gr_icon().   It has an extra parameter which is the list of color
+ *	icons for different resolutions.
+ */
+void gr_cicon(_WORD state, _WORD *pmask, _WORD *pdata, const char *ptext, _WORD ch, _WORD chx, _WORD chy, GRECT *pi, GRECT *pt, CICONBLK *cicon)
+{
+	_WORD fgcol, bgcol, tmp;
+	/* crack the color/char definition word */
+	CICON *color;
+	int col_select;						/* is there a color select icon */
+
+	color = find_eq_or_less(cicon->mainlist, gl_nplanes);
+
+	fgcol = (ch >> 12) & 0x000f;
+	bgcol = (ch >> 8) & 0x000f;
+	ch &= 0x0ff;
+	/* invert if selected */
+	if (state & SELECTED)
+	{
+		tmp = fgcol;
+		fgcol = bgcol;
+		bgcol = tmp;
+	}
+
+	col_select = 0;
+	/* substitute mask if color avail */
+	if (color)
+	{
+		if ((state & SELECTED) && color->sel_data)
+		{
+			col_select = 1;
+			pdata = color->sel_data;
+			pmask = color->sel_mask;
+		} else
+		{
+			pdata = color->col_data;
+			pmask = color->col_mask;
+		}
+		if (state & SELECTED)
+		{
+			tmp = fgcol;
+			fgcol = bgcol;
+			bgcol = tmp;
+		}
+	}
+
+	/* do mask unless its on */
+	/* a white background */
+	if (!((state & WHITEBAK) && bgcol == WHITE))
+	{
+		/* for pixel-packed mode, must blit in black (to zero out backgd) */
+		if (gl_nplanes == 16 && color)
+			gsx_blt(pmask, 0, 0, pi->g_w / 8, ORGADDR, pi->g_x, pi->g_y,
+					gl_width / 8, pi->g_w, pi->g_h, MD_TRANS, G_BLACK, fgcol);
+		else
+			gsx_blt(pmask, 0, 0, pi->g_w / 8, ORGADDR, pi->g_x, pi->g_y,
+					gl_width / 8, pi->g_w, pi->g_h, MD_TRANS, bgcol, fgcol);
+
+		/* only print bar if string is not null */
+		if (ptext[0])
+		{
+			if (color && (state & SELECTED))
+				gr_rect(fgcol, IP_SOLID, pt);
+			else
+				gr_rect(bgcol, IP_SOLID, pt);
+		}
+	}
+
+	/* draw the data */
+	if (color)
+	{
+		/* NOTE: The call below is commented out because it does a transform form
+		 * on the color data every time it is drawn.  The code in the color icon 
+		 * resource load should do all of the transforms.  Uncomment this line for
+		 * testing purposes only.
+		 */
+		/* my_trans( pdata, pi->g_w/8, pdata,pi->g_w/8,pi->g_h ); */
+
+		gsx_cblt(pdata, 0, 0, pi->g_w / 8, ORGADDR, pi->g_x, pi->g_y, gl_width / 8, pi->g_w, pi->g_h, S_OR_D, color->num_planes);
+		if (state & SELECTED)
+		{
+			tmp = fgcol;
+			fgcol = bgcol;
+			bgcol = tmp;
+			if (!col_select)
+			{							/* check if we need to darken */
+				convert_mask(pmask, gl_colmask, pi->g_w, pi->g_h);
+				gsx_blt(gl_colmask, 0, 0, pi->g_w / 8, ORGADDR, pi->g_x, pi->g_y,
+						gl_width / 8, pi->g_w, pi->g_h, MD_TRANS, 1, 0);
+			}
+		}
+	} else
+	{
+		gsx_blt(pdata, 0, 0, pi->g_w / 8, ORGADDR, pi->g_x, pi->g_y,
+				gl_width / 8, pi->g_w, pi->g_h, MD_TRANS, fgcol, bgcol);
+	}
+	
+	/* draw the character */
+	gsx_attr(TRUE, MD_TRANS, fgcol);
+	if (ch)
+	{
+		gsx_tblt(SMALL, pi->g_x + chx, pi->g_y + chy, &ch, 1);
+	}
+	/* draw the label */
+	gr_gtext(TE_CNTR, SMALL, ptext, pt);
 }
 
 
@@ -1804,7 +1802,7 @@ static void trans_cicon(int tot_icons, CICONBLK **carray)
 				databuffer = (_WORD *) dos_alloc_anyram(tot_size);
 				if (!tempbuffer || !databuffer)
 				{
-					ciconblk->mainlist = 0L;
+					ciconblk->mainlist = NULL;
 					return;				/* just quit */
 				}
 				expand_data(ctemp->col_data, tempbuffer, ctemp->col_mask, ctemp->num_planes, gl_nplanes, w, h);
@@ -1827,7 +1825,7 @@ static void trans_cicon(int tot_icons, CICONBLK **carray)
 				databuffer = (_WORD *) dos_alloc_anyram(tot_size);
 				if (!databuffer)
 				{
-					ciconblk->mainlist = 0L;
+					ciconblk->mainlist = NULL;
 					return;
 				}
 				my_trans(ctemp->col_data, w / 8, databuffer, w / 8, h, gl_nplanes);
@@ -1844,7 +1842,7 @@ static void trans_cicon(int tot_icons, CICONBLK **carray)
 			}
 
 			ctemp->num_planes = gl_nplanes;
-			ctemp->next_res = 0L;		/* won't need the rest of the list */
+			ctemp->next_res = NULL;		/* won't need the rest of the list */
 		}
 	}
 }

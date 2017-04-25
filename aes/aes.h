@@ -347,10 +347,7 @@ void ob_setxywh(OBJECT *tree, _WORD obj, const GRECT *pt);
 void ob_offset(OBJECT *tree, _WORD obj, _WORD *pxoff, _WORD *pyoff);
 void ob_dxywh(OBJECT *tree, _WORD obj, _WORD *pdx, _WORD *pdy, _WORD *pdw, _WORD *pdh);
 void ob_gclip(OBJECT *tree, _WORD obj, _WORD *pxoff, _WORD *pyoff, _WORD *pxcl, _WORD *pycl, _WORD *pwcl, _WORD *phcl);
-CICON *match_planes(CICON *iconlist, int planes);
-CICON *find_eq_or_less(CICON *iconlist, int planes);
 void gr_cicon(_WORD state, _WORD *pmask, _WORD *pdata, const char *ptext, _WORD ch, _WORD chx, _WORD chy, GRECT *pi, GRECT *pt, CICONBLK *cicon);
-void gsx_cblt(_WORD *saddr, _UWORD sx, _UWORD sy, _UWORD swb, _WORD *daddr, _UWORD dx, _UWORD dy, _UWORD dwb, _UWORD w, _UWORD h, _UWORD rule, _WORD numplanes);
 void get_color_rsc(CICONBLK **cicondata);
 void free_cicon(CICONBLK **carray);
 
