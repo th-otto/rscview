@@ -154,7 +154,12 @@ foreach ($linguas as $lang)
 <form action="update.php" method="get" id="emudeskform">
 <fieldset>
 <input id="updateemudesk" style="background-color: #cccccc; font-weight: bold;" type="submit" value="Update from GitHub" />
-<!-- <input type="checkbox" name="download" value="0" />Don't download -->
+<?php
+if (isset($_COOKIE['itsme']))
+{
+	echo "<input type=\"checkbox\" name=\"download\" value=\"0\" />Don't download\n";
+}
+?>
 </fieldset>
 </form>
 </td>
