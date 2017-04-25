@@ -99,14 +99,14 @@ void aes_init(void)
 	ind3dtxt = FALSE;					/* move text for indicators */
 	ind3dface = TRUE;					/* change color when indicator is selected */
 
-	if (gl_ws.ws_ncolors <= LWHITE)
+	if (gl_ws.ws_ncolors <= G_LWHITE)
 	{									/* init button color */
-		gl_actbutcol = gl_indbutcol = WHITE;
-		gl_alrtcol = WHITE;				/* init alert background color */
+		gl_actbutcol = gl_indbutcol = G_WHITE;
+		gl_alrtcol = G_WHITE;				/* init alert background color */
 	} else
 	{
-		gl_actbutcol = gl_indbutcol = LWHITE;
-		gl_alrtcol = LWHITE;			/* init alert background color */
+		gl_actbutcol = gl_indbutcol = G_LWHITE;
+		gl_alrtcol = G_LWHITE;			/* init alert background color */
 	}
 
 	gsx_mfset((MFORM *)aes_rsc_bitblk[MICE02]->bi_pdata);

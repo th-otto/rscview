@@ -76,7 +76,7 @@ static void open_screen(void)
 	pxy[3] = ws.ws_yres;
 	vr_recfl(vdi_handle, pxy);
 
-	vsf_color(vdi_handle, WHITE);
+	vsf_color(vdi_handle, G_WHITE);
 }
 
 /* ------------------------------------------------------------------------- */

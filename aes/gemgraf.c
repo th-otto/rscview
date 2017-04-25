@@ -694,10 +694,10 @@ void gr_gicon(_WORD state, _WORD *pmask, _WORD *pdata, const char *ptext, _WORD 
 	}
 
 	/* do mask unless it's on a white background */
-	if (!((state & WHITEBAK) && ibgcol == WHITE))
+	if (!((state & WHITEBAK) && ibgcol == G_WHITE))
 		gr_gblt(pmask, pi, ibgcol, ifgcol);
 
-	if (!((state & WHITEBAK) && tbgcol == WHITE))
+	if (!((state & WHITEBAK) && tbgcol == G_WHITE))
 	{
 		if (pt->g_w)
 			gr_rect(tbgcol, IP_SOLID, pt);

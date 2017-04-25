@@ -207,7 +207,8 @@ static const struct driverinfo *get_devinfo(_WORD id)
 /* -------------------------------------------------------------------------- */
 /******************************************************************************/
 
-#define roll(pattern) ((pattern) & 0x8000) ? (((pattern) << 1) | 0x0001) : ((pattern) << 1)
+#define rolw(pattern) ((pattern) & 0x8000) ? (((pattern) << 1) | 0x0001) : ((pattern) << 1)
+#define rorw(pattern) ((pattern) & 0x0001) ? (((pattern) >> 1) | 0x8000) : ((pattern) >> 1)
 
 static void vdi_put_pixel(VWK *v, int x, int y, pel color)
 {
@@ -269,7 +270,7 @@ static void vdi_draw_hline(VWK *v, int x1, int x2, int y, _UWORD pattern, int op
 	for (x = x1; x <= x2; x++)
 	{
 		gfx_put_pixel(v, x, y, pattern, op, fg, bg);
-		pattern = roll(pattern);
+		pattern = rolw(pattern);
 	}
 }
 
@@ -281,7 +282,7 @@ static void vdi_draw_vline(VWK *v, int x, int y1, int y2, _UWORD pattern, int op
 	for (y = y1; y <= y2; y++)
 	{
 		gfx_put_pixel(v, x, y, pattern, op, fg, bg);
-		pattern = roll(pattern);
+		pattern = rolw(pattern);
 	}
 }
 
@@ -401,7 +402,7 @@ static void fill_rectangle_params(VWK *v, int x, int y, unsigned int width, unsi
 			for (x0 = 0; x0 < width; x0++)
 			{
 				gfx_put_pixel(v, x + x0, y + y0, pattern, v->wrmode, params->fg, params->bg);
-				pattern = roll(pattern);
+				pattern = rolw(pattern);
 			}
 			if (++p == PATTERN_HEIGHT)
 				p = 0;
@@ -2411,11 +2412,11 @@ static void vro_cpy_from_screen(VWK *v, int x, int y, int w, int h, MFDB *d, int
  */
 static void vro_cpy_to_screen(VWK *v, int mode, int x, int y, int w, int h, MFDB *s, int dx, int dy)
 {
-	if (s->fd_nplanes != v->planes)
-	{
-		V("  vro_cpy_to_screen[%d]: error: planes %d != screen planes %d", v->handle, s->fd_nplanes, v->planes);
-		return;
-	}
+	int planes;
+	int rowsize, planesize;
+	uint16_t srcstartmask, srcmask;
+	uint16_t *sp, *srclp;
+	int i, j, l;
 	
 	if (dx < 0)
 	{
@@ -2432,13 +2433,108 @@ static void vro_cpy_to_screen(VWK *v, int mode, int x, int y, int w, int h, MFDB
 	if (w <= 0 || h <= 0)
 		return;
 	
-	UNUSED(mode);
-	if (v->planes == 1)
+	V("  vro_cpy_to_screen(%d->%d, [%d,%d,%d,%d]->[%d,%d] MFDB[0x%p,%d,%d,wd=%d,std=%d]", s->fd_nplanes, v->planes, x, y, w, h, dx, dy, s->fd_addr, s->fd_w, s->fd_h, s->fd_wdwidth, s->fd_stand);
+	/*
+	 * This implementation is not VDI compliant.
+	 * it depends on the data NOT being converted to screen format.
+	 */
+	planes = s->fd_nplanes;
+	rowsize = s->fd_wdwidth;
+	planesize = rowsize * s->fd_h;
+	sp = (uint16_t *)s->fd_addr + rowsize * y + (x >> 4);
+	srcstartmask = 0x8000 >> (x & 0x0f);
+	for (i = 0; i < h; i++)
 	{
-		V("  vro_cpy_to_screen(%d->%d, [%d,%d,%d,%d]->[%d,%d]", s->fd_nplanes, v->planes, x, y, w, h, dx, dy);
-	} else								/* A color raster: */
-	{
-		V("  vro_cpy_to_screen(%d->%d, [%d,%d,%d,%d]->[%d,%d] MFDB[0x%p,%d,%d,wd=%d,std=%d]", s->fd_nplanes, v->planes, x, y, w, h, dx, dy, s->fd_addr, s->fd_w, s->fd_h, s->fd_wdwidth, s->fd_stand);
+		srclp = sp;
+		srcmask = srcstartmask;
+		for (j = 0; j < w; j++)
+		{
+			pel val;
+			
+			for (val = 0, l = 0; l < planes; l++)
+			{
+				if (srclp[l * planesize] & srcmask)
+					val |= 1 << l;
+			}
+			if (planes == 2)
+				val = vdi_maptab256[vdi_revtab4[val]];
+			else if (planes == 4)
+				val = vdi_maptab256[vdi_revtab16[val]];
+			switch (mode)
+			{
+			case ALL_WHITE:
+				val = vdi_maptab256[WHITE];
+				vdi_put_pixel(v, dx + j, dy + i, val);
+				break;
+			case S_AND_D:
+				val &= vdi_get_pixel(v, dx + j, dy + i);
+				vdi_put_pixel(v, dx + j, dy + i, val);
+				break;
+			case S_AND_NOTD:
+				val &= ~vdi_get_pixel(v, dx + j, dy + i);
+				vdi_put_pixel(v, dx + j, dy + i, val);
+				break;
+			case S_ONLY:
+				vdi_put_pixel(v, dx + j, dy + i, val);
+				break;
+			case NOTS_AND_D:
+				val = (~val) & vdi_get_pixel(v, dx + j, dy + i);
+				vdi_put_pixel(v, dx + j, dy + i, val);
+				break;
+			case D_ONLY:
+				/* expensive no-op */
+				break;
+			case S_XOR_D:
+				val ^= vdi_get_pixel(v, dx + j, dy + i);
+				vdi_put_pixel(v, dx + j, dy + i, val);
+				break;
+			case S_OR_D:
+				val |= vdi_get_pixel(v, dx + j, dy + i);
+				vdi_put_pixel(v, dx + j, dy + i, val);
+				break;
+			case NOT_SORD:
+				val = ~(val | vdi_get_pixel(v, dx + j, dy + i));
+				vdi_put_pixel(v, dx + j, dy + i, val);
+				break;
+			case NOT_SXORD:
+				val = ~(val ^ vdi_get_pixel(v, dx + j, dy + i));
+				vdi_put_pixel(v, dx + j, dy + i, val);
+				break;
+			case NOT_D:
+				val = ~vdi_get_pixel(v, dx + j, dy + i);
+				vdi_put_pixel(v, dx + j, dy + i, val);
+				break;
+			case S_OR_NOTD:
+				val |= ~vdi_get_pixel(v, dx + j, dy + i);
+				vdi_put_pixel(v, dx + j, dy + i, val);
+				break;
+			case NOT_S:
+				val = ~val;
+				vdi_put_pixel(v, dx + j, dy + i, val);
+				break;
+			case NOTS_OR_D:
+				val = ~val;
+				val |= vdi_get_pixel(v, dx + j, dy + i);
+				vdi_put_pixel(v, dx + j, dy + i, val);
+				break;
+			case NOT_SANDD:
+				val &= vdi_get_pixel(v, dx + j, dy + i);
+				val = ~val;
+				vdi_put_pixel(v, dx + j, dy + i, val);
+				break;
+			case ALL_BLACK:
+				val = vdi_maptab256[BLACK];
+				vdi_put_pixel(v, dx + j, dy + i, val);
+				break;
+			}
+			srcmask >>= 1;
+			if (srcmask == 0)
+			{
+				srcmask = 0x8000;
+				srclp++;
+			}
+		}
+		sp += rowsize;
 	}
 }
 

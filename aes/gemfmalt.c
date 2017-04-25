@@ -322,7 +322,7 @@ _WORD fm_alert(_WORD defbut, const char *palstr, _UWORD flags)
 		spec |= IP_SOLID << 4;
 	
 		if (gl_alrtcol >= gl_ws.ws_ncolors)
-			color = WHITE;
+			color = G_WHITE;
 		else
 			color = gl_alrtcol;
 	

@@ -339,7 +339,7 @@ static _WORD xor16(_WORD col)
 	static _WORD const xor4tab[] = { G_BLACK, G_WHITE, G_GREEN, G_RED };
 
 	if (col >= 16 || col >= gl_ws.ws_ncolors)	/* ws_ncolors */
-		col = WHITE;
+		col = G_WHITE;
 	else if (gl_ws.ws_ncolors <= 4)
 		col = xor4tab[col];
 	else
@@ -505,7 +505,7 @@ static void just_draw(OBJECT *tree, _WORD obj, _WORD sx, _WORD sy)
 			 * into BOXTEXT objects with the right color background and with
 			 * transparent text (and no borders)
 			 */
-			if (gl_aes3d && (flags & (FL3DIND | FL3DBAK)) && icol == WHITE && ipat == IP_HOLLOW)
+			if (gl_aes3d && (flags & (FL3DIND | FL3DBAK)) && icol == G_WHITE && ipat == IP_HOLLOW)
 			{
 				ipat = IP_SOLID;
 				switch (flags & (FL3DIND | FL3DBAK))
@@ -556,7 +556,7 @@ static void just_draw(OBJECT *tree, _WORD obj, _WORD sx, _WORD sy)
 		case G_BOXCHAR:
 		case G_IBOX:
 			gr_crack(LOWORD(spec.index), &bcol, &tcol, &ipat, &icol, &tmode);
-			if (gl_aes3d && obtype != G_IBOX && ipat == IP_HOLLOW && icol == WHITE)
+			if (gl_aes3d && obtype != G_IBOX && ipat == IP_HOLLOW && icol == G_WHITE)
 			{
 				switch (flags & (FL3DIND | FL3DBAK))
 				{
@@ -594,7 +594,7 @@ static void just_draw(OBJECT *tree, _WORD obj, _WORD sx, _WORD sy)
 				} else
 				{
 					ipat = IP_HOLLOW;
-					icol = WHITE;
+					icol = G_WHITE;
 				}
 			}
 			/* fall through */
@@ -692,7 +692,7 @@ static void just_draw(OBJECT *tree, _WORD obj, _WORD sx, _WORD sy)
 				bi.bi_color = xor16(bi.bi_color);
 			}
 			gsx_blt(bi.bi_pdata, bi.bi_x, bi.bi_y, bi.bi_wb * 8,
-					ORGADDR, pt->g_x, pt->g_y, gl_width, bi.bi_wb * 8, bi.bi_hl, MD_TRANS, bi.bi_color, WHITE);
+					ORGADDR, pt->g_x, pt->g_y, gl_width, bi.bi_wb * 8, bi.bi_hl, MD_TRANS, bi.bi_color, G_WHITE);
 			break;
 		case G_ICON:
 			ib = *spec.iconblk;
@@ -775,7 +775,7 @@ static void just_draw(OBJECT *tree, _WORD obj, _WORD sx, _WORD sy)
 			{
 				gsx_attr(FALSE, MD_REPLACE, G_BLACK);
 				gr_box(pt->g_x - 3, pt->g_y - 3, pt->g_w + 6, pt->g_h + 6, 1);
-				gsx_attr(FALSE, MD_REPLACE, WHITE);
+				gsx_attr(FALSE, MD_REPLACE, G_WHITE);
 				gr_box(pt->g_x - 2, pt->g_y - 2, pt->g_w + 4, pt->g_h + 4, 2);
 			} else
 			{
@@ -1437,15 +1437,12 @@ static CICON *find_eq_or_less(CICON *iconlist, int planes)
 	{
 		if (tempicon->num_planes == planes)
 			break;
-		else
+		if (tempicon->num_planes < planes)
 		{
-			if (tempicon->num_planes < planes)
-			{
-				if (!lasticon || (lasticon->num_planes < tempicon->num_planes))
-					lasticon = tempicon;
-			}
-			tempicon = tempicon->next_res;
+			if (!lasticon || (lasticon->num_planes < tempicon->num_planes))
+				lasticon = tempicon;
 		}
+		tempicon = tempicon->next_res;
 	}
 	if (tempicon)
 		return tempicon;
@@ -1558,9 +1555,8 @@ void gr_cicon(_WORD state, _WORD *pmask, _WORD *pdata, const char *ptext, _WORD 
 		}
 	}
 
-	/* do mask unless its on */
-	/* a white background */
-	if (!((state & WHITEBAK) && bgcol == WHITE))
+	/* do mask unless its on a white background */
+	if (!((state & WHITEBAK) && bgcol == G_WHITE))
 	{
 		/* for pixel-packed mode, must blit in black (to zero out backgd) */
 		if (gl_nplanes == 16 && color)
