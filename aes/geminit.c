@@ -117,7 +117,7 @@ void aes_init(void)
 		BITBLK bi;
 
 		bi = *aes_rsc_bitblk[i];
-		gsx_trans(bi.bi_pdata, bi.bi_wb, bi.bi_pdata, bi.bi_wb, bi.bi_hl, G_BLACK, G_WHITE);
+		gsx_trans(bi.bi_pdata, bi.bi_wb * 8, bi.bi_pdata, bi.bi_wb * 8, bi.bi_hl, G_BLACK, G_WHITE);
 	}
 	
 	sh_tographic();						/* go into graphic mode */

@@ -288,21 +288,20 @@ void gsx_xcbox(GRECT *pt)
 /*
  *	Routine to fix up the MFDB of a particular raster form
  */
-void gsx_fix(MFDB *pfd, _WORD *theaddr, _WORD wb, _WORD h)
+void gsx_fix(MFDB *pfd, _WORD *theaddr, _WORD w, _WORD h)
 {
 	if (theaddr == ORGADDR)
 	{
-		pfd->fd_w = gl_ws.ws_xres + 1;
-		pfd->fd_wdwidth = pfd->fd_w / 16;
-		pfd->fd_h = gl_ws.ws_yres + 1;
+		pfd->fd_w = gl_width;
+		pfd->fd_h = gl_height;
 		pfd->fd_nplanes = gl_nplanes;
 	} else
 	{
-		pfd->fd_wdwidth = wb / 2;
-		pfd->fd_w = wb * 8;
+		pfd->fd_w = w;
 		pfd->fd_h = h;
 		pfd->fd_nplanes = 1;
 	}
+	pfd->fd_wdwidth = (pfd->fd_w + 15) >> 4;
 	pfd->fd_stand = FALSE;
 	pfd->fd_addr = theaddr;
 }
@@ -311,16 +310,16 @@ void gsx_fix(MFDB *pfd, _WORD *theaddr, _WORD wb, _WORD h)
 /*
  *	Routine to blit, to and from a specific area
  */
-void gsx_blt(_WORD *saddr, _UWORD sx, _UWORD sy, _UWORD swb,
-			 _WORD *daddr, _UWORD dx, _UWORD dy, _UWORD dwb, _UWORD w, _UWORD h,
+void gsx_blt(_WORD *saddr, _UWORD sx, _UWORD sy, _UWORD sw,
+			 _WORD *daddr, _UWORD dx, _UWORD dy, _UWORD dw, _UWORD w, _UWORD h,
 			 _UWORD rule, _WORD fgcolor, _WORD bgcolor)
 {
 	_WORD pts[4 * 2];
 	MFDB gl_src;
 	MFDB gl_dst;
 	
-	gsx_fix(&gl_src, saddr, swb, h);
-	gsx_fix(&gl_dst, daddr, dwb, h);
+	gsx_fix(&gl_src, saddr, sw, h);
+	gsx_fix(&gl_dst, daddr, dw, h);
 
 	gsx_moff();
 	pts[0] = sx;
@@ -358,16 +357,16 @@ void bb_screen(_WORD scrule, _WORD scsx, _WORD scsy, _WORD scdx, _WORD scdy, _WO
 /*
  *	Routine to transform a standard form to device specific form.
  */
-void gsx_trans(_WORD *saddr, _UWORD swb, _WORD *daddr, _UWORD dwb, _UWORD h, _WORD fg, _WORD bg)
+void gsx_trans(_WORD *saddr, _UWORD sw, _WORD *daddr, _UWORD dw, _UWORD h, _WORD fg, _WORD bg)
 {
 	MFDB gl_src;
 	MFDB gl_dst;
 	
-	gsx_fix(&gl_src, saddr, swb, h);
+	gsx_fix(&gl_src, saddr, sw, h);
 	gl_src.fd_stand = TRUE;
 	gl_src.fd_nplanes = 1;
 
-	gsx_fix(&gl_dst, daddr, dwb, h);
+	gsx_fix(&gl_dst, daddr, dw, h);
 	vr_trnfm(gl_handle, &gl_src, &gl_dst);
 	(void) fg;
 	(void) bg;
@@ -661,7 +660,7 @@ void gr_crack(_UWORD color, _WORD *pbc, _WORD *ptc, _WORD *pip, _WORD *pic, _WOR
 
 static void gr_gblt(_WORD *pimage, GRECT *pi, _WORD col1, _WORD col2)
 {
-	gsx_blt(pimage, 0, 0, pi->g_w / 8, ORGADDR, pi->g_x, pi->g_y, gl_width / 8, pi->g_w, pi->g_h, MD_TRANS, col1, col2);
+	gsx_blt(pimage, 0, 0, pi->g_w, ORGADDR, pi->g_x, pi->g_y, gl_width, pi->g_w, pi->g_h, MD_TRANS, col1, col2);
 }
 
 

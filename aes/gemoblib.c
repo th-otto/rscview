@@ -691,8 +691,8 @@ static void just_draw(OBJECT *tree, _WORD obj, _WORD sx, _WORD sy)
 				bb_fill(MD_XOR, FIS_SOLID, IP_SOLID, pt->g_x, pt->g_y, pt->g_w, pt->g_h);
 				bi.bi_color = xor16(bi.bi_color);
 			}
-			gsx_blt(bi.bi_pdata, bi.bi_x, bi.bi_y, bi.bi_wb,
-					NULL, pt->g_x, pt->g_y, gl_width / 8, bi.bi_wb * 8, bi.bi_hl, MD_TRANS, bi.bi_color, WHITE);
+			gsx_blt(bi.bi_pdata, bi.bi_x, bi.bi_y, bi.bi_wb * 8,
+					ORGADDR, pt->g_x, pt->g_y, gl_width, bi.bi_wb * 8, bi.bi_hl, MD_TRANS, bi.bi_color, WHITE);
 			break;
 		case G_ICON:
 			ib = *spec.iconblk;
@@ -1344,15 +1344,15 @@ static _UWORD get_rgb(_WORD index)
  * C code stolen from the apgsxif.s file.  This is call is identical to
  * gsx_trans except that gsx_trans is hardwired to one-plane transforms.
  */
-static void my_trans(_WORD *saddr, _UWORD swb, _WORD *daddr, _UWORD dwb, _UWORD h, _UWORD nplanes)
+static void my_trans(_WORD *saddr, _UWORD sw, _WORD *daddr, _UWORD dw, _UWORD h, _UWORD nplanes)
 {
 	MFDB gl_src, gl_dst;
 	
-	gsx_fix(&gl_src, saddr, swb, h);
+	gsx_fix(&gl_src, saddr, sw, h);
 	gl_src.fd_stand = TRUE;
 	gl_src.fd_nplanes = nplanes;
 
-	gsx_fix(&gl_dst, daddr, dwb, h);
+	gsx_fix(&gl_dst, daddr, dw, h);
 	gl_dst.fd_stand = FALSE;
 	gl_dst.fd_nplanes = nplanes;
 	vr_trnfm(gl_handle, &gl_src, &gl_dst);
@@ -1378,7 +1378,7 @@ static void tran_check(_WORD *saddr, _WORD *daddr, int w, int h, int nplanes)
 	int no_words, i;
 	_UWORD *wptr;
 
-	my_trans(saddr, w / 8, daddr, w / 8, h, nplanes);
+	my_trans(saddr, w, daddr, w, h, nplanes);
 
 	if (nplanes == 16)
 	{
@@ -1460,16 +1460,20 @@ static void convert_mask(_WORD *mask, _WORD *dst_mask, _WORD width, _WORD height
 {
 	int i, j, wdwide;
 
-	wdwide = width / 16;
-	for (i = 0; i < height; i += 2)
+	wdwide = (width + 15) >> 4;
+	for (i = 0; i < height; i++)
 	{
 		for (j = 0; j < wdwide; j++)
 		{
 			dst_mask[j + i * wdwide] = mask[j + i * wdwide] & 0x5555;
 		}
-		for (j = wdwide; j < 2 * wdwide; j++)
+		++i;
+		if (i < height)
 		{
-			dst_mask[j + i * wdwide] = mask[j + i * wdwide] & 0xAAAA;
+			for (j = 0; j < wdwide; j++)
+			{
+				dst_mask[j + i * wdwide] = mask[j + i * wdwide] & 0xAAAA;
+			}
 		}
 	}
 }
@@ -1480,16 +1484,16 @@ static void convert_mask(_WORD *mask, _WORD *dst_mask, _WORD width, _WORD height
  *	number of planes is passed in and the source and destination MFDB's
  *	had that value set correctly.  Otherwise, it is the same code.
  */
-static void gsx_cblt(_WORD * saddr, _UWORD sx, _UWORD sy, _UWORD swb, _WORD *daddr, _UWORD dx, _UWORD dy, _UWORD dwb, _UWORD w, _UWORD h, _UWORD rule, _WORD numplanes)
+static void gsx_cblt(_WORD *saddr, _UWORD sx, _UWORD sy, _UWORD sw, _WORD *daddr, _UWORD dx, _UWORD dy, _UWORD dw, _UWORD w, _UWORD h, _UWORD rule, _WORD numplanes)
 {
 	_WORD ppts[8];
 	MFDB gl_src, gl_dst;
 	
-	gsx_fix(&gl_src, saddr, swb, h);
-	gsx_fix(&gl_dst, daddr, dwb, h);
+	gsx_fix(&gl_src, saddr, sw, h);
+	gsx_fix(&gl_dst, daddr, dw, h);
 
 	gl_src.fd_nplanes = numplanes;
-	gl_dst.fd_nplanes = numplanes;
+	gl_dst.fd_nplanes = gl_nplanes;
 
 	gsx_moff();
 
@@ -1560,11 +1564,11 @@ void gr_cicon(_WORD state, _WORD *pmask, _WORD *pdata, const char *ptext, _WORD 
 	{
 		/* for pixel-packed mode, must blit in black (to zero out backgd) */
 		if (gl_nplanes == 16 && color)
-			gsx_blt(pmask, 0, 0, pi->g_w / 8, ORGADDR, pi->g_x, pi->g_y,
-					gl_width / 8, pi->g_w, pi->g_h, MD_TRANS, G_BLACK, fgcol);
+			gsx_blt(pmask, 0, 0, pi->g_w, ORGADDR, pi->g_x, pi->g_y,
+					gl_width, pi->g_w, pi->g_h, MD_TRANS, G_BLACK, fgcol);
 		else
-			gsx_blt(pmask, 0, 0, pi->g_w / 8, ORGADDR, pi->g_x, pi->g_y,
-					gl_width / 8, pi->g_w, pi->g_h, MD_TRANS, bgcol, fgcol);
+			gsx_blt(pmask, 0, 0, pi->g_w, ORGADDR, pi->g_x, pi->g_y,
+					gl_width, pi->g_w, pi->g_h, MD_TRANS, bgcol, fgcol);
 
 		/* only print bar if string is not null */
 		if (ptext[0])
@@ -1584,9 +1588,9 @@ void gr_cicon(_WORD state, _WORD *pmask, _WORD *pdata, const char *ptext, _WORD 
 		 * resource load should do all of the transforms.  Uncomment this line for
 		 * testing purposes only.
 		 */
-		/* my_trans( pdata, pi->g_w/8, pdata,pi->g_w/8,pi->g_h ); */
+		/* my_trans( pdata, pi->g_w, pdata,pi->g_w,pi->g_h ); */
 
-		gsx_cblt(pdata, 0, 0, pi->g_w / 8, ORGADDR, pi->g_x, pi->g_y, gl_width / 8, pi->g_w, pi->g_h, S_OR_D, color->num_planes);
+		gsx_cblt(pdata, 0, 0, pi->g_w, ORGADDR, pi->g_x, pi->g_y, gl_width, pi->g_w, pi->g_h, S_OR_D, color->num_planes);
 		if (state & SELECTED)
 		{
 			tmp = fgcol;
@@ -1595,14 +1599,14 @@ void gr_cicon(_WORD state, _WORD *pmask, _WORD *pdata, const char *ptext, _WORD 
 			if (!col_select)
 			{							/* check if we need to darken */
 				convert_mask(pmask, gl_colmask, pi->g_w, pi->g_h);
-				gsx_blt(gl_colmask, 0, 0, pi->g_w / 8, ORGADDR, pi->g_x, pi->g_y,
-						gl_width / 8, pi->g_w, pi->g_h, MD_TRANS, 1, 0);
+				gsx_blt(gl_colmask, 0, 0, pi->g_w, ORGADDR, pi->g_x, pi->g_y,
+						gl_width, pi->g_w, pi->g_h, MD_TRANS, 1, 0);
 			}
 		}
 	} else
 	{
-		gsx_blt(pdata, 0, 0, pi->g_w / 8, ORGADDR, pi->g_x, pi->g_y,
-				gl_width / 8, pi->g_w, pi->g_h, MD_TRANS, fgcol, bgcol);
+		gsx_blt(pdata, 0, 0, pi->g_w, ORGADDR, pi->g_x, pi->g_y,
+				gl_width, pi->g_w, pi->g_h, MD_TRANS, fgcol, bgcol);
 	}
 	
 	/* draw the character */
@@ -1828,14 +1832,14 @@ static void trans_cicon(int tot_icons, CICONBLK **carray)
 					ciconblk->mainlist = NULL;
 					return;
 				}
-				my_trans(ctemp->col_data, w / 8, databuffer, w / 8, h, gl_nplanes);
+				my_trans(ctemp->col_data, w, databuffer, w, h, gl_nplanes);
 				ctemp->col_data = databuffer;
 				if (ctemp->sel_data)
 				{
 					selbuffer = (_WORD *) dos_alloc_anyram(tot_size);
 					if (selbuffer)
 					{
-						my_trans(ctemp->sel_data, w / 8, selbuffer, w / 8, h, gl_nplanes);
+						my_trans(ctemp->sel_data, w, selbuffer, w, h, gl_nplanes);
 					}
 					ctemp->sel_data = selbuffer;
 				}
