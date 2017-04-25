@@ -1760,8 +1760,8 @@ static void xlate_file(RSCFILE *file, _BOOL trim_strings)
 					{
 						const char *name = ob_name_or_index(file, tree, j);
 						char *utf8 = nls_conv_to_utf8(domain->fontset, newstr, STR0TERM);
-						KINFO(("tree %s, object %s: translation '%s' exceeds max object width of %d\n",
-							tree->rt_name, name, utf8, maxw));
+						KINFO(("tree %s, object %s: max object width of %d exceeded in translation of '%s' to '%s'\n",
+							tree->rt_name, name, maxw, *p, utf8));
 						g_free(utf8);
 					}
 				}

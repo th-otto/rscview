@@ -170,7 +170,7 @@ foreach ($linguas as $lang)
 <td>
 <form action="update.php" method="post" id="testform" enctype="multipart/form-data">
 <fieldset>
-<input type="file" name="files[]" size="60" accept=".po,.PO" multiple="multiple" style="margin-top: 1ex;" />
+<input type="file" name="files[]" size="60" accept=".po,.PO" multiple="multiple" required="required" style="margin-top: 1ex;" />
 <input id="submitfile" type="submit" value="Test translation" />
 </fieldset>
 </form>
