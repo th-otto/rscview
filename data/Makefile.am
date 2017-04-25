@@ -5,7 +5,7 @@ INCLUDES += -I$(srcdir)
 noinst_PROGRAMS = fntdump bug
 
 CC = $(BUILD_CC)
-EXEEXT = $(BUILD_EXEEXTT)
+EXEEXT = $(BUILD_EXEEXT)
 
 fntdump_SOURCES = \
 	fntdump.c \
@@ -74,6 +74,7 @@ EXTRA_DIST += \
 	fntl208.fnt fntl209.fnt fntl210.fnt \
 	fntgr08.fnt fntgr09.fnt fntgr10.fnt \
 	fntru08.fnt fntru09.fnt fntru10.fnt \
+	fntpl08.fnt fntpl09.fnt fntpl10.fnt \
 	$(empty)
 
 CLEANFILES += $(BUILT_SOURCES)

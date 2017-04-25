@@ -1,7 +1,3 @@
-<?php
-error_reporting(E_ALL);
-ini_set("display_errors", 1);
-?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
           "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xml:lang="en" lang="en" xmlns="http://www.w3.org/1999/xhtml">
@@ -53,15 +49,8 @@ foreach ($linguas as $lang)
 	echo "<td>\n";
 	$lang = $lang['lang'];
 	$trans = $languages[$lang];
-	if (!$trans)
-	{
-		$en = $lang;
-		$native = $lang;
-	} else
-	{
-		$en = $trans['en'];
-		$native = $trans['native'];
-	}
+	$en = $trans['en'];
+	$native = $trans['native'];
 	echo "<p><img src=\"images/$lang.gif\" width=\"32\" height=\"21\" alt=\"$en\" />$en";
 	if ($en != $native)
 	{
@@ -75,7 +64,7 @@ foreach ($linguas as $lang)
 	$stat = stat("$lang/index.php");
 	if (!$stat)
 	{
-		$out = fopen("$lang/index.php");
+		$out = fopen("$lang/index.php", 'w');
 		fputs($out, "<?php\n");
 		fputs($out, "\$lang = \"$en\";\n");
 		fputs($out, "\$pngdir = '.';\n");
@@ -88,7 +77,7 @@ foreach ($linguas as $lang)
 	$stat = stat("$lang/aes.php");
 	if (!$stat)
 	{
-		$out = fopen("$lang/aes.php");
+		$out = fopen("$lang/aes.php", 'w');
 		fputs($out, "<?php\n");
 		fputs($out, "\$lang = \"$en\";\n");
 		fputs($out, "\$pngdir = 'aes';\n");
@@ -174,6 +163,15 @@ foreach ($linguas as $lang)
 <form action="viewlog.php" method="get" id="viewlogform">
 <fieldset>
 <input id="viewlog" style="background-color: #cccccc; font-weight: bold;" type="submit" value="View logfile" />
+</fieldset>
+</form>
+</td>
+
+<td>
+<form action="update.php" method="post" id="testform" enctype="multipart/form-data">
+<fieldset>
+<input type="file" name="files[]" size="60" accept=".po,.PO" multiple="multiple" style="margin-top: 1ex;" />
+<input id="submitfile" type="submit" value="Test translation" />
 </fieldset>
 </form>
 </td>
