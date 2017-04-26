@@ -40,7 +40,8 @@ if (isset($_GET['type']) && $_GET['type'] == 'table')
 		$trans = $languages[$lang];
 		$en = $trans['en'];
 		$native = $trans['native'];
-		echo "<p><img src=\"images/$lang.gif\" width=\"32\" height=\"21\" alt=\"$en\" />$en</p>\n";
+		$flag = $trans['flag'];
+		echo "<p><img src=\"images/$flag\" width=\"32\" height=\"21\" alt=\"$en\" />$en</p>\n";
 		echo "</td>\n";
 	}
 	echo "</tr>\n";
@@ -76,8 +77,9 @@ if (isset($_GET['type']) && $_GET['type'] == 'table')
 			$trans = $languages[$lang];
 			$en = $trans['en'];
 			$native = $trans['native'];
+			$flag = $trans['flag'];
 			$file = preg_replace('/([0-9]+)_[a-z][a-z]_(.*)\.png/', '${1}_' . $lang . '_${2}.png', $file);
-			echo "<tr valign=\"top\"><td><img src=\"images/$lang.gif\" width=\"32\" height=\"21\" alt=\"$en\" /></td>";
+			echo "<tr valign=\"top\"><td><img src=\"images/$flag\" width=\"32\" height=\"21\" alt=\"$en\" /></td>";
 			echo "<td><img src=\"$lang/aes/$file\" alt=\"$name\" /></td></tr>\n";
 		}
 	}
@@ -90,7 +92,7 @@ if (isset($_GET['type']) && $_GET['type'] == 'table')
 
 <div style="text-align:center">
 <p>
-<a href="../emutos.php"> <img src="../images/home1.gif" width="180" height="60" style="border:0" alt="Back" /></a>
+<a href="../emutos.php"> <img src="../images/home1.png" width="180" height="60" style="border:0" alt="Back" /></a>
 </p>
 </div>
 

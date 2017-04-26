@@ -35,7 +35,7 @@ foreach ($files as $entry)
 <div style="text-align:center">
 <p>
 <?php
-echo "<a href=\"$top/emutos.php\"> <img src=\"$top/images/home1.gif\" width=\"180\" height=\"60\" style=\"border:0\" alt=\"Back\" /></a>\n";
+echo "<a href=\"$top/emutos.php\"> <img src=\"$top/images/home1.png\" width=\"180\" height=\"60\" style=\"border:0\" alt=\"Back\" /></a>\n";
 ?>
 </p>
 </div>

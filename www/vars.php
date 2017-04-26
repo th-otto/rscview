@@ -3,32 +3,32 @@
 $linguas = array();
 
 $languages = array(
-	'en' => array('en' => 'English',   'html' => 'en-US', 'native' => 'English'),
-	'de' => array('en' => 'German',    'html' => 'de-DE', 'native' => 'Deutsch'),
-	'fr' => array('en' => 'French',    'html' => 'fr-FR', 'native' => 'Fran&#231;ais'),
-	'es' => array('en' => 'Spanish',   'html' => 'es-ES', 'native' => 'Espa&#241;ol'),
-	'it' => array('en' => 'Italian',   'html' => 'it-IT', 'native' => 'Italiano'),
-	'sv' => array('en' => 'Swedish',   'html' => 'sv-SV', 'native' => 'Svenska'),
-	'tr' => array('en' => 'Turkish',   'html' => 'tr-TR', 'native' => 'T&#252;rk&#231;e'),
-	'fi' => array('en' => 'Finnish',   'html' => 'fi-FI', 'native' => 'Suomi'),
-	'nn' => array('en' => 'Norwegian', 'html' => 'nn-NO', 'native' => 'Norsk nynorsk'),
-	'da' => array('en' => 'Danish',    'html' => 'da-DK', 'native' => 'Dansk'),
-	'ar' => array('en' => 'Arabic',    'html' => 'ar-AR', 'native' => '&#x0627;&#x0644;&#x0639;&#x0631;&#x0628;&#x064a;&#x0629;'),
-	'nl' => array('en' => 'Dutch',     'html' => 'nl-NL', 'native' => 'Nederlands'),
-	'cs' => array('en' => 'Czech',     'html' => 'cs-CZ', 'native' => '&#268;esky'),
-	'hu' => array('en' => 'Hungarian', 'html' => 'hu-HU', 'native' => 'Magyar'),
-	'pl' => array('en' => 'Polish',    'html' => 'pl-PL', 'native' => 'Polskie'),
-	'lt' => array('en' => 'Lithuanian','html' => 'lt-LT', 'native' => 'Lietuvi&#x0173; kalba'),
-	'ru' => array('en' => 'Russian',   'html' => 'ru-RU', 'native' => '&#1056;&#1091;&#1089;&#1089;&#1082;&#1080;&#1081;'),
-	'et' => array('en' => 'Estonian',  'html' => 'et-EE', 'native' => 'Eesti'),
-	'be' => array('en' => 'Belarusian','html' => 'be-bY', 'native' => '&#x0431;&#x0435;&#x043b;&#x0430;&#x0440;&#x0443;&#x0441;&#x043a;&#x0430;&#x044f; &#x043c;&#x043e;&#x0432;&#x0430;'),
-	'uk' => array('en' => 'Ukrainian', 'html' => 'uk-uA', 'native' => '&#x0423;&#x043a;&#x0440;&#x0430;&#x0457;&#x043d;&#x0441;&#x044c;&#x043a;&#x0430;'),
-	'sk' => array('en' => 'Slovak',    'html' => 'sk-SK', 'native' => 'Sloven&#x010d;ina'),
-	'hr' => array('en' => 'Croatian',  'html' => 'hr-HR', 'native' => 'Hrvatski jezik'),
-	'sr' => array('en' => 'Serbian',   'html' => 'sr-RS', 'native' => '&#x0441;&#x0440;&#x043f;&#x0441;&#x043a;&#x0438; &#x0458;&#x0435;&#x0437;&#x0438;&#x043a;'),
-	'mk' => array('en' => 'Macedonian','html' => 'mk-MK', 'native' => '&#x043c;&#x0430;&#x043a;&#x0435;&#x0434;&#x043e;&#x043d;&#x0441;&#x043a;&#x0438; &#x0458;&#x0430;&#x0437;&#x0438;&#x043a;'),
-	'gr' => array('en' => 'Greek',     'html' => 'el-GR', 'native' => '&#917;&#955;&#955;&#951;&#957;&#953;&#954;&#940;'), /* deprecated; for compatibility */
-	'el' => array('en' => 'Greek',     'html' => 'el-GR', 'native' => '&#917;&#955;&#955;&#951;&#957;&#953;&#954;&#940;'),
+	'en' => array('en' => 'English',   'html' => 'en-US', 'flag' => 'uk.gif', 'native' => 'English'),
+	'de' => array('en' => 'German',    'html' => 'de-DE', 'flag' => 'de.gif', 'native' => 'Deutsch'),
+	'fr' => array('en' => 'French',    'html' => 'fr-FR', 'flag' => 'fr.gif', 'native' => 'Fran&#231;ais'),
+	'es' => array('en' => 'Spanish',   'html' => 'es-ES', 'flag' => 'es.gif', 'native' => 'Espa&#241;ol'),
+	'it' => array('en' => 'Italian',   'html' => 'it-IT', 'flag' => 'it.gif', 'native' => 'Italiano'),
+	'sv' => array('en' => 'Swedish',   'html' => 'sv-SV', 'flag' => 'se.gif', 'native' => 'Svenska'),
+	'tr' => array('en' => 'Turkish',   'html' => 'tr-TR', 'flag' => 'tr.gif', 'native' => 'T&#252;rk&#231;e'),
+	'fi' => array('en' => 'Finnish',   'html' => 'fi-FI', 'flag' => 'fi.gif', 'native' => 'Suomi'),
+	'nn' => array('en' => 'Norwegian', 'html' => 'nn-NO', 'flag' => 'no.gif', 'native' => 'Norsk nynorsk'),
+	'da' => array('en' => 'Danish',    'html' => 'da-DK', 'flag' => 'dk.gif', 'native' => 'Dansk'),
+	'ar' => array('en' => 'Arabic',    'html' => 'ar-SA', 'flag' => 'sa.gif', 'native' => '&#x0627;&#x0644;&#x0639;&#x0631;&#x0628;&#x064a;&#x0629;'),
+	'nl' => array('en' => 'Dutch',     'html' => 'nl-NL', 'flag' => 'nl.gif', 'native' => 'Nederlands'),
+	'cs' => array('en' => 'Czech',     'html' => 'cs-CZ', 'flag' => 'cz.gif', 'native' => '&#268;esky'),
+	'hu' => array('en' => 'Hungarian', 'html' => 'hu-HU', 'flag' => 'hu.gif', 'native' => 'Magyar'),
+	'pl' => array('en' => 'Polish',    'html' => 'pl-PL', 'flag' => 'pl.gif', 'native' => 'Polskie'),
+	'lt' => array('en' => 'Lithuanian','html' => 'lt-LT', 'flag' => 'lt.gif', 'native' => 'Lietuvi&#x0173; kalba'),
+	'ru' => array('en' => 'Russian',   'html' => 'ru-RU', 'flag' => 'ru.gif', 'native' => '&#1056;&#1091;&#1089;&#1089;&#1082;&#1080;&#1081;'),
+	'et' => array('en' => 'Estonian',  'html' => 'et-EE', 'flag' => 'ee.gif', 'native' => 'Eesti'),
+	'be' => array('en' => 'Belarusian','html' => 'be-bY', 'flag' => 'by.gif', 'native' => '&#x0431;&#x0435;&#x043b;&#x0430;&#x0440;&#x0443;&#x0441;&#x043a;&#x0430;&#x044f; &#x043c;&#x043e;&#x0432;&#x0430;'),
+	'uk' => array('en' => 'Ukrainian', 'html' => 'uk-uA', 'flag' => 'ua.gif', 'native' => '&#x0423;&#x043a;&#x0440;&#x0430;&#x0457;&#x043d;&#x0441;&#x044c;&#x043a;&#x0430;'),
+	'sk' => array('en' => 'Slovak',    'html' => 'sk-SK', 'flag' => 'sk.gif', 'native' => 'Sloven&#x010d;ina'),
+	'hr' => array('en' => 'Croatian',  'html' => 'hr-HR', 'flag' => 'hr.gif', 'native' => 'Hrvatski jezik'),
+	'sr' => array('en' => 'Serbian',   'html' => 'sr-RS', 'flag' => 'rs.gif', 'native' => '&#x0441;&#x0440;&#x043f;&#x0441;&#x043a;&#x0438; &#x0458;&#x0435;&#x0437;&#x0438;&#x043a;'),
+	'mk' => array('en' => 'Macedonian','html' => 'mk-MK', 'flag' => 'mk.gif', 'native' => '&#x043c;&#x0430;&#x043a;&#x0435;&#x0434;&#x043e;&#x043d;&#x0441;&#x043a;&#x0438; &#x0458;&#x0430;&#x0437;&#x0438;&#x043a;'),
+	'gr' => array('en' => 'Greek',     'html' => 'el-GR', 'flag' => 'gr.gif', 'native' => '&#917;&#955;&#955;&#951;&#957;&#953;&#954;&#940;'), /* deprecated; for compatibility */
+	'el' => array('en' => 'Greek',     'html' => 'el-GR', 'flag' => 'gr.gif', 'native' => '&#917;&#955;&#955;&#951;&#957;&#953;&#954;&#940;'),
 );
 
 function read_linguas($filename, $warn = 0)
@@ -54,7 +54,7 @@ function read_linguas($filename, $warn = 0)
 		$trans = $languages[$lang];
 		if (!$trans)
 		{
-			$trans = array('en' => $lang, 'native' => $lang);
+			$trans = array('en' => $lang, 'native' => $lang, 'flag' => $lang . '.gif');
 			$languages[$lang] = $trans;
 			if ($warn)
 			{

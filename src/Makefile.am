@@ -43,7 +43,7 @@ rscview_cgi_SOURCES = \
 	glib.c \
 	charset.c cp_atari.h cp_latin1.h cp_latin2.h cp_latin9.h cp_1250.h cp_1251.h cp_1252.h cp_737.h \
 	cgic.c cgic.h \
-	html.c html.h \
+	html.c html.h htmljs.h \
 	$(empty)
 
 rscview_LDADD = -L../aes -L../vdi -L../gemlib -L../util -laes -lgem -lvdi -laes -lgem -lvdi -lutil

@@ -51,7 +51,8 @@ foreach ($linguas as $lang)
 	$trans = $languages[$lang];
 	$en = $trans['en'];
 	$native = $trans['native'];
-	echo "<p><img src=\"images/$lang.gif\" width=\"32\" height=\"21\" alt=\"$en\" />$en";
+	$flag = $trans['flag'];
+	echo "<p><img src=\"images/$flag\" width=\"32\" height=\"21\" alt=\"$en\" />$en";
 	if ($en != $native)
 	{
 		echo " / $native";
@@ -151,7 +152,7 @@ foreach ($linguas as $lang)
 <table>
 <tr>
 <td>
-<form action="update.php" method="get" id="emudeskform">
+<form action="update.php" method="get" id="emudeskform" enctype="application/x-www-form-urlencoded">
 <fieldset>
 <input id="updateemudesk" style="background-color: #cccccc; font-weight: bold;" type="submit" value="Update from GitHub" />
 <?php
@@ -165,7 +166,7 @@ if (isset($_COOKIE['itsme']))
 </td>
 
 <td>
-<form action="viewlog.php" method="get" id="viewlogform">
+<form action="viewlog.php" method="get" id="viewlogform" enctype="application/x-www-form-urlencoded">
 <fieldset>
 <input id="viewlog" style="background-color: #cccccc; font-weight: bold;" type="submit" value="View logfile" />
 </fieldset>
@@ -186,7 +187,14 @@ if (isset($_COOKIE['itsme']))
 
 <div style="text-align:center">
 <p>
-<a href="../index.html"> <img src="../images/home1.gif" width="180" height="60" style="border:0" alt="Home" /></a>
+<a href="../index.html"> <img src="../images/home1.png" width="180" height="60" style="border:0" alt="Home" /></a>
+</p>
+</div>
+
+<hr />
+<div style="text-align:center">
+<p style="font-size: 60%">Images of flags are from
+<a href="http://flagspot.net/flags/"><img src="images/fotwlink.gif" width="45" height="30" style="border:0" alt="FOTW"> Flags Of The World</a>
 </p>
 </div>
 
