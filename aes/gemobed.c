@@ -285,7 +285,7 @@ static _BOOL check(char *in_char, unsigned char valchar)
 		upcase = FALSE;
 		break;
 	case 'x':							/* anything, but upcase */
-		*in_char = toupper(*in_char);
+		*in_char = aes_toupper(*in_char);
 		return TRUE;
 	case 'X':							/* anything */
 		return TRUE;
@@ -295,7 +295,7 @@ static _BOOL check(char *in_char, unsigned char valchar)
 		if (instr(*in_char, rs_str(rstr)))
 		{
 			if (upcase)
-				*in_char = toupper(*in_char);
+				*in_char = aes_toupper(*in_char);
 			return TRUE;
 		}
 	}

@@ -11,6 +11,9 @@
 #include "ws.h"
 #include "debug.h"
 #include "pofile.h"
+#ifdef _WIN32
+#include <direct.h>
+#endif
 #include "../vdi/writepng.h" /* for writepng_version_info */
 
 

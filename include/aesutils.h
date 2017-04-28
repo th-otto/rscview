@@ -60,8 +60,7 @@ _WORD inf_what(OBJECT *tree, _WORD ok);
 
 void xlate_obj_array(nls_domain *domain, OBJECT *obj_array, _LONG nobs, _BOOL trim_strings);
 
-#undef toupper
-int toupper(int ch);
+int aes_toupper(int ch);
 
 /*
  * mul_div - signed integer multiply and divide

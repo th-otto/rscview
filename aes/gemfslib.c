@@ -162,7 +162,7 @@ static _WORD r_files(char *path, char *select, uint32_t *count, char *filename)
 	/* uppercase the drive path */
 	if (*(path + 1) == ':')
 	{
-		*path = toupper(*path);
+		*path = aes_toupper(*path);
 		drvid = (_WORD) (*path - 'A');
 	} else
 	{

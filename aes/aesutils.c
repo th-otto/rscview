@@ -72,7 +72,7 @@ void rc_constrain(const GRECT *pc, GRECT *pt)
 /*
  * Return upper case value.
  */
-int toupper(int ch)
+int aes_toupper(int ch)
 {
 	if (ch >= 'a' && ch <= 'z')
 		ch -= 0x20;

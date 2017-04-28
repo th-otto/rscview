@@ -105,7 +105,7 @@ if test -n "$GCC"; then
       i686*) math_opts="-msse -mfpmath=sse" ;;
     esac
     if test "$enable_warnings" = "yes"; then
-      AC_ADD_CFLAG(CC, -pedantic -Wno-overlength-strings -Wall -W -Wunused -Wundef -Wstrict-prototypes -Wmissing-prototypes -Wc++-compat -Wwrite-strings -Wcast-qual -Wno-pointer-sign -Wno-variadic-macros)
+      AC_ADD_CFLAG(CC, -pedantic -Wno-overlength-strings -Wall -W -Wunused -Wundef -Wstrict-prototypes -Wmissing-prototypes -Wc++-compat -Wwrite-strings -Wcast-qual -Wno-pointer-sign -Wno-variadic-macros -Wno-misleading-indentation -Wno-nonnull-compare)
     fi
     AC_ADD_CFLAG(CC,  $math_opts -ftrack-macro-expansion=0 -funsigned-char)
     if test "$ICC" != yes; then

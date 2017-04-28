@@ -692,7 +692,7 @@ static _BOOL xml_ob_object(RSCFILE *file, XRS_HEADER *xrsc_header, RSCTREE *rsct
 			break;
 		case G_USERDEF:
 			xml_indent(level + 1); outstr("<userdef>\n");
-			xml_indent(level + 2); putprop("code", "%ld", (long)tree[ob].ob_spec.userblk->ub_code);
+			xml_indent(level + 2); putprop("code", "%ld", (long)(intptr_t)tree[ob].ob_spec.userblk->ub_code);
 			xml_indent(level + 2); putprop("parm", "%ld", (long)tree[ob].ob_spec.userblk->ub_parm);
 			xml_indent(level + 1); outstr("</userdef>\n");
 			break;
