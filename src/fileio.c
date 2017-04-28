@@ -1759,10 +1759,12 @@ static void xlate_file(RSCFILE *file, _BOOL trim_strings)
 					if ((int)strlen(newstr) > maxw)
 					{
 						const char *name = ob_name_or_index(file, tree, j);
+						char *from = nls_conv_to_utf8(CHARSET_ST, *p, STR0TERM);
 						char *utf8 = nls_conv_to_utf8(domain->fontset, newstr, STR0TERM);
 						KINFO(("tree %s, object %s: max object width of %d exceeded in translation of '%s' to '%s'\n",
-							tree->rt_name, name, maxw, *p, utf8));
+							tree->rt_name, name, maxw, from, utf8));
 						g_free(utf8);
+						g_free(from);
 					}
 				}
 				if (type == G_FTEXT || type == G_FBOXTEXT)
@@ -1770,10 +1772,12 @@ static void xlate_file(RSCFILE *file, _BOOL trim_strings)
 					if (underscore_length(*p) != underscore_length(newstr))
 					{
 						const char *name = ob_name_or_index(file, tree, j);
+						char *from = nls_conv_to_utf8(CHARSET_ST, *p, STR0TERM);
 						char *utf8 = nls_conv_to_utf8(domain->fontset, newstr, STR0TERM);
 						KINFO(("tree %s, object %s: underscores appear invalid for translation of '%s' to '%s'\n",
-							tree->rt_name, name, *p, utf8));
+							tree->rt_name, name, from, utf8));
 						g_free(utf8);
+						g_free(from);
 					}
 				}
 				*p = newstr;
