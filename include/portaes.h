@@ -899,6 +899,9 @@ _WORD _mt_aes(AESPB *pb, _LONG code);
 #define AES_NAES			65
 #define AES_VERSION         96
 #define AES_WOPTS           97
+#define AES_WFORM			98
+#define AES_APPL_OPTION		99
+#define AES_WINX		 22360			/* AES WINX information */
 
 #define AESLANG_ENGLISH		L_ENGLISH
 #define AESLANG_GERMAN		L_GERMAN
@@ -913,16 +916,18 @@ _WORD _mt_aes(AESPB *pb, _LONG code);
 
 
 /* appl_control[ap_cwhat]: */
-#define APC_TOPNEXT     0   /* OAESis internal mode */
-#define APC_KILL        1   /* OAESis internal mode */
-#define APC_SYSTEM      2   /* XaAES internal mode */
-#define APC_HIDE        10  /* Hide application */
-#define APC_SHOW        11  /* Show application */
-#define APC_TOP         12  /* Bring application to front */
-#define APC_HIDENOT     13  /* Hide all applications except the one referred to by ap_cid */
-#define APC_INFO		14  /* Get the application parameter */
-#define APC_MENU		15  /* The last used menu tree is returned */
-#define APC_WIDGETS		16  /* Inquires or sets the 'default' positions of the window widgets */
+#define APC_TOPNEXT         0   /* OAESis internal mode */
+#define APC_KILL            1   /* OAESis internal mode */
+#define APC_SYSTEM          2   /* XaAES internal mode */
+#define APC_HIDE            10  /* Hide application */
+#define APC_SHOW            11  /* Show application */
+#define APC_TOP             12  /* Bring application to front */
+#define APC_HIDENOT         13  /* Hide all applications except the one referred to by ap_cid */
+#define APC_INFO            14  /* Get the application parameter */
+#define APC_MENU            15  /* The last used menu tree is returned */
+#define APC_WIDGETS         16  /* Inquires or sets the 'default' positions of the window widgets */
+#define APC_APP_CONFIG      17  /* Change some way to manage application by AES most of them can be already set in configuration file -- see mt_appl_control() */
+#define APC_INFORM_MESAG    18  /* Request/Remove the sent an user Unix Signal to application when AES message is available -- see mt_appl_control() */
 
 /* APC_INFO bits */
 #define APCI_HIDDEN			0x01  /* the application is hidden -- subopcode for #APC_INFO */
@@ -1704,11 +1709,12 @@ _WORD fsel_boxinput( char *fs_einpath, char *fs_einsel, _WORD *fs_eexbutton, con
 #define WF_MINXYWH      103             /* MagiC 6 */
 #define WF_INFOXYWH     104             /* MagiC 6.10  */
 #define WF_WIDGETS      200             /* N.AES */
-#define WF_230          230
-#define WF_USER_POINTER WF_230
-#define WF_231          231
-#define WF_WIND_ATTACH  WF_231
+#define WF_USER_POINTER 230
+#define WF_WIND_ATTACH  231
 #define WF_TOPMOST      232             /* XaAES, MyAES */
+#define WF_BITMAP		233				/* MyAES 0.96 get bitmap of the window */
+#define WF_OPTIONS		234				/* MyAES 0.96 at this time use only to request automaticaly close if application lost focus and appear when focus is back */
+#define WF_FULLSCREEN	235				/* MyAES 0.96 set window in fullscreen without widget */
 #define WF_OBFLAG       1001            /* FreeGEM: Window tree: flag words */
 #define WF_OBTYPE       1002            /* FreeGEM: Window tree: type words */
 #define WF_OBSPEC       1003            /* FreeGEM: Window tree: spec dwords */

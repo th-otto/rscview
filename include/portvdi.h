@@ -597,7 +597,7 @@ void    v_eeol( _WORD handle );
 void    vs_curaddress( _WORD handle, _WORD row, _WORD column );
 void    v_curaddress( _WORD handle, _WORD row, _WORD column );
 void    v_curtext( _WORD handle, const char *string );
-void	v_curtext16n(_WORD handle, const WCHAR * wstr, _WORD num);
+void	v_curtext16n(_WORD handle, const WCHAR *wstr, _WORD num);
 void    v_rvon( _WORD handle );
 void    v_rvoff( _WORD handle );
 void    vq_curaddress( _WORD handle, _WORD *row, _WORD *column );
@@ -615,7 +615,7 @@ void    vq_scan( _WORD handle, _WORD *g_slice, _WORD *g_page,
                  _WORD *a_slice, _WORD *a_page, _WORD *div_fac);
 void    v_alpha_text( _WORD handle, const char *string );
 void	v_alpha_text16n(_WORD handle, const WCHAR *wstr, _WORD num);
-_WORD    vs_palette( _WORD handle, _WORD palette );
+_WORD   vs_palette( _WORD handle, _WORD palette );
 void	v_sound( _WORD handle, _WORD frequency, _WORD duration );
 _WORD	vs_mute( _WORD handle, _WORD action );
 _WORD    vqp_films( _WORD handle, char *film_names );
