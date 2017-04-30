@@ -42,6 +42,8 @@ extern VDIPB _VdiParBlk;
 
 typedef int32_t fix31;
 
+typedef unsigned short WCHAR; /* 16bit string, eg. for unicode */
+
 #define fix31_to_point(a) ((_WORD)((((a) + 32768L) >> 16)))
 #define point_to_fix31(a) (((fix31)(a)) << 16)
 
@@ -105,6 +107,7 @@ void    v_rfbox ( _WORD handle, _WORD *pxyarray );
 void    v_justified( _WORD handle, _WORD x, _WORD y, const char *string,
                      _WORD length, _WORD word_space,
                      _WORD char_space );
+void	v_justified16n(_WORD handle, _WORD x, _WORD y, const WCHAR *wstr, _WORD num, _WORD len, _WORD word_space, _WORD char_space);
 
 
 /****** Attribute definitions *****************************************/
@@ -594,6 +597,7 @@ void    v_eeol( _WORD handle );
 void    vs_curaddress( _WORD handle, _WORD row, _WORD column );
 void    v_curaddress( _WORD handle, _WORD row, _WORD column );
 void    v_curtext( _WORD handle, const char *string );
+void	v_curtext16n(_WORD handle, const WCHAR * wstr, _WORD num);
 void    v_rvon( _WORD handle );
 void    v_rvoff( _WORD handle );
 void    vq_curaddress( _WORD handle, _WORD *row, _WORD *column );
@@ -610,6 +614,7 @@ void    v_bit_image( _WORD handle, const char *filename,
 void    vq_scan( _WORD handle, _WORD *g_slice, _WORD *g_page,
                  _WORD *a_slice, _WORD *a_page, _WORD *div_fac);
 void    v_alpha_text( _WORD handle, const char *string );
+void	v_alpha_text16n(_WORD handle, const WCHAR *wstr, _WORD num);
 _WORD    vs_palette( _WORD handle, _WORD palette );
 void	v_sound( _WORD handle, _WORD frequency, _WORD duration );
 _WORD	vs_mute( _WORD handle, _WORD action );
@@ -712,8 +717,6 @@ typedef struct fsm_component_t
 
 }   fsm_component_t;
 
-typedef unsigned short WCHAR; /* 16bit string, eg. for unicode */
-
 
 void    vqt_f_extent( _WORD handle, const char *string, _WORD *extent );
 void	vqt_f_extent16  (VdiHdl, const WCHAR *str, _WORD extent[]);
@@ -764,6 +767,7 @@ void v_get_driver_info(_WORD device, _WORD select, char *info_string);
 
 void vqt_real_extent(_WORD handle, _WORD x, _WORD y, const char *string, _WORD *extent);
 void vqt_real_extentn(_WORD handle, _WORD x, _WORD y, const char *string, _WORD len, _WORD *extent);
+void vqt_real_extent16n(_WORD handle, _WORD x, _WORD y, const WCHAR *wstring, _WORD num, _WORD *extent);
 
 
 /*
@@ -800,6 +804,7 @@ void    v_ftextn( _WORD handle, _WORD x, _WORD y, const char *string, _WORD len 
 void	v_ftext16       (VdiHdl, _WORD x, _WORD y, const WCHAR *wstr);
 void	v_ftext16n      (VdiHdl, _WORD x, _WORD y, const WCHAR *wstr, _WORD num);
 void	v_ftext_offset16(VdiHdl, _WORD x, _WORD y, const WCHAR *wstr, const _WORD *offset);
+void	v_ftext_offset16n(VdiHdl, _WORD x, _WORD y, const WCHAR *wstr, _WORD num, const _WORD *offset);
 _WORD	vq_ext_devinfo (VdiHdl, _WORD device, _WORD *dev_exists, char *file_path, char *file_name, char *name);
 _WORD	vqt_ext_name    (VdiHdl, _WORD __index, char *name, _WORD *font_format, _WORD *flags);
 _WORD	vqt_name_and_id (VdiHdl, _WORD font_format, char *font_name, char *ret_name);

@@ -1,5 +1,5 @@
 /*
- *  $Id: vqt_extent.c,v 1.7 2003/08/07 07:15:37 a_bercegeay Exp $
+ *  $Id$
  */
 
 #include "gem_vdiP.h"
@@ -26,7 +26,7 @@ vqt_extent (short handle, const char *str, short extent[])
 {
 	short vdi_control[VDI_CNTRLMAX]; 
 	short vdi_intin[VDI_INTINMAX];   
-	short n = vdi_str2array (str, vdi_intin);
+	short n = vdi_str2arrayn(str, vdi_intin, VDI_INTINMAX);
 	
 	VDI_PARAMS(vdi_control, vdi_intin, NULL, vdi_dummy, extent);
 

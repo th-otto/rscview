@@ -1,5 +1,5 @@
 /*
- *  $Id: n_vq_ctab_entry.c,v 1.7 2003/08/07 06:36:09 a_bercegeay Exp $
+ *  $Id$
  */
 
 #include "gem_vdiP.h"

@@ -1,5 +1,5 @@
 /*
- *  $Id: vq_calibrate.c,v 1.6 2003/08/07 07:09:01 a_bercegeay Exp $
+ *  $Id$
  */
 
 #include "gem_vdiP.h"
@@ -22,7 +22,7 @@ vq_calibrate (short handle, short *flag)
 {
 	short vdi_control[VDI_CNTRLMAX]; 
 	short vdi_intout[VDI_INTOUTMAX];
-	
+
 	VDI_PARAMS(vdi_control, 0L, 0L, vdi_intout, vdi_dummy );
 	
 	vdi_intout[0] = 0;

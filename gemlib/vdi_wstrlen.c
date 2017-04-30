@@ -1,5 +1,5 @@
 /*
- *  $Id: vdi_wstrlen.c,v 1.3 2003/02/28 20:46:43 a_bercegeay Exp $
+ *  $Id$
  */
 
 #include "gem_vdiP.h"

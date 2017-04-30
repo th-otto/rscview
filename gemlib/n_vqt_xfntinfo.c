@@ -1,5 +1,5 @@
 /*
- *  $Id: n_vqt_xfntinfo.c,v 1.9 2003/12/08 13:25:10 standa Exp $
+ *  $Id$
  */
 
 #include "gem_vdiP.h"
@@ -57,4 +57,3 @@ vqt_xfntinfo (short handle, short flags, short id, short index, XFNT_INFO *info)
 	
 	return vdi_intout[1];
 }
-

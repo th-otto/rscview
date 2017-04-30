@@ -1,5 +1,5 @@
 /*
- *  $Id: v_copies.c,v 1.6 2003/08/07 06:56:46 a_bercegeay Exp $
+ *  $Id$
  */
 
 #include "gem_vdiP.h"
@@ -23,7 +23,7 @@ short
 v_copies (short handle, short count)
 {
 	short vdi_control[VDI_CNTRLMAX]; 
-	short vdi_intout[VDI_INTOUTMAX]; 
+	short vdi_intout[VDI_INTOUTMAX];
 
 	VDI_PARAMS(vdi_control, &count, 0L, vdi_intout, vdi_dummy);
 	

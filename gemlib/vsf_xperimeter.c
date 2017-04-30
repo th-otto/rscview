@@ -1,5 +1,5 @@
 /*
- *  $Id: vsf_xperimeter.c,v 1.2 2003/08/07 07:23:16 a_bercegeay Exp $
+ *  $Id$
  */
 
 #include "gem_vdiP.h"
@@ -29,7 +29,7 @@ short
 vsf_xperimeter (short handle, short vis, short style)
 {
 	short vdi_control[VDI_CNTRLMAX]; 
-	short vdi_intout[VDI_INTOUTMAX]; 
+	short vdi_intout[VDI_INTOUTMAX];
 	short vdi_intin[2]; 
 	
 	VDI_PARAMS(vdi_control, vdi_intin, 0L, vdi_intout, vdi_dummy );

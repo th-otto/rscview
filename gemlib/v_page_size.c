@@ -1,5 +1,5 @@
 /*
- *  $Id: v_page_size.c,v 1.7 2003/08/07 07:01:52 a_bercegeay Exp $
+ *  $Id$
  */
 
 #include "gem_vdiP.h"
@@ -35,7 +35,7 @@ short
 v_page_size (short handle, short page_id)
 {
 	short vdi_control[VDI_CNTRLMAX]; 
-	short vdi_intout[VDI_INTOUTMAX]; 
+	short vdi_intout[VDI_INTOUTMAX];
 
 	VDI_PARAMS(vdi_control, &page_id, 0L, vdi_intout, vdi_dummy );
 		

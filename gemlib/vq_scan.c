@@ -1,5 +1,5 @@
 /*
- *  $Id: vq_scan.c,v 1.7 2003/08/07 07:11:43 a_bercegeay Exp $
+ *  $Id$
  */
 
 #include "gem_vdiP.h"
@@ -31,7 +31,7 @@ vq_scan (short handle, short *g_slice, short *g_page,
          short *a_slice, short *a_page, short *div_fac)
 {
 	short vdi_control[VDI_CNTRLMAX]; 
-	short vdi_intout[VDI_INTOUTMAX]; 
+	short vdi_intout[VDI_INTOUTMAX];
 
 	VDI_PARAMS(vdi_control, 0L, 0L, vdi_intout, vdi_dummy );
 	

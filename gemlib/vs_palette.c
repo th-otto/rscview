@@ -1,5 +1,5 @@
 /*
- *  $Id: vs_palette.c,v 1.6 2003/08/07 07:23:16 a_bercegeay Exp $
+ *  $Id$
  */
 
 #include "gem_vdiP.h"
@@ -24,7 +24,7 @@ short
 vs_palette (short handle, short palette)
 {
 	short vdi_control[VDI_CNTRLMAX]; 
-	short vdi_intout[VDI_INTOUTMAX]; 
+	short vdi_intout[VDI_INTOUTMAX];
 	
 	VDI_PARAMS(vdi_control, &palette, 0L, vdi_intout, vdi_dummy );
 		

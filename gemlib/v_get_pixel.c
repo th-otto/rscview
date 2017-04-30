@@ -1,5 +1,5 @@
 /*
- *  $Id: v_get_pixel.c,v 1.8 2003/08/07 06:59:17 a_bercegeay Exp $
+ *  $Id$
  */
 
 #include "gem_vdiP.h"
@@ -30,7 +30,7 @@ v_get_pixel (short handle, short x, short y, short *pel, short *index)
 {
 	short vdi_control[VDI_CNTRLMAX]; 
 	short vdi_ptsin[2];   
-	short vdi_intout[VDI_INTOUTMAX]; 
+	short vdi_intout[VDI_INTOUTMAX];
 
 	VDI_PARAMS(vdi_control, 0L, vdi_ptsin, vdi_intout, vdi_dummy );
 	

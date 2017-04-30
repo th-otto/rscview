@@ -1,5 +1,5 @@
 /*
- *  $Id: n_vqt_advance.c,v 1.9 2003/08/07 06:43:50 a_bercegeay Exp $
+ *  $Id$
  */
 
 #include "gem_vdiP.h"
@@ -33,7 +33,7 @@ vqt_advance (short handle, short ch,
              short *advx, short *advy, short *xrem, short *yrem)
 {
 	short vdi_control[VDI_CNTRLMAX]; 
-	short vdi_ptsout[VDI_PTSOUTMAX]; 
+	short vdi_ptsout[VDI_PTSOUTMAX];
 
 	VDI_PARAMS(vdi_control, &ch, 0L, vdi_dummy, vdi_ptsout);
 	

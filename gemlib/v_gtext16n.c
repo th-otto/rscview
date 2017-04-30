@@ -1,5 +1,5 @@
 /*
- *  $Id: v_gtext16n.c,v 1.4 2003/08/07 06:59:17 a_bercegeay Exp $
+ *  $Id$
  */
 
 #include "gem_vdiP.h"
@@ -7,7 +7,7 @@
 /** same as v_gtext()
  *
  *  @param handle Device handle
- *  @param x 
+ *  @param x
  *  @param y 
  *  @param wstr string, with 16 bits per character.
  *  @param num len of the string
@@ -29,4 +29,3 @@ v_gtext16n (short handle, short x, short y, const short *wstr, short num)
 
 	VDI_TRAP (vdi_params, handle, 8, 1,num);
 }
-

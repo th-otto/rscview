@@ -20,7 +20,7 @@ short v_resize_bm (short handle, short width, short height, int32_t byte_width, 
 	short vdi_control[VDI_CNTRLMAX]; 
 	short vdi_intin[4 + N_PTRINTS];
 	short vdi_intout[1]; 
-	
+
 	VDI_PARAMS(vdi_control, vdi_intin, 0L, vdi_intout, vdi_dummy);
 	
 	vdi_intin         [0] = width;

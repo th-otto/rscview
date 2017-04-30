@@ -1,5 +1,5 @@
 /*
- *  $Id: vrq_valuator.c,v 1.7 2003/08/07 07:19:36 a_bercegeay Exp $
+ *  $Id$
  */
 
 #include "gem_vdiP.h"
@@ -40,7 +40,7 @@ void
 vrq_valuator (short handle, short in, short *out, short *term)
 {
 	short vdi_control[VDI_CNTRLMAX]; 
-	short vdi_intout[VDI_INTOUTMAX]; 
+	short vdi_intout[VDI_INTOUTMAX];
 	
 	VDI_PARAMS(vdi_control, &in, 0L, vdi_intout, vdi_dummy );
 	

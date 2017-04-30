@@ -1,5 +1,5 @@
 /*
- *  $Id: n_vsl_fg_color.c,v 1.6 2003/08/07 06:48:42 a_bercegeay Exp $
+ *  $Id$
  */
 
 #include "gem_vdiP.h"

@@ -1,5 +1,5 @@
 /*
- *  $Id: n_v_opnprn.c,v 1.5 2003/08/07 06:33:49 a_bercegeay Exp $
+ *  $Id$
  */
 
 #include "gem_vdiP.h"
@@ -24,7 +24,7 @@ v_opnprn (short aes_handle, PRN_SETTINGS *settings, short work_out[])
 {
 	short vdi_control[VDI_CNTRLMAX]; 
 	short vdi_intin[12 + 2 * N_PTRINTS];
-	register short i;
+	short i;
 
 	VDI_PARAMS(vdi_control, vdi_intin, 0L, &work_out[0], &work_out[45] );
 	

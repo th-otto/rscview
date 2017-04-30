@@ -1,5 +1,5 @@
 /*
- *  $Id: n_vq_devinfo.c,v 1.7 2003/08/07 06:36:09 a_bercegeay Exp $
+ *  $Id$
  */
 
 #include "gem_vdiP.h"
@@ -41,7 +41,7 @@ vq_devinfo (short handle, short device,
 	short vdi_control[VDI_CNTRLMAX]; 
 	short vdi_intout[VDI_INTOUTMAX]; 
 	short vdi_ptsout[VDI_PTSOUTMAX]; 
-	register short len;
+	short len;
 
 	VDI_PARAMS(vdi_control, &device, 0L, vdi_intout, vdi_ptsout);
 
@@ -88,7 +88,7 @@ vq_devinfo (short handle, short device,
 	 * the device_name). It's seems that this value "13" (written in vdi_control[1]) has missed
 	 * its target (vdi_control[2]). So, here is a workaround:
 	 */
-	if (VDI_N_INTOUT == 1 && VDI_N_PTSIN > 0) {
+	if (VDI_N_PTSOUT == 1 && VDI_N_PTSIN > 0) {
 		len = VDI_N_PTSIN * 2;
 	} else {
 		len = (VDI_N_PTSOUT - 1) * 2;

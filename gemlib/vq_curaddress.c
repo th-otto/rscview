@@ -1,5 +1,5 @@
 /*
- *  $Id: vq_curaddress.c,v 1.7 2003/08/07 07:11:43 a_bercegeay Exp $
+ *  $Id$
  */
 
 #include "gem_vdiP.h"
@@ -20,7 +20,7 @@ void
 vq_curaddress (short handle, short *cur_row, short *cur_col)
 {
 	short vdi_control[VDI_CNTRLMAX]; 
-	short vdi_intout[VDI_INTOUTMAX]; 
+	short vdi_intout[VDI_INTOUTMAX];
 
 	VDI_PARAMS(vdi_control, 0L, 0L, vdi_intout, vdi_dummy );
 	

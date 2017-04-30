@@ -1,5 +1,5 @@
 /*
- *  $Id: vsm_type.c,v 1.7 2003/08/07 07:35:42 a_bercegeay Exp $
+ *  $Id$
  */
 
 #include "gem_vdiP.h"
@@ -30,7 +30,7 @@ short
 vsm_type (short handle, short symbol)
 {
 	short vdi_control[VDI_CNTRLMAX]; 
-	short vdi_intout[VDI_INTOUTMAX]; 
+	short vdi_intout[VDI_INTOUTMAX];
 	
 	VDI_PARAMS(vdi_control, &symbol, 0L, vdi_intout, vdi_dummy );
 	

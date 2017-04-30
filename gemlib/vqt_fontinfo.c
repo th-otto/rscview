@@ -1,5 +1,5 @@
 /*
- *  $Id: vqt_fontinfo.c,v 1.8 2003/08/07 07:15:37 a_bercegeay Exp $
+ *  $Id$
  */
 
 #include "gem_vdiP.h"
@@ -38,8 +38,8 @@ vqt_fontinfo (short handle, short *minade, short *maxade, short distances[],
               short *maxwidth, short effects[])
 {
 	short vdi_control[VDI_CNTRLMAX]; 
-	short vdi_intout[VDI_INTOUTMAX]; 
-	short vdi_ptsout[VDI_PTSOUTMAX]; 
+	short vdi_intout[VDI_INTOUTMAX];
+	short vdi_ptsout[VDI_PTSOUTMAX];
 	
 	VDI_PARAMS(vdi_control, 0L, 0L, vdi_intout, vdi_ptsout );
 	

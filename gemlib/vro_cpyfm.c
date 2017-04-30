@@ -1,5 +1,5 @@
 /*
- *  $Id: vro_cpyfm.c,v 1.9 2003/08/07 07:19:36 a_bercegeay Exp $
+ *  $Id$
  */
 
 #include "gem_vdiP.h"

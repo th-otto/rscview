@@ -1,5 +1,5 @@
 /*
- *  $Id: v_curtext.c,v 1.6 2003/08/07 06:56:47 a_bercegeay Exp $
+ *  $Id$
  */
 
 #include "gem_vdiP.h"
@@ -19,7 +19,7 @@ v_curtext (short handle, const char *str)
 {
 	short vdi_control[VDI_CNTRLMAX]; 
 	short vdi_intin[VDI_INTINMAX];   
-	register short n = vdi_str2array (str, vdi_intin);
+	short n = vdi_str2arrayn(str, vdi_intin, VDI_INTINMAX);
 
 	VDI_PARAMS(vdi_control, vdi_intin, 0L, vdi_dummy, vdi_dummy );
 	

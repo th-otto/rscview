@@ -1,5 +1,5 @@
 /*
- *  $Id: vex_motv.c,v 1.7 2003/08/07 07:09:01 a_bercegeay Exp $
+ *  $Id$
  */
 
 #include "gem_vdiP.h"

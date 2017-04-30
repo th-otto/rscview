@@ -1,5 +1,5 @@
 /*
- *  $Id: vqt_cachesize.c,v 1.7 2003/08/07 07:15:37 a_bercegeay Exp $
+ *  $Id$
  */
 
 #include "gem_vdiP.h"

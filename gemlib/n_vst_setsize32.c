@@ -1,5 +1,5 @@
 /*
- *  $Id: n_vst_setsize32.c,v 1.5 2003/08/07 06:51:39 a_bercegeay Exp $
+ *  $Id$
  */
 
 #include "gem_vdiP.h"

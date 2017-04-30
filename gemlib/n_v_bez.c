@@ -1,5 +1,5 @@
 /*
- *  $Id: n_v_bez.c,v 1.5 2003/08/07 06:26:01 a_bercegeay Exp $
+ *  $Id$
  */
 
 #include "gem_vdiP.h"
@@ -63,7 +63,8 @@ v_bez (short handle, short count, short *xyarr, char *bezarr,
 	short vdi_intout[6]; 
 
 	VDI_PARAMS( vdi_control, vdi_intin, vdi_ptsin, vdi_intout, extent);
-	
+	if(count>VDI_INTINMAX) return;
+
 	_v_bez (count, xyarr, bezarr, vdi_intin, vdi_ptsin);
 	
 	VDI_TRAP_ESC (vdi_params, handle, 6,13, count,(count +1) /2);
@@ -104,7 +105,8 @@ v_bez_fill (short handle, short count, short *xyarr, char *bezarr,
 	short vdi_intout[6]; 
 
 	VDI_PARAMS (vdi_control, vdi_intin, vdi_ptsin, vdi_intout, extent);
-	
+	if(count>VDI_INTINMAX) return;
+
 	_v_bez (count, xyarr, bezarr, vdi_intin, vdi_ptsin);
 	
 	VDI_TRAP_ESC (vdi_params, handle, 9,13, count,(count +1) /2);

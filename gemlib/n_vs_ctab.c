@@ -1,5 +1,5 @@
 /*
- *  $Id: n_vs_ctab.c,v 1.6 2003/08/07 06:46:22 a_bercegeay Exp $
+ *  $Id$
  */
 
 #include "gem_vdiP.h"

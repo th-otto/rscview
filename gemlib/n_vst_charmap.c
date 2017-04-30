@@ -1,5 +1,5 @@
 /*
- *  $Id: n_vst_charmap.c,v 1.7 2003/08/07 06:51:39 a_bercegeay Exp $
+ *  $Id$
  */
 
 #include "gem_vdiP.h"
@@ -20,7 +20,7 @@
  *  @since NVDI 3.00
  *
  *  @note
- *  If you want to switch on ASCII-mapping, you should use 1 as <mode> and not 
+ *  If you want to switch on ASCII-mapping, you should use 1 as \a mode and not 
  *  any other nonzero value, because other mapping might exist in future 
  *  (e.g. Unicode).
  *  

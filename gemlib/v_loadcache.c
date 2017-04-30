@@ -1,5 +1,5 @@
 /*
- *  $Id: v_loadcache.c,v 1.7 2003/08/07 07:01:52 a_bercegeay Exp $
+ *  $Id$
  */
 
 #include "gem_vdiP.h"
@@ -27,7 +27,7 @@ v_loadcache (short handle, const char *filename, short mode)
 	short vdi_intin[VDI_INTINMAX];   
 	short vdi_intout[VDI_INTOUTMAX]; /* todo (doc wanted) */
 	short vdi_ptsout[VDI_PTSOUTMAX]; /* todo (doc wanted) */
-	register short n = 1 + vdi_str2array (filename, vdi_intin + 1);
+	short n = 1 + vdi_str2arrayn(filename, vdi_intin + 1, VDI_INTINMAX-1);
 
 	VDI_PARAMS(vdi_control, vdi_intin, 0L, vdi_intout, vdi_ptsout );
 	
@@ -37,4 +37,3 @@ v_loadcache (short handle, const char *filename, short mode)
 	
 	return vdi_intout[0];
 }
-

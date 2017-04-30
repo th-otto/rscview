@@ -1,5 +1,5 @@
 /*
- *  $Id: v_eeol.c,v 1.6 2003/08/07 06:56:47 a_bercegeay Exp $
+ *  $Id$
  */
 
 #include "gem_vdiP.h"

@@ -1,5 +1,5 @@
 /*
- *  $Id: a_objc_draw.c,v 1.6 2004/10/09 19:11:01 a_bercegeay Exp $
+ *  $Id$
  */
 
 #include "gem_aesP.h"

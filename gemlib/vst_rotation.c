@@ -1,5 +1,5 @@
 /*
- *  $Id: vst_rotation.c,v 1.7 2003/08/07 07:41:39 a_bercegeay Exp $
+ *  $Id$
  */
 
 #include "gem_vdiP.h"
@@ -24,7 +24,7 @@ short
 vst_rotation (short handle, short ang)
 {
 	short vdi_control[VDI_CNTRLMAX]; 
-	short vdi_intout[VDI_INTOUTMAX]; 
+	short vdi_intout[VDI_INTOUTMAX];
 	
 	VDI_PARAMS(vdi_control, &ang, 0L, vdi_intout, vdi_dummy );
 	

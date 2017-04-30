@@ -1,5 +1,5 @@
 /*
- *  $Id: vst_unload_fonts.c,v 1.6 2003/08/07 07:41:39 a_bercegeay Exp $
+ *  $Id$
  */
 
 #include "gem_vdiP.h"

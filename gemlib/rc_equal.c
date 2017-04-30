@@ -1,5 +1,5 @@
 /*
- *  $Id: rc_equal.c,v 1.2 2003/02/28 20:46:41 a_bercegeay Exp $
+ *  $Id$
  */
 
 #include "gem_aesP.h"

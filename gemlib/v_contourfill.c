@@ -1,5 +1,5 @@
 /*
- *  $Id: v_contourfill.c,v 1.6 2003/08/07 06:54:13 a_bercegeay Exp $
+ *  $Id$
  */
 
 #include "gem_vdiP.h"

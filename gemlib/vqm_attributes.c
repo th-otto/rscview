@@ -1,5 +1,5 @@
 /*
- *  $Id: vqm_attributes.c,v 1.8 2003/08/07 07:15:37 a_bercegeay Exp $
+ *  $Id$
  */
 
 #include "gem_vdiP.h"

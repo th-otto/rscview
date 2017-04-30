@@ -1,5 +1,5 @@
 /*
- *  $Id: vm_filename.c,v 1.6 2003/08/07 07:09:01 a_bercegeay Exp $
+ *  $Id$
  */
 
 #include "gem_vdiP.h"
@@ -28,7 +28,7 @@ vm_filename (short handle, const char *filename)
 {
 	short vdi_control[VDI_CNTRLMAX]; 
 	short vdi_intin[VDI_INTINMAX];   
-	register short n = vdi_str2array (filename, vdi_intin);
+	short n = vdi_str2arrayn(filename, vdi_intin, VDI_INTINMAX);
 
 	VDI_PARAMS(vdi_control, vdi_intin, 0L, vdi_dummy, vdi_dummy);
 	

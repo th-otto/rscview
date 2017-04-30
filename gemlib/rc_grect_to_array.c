@@ -1,5 +1,5 @@
 /*
- *  $Id: rc_grect_to_array.c,v 1.3 2010/02/17 21:23:52 a_bercegeay Exp $
+ *  $Id$
  */
 
 #include "gem_aesP.h"

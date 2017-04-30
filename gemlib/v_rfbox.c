@@ -1,5 +1,5 @@
 /*
- *  $Id: v_rfbox.c,v 1.7 2003/08/07 07:05:33 a_bercegeay Exp $
+ *  $Id$
  */
 
 #include "gem_vdiP.h"
@@ -22,4 +22,3 @@ v_rfbox (short handle, short pxy[])
 	
 	VDI_TRAP_ESC (vdi_params, handle, 11,9, 2,0);
 }
-

@@ -1,5 +1,5 @@
 /*
- *  $Id: v_output_window.c,v 1.7 2003/08/07 07:01:52 a_bercegeay Exp $
+ *  $Id$
  */
 
 #include "gem_vdiP.h"

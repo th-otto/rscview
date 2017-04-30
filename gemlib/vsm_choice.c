@@ -1,5 +1,5 @@
 /*
- *  $Id: vsm_choice.c,v 1.7 2003/08/07 07:35:42 a_bercegeay Exp $
+ *  $Id$
  */
 
 #include "gem_vdiP.h"

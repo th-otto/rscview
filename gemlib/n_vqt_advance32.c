@@ -1,5 +1,5 @@
 /*
- *  $Id: n_vqt_advance32.c,v 1.6 2003/08/07 06:43:50 a_bercegeay Exp $
+ *  $Id$
  */
 
 #include "gem_vdiP.h"
@@ -29,8 +29,8 @@ void
 vqt_advance32 (short handle, short ch, fix31 *advx, fix31 *advy)
 {
 	short vdi_control[VDI_CNTRLMAX]; 
-	short vdi_ptsout[VDI_PTSOUTMAX]; 
-	
+	short vdi_ptsout[VDI_PTSOUTMAX];
+
 	VDI_PARAMS(vdi_control, &ch, 0L, vdi_dummy, vdi_ptsout);
 	
 	VDI_TRAP (vdi_params, handle, 247, 0,1);

@@ -1,5 +1,5 @@
 /*
- *  $Id: vsl_ends.c,v 1.9 2003/08/07 07:32:25 a_bercegeay Exp $
+ *  $Id$
  */
 
 #include "gem_vdiP.h"
@@ -26,7 +26,7 @@ vsl_ends (short handle, short begstyle, short endstyle)
 {
 	short vdi_control[VDI_CNTRLMAX]; 
 	short vdi_intin[2];   
-	short vdi_intout[VDI_INTOUTMAX]; 
+	short vdi_intout[VDI_INTOUTMAX];
 	
 	VDI_PARAMS(vdi_control, vdi_intin, 0L, vdi_intout, vdi_dummy );
 	

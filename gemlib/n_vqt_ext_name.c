@@ -1,5 +1,5 @@
 /*
- *  $Id: n_vqt_ext_name.c,v 1.7 2003/12/08 13:25:10 standa Exp $
+ *  $Id$
  */
 
 #include "gem_vdiP.h"

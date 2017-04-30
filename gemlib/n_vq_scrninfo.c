@@ -1,5 +1,5 @@
 /*
- *  $Id: n_vq_scrninfo.c,v 1.6 2003/08/07 06:38:20 a_bercegeay Exp $
+ *  $Id$
  */
 
 #include "gem_vdiP.h"

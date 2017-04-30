@@ -1,5 +1,5 @@
 /*
- *  $Id: vswr_mode.c,v 1.8 2004/07/20 13:54:02 standa Exp $
+ *  $Id$
  */
 
 #include "gem_vdiP.h"
@@ -33,7 +33,7 @@ short
 vswr_mode (short handle, short mode)
 {
 	short vdi_control[VDI_CNTRLMAX]; 
-	short vdi_intout[VDI_INTOUTMAX]; 
+	short vdi_intout[VDI_INTOUTMAX];
 	
 	VDI_PARAMS(vdi_control, &mode, 0L, vdi_intout, vdi_dummy );
 

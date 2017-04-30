@@ -1,5 +1,5 @@
 /*
- *  $Id: n_v_ftext16n.c,v 1.4 2003/08/07 06:31:13 a_bercegeay Exp $
+ *  $Id$
  */
 
 #include "gem_vdiP.h"
@@ -17,7 +17,7 @@
  */
 
 void
-v_ftext16n (short handle, short x, short y, const WCHAR * wstr, short num)
+v_ftext16n (short handle, short x, short y, const WCHAR *wstr, short num)
 {
 	short vdi_control[VDI_CNTRLMAX]; 
 	short vdi_ptsin[2];   

@@ -1,5 +1,5 @@
 /*
- *  $Id: n_v_delete_itab.c,v 1.6 2003/08/07 06:28:22 a_bercegeay Exp $
+ *  $Id$
  */
 
 #include "gem_vdiP.h"

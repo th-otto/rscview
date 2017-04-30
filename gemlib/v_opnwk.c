@@ -1,5 +1,5 @@
 /*
- *  $Id: v_opnwk.c,v 1.6 2003/08/07 07:01:52 a_bercegeay Exp $
+ *  $Id$
  */
 
 #include "gem_vdiP.h"
@@ -134,4 +134,3 @@ v_opnwk (short work_in[], short *handle, short work_out[])
 
 	*handle = VDI_HANDLE;
 }
-

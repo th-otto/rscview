@@ -21,7 +21,7 @@ int32_t v_value2color (short handle, uint32_t value, COLOR_ENTRY * color)
 	short vdi_control[VDI_CNTRLMAX]; 
 	short vdi_intout[6]; 
 	short vdi_intin[2];
-	
+
 	VDI_PARAMS(vdi_control, vdi_intin, 0L, vdi_intout, vdi_dummy);
 	vdi_intin_long(0) = value;
 	

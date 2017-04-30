@@ -1,5 +1,5 @@
 /*
- *  $Id: n_v_delete_driver_info.c,v 1.2 2005/02/23 21:10:19 a_bercegeay Exp $
+ *  $Id$
  */
 
 #include "gem_vdiP.h"

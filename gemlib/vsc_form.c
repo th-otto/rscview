@@ -1,5 +1,5 @@
 /*
- *  $Id: vsc_form.c,v 1.7 2003/08/07 07:23:16 a_bercegeay Exp $
+ *  $Id$
  */
 
 #include "gem_vdiP.h"

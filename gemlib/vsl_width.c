@@ -1,5 +1,5 @@
 /*
- *  $Id: vsl_width.c,v 1.7 2003/08/07 07:32:25 a_bercegeay Exp $
+ *  $Id$
  */
 
 #include "gem_vdiP.h"
@@ -34,7 +34,7 @@ vsl_width (short handle, short width)
 {
 	short vdi_control[VDI_CNTRLMAX]; 
 	short vdi_ptsin[2];   
-	short vdi_ptsout[VDI_PTSOUTMAX]; 
+	short vdi_ptsout[VDI_PTSOUTMAX];
 	
 	VDI_PARAMS(vdi_control, 0L, vdi_ptsin, vdi_dummy, vdi_ptsout );
 	

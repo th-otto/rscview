@@ -1,5 +1,5 @@
 /*
- *  $Id: vr_trnfm.c,v 1.8 2003/08/07 07:19:36 a_bercegeay Exp $
+ *  $Id$
  */
 
 #include "gem_vdiP.h"

@@ -1,5 +1,5 @@
 /*
- *  $Id: vq_page_name.c,v 1.9 2003/08/07 07:11:43 a_bercegeay Exp $
+ *  $Id$
  */
 
 #include "gem_vdiP.h"
@@ -29,8 +29,8 @@ vq_page_name (short handle, short page_id, char *page_name,
               long *page_width, long *page_height)
 {
 	short vdi_control[VDI_CNTRLMAX]; 
-	short vdi_intin[1 + N_PTRINTS];   
-	short vdi_intout[VDI_INTOUTMAX]; 
+	short vdi_intin[1 + N_PTRINTS];
+	short vdi_intout[VDI_INTOUTMAX];
 
 	VDI_PARAMS(vdi_control, vdi_intin, 0L, vdi_intout, vdi_dummy);
 	

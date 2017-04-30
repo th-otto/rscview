@@ -1,5 +1,5 @@
 /*
- *  $Id: n_vs_ctab_entry.c,v 1.6 2003/08/07 06:46:22 a_bercegeay Exp $
+ *  $Id$
  */
 
 #include "gem_vdiP.h"
@@ -27,7 +27,7 @@ vs_ctab_entry (short handle, short index, int32_t color_space, COLOR_ENTRY * col
 	short vdi_intin[7];   
 	short vdi_intout[1]; 
 	COLOR_ENTRY *ent;
-	
+
 	VDI_PARAMS(vdi_control, vdi_intin, 0L, vdi_intout, vdi_dummy);
 	
 	vdi_intin                [0] = index;

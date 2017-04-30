@@ -1,5 +1,5 @@
 /*
- *  $Id: n_vst_track_offset.c,v 1.7 2003/08/07 06:51:39 a_bercegeay Exp $
+ *  $Id$
  */
 
 #include "gem_vdiP.h"
@@ -26,14 +26,12 @@ vst_track_offset (short handle, fix31 offset, short pairmode,
 	short vdi_control[VDI_CNTRLMAX]; 
 	short vdi_intin[4];   
 	short vdi_intout[2]; 
-	long *p;
-	
+
 	VDI_PARAMS(vdi_control, vdi_intin, 0L, vdi_intout, vdi_dummy);
 	
 	vdi_intin[0]          = 255;
 	vdi_intin[1]          = pairmode;
-	p = (long*)&vdi_intin[2];
-	*p = offset;
+	vdi_intin_long(2) = offset;
 	
 	VDI_TRAP (vdi_params, handle, 237, 0,4);
 	

@@ -1,5 +1,5 @@
 /*
- *  $Id: n_v_get_outline.c,v 1.6 2003/08/07 06:31:13 a_bercegeay Exp $
+ *  $Id$
  */
 
 #include "gem_vdiP.h"

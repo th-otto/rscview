@@ -1,5 +1,5 @@
 /*
- *  $Id: vrq_locator.c,v 1.5 2003/08/07 07:19:36 a_bercegeay Exp $
+ *  $Id$
  */
 
 #include "gem_vdiP.h"
@@ -25,7 +25,7 @@ vrq_locator (short handle, short x, short y,
 {
 	short vdi_control[VDI_CNTRLMAX]; 
 	short vdi_ptsin[2];   
-	short vdi_ptsout[VDI_PTSOUTMAX]; 
+	short vdi_ptsout[VDI_PTSOUTMAX];
 	
 	VDI_PARAMS(vdi_control, 0L, vdi_ptsin, term, vdi_ptsout );
 	

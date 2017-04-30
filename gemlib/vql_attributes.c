@@ -1,5 +1,5 @@
 /*
- *  $Id: vql_attributes.c,v 1.6 2003/08/07 07:15:37 a_bercegeay Exp $
+ *  $Id$
  */
 
 #include "gem_vdiP.h"
@@ -24,7 +24,7 @@ vql_attributes (short handle, short attrib[])
 {
 	short *ptr;
 	short vdi_control[VDI_CNTRLMAX]; 
-	short vdi_intout[VDI_INTOUTMAX]; 
+	short vdi_intout[VDI_INTOUTMAX];
 	short vdi_ptsout[2]; 
 
 	VDI_PARAMS(vdi_control, 0L, 0L, vdi_intout, vdi_ptsout );

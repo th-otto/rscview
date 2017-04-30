@@ -1,5 +1,5 @@
 /*
- *  $Id: n_vqt_name_and_id.c,v 1.6 2003/12/08 13:25:10 standa Exp $
+ *  $Id$
  */
 
 #include "gem_vdiP.h"
@@ -32,7 +32,7 @@ vqt_name_and_id (short handle, short font_format, char *font_name, char *ret_nam
 	short vdi_control[VDI_CNTRLMAX]; 
 	short vdi_intin[VDI_INTINMAX];   
 	short vdi_intout[VDI_INTOUTMAX]; 
-	register short n = 1 + vdi_str2array (font_name, vdi_intin+1);
+	short n = 1 + vdi_str2arrayn (font_name, vdi_intin+1, VDI_INTINMAX-1);
 
 	VDI_PARAMS(vdi_control, vdi_intin, 0L, vdi_intout, vdi_dummy);
 	

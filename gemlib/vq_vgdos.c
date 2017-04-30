@@ -16,6 +16,16 @@ long vq_vgdos(void)
 	return x;
 }
 
+#elif defined(__VBCC__) && defined(__mc68000__) && !defined(PRIVATE_VDI)
+
+__regsused("d0/d1/a0/a1") long vq_vgdos(void) =
+  "\tmove.l\td2,-(sp)\n"
+  "\tmove.l\ta2,-(sp)\n"
+  "\tmoveq\t#-2,d0\n"
+  "\ttrap\t#2\n"
+  "\tmove.l\t(sp)+,a2\n"
+  "\tmove.l\t(sp)+,d2";
+
 #else
 
 extern int _I_dont_care_that_ISO_C_forbids_an_empty_source_file_;

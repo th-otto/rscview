@@ -1,5 +1,5 @@
 /*
- *  $Id: vr_recfl.c,v 1.7 2003/08/07 07:19:36 a_bercegeay Exp $
+ *  $Id$
  */
 
 #include "gem_vdiP.h"
@@ -22,4 +22,3 @@ vr_recfl (short handle, short pxy[])
 	
 	VDI_TRAP (vdi_params, handle, 114, 2,0);
 }
-

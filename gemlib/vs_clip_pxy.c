@@ -1,5 +1,5 @@
 /*
- *  $Id: vs_clip_pxy.c,v 1.5 2003/12/22 15:09:48 a_bercegeay Exp $
+ *  $Id$
  */
 
 #include "gem_vdiP.h"

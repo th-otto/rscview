@@ -1,5 +1,5 @@
 /*
- *  $Id: vsin_mode.c,v 1.6 2003/08/07 07:32:25 a_bercegeay Exp $
+ *  $Id$
  */
 
 #include "gem_vdiP.h"
@@ -27,7 +27,7 @@ vsin_mode (short handle, short dev, short mode)
 {
 	short vdi_control[VDI_CNTRLMAX]; 
 	short vdi_intin[2];   
-	short vdi_intout[VDI_INTOUTMAX]; 
+	short vdi_intout[VDI_INTOUTMAX];
 	
 	VDI_PARAMS(vdi_control, vdi_intin, 0L, vdi_intout, vdi_dummy );
 	

@@ -1,5 +1,5 @@
 /*
- *  $Id: v_set_app_buff.c,v 1.7 2003/08/07 07:05:33 a_bercegeay Exp $
+ *  $Id$
  */
 
 #include "gem_vdiP.h"
@@ -22,7 +22,7 @@ void
 v_set_app_buff (short handle, void **buf_p, short size)
 {
 	short vdi_control[VDI_CNTRLMAX]; 
-	short vdi_intin[1 + N_PTRINTS];   
+	short vdi_intin[1 + N_PTRINTS];
 
 	VDI_PARAMS(vdi_control, vdi_intin, 0L, vdi_dummy, vdi_dummy );
 	

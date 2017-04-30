@@ -1,5 +1,5 @@
 /*
- *  $Id: v_cellarray.c,v 1.7 2003/08/07 06:54:13 a_bercegeay Exp $
+ *  $Id$
  */
 
 #include "gem_vdiP.h"
@@ -45,7 +45,7 @@ void
 v_cellarray (short handle, short pxy[], short row_length, short elements,
              short nrows, short write_mode, short colarray[])
 {
-	register short n = row_length * nrows;
+	short n = row_length * nrows;
 	short vdi_control[VDI_CNTRLMAX]; 
 
 	VDI_PARAMS(vdi_control, colarray, pxy, vdi_dummy, vdi_dummy );

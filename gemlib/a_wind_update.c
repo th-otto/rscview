@@ -1,5 +1,5 @@
 /*
- *  $Id: a_wind_update.c,v 1.5 2004/10/23 10:24:07 a_bercegeay Exp $
+ *  $Id$
  */
 
 #include "gem_aesP.h"

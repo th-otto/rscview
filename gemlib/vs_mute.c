@@ -1,5 +1,5 @@
 /*
- *  $Id: vs_mute.c,v 1.3 2003/08/07 07:23:16 a_bercegeay Exp $
+ *  $Id$
  */
 
 #include "gem_vdiP.h"
@@ -23,7 +23,7 @@ short
 vs_mute (short handle, short action)
 {
 	short vdi_control[VDI_CNTRLMAX]; 
-	short vdi_intout[VDI_INTOUTMAX]; 
+	short vdi_intout[VDI_INTOUTMAX];
 	
 	VDI_PARAMS(vdi_control, &action, 0L, vdi_intout, vdi_dummy );
 		

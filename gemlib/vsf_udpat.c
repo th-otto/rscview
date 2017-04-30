@@ -1,5 +1,5 @@
 /*
- *  $Id: vsf_udpat.c,v 1.8 2003/08/07 07:23:16 a_bercegeay Exp $
+ *  $Id$
  */
 
 #include "gem_vdiP.h"

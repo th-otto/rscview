@@ -1,5 +1,5 @@
 /*
- *  $Id: vs_clip.c,v 1.8 2004/07/20 13:54:02 standa Exp $
+ *  $Id$
  */
 
 #include "gem_vdiP.h"

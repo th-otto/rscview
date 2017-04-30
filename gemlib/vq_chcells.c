@@ -1,5 +1,5 @@
 /*
- *  $Id: vq_chcells.c,v 1.7 2003/08/07 07:09:01 a_bercegeay Exp $
+ *  $Id$
  */
 
 #include "gem_vdiP.h"
@@ -23,7 +23,7 @@ void
 vq_chcells (short handle, short *n_rows, short *n_cols)
 {
 	short vdi_control[VDI_CNTRLMAX]; 
-	short vdi_intout[VDI_INTOUTMAX]; 
+	short vdi_intout[VDI_INTOUTMAX];
 
 	VDI_PARAMS(vdi_control, 0L, 0L, vdi_intout, vdi_dummy );
 	

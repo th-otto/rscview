@@ -1,5 +1,5 @@
 /*
- *  $Id: n_v_create_driver_info.c,v 1.2 2005/02/23 21:10:19 a_bercegeay Exp $
+ *  $Id$
  */
 
 #include "gem_vdiP.h"
@@ -8,7 +8,7 @@
 /** 
  *
  *  @param handle Device handle
- *  @param device device id (0-99)
+ *  @param driver_id device id (0-99)
  *
  *  @return A pointer to a DRV_INFO structur or 0L
  *

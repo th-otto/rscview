@@ -1,5 +1,5 @@
 /*
- *  $Id: vsp_film.c,v 1.6 2003/08/07 07:38:13 a_bercegeay Exp $
+ *  $Id$
  */
 
 #include "gem_vdiP.h"
@@ -31,4 +31,3 @@ vsp_film (short handle, short index, short lightness)
 	
 	VDI_TRAP_ESC (vdi_params, handle, 5,91, 0,2);
 }
-

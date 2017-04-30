@@ -1,5 +1,5 @@
 /*
- *  $Id: n_v_ftext_offset16.c,v 1.7 2003/08/07 06:31:13 a_bercegeay Exp $
+ *  $Id$
  */
 
 #include "gem_vdiP.h"
@@ -21,12 +21,13 @@ v_ftext_offset16 (short handle, short x, short y,
                   const WCHAR * wstr, const short * offset)
 {
 	short vdi_control[VDI_CNTRLMAX]; 
-	short vdi_ptsin[VDI_PTSINMAX];   
-	const long * src = (const long*)offset;
-	long       * dst =       (long*)vdi_ptsin;
+	short vdi_ptsin[VDI_PTSINMAX*2+2];   
+	const int32_t * src = (const int32_t*)offset;
+	int32_t       * dst =       (int32_t*)vdi_ptsin;
 	short     i, len = vdi_wstrlen ((const short *)wstr);
 
 	VDI_PARAMS(vdi_control, (short *)NO_CONST(wstr), vdi_ptsin, vdi_dummy, vdi_dummy);
+	if(len > VDI_PTSINMAX) len=VDI_PTSINMAX;
 	
 	vdi_ptsin[0] = x;
 	vdi_ptsin[1] = y;

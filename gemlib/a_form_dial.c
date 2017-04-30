@@ -1,5 +1,5 @@
 /*
- *  $Id: a_form_dial.c,v 1.5 2004/09/17 18:19:06 a_bercegeay Exp $
+ *  $Id$
  */
 
 #include "gem_aesP.h"

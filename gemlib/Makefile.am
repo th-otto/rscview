@@ -88,6 +88,7 @@ libgem_a_SOURCES = \
 	vst_unload_fonts.c \
 	\
 	v_alpha_text.c \
+	v_alpha_text16n.c \
 	v_bit_image.c \
 	v_xbit_image.c \
 	v_clear_disp_list.c \
@@ -97,6 +98,7 @@ libgem_a_SOURCES = \
 	v_curleft.c \
 	v_curright.c \
 	v_curtext.c \
+	v_curtext16n.c \
 	v_curup.c \
 	v_dspcur.c \
 	v_eeol.c \
@@ -202,6 +204,7 @@ libgem_a_SOURCES = \
 	v_gtext16.c \
 	v_gtext16n.c \
 	v_justified.c \
+	v_justified16n.c \
 	v_pieslice.c \
 	v_pline.c \
 	v_pmarker.c \
@@ -243,6 +246,7 @@ libgem_a_SOURCES = \
 	n_v_ftext16n.c \
 	n_v_ftext_offset.c \
 	n_v_ftext_offset16.c \
+	n_v_ftext_offset16n.c \
 	n_v_get_ctab_id.c \
 	n_v_get_outline.c \
 	n_v_getbitmap_info.c \
@@ -291,6 +295,7 @@ libgem_a_SOURCES = \
 	n_vqt_pairkern.c \
 	n_vqt_real_extent.c \
 	n_vqt_real_extentn.c \
+	n_vqt_real_extent16n.c \
 	n_vqt_trackkern.c \
 	n_vqt_xfntinfo.c \
 	n_vr_transfer_bits.c \
@@ -331,6 +336,7 @@ libgem_a_SOURCES = \
 	vdi_wstrlen.c \
 	\
 	vdi_dummy.c \
+	vdi_userdef.c vdi_userdef.h \
 	\
 	vq_gdos.c \
 	vq_vgdos.c \

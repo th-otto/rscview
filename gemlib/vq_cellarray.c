@@ -1,5 +1,5 @@
 /*
- *  $Id: vq_cellarray.c,v 1.8 2003/08/07 07:09:01 a_bercegeay Exp $
+ *  $Id$
  */
 
 #include "gem_vdiP.h"
@@ -59,4 +59,3 @@ vq_cellarray (short handle, short pxy[], short row_len, short nrows,
 #endif
 	*status    = vdi_control[11];
 }
-

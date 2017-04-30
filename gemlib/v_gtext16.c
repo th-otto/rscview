@@ -1,5 +1,5 @@
 /*
- *  $Id: v_gtext16.c,v 1.5 2003/08/07 06:59:17 a_bercegeay Exp $
+ *  $Id$
  */
 
 #include "gem_vdiP.h"
@@ -8,7 +8,7 @@
  *
  *  @param handle Device handle
  *  @param x 
- *  @param y 
+ *  @param y
  *  @param wstr string, with 16 bits per character.
  *
  *  @since all VDI versions
@@ -18,7 +18,7 @@
 void
 v_gtext16 (short handle, short x, short y, const short *wstr)
 {
-	register short n = vdi_wstrlen (wstr);
+	short n = vdi_wstrlen (wstr);
 	short vdi_control[VDI_CNTRLMAX]; 
 	short vdi_ptsin[2];   
 
@@ -29,4 +29,3 @@ v_gtext16 (short handle, short x, short y, const short *wstr)
 
 	VDI_TRAP (vdi_params, handle, 8, 1,n);
 }
-

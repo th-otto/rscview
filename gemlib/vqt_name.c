@@ -1,5 +1,5 @@
 /*
- *  $Id: vqt_name.c,v 1.8 2003/08/07 07:15:37 a_bercegeay Exp $
+ *  $Id$
  */
 
 #include "gem_vdiP.h"
@@ -23,7 +23,7 @@ short
 vqt_name (short handle, short element, char *name)
 {
 	short vdi_control[VDI_CNTRLMAX]; 
-	short vdi_intout[VDI_INTOUTMAX]; 
+	short vdi_intout[VDI_INTOUTMAX];
 	short len=33;
 	short *src;
 	char  *des;
@@ -31,7 +31,7 @@ vqt_name (short handle, short element, char *name)
 	VDI_PARAMS(vdi_control, &element, 0L, vdi_intout, vdi_dummy );
 	
 	vdi_intout[33] = 0;
-	
+
 	VDI_TRAP (vdi_params, handle, 130, 0,1);
 
 	/* vdi_array2str-like but without adding a NULL byte at the end */

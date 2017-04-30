@@ -1,5 +1,5 @@
 /*
- *  $Id: v_meta_extents.c,v 1.6 2003/08/07 07:01:52 a_bercegeay Exp $
+ *  $Id$
  */
 
 #include "gem_vdiP.h"

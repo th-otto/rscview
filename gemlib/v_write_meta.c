@@ -1,5 +1,5 @@
 /*
- *  $Id: v_write_meta.c,v 1.6 2003/08/07 07:09:01 a_bercegeay Exp $
+ *  $Id$
  */
 
 #include "gem_vdiP.h"

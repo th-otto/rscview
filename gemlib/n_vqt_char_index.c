@@ -1,5 +1,5 @@
 /*
- *  $Id: n_vqt_char_index.c,v 1.6 2003/08/07 06:43:50 a_bercegeay Exp $
+ *  $Id$
  */
 
 #include "gem_vdiP.h"
@@ -11,11 +11,11 @@
  *
  *  @param handle Device handle
  *  @param scr_index 
- *  @param scr_mode Mapping of <src_index>
+ *  @param scr_mode Mapping of \a src_index
  *         - 0: \p src_index is a direct index
  *         - 1: \p src_index is an ASCII index 
  *         - 2: \p src_index is a unicode index
- *  @param dst_mode Mapping of <dst_index>
+ *  @param dst_mode Mapping of \a dst_index
  *         - 0: \p dst_index is a direct index
  *         - 1: \p dst_index is an ASCII index 
  *         - 2: \p dst_index is a unicode index
@@ -43,9 +43,8 @@ WORD  is_char_available( WORD handle, UWORD unicode )
    direct_index = vqt_char_index( handle, unicode, 2, 0 );
    
    if ( direct_index == 0xffff )
-      return( 0 );                     /* character is available */
-   else
-      return( 1 );                     /* not available */
+      return( 0 );                     /* character is not available */
+   return( 1 );
 }
 \endverbatim
 #endif

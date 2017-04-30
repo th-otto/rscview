@@ -53,7 +53,7 @@
 		: "d0","d1","d2","a0","a1","a2","memory","cc" \
 	)
 
-#if defined(__GNUC_INLINE__) && (__GNUC__ > 2 || __GNUC_MINOR__ > 5)
+#if defined(__GNUC__) && !defined(__NO_INLINE__)
 
 static inline void _aes_trap (AESPB *aespb)
 {
@@ -66,6 +66,18 @@ static inline void _aes_trap (AESPB *aespb)
 #define AES_TRAP(aespb) aes(&aespb)
 
 #endif
+
+#elif defined(__VBCC__) && defined(__mc68000__) && !defined(PRIVATE_AES)
+
+__regsused("d0/d1/a0/a1") void _aes_trap(__reg("d1")AESPB *) =
+  "\tmove.l\td2,-(sp)\n"
+  "\tmove.l\ta2,-(sp)\n"
+  "\tmove.w\t#200,d0\n"
+  "\ttrap\t#2\n"
+  "\tmove.l\t(sp)+,a2\n"
+  "\tmove.l\t(sp)+,d2";
+#define _AES_TRAP(aespb) _aes_trap(aespb)
+#define AES_TRAP(aespb) _aes_trap(&aespb)
 
 #else
 

@@ -1,5 +1,5 @@
 /*
- *  $Id: v_fontinit.c,v 1.4 2003/08/07 06:59:17 a_bercegeay Exp $
+ *  $Id$
  */
 
 #include "gem_vdiP.h"

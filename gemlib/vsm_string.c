@@ -1,5 +1,5 @@
 /*
- *  $Id: vsm_string.c,v 1.6 2003/08/07 07:35:42 a_bercegeay Exp $
+ *  $Id$
  */
 
 #include "gem_vdiP.h"
@@ -30,7 +30,7 @@ vsm_string (short handle, short len, short echo, short echoxy[], char *str)
 	short vdi_intin[2];   
 	short vdi_intout[VDI_INTOUTMAX]; 
 	
-	VDI_PARAMS(vdi_control, vdi_intin, echoxy, vdi_intout, vdi_dummy );
+	VDI_PARAMS(vdi_control, vdi_intin, echoxy, vdi_intout, vdi_dummy);
 	
 	vdi_intin[0]      = len;
 	vdi_intin[1]      = echo;

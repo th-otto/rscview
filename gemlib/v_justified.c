@@ -1,5 +1,5 @@
 /*
- *  $Id: v_justified.c,v 1.7 2003/08/07 07:01:52 a_bercegeay Exp $
+ *  $Id$
  */
 
 #include "gem_vdiP.h"
@@ -31,7 +31,7 @@ v_justified (short handle, short x, short y,
 	short vdi_control[VDI_CNTRLMAX]; 
 	short vdi_intin[VDI_INTINMAX];   
 	short vdi_ptsin[4];   
-	register short n = 2 + vdi_str2array (str, vdi_intin + 2);
+	short n = 2 + vdi_str2arrayn(str, vdi_intin + 2, VDI_INTINMAX-2);
 
 	VDI_PARAMS(vdi_control, vdi_intin, vdi_ptsin, vdi_dummy, vdi_dummy );
 

@@ -1,5 +1,5 @@
 /*
- *  $Id: vq_tray_names.c,v 1.8 2003/08/07 07:11:43 a_bercegeay Exp $
+ *  $Id$
  */
 
 #include "gem_vdiP.h"
@@ -25,8 +25,8 @@ vq_tray_names (short handle, char *input_name, char *output_name,
                short *input, short *output)
 {
 	short vdi_control[VDI_CNTRLMAX]; 
-	short vdi_intin[2 * N_PTRINTS];   
-	short vdi_intout[VDI_INTOUTMAX]; 
+	short vdi_intin[2 * N_PTRINTS];
+	short vdi_intout[VDI_INTOUTMAX];
 
 	VDI_PARAMS(vdi_control, vdi_intin, 0L, vdi_intout, vdi_dummy );
 	

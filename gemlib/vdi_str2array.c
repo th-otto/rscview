@@ -23,24 +23,23 @@ vdi_str2array (const char *src, short *des)
 	return len;
 }
 
-
 /** 
  *
  *  @param src input string (standard null-terminated C-string)
  *  @param des output string (VDI format, each char occupied 16 bits)
- *  @param len maximum len of the string
+ *  @param nmax maximum of char to translate in the output string
  *
  *  @return the len of the string
  *
  */
 
 short
-vdi_str2arrayn (const char *src, short *des, short len)
+vdi_str2arrayn (const char *src, short *des, short nmax)
 {
 	short i = 0;
 	const unsigned char *c  = (const unsigned char *) src;
 
-	while (i < len && *c)
+	while (i < nmax && *c)
 	{
 		*(des++) = *(c++);
 		i++;
