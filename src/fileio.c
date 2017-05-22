@@ -2008,9 +2008,8 @@ static void adjust_menu(RSCFILE *file, _WORD treeindex)
 static void emutos_desktop_fix(RSCFILE *file)
 {
 	OBJECT *tree = file->rs_trindex[ADDINFO];
-	static char version[10];
-	static char copyright_year[5];
-	static char empty[1];
+	static char version[30];
+	static char copyright_year[6];
 	time_t now;
 	struct tm *tm;
 	_WORD wchar, hchar;
@@ -2019,7 +2018,7 @@ static void emutos_desktop_fix(RSCFILE *file)
 	
 	now = time(NULL);
 	tm = localtime(&now);
-	sprintf(version, "%04d%02d%02d", tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday);
+	sprintf(version, "%04d%02d%02d-%02d%02d%02d", tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec);
 	sprintf(copyright_year, "%04d", tm->tm_year + 1900);
 	
 	/* insert the version number */
@@ -2028,8 +2027,10 @@ static void emutos_desktop_fix(RSCFILE *file)
 	/* slightly adjust the about box for a timestamp build */
 	if (version[1] != '.')
 	{
-		tree[DELABEL].ob_spec.free_string = empty;	/* remove the word "Version" */
-		tree[DEVERSN].ob_x -= 6 * wchar;		  /* and move the start of the string */
+		tree[DELABEL].ob_flags |= OF_HIDETREE;	/* hide the word "Version" */
+		tree[DEVERSN].ob_x = 0;					/* and enlarge the version object  */
+		tree[DEVERSN].ob_width = tree[ROOT].ob_width;
+		tree[DEVERSN].ob_flags |= CENTRE_ALIGNED;
 	}
 
 	/* insert the version number */

@@ -26,6 +26,23 @@ AC_DEFINE_UNQUOTED([[RSCVIEW_DATE]], "[RSCVIEW_DATE]")
 
 AM_INIT_AUTOMAKE
 
+AC_DEFUN([_AX_COMPILE_IFELSE],
+[AC_REQUIRE_SHELL_FN([ac_fn_]_AC_LANG_ABBREV[_try_compile],
+  [AS_FUNCTION_DESCRIBE([ac_fn_]_AC_LANG_ABBREV[_try_compile], [LINENO],
+    [Try to compile conftest.$ac_ext, and return whether this succeeded.])],
+  [$0_BODY])]dnl
+[m4_ifvaln([$1], [AC_LANG_CONFTEST([$1])])]dnl
+[AS_IF([ac_fn_[]_AC_LANG_ABBREV[]_try_compile "$LINENO"], [$2], [$3])
+rm -f core conftest.$ac_objext[]m4_ifval([$1], [ conftest.$ac_ext])[]dnl
+])# _AX_COMPILE_IFELSE
+
+AC_DEFUN([AX_COMPILE_IFELSE],
+[AC_LANG_COMPILER_REQUIRE()dnl
+_AX_COMPILE_IFELSE($@)])
+
+AU_DEFUN([AX_TRY_COMPILE],
+[AX_COMPILE_IFELSE([AC_LANG_PROGRAM([[$1]], [[$2]])], [$3], [$4])])
+
 m4_define([AC_ADD_CFLAG], [
 for flag in $2; do
 case " [$]$1 " in
@@ -33,8 +50,17 @@ case " [$]$1 " in
 *) AC_MSG_CHECKING([whether the compiler understands] $flag)
    saved_$1="[$]$1"
    $1="[$]$1 $flag"
-   AC_TRY_COMPILE(, , result=yes, $1="$saved_$1"; result=no)
+   AX_TRY_COMPILE(, , result=yes, result=no)
+   if grep "unrecognized command line option" conftest.err >/dev/null 2>&1; then
+     result=no
+   fi
    AC_MSG_RESULT([$result])
+   if test $result = yes; then
+     $1="$saved_$1 $flag"
+   else
+     $1="$saved_$1"
+   fi
+   rm -f core conftest.err
    ;;
 esac
 done
