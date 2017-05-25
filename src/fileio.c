@@ -1830,6 +1830,7 @@ static _BOOL obj_checksize(OBJECT *tree, _WORD obj, const char *str, _WORD *over
 	{
 	case G_FTEXT:
 	case G_FBOXTEXT:
+	case G_BUTTON:
 		if (gr.g_w > tree[obj].ob_width)
 		{
 			*overlap = obj;
