@@ -555,13 +555,15 @@ const char *ob_name(RSCFILE *file, RSCTREE *tree, _WORD ob)
 
 const char *ob_name_or_index(RSCFILE *file, RSCTREE *tree, _WORD ob)
 {
-	static char namebuf[MAXNAMELEN + 1];
+	static char namebuf[4][MAXNAMELEN + 1];
+	static int namebufidx = 0;
 	const char *name;
 	
 	if ((name = ob_name(file, tree, ob)) == NULL)
 	{
-		sprintf(namebuf, "#%u", ob);
-		name = namebuf;
+		sprintf(namebuf[namebufidx], "#%u", ob);
+		name = namebuf[namebufidx++];
+		namebufidx %= 4;
 	}
 	return name;
 }

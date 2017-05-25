@@ -36,6 +36,15 @@ static void warn(const char *msg, ...)
 
 /*** ---------------------------------------------------------------------- ***/
 
+static _BOOL yorn(_VOID)
+{
+	fprintf(stdout, " (y/n) ? "); fflush(stdout);
+	fprintf(stdout, "y\n");
+	return TRUE;
+}
+
+/*** ---------------------------------------------------------------------- ***/
+
 void err_fcreate(const char *filename)
 {
 	error(_("can't create %s: %s"), filename, strerror(errno));
@@ -129,7 +138,7 @@ void warn_interface_flags(const char *filename)
 _BOOL ask_tree_notfound(_WORD trindex)
 {
 	fprintf(stdout, "Tree %d not found. Continue", trindex);
-	return TRUE;
+	return yorn();
 }
 
 /*** ---------------------------------------------------------------------- ***/
@@ -137,7 +146,7 @@ _BOOL ask_tree_notfound(_WORD trindex)
 _BOOL ask_object_notfound(_LONG ob_index, char *tree_name)
 {
 	fprintf(stdout, "No object #%ld in tree %s. Continue", ob_index, tree_name);
-	return TRUE;
+	return yorn();
 }
 
 /*** ---------------------------------------------------------------------- ***/

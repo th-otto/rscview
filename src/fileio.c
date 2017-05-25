@@ -47,6 +47,9 @@ static _BOOL fopen_mode;
 #define INPWC(x) if (inpwc(&(x)) == FALSE) return FALSE
 #define INPL(x) if (inpl(&(x)) == FALSE) return FALSE
 
+#define CENTRE_ALIGNED  0x8000
+#define RIGHT_ALIGNED   0x4000
+
 /******************************************************************************/
 /*** ---------------------------------------------------------------------- ***/
 /******************************************************************************/
@@ -1704,6 +1707,169 @@ static int underscore_length(const char *s)
 
 /*** ---------------------------------------------------------------------- ***/
 
+static void handle_flags(OBJECT *tree, _WORD obj, GRECT *gr, _WORD len)
+{
+	_WORD x;
+	
+	if (tree[obj].ob_flags & CENTRE_ALIGNED)
+	{
+		x = tree[obj].ob_x;
+		
+		tree[obj].ob_x += (tree[obj].ob_width - len) / 2;
+		if (tree[obj].ob_x < 0)
+			tree[obj].ob_x = 0;
+		objc_offset(tree, obj, &gr->g_x, &gr->g_y);
+		tree[obj].ob_x = x;
+	} else if (tree[obj].ob_flags & RIGHT_ALIGNED)
+	{
+		x = tree[obj].ob_x;
+		tree[obj].ob_x += tree[obj].ob_width - len;
+		if (tree[obj].ob_x < 0)
+			tree[obj].ob_x = 0;
+		objc_offset(tree, obj, &gr->g_x, &gr->g_y);
+		tree[obj].ob_x = x;
+	}
+	gr->g_w = len;
+}
+
+/*** ---------------------------------------------------------------------- ***/
+
+static void objc_minsize(OBJECT *tree, _WORD obj, GRECT *gr, const char *str)
+{
+	_WORD wchar, hchar;
+	_WORD len;
+	
+	GetTextSize(&wchar, &hchar);
+	objc_offset(tree, obj, &gr->g_x, &gr->g_y);
+	gr->g_w = tree[obj].ob_width;
+	gr->g_h = tree[obj].ob_height;
+	switch (tree[obj].ob_type & 0xff)
+	{
+	case G_BOX:
+	case G_IBOX:
+	case G_BOXCHAR:
+	case G_EXTBOX:
+		break;
+	case G_STRING:
+		if (str == NULL)
+			str = tree[obj].ob_spec.free_string;
+		len = wchar * (_WORD)strlen(str);
+		handle_flags(tree, obj, gr, len);
+		break;
+	case G_TITLE:
+	case G_BUTTON:
+	case G_SHORTCUT:
+		if (str == NULL)
+			str = tree[obj].ob_spec.free_string;
+		gr->g_w = wchar * (_WORD)strlen(str);
+		break;
+	case G_TEXT:
+	case G_BOXTEXT:
+		if (str == NULL)
+			str = tree[obj].ob_spec.tedinfo->te_ptext;
+		len = wchar * (_WORD)strlen(str);
+		handle_flags(tree, obj, gr, len);
+		break;
+	case G_FTEXT:
+	case G_FBOXTEXT:
+		if (str == NULL)
+			str = tree[obj].ob_spec.tedinfo->te_ptmplt;
+		len = wchar * (_WORD)strlen(str);
+		handle_flags(tree, obj, gr, len);
+		break;
+	case G_IMAGE:
+		{
+			BITBLK *bit;
+
+			bit = tree[obj].ob_spec.bitblk;
+			gr->g_w = bit->bi_wb * 8 + bit->bi_x;
+			gr->g_h = bit->bi_hl + bit->bi_y;
+		}
+		break;
+	case G_ICON:
+	case G_CICON:
+		{
+			ICONBLK *icon;
+			_WORD w, h;
+			
+			icon = tree[obj].ob_spec.iconblk;
+			gr->g_w = icon->ib_xicon + icon->ib_wicon;
+			gr->g_w = icon->ib_yicon + icon->ib_hicon;
+			if ((icon->ib_xtext + icon->ib_wtext) > gr->g_w)
+				gr->g_w = icon->ib_xtext + icon->ib_wtext;
+			if ((icon->ib_ytext + icon->ib_htext) > gr->g_h)
+				gr->g_h = icon->ib_ytext + icon->ib_htext;
+			if (str == NULL)
+				str = icon->ib_ptext;
+			w = 6 * (_WORD)strlen(str);
+			h = 8;
+			if ((icon->ib_xicon + icon->ib_xchar + w) > gr->g_w)
+				gr->g_w = icon->ib_xicon + icon->ib_xchar + w;
+			if ((icon->ib_yicon + icon->ib_ychar + h) > gr->g_h)
+				gr->g_h = icon->ib_yicon + icon->ib_ychar + h;
+		}
+		break;
+	
+	}
+}
+
+/*** ---------------------------------------------------------------------- ***/
+
+static _BOOL obj_checksize(OBJECT *tree, _WORD obj, const char *str, _WORD *overlap, _WORD *reason)
+{
+	_WORD j;
+	GRECT gr, o, root;
+	
+	if (tree[ROOT].ob_head == NIL)
+		return FALSE;
+	objc_offset(tree, ROOT, &root.g_x, &root.g_y);
+	root.g_w = tree[ROOT].ob_width;
+	root.g_h = tree[ROOT].ob_height;
+	objc_minsize(tree, obj, &gr, str);
+	switch (tree[obj].ob_type & 0xff)
+	{
+	case G_FTEXT:
+	case G_FBOXTEXT:
+		if (gr.g_w > tree[obj].ob_width)
+		{
+			*overlap = obj;
+			*reason = 2;
+			return TRUE;
+		}
+		break;
+	}
+	if (gr.g_x + gr.g_w > root.g_x + root.g_w ||
+		gr.g_y + gr.g_h > root.g_y + root.g_h)
+	{
+		*overlap = ROOT;
+		*reason = 1;
+		return TRUE;
+	}
+	for (j = 1; ; j++)
+	{
+		if (j != obj)
+		{
+			if (tree[j].ob_head == NIL)
+			{
+				objc_offset(tree, j, &o.g_x, &o.g_y);
+				o.g_w = tree[j].ob_width;
+				o.g_h = tree[j].ob_height;
+				if (rc_intersect(&gr, &o))
+				{
+					*overlap = j;
+					*reason = 0;
+					return TRUE;
+				}
+			}
+		}
+		if (tree[j].ob_flags & OF_LASTOB)
+			break;
+	}
+	return FALSE;
+}
+
+/*** ---------------------------------------------------------------------- ***/
+
 static void xlate_file(RSCFILE *file, _BOOL trim_strings)
 {
 	OBJECT *obj;
@@ -1750,19 +1916,31 @@ static void xlate_file(RSCFILE *file, _BOOL trim_strings)
 				 */
 				if (file->rsc_emutos == EMUTOS_NONE || tree->rt_type != RT_MENU)
 				{
+					_WORD overlap, reason;
 					_WORD maxw = obj->ob_width / wchar;
-					/*
-					 * for dialog title objects, use the ROOTs objects width
-					 */
-					if (file->rsc_emutos != EMUTOS_NONE && type == G_STRING && obj->ob_y == hchar)
-						maxw = file->rs_trindex[i][ROOT].ob_width / wchar;
-					if ((int)strlen(newstr) > maxw)
+
+					if (obj_checksize(file->rs_trindex[i], j, newstr, &overlap, &reason))
 					{
 						const char *name = ob_name_or_index(file, tree, j);
+						const char *overlapname = ob_name_or_index(file, tree, overlap);
 						char *from = nls_conv_to_utf8(CHARSET_ST, *p, STR0TERM);
 						char *utf8 = nls_conv_to_utf8(domain->fontset, newstr, STR0TERM);
-						KINFO(("tree %s, object %s: max object width of %d exceeded in translation of '%s' to '%s'\n",
-							tree->rt_name, name, maxw, from, utf8));
+						switch (reason)
+						{
+						case 0:
+							if (strcmp(*p, newstr) != 0)
+								KINFO(("tree %s, object %s: overlaps with object %s in translation of '%s' to '%s'\n",
+									tree->rt_name, name, overlapname, from, utf8));
+							break;
+						case 1:
+							KINFO(("tree %s, object %s: exceeds dialog dimensions in translation of '%s' to '%s'\n",
+								tree->rt_name, name, from, utf8));
+							break;
+						case 2:
+							KINFO(("tree %s, object %s: max object width of %d exceeded in translation of '%s' to '%s'\n",
+								tree->rt_name, name, maxw, from, utf8));
+							break;
+						}
 						g_free(utf8);
 						g_free(from);
 					}
@@ -1789,9 +1967,6 @@ static void xlate_file(RSCFILE *file, _BOOL trim_strings)
 }
 
 /*** ---------------------------------------------------------------------- ***/
-
-#define CENTRE_ALIGNED  0x8000
-#define RIGHT_ALIGNED   0x4000
 
 /*
  *  Align text objects according to special values in ob_flags
