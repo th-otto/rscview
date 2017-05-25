@@ -20,7 +20,7 @@ echo "<h1>EmuTOS $which resources - $lang</h1>\n";
 
 <?php
 include('vars.php');
-include('pngout.php');
+include($pngdir . '/pngout.php');
 ?>
 
 <p></p>
