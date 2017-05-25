@@ -51,7 +51,7 @@ function gen_images($lang, $dir)
 	global $top;
 	
 	echo "generating images for $lang\n";
-	system("LD_LIBRARY_PATH=$top $top/rscview --lang $lang --podir . desktop.rsc 2>&1");
+	system("LD_LIBRARY_PATH=$top $top/rscview --lang $lang --podir . --create-html pngout.php --html-dir . desktop.rsc 2>&1");
 	$trans = $languages[$lang];
 	$stat = stat($dir);
 	if (!$stat)
@@ -60,16 +60,17 @@ function gen_images($lang, $dir)
 		mkdir($dir);
 		mkdir("$dir/aes");
 	}
-	system("rm -f $dir/*.png; mv *.png $dir");
+	system("rm -f $dir/*.png; mv *.png pngout.php $dir");
 
-	system("LD_LIBRARY_PATH=$top $top/rscview --lang $lang --podir . gem.rsc 2>&1");
+	system("LD_LIBRARY_PATH=$top $top/rscview --lang $lang --podir . --create-html pngout.php --html-dir aes gem.rsc 2>&1");
 	$dir .= "/aes";
-	system("rm -f $dir/*.png; mv *.png $dir");
+	system("rm -f $dir/*.png; mv *.png pngout.php $dir");
 	echo "\n";
 }
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST')
 {
+	# a single po-file to be tested has been uploaded
 	chdir('tmp');
 
 	read_linguas('LINGUAS', 1);
@@ -109,13 +110,22 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST')
 	
 } else if ($_SERVER['REQUEST_METHOD'] == 'GET')
 {
+	# recreate all images for all languages
 	$log = fopen('github.log', 'w');
 
 	flush();
 	ob_start("log_output");
 	
+	#
+	# create new images in temporary directory,
+	# to avoid leaving inconsistent, old images behind
+	# just in case the rscview tool crashes
+	#
 	chdir('tmp');
 
+	#
+	# download needed files from master repo
+	#
 	if (!isset($_GET['download']) || $_GET['download'] != 0)
 	{
 		echo "getting LINGUAS\n";
@@ -158,20 +168,26 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST')
 		read_linguas('LINGUAS', 1);
 	}
 
+	#
+	# create images for desktop & aes
+	#
 	foreach ($linguas as $lang)
 	{
 		$lang = $lang['lang'];
 		gen_images($lang, "../$lang");
 	}
 	
-	system("LD_LIBRARY_PATH=$top $top/rscview icon.rsc 2>&1");
+	#
+	# create images for icons
+	#
+	system("LD_LIBRARY_PATH=$top $top/rscview --create-html pngout.php --html-dir . icon.rsc 2>&1");
 	$dir = '../icons';
 	$stat = stat($dir);
 	if (!$stat)
 	{
 		mkdir($dir);
 	}
-	system("rm -f $dir/*.png; mv *.png $dir");
+	system("rm -f $dir/*.png; mv *.png pngout.php $dir");
 
 	ob_end_flush();
 	fclose($log);

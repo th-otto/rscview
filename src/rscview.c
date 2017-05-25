@@ -42,6 +42,9 @@ static WS ws;
 static _BOOL xml_out = FALSE;
 static _BOOL verbose = FALSE;
 static const char *pngdir;
+static const char *htmlout_name;
+static const char *html_dir;
+static FILE *htmlout_file;
 
 /*****************************************************************************/
 /* ------------------------------------------------------------------------- */
@@ -168,6 +171,13 @@ static _WORD write_png(RSCTREE *tree, _WORD x, _WORD y, _WORD w, _WORD h)
 	if (err != 0)
 	{
 		KINFO(("write_png: %s: %s\n", filename, strerror(err)));
+	}
+	if (htmlout_file)
+	{
+		fprintf(htmlout_file, "<p>%s:<br /><img src=\"%s/%s\" alt=\"%s\" /></p>\n",
+			tree->rt_name,
+			html_dir ? html_dir : ".", p,
+			tree->rt_name);
 	}
 	return err;
 }
@@ -391,15 +401,31 @@ static _BOOL draw_all_trees(RSCFILE *file)
 /* ------------------------------------------------------------------------- */
 /*****************************************************************************/
 
+enum rscview_opt {
+	OPT_VERBOSE = 'v',
+	OPT_XML = 'X',
+	OPT_LANG = 'l',
+	OPT_PODIR = 'p',
+	OPT_PNGDIR = 'P',
+	OPT_CHARSET = 'c',
+	OPT_VERSION = 'V',
+	OPT_HELP = 'h',
+	OPT_ARGUMENT = 0,
+	OPT_CREATE_HTML = 256,
+	OPT_HTML_DIR
+};
+
 static struct option const long_options[] = {
-	{ "xml", no_argument, NULL, 'X' },
-	{ "verbose", no_argument, NULL, 'v' },
-	{ "lang", required_argument, NULL, 'l' },
-	{ "podir", required_argument, NULL, 'p' },
-	{ "pngdir", required_argument, NULL, 'P' },
-	{ "charset", required_argument, NULL, 'c' },
-	{ "version", no_argument, NULL, 'V' },
-	{ "help", no_argument, NULL, 'h' },
+	{ "xml", no_argument, NULL, OPT_XML },
+	{ "verbose", no_argument, NULL, OPT_VERBOSE },
+	{ "lang", required_argument, NULL, OPT_LANG },
+	{ "podir", required_argument, NULL, OPT_PODIR },
+	{ "pngdir", required_argument, NULL, OPT_PNGDIR },
+	{ "charset", required_argument, NULL, OPT_CHARSET },
+	{ "create-html", required_argument, NULL, OPT_CREATE_HTML },
+	{ "html-dir", required_argument, NULL, OPT_HTML_DIR },
+	{ "version", no_argument, NULL, OPT_VERSION },
+	{ "help", no_argument, NULL, OPT_HELP },
 	{ NULL, no_argument, NULL, 0 }
 };
 
@@ -449,41 +475,49 @@ int main(int argc, char **argv)
 	
 	while ((c = getopt_long_only(argc, argv, "c:l:p:P:vXhV", long_options, NULL)) != EOF)
 	{
-		switch (c)
+		switch ((enum rscview_opt) c)
 		{
-		case 'X':
+		case OPT_XML:
 			xml_out = TRUE;
 			break;
 		
-		case 'c':
+		case OPT_CHARSET:
 			charset = optarg;
 			break;
 			
-		case 'l':
+		case OPT_LANG:
 			lang = optarg;
 			break;
 		
-		case 'p':
+		case OPT_PODIR:
 			po_dir = optarg;
 			break;
 		
-		case 'P':
+		case OPT_PNGDIR:
 			pngdir = optarg;
 			break;
 		
-		case 'v':
+		case OPT_CREATE_HTML:
+			htmlout_name = optarg;
+			break;
+		
+		case OPT_HTML_DIR:
+			html_dir = optarg;
+			break;
+		
+		case OPT_VERBOSE:
 			verbose = TRUE;
 			break;
 		
-		case 'V':
+		case OPT_VERSION:
 			print_version();
 			return EXIT_SUCCESS;
 		
-		case 'h':
+		case OPT_HELP:
 			usage(stdout);
 			return EXIT_SUCCESS;
 
-		case 0:
+		case OPT_ARGUMENT:
 			break;
 		
 		default:
@@ -496,6 +530,16 @@ int main(int argc, char **argv)
 	{
 		errout(_("%s: missing arguments\n"), program_name);
 		return EXIT_FAILURE;
+	}
+	
+	if (htmlout_name)
+	{
+		htmlout_file = fopen(htmlout_name, "w");
+		if (htmlout_file == NULL)
+		{
+			errout(_("%s: %s: %s\n"), program_name, htmlout_name, strerror(errno));
+			return EXIT_FAILURE;
+		}
 	}
 	
 	po_init(po_dir);
@@ -550,5 +594,11 @@ int main(int argc, char **argv)
 	appl_exit();
 	po_exit();
 		
+	if (htmlout_file != NULL)
+	{
+		fclose(htmlout_file);
+		htmlout_file = NULL;
+	}
+	
 	return exit_status;
 }

@@ -20,13 +20,7 @@ echo "<h1>EmuTOS $which resources - $lang</h1>\n";
 
 <?php
 include('vars.php');
-read_pngs($pngdir);
-foreach ($files as $entry)
-{
-	$name = $entry['name'];
-	$file = $entry['file'];
-	echo "<p>$name:<br /><img src=\"$pngdir/$file\" alt=\"$name\" /></p>\n";
-}
+include('pngout.php');
 ?>
 
 <p></p>
