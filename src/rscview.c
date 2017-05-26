@@ -45,6 +45,7 @@ static const char *pngdir;
 static const char *htmlout_name;
 static const char *html_dir;
 static FILE *htmlout_file;
+static _BOOL gen_imagemap;
 
 /*****************************************************************************/
 /* ------------------------------------------------------------------------- */
@@ -130,7 +131,7 @@ static void str_lwr(char *name)
 
 /* ------------------------------------------------------------------------- */
 
-static _WORD write_png(RSCTREE *tree, _WORD x, _WORD y, _WORD w, _WORD h)
+static _WORD write_png(RSCTREE *tree, _WORD x, _WORD y, _WORD w, _WORD h, _BOOL write_imagemap)
 {
 	_WORD pxy[4];
 	char basename[MAXNAMELEN + 1];
@@ -174,10 +175,54 @@ static _WORD write_png(RSCTREE *tree, _WORD x, _WORD y, _WORD w, _WORD h)
 	}
 	if (htmlout_file)
 	{
-		fprintf(htmlout_file, "<p>%s:<br /><img src=\"%s/%s\" alt=\"%s\" /></p>\n",
+		fprintf(htmlout_file, "<p>%s:<br /><img src=\"%s/%s\" alt=\"%s\"",
 			tree->rt_name,
 			html_dir ? html_dir : ".", p,
 			tree->rt_name);
+		if (write_imagemap)
+		{
+			fprintf(htmlout_file, " usemap=\"#%s\"", tree->rt_name);
+		}
+		fprintf(htmlout_file, " /></p>\n");
+		if (write_imagemap)
+		{
+			OBJECT *obj;
+			_WORD j;
+			GRECT gr;
+			
+			fprintf(htmlout_file, "<map name=\"%s\">\n", tree->rt_name);
+			if (tree->rt_type == RT_MENU)
+			{
+				obj = tree->rt_objects.menu.mn_tree;
+				objc_offset(obj, ROOT, &gr.g_x, &gr.g_y);
+				gr.g_w = obj[ROOT].ob_width;
+				gr.g_h = obj[ROOT].ob_height;
+			} else
+			{
+				obj = tree->rt_objects.dial.di_tree;
+				form_center_grect(obj, &gr);
+			}
+			
+			for (j = 0;;)
+			{
+				const char *name = ob_name(tree->rt_file, tree, j);
+				
+				if (name != NULL)
+				{
+					_WORD x, y;
+					
+					objc_offset(obj, j, &x, &y);
+					fprintf(htmlout_file, "<area shape=\"rect\" coords=\"%d,%d,%d,%d\" title=\"%s\">\n",
+						x - gr.g_x, y - gr.g_y,
+						x - gr.g_x + obj[j].ob_width - 1, y - gr.g_y + obj[j].ob_height - 1,
+						name);
+				}
+				if (obj[j].ob_flags & OF_LASTOB)
+					break;
+				j++;
+			}
+			fprintf(htmlout_file, "</map>\n");
+		}
 	}
 	return err;
 }
@@ -189,24 +234,24 @@ static _WORD write_png(RSCTREE *tree, _WORD x, _WORD y, _WORD w, _WORD h)
 static _BOOL draw_dialog(RSCTREE *tree)
 {
 	OBJECT *ob;
-	_WORD x, y, w, h;
+	GRECT gr;
 	_WORD err;
 	
 	ob = tree->rt_objects.dial.di_tree;
 	if (ob == NULL)
 		return FALSE;
-	form_center(ob, &x, &y, &w, &h);
+	form_center_grect(ob, &gr);
 
 	wind_update(BEG_UPDATE);
-	form_dial(FMD_START, x, y, w, h, x, y, w, h);
+	form_dial_grect(FMD_START, &gr, &gr);
 	
 	clear_screen(tree->rt_name);
 	
-	objc_draw(ob, ROOT, MAX_DEPTH, x, y, w, h);
+	objc_draw_grect(ob, ROOT, MAX_DEPTH, &gr);
 	
-	err = write_png(tree, x, y, w, h);
+	err = write_png(tree, gr.g_x, gr.g_y, gr.g_w, gr.g_h, gen_imagemap);
 
-	form_dial(FMD_FINISH, x, y, w, h, x, y, w, h);
+	form_dial_grect(FMD_FINISH, &gr, &gr);
 	wind_update(END_UPDATE);
 
 	return err == 0;
@@ -221,7 +266,8 @@ static _BOOL draw_menu(RSCTREE *tree)
 	_WORD theactive;
 	_WORD themenus;
 	_WORD title, menubox;
-	_WORD x, y, w, h;
+	_WORD x;
+	GRECT gr;
 	_WORD err;
 	_WORD maxx, maxy;
 	
@@ -240,9 +286,9 @@ static _BOOL draw_menu(RSCTREE *tree)
 	ob[ROOT].ob_height = desk.g_y + desk.g_h;
 	ob[menu_the_menus(ob)].ob_height = ob[ROOT].ob_height - ob[menu_the_menus(ob)].ob_y;
 
-	objc_offset(ob, ROOT, &x, &y);
-	w = ob[ROOT].ob_width;
-	h = ob[ROOT].ob_height;
+	objc_offset(ob, ROOT, &gr.g_x, &gr.g_y);
+	gr.g_w = ob[ROOT].ob_width;
+	gr.g_h = ob[ROOT].ob_height;
 
 	wind_update(BEG_UPDATE);
 	
@@ -306,10 +352,10 @@ static _BOOL draw_menu(RSCTREE *tree)
 			maxy = my;
 	} while (menubox != themenus);
 	
-	err = write_png(tree, 0, 0, maxx, maxy);
+	err = write_png(tree, 0, 0, maxx, maxy, gen_imagemap);
 
 	menu_bar(ob, FALSE);
-	form_dial(FMD_FINISH, x, y, w, h, x, y, w, h);
+	form_dial_grect(FMD_FINISH, &gr, &gr);
 	wind_update(END_UPDATE);
 	
 	return err == 0;
@@ -354,7 +400,7 @@ static _BOOL draw_alert(RSCTREE *tree)
 	w = wo[47] - x + 1;
 	h = wo[48] - y + 1;
 	
-	err = write_png(tree, x, y, w, h);
+	err = write_png(tree, x, y, w, h, FALSE);
 
 	form_dial(FMD_FINISH, x, y, w, h, x, y, w, h);
 	
@@ -410,9 +456,13 @@ enum rscview_opt {
 	OPT_CHARSET = 'c',
 	OPT_VERSION = 'V',
 	OPT_HELP = 'h',
-	OPT_ARGUMENT = 0,
+	
+	OPT_SETVAR = 0,
+	OPT_OPTERROR = '?',
+	
 	OPT_CREATE_HTML = 256,
-	OPT_HTML_DIR
+	OPT_HTML_DIR,
+	OPT_IMAGEMAP
 };
 
 static struct option const long_options[] = {
@@ -423,6 +473,7 @@ static struct option const long_options[] = {
 	{ "pngdir", required_argument, NULL, OPT_PNGDIR },
 	{ "charset", required_argument, NULL, OPT_CHARSET },
 	{ "create-html", required_argument, NULL, OPT_CREATE_HTML },
+	{ "imagemap", no_argument, NULL, OPT_IMAGEMAP },
 	{ "html-dir", required_argument, NULL, OPT_HTML_DIR },
 	{ "version", no_argument, NULL, OPT_VERSION },
 	{ "help", no_argument, NULL, OPT_HELP },
@@ -505,6 +556,10 @@ int main(int argc, char **argv)
 			html_dir = optarg;
 			break;
 		
+		case OPT_IMAGEMAP:
+			gen_imagemap = TRUE;
+			break;
+			
 		case OPT_VERBOSE:
 			verbose = TRUE;
 			break;
@@ -517,9 +572,11 @@ int main(int argc, char **argv)
 			usage(stdout);
 			return EXIT_SUCCESS;
 
-		case OPT_ARGUMENT:
+		case OPT_SETVAR:
+			/* option which just sets a var */
 			break;
 		
+		case OPT_OPTERROR:
 		default:
 			usage(stderr);
 			return EXIT_FAILURE;

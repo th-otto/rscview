@@ -18,7 +18,9 @@ libgem_a_SOURCES = \
 	\
 	a_form_alert.c \
 	a_form_center.c \
+	a_form_center_grect.c \
 	a_form_dial.c \
+	a_form_dial_grect.c \
 	\
 	a_graf_handle.c \
 	\

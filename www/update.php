@@ -51,7 +51,7 @@ function gen_images($lang, $dir)
 	global $top;
 	
 	echo "generating images for $lang\n";
-	system("LD_LIBRARY_PATH=$top $top/rscview --lang $lang --podir . --create-html pngout.php --html-dir . desktop.rsc 2>&1");
+	system("LD_LIBRARY_PATH=$top $top/rscview --lang $lang --podir . --create-html pngout.php --html-dir . --imagemap desktop.rsc 2>&1");
 	$trans = $languages[$lang];
 	$stat = stat($dir);
 	if (!$stat)
@@ -62,7 +62,7 @@ function gen_images($lang, $dir)
 	}
 	system("rm -f $dir/*.png; mv *.png pngout.php $dir");
 
-	system("LD_LIBRARY_PATH=$top $top/rscview --lang $lang --podir . --create-html pngout.php --html-dir aes gem.rsc 2>&1");
+	system("LD_LIBRARY_PATH=$top $top/rscview --lang $lang --podir . --create-html pngout.php --html-dir aes --imagemap gem.rsc 2>&1");
 	$dir .= "/aes";
 	system("rm -f $dir/*.png; mv *.png pngout.php $dir");
 	echo "\n";
@@ -180,7 +180,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST')
 	#
 	# create images for icons
 	#
-	system("LD_LIBRARY_PATH=$top $top/rscview --create-html pngout.php --html-dir . icon.rsc 2>&1");
+	system("LD_LIBRARY_PATH=$top $top/rscview --create-html pngout.php --html-dir . --imagemap icon.rsc 2>&1");
 	$dir = '../icons';
 	$stat = stat($dir);
 	if (!$stat)
