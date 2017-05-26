@@ -131,6 +131,89 @@ static void str_lwr(char *name)
 
 /* ------------------------------------------------------------------------- */
 
+static void generate_imagemap(RSCTREE *tree)
+{
+	OBJECT *obj;
+	_WORD j;
+	GRECT gr;
+	_WORD dx, dy;
+	
+	fprintf(htmlout_file, "<map name=\"%s\">\n", tree->rt_name);
+	if (tree->rt_type == RT_MENU)
+	{
+		obj = tree->rt_objects.menu.mn_tree;
+		objc_offset(obj, ROOT, &gr.g_x, &gr.g_y);
+		gr.g_w = obj[ROOT].ob_width;
+		gr.g_h = obj[ROOT].ob_height;
+		dx = dy = 0;
+	} else
+	{
+		obj = tree->rt_objects.dial.di_tree;
+		form_center_grect(obj, &gr);
+		objc_offset(obj, ROOT, &dx, &dy);
+		dx = dx - gr.g_x;
+		dy = dy - gr.g_y;
+	}
+	
+	/*
+	 * if area definitions overlap, the first one will be used,
+	 * so we have to output them in reverse order
+	 */
+	for (j = 0; !(obj[j].ob_flags & OF_LASTOB); j++)
+	{
+	}
+	
+	while (j >= 0)
+	{
+		const char *name;
+		_WORD x, y, w, h;
+		_WORD type;
+		char sbuf[128];
+		
+		objc_offset(obj, j, &x, &y);
+		x -= gr.g_x;
+		y -= gr.g_y;
+		w = obj[j].ob_width;
+		h = obj[j].ob_height;
+		type = obj[j].ob_type & OBTYPEMASK;
+		/* if object #1 is a dialog title, recalc the width */
+		if (tree->rt_file->rsc_emutos != EMUTOS_NONE && j == 1 && type == G_STRING && obj[j].ob_y == gl_hchar)
+			w = strlen(obj[j].ob_spec.free_string) * gl_wchar;
+		fprintf(htmlout_file, "<area shape=\"rect\" coords=\"%d,%d,%d,%d\" title=\"Object #%d",
+			x, y,
+			x + w - 1, y + h - 1,
+			j);
+		name = ob_name(tree->rt_file, tree, j);
+		if (name)
+		{
+			fprintf(htmlout_file, "&#10;%s", name);
+		}
+		x = x - dx;
+		y = y - dy;
+		fprintf(htmlout_file, "&#10;type = %s", type_name(type));
+		fprintf(htmlout_file, "&#10;x = %d", x / gl_wchar);
+		if (x % gl_wchar != 0)
+			fprintf(htmlout_file, " + %d", x % gl_wchar);
+		fprintf(htmlout_file, "&#10;y = %d", y / gl_hchar);
+		if (y % gl_hchar != 0)
+			fprintf(htmlout_file, " + %d", y % gl_wchar);
+		fprintf(htmlout_file, "&#10;w = %d", w / gl_wchar);
+		if (w % gl_wchar != 0)
+			fprintf(htmlout_file, " + %d", w % gl_wchar);
+		fprintf(htmlout_file, "&#10;h = %d", h / gl_hchar);
+		if (h % gl_hchar != 0)
+			fprintf(htmlout_file, " + %d", h % gl_wchar);
+		fprintf(htmlout_file, "&#10;flags = %s", flags_name(sbuf, obj[j].ob_flags));
+		fprintf(htmlout_file, "&#10;state = %s", state_name(sbuf, obj[j].ob_state));
+		
+		fprintf(htmlout_file, "\">\n");
+		j--;
+	}
+	fprintf(htmlout_file, "</map>\n");
+}
+
+/* ------------------------------------------------------------------------- */
+
 static _WORD write_png(RSCTREE *tree, _WORD x, _WORD y, _WORD w, _WORD h, _BOOL write_imagemap)
 {
 	_WORD pxy[4];
@@ -186,42 +269,7 @@ static _WORD write_png(RSCTREE *tree, _WORD x, _WORD y, _WORD w, _WORD h, _BOOL 
 		fprintf(htmlout_file, " /></p>\n");
 		if (write_imagemap)
 		{
-			OBJECT *obj;
-			_WORD j;
-			GRECT gr;
-			
-			fprintf(htmlout_file, "<map name=\"%s\">\n", tree->rt_name);
-			if (tree->rt_type == RT_MENU)
-			{
-				obj = tree->rt_objects.menu.mn_tree;
-				objc_offset(obj, ROOT, &gr.g_x, &gr.g_y);
-				gr.g_w = obj[ROOT].ob_width;
-				gr.g_h = obj[ROOT].ob_height;
-			} else
-			{
-				obj = tree->rt_objects.dial.di_tree;
-				form_center_grect(obj, &gr);
-			}
-			
-			for (j = 0;;)
-			{
-				const char *name = ob_name(tree->rt_file, tree, j);
-				
-				if (name != NULL)
-				{
-					_WORD x, y;
-					
-					objc_offset(obj, j, &x, &y);
-					fprintf(htmlout_file, "<area shape=\"rect\" coords=\"%d,%d,%d,%d\" title=\"%s\">\n",
-						x - gr.g_x, y - gr.g_y,
-						x - gr.g_x + obj[j].ob_width - 1, y - gr.g_y + obj[j].ob_height - 1,
-						name);
-				}
-				if (obj[j].ob_flags & OF_LASTOB)
-					break;
-				j++;
-			}
-			fprintf(htmlout_file, "</map>\n");
+			generate_imagemap(tree);
 		}
 	}
 	return err;
@@ -378,7 +426,7 @@ static _BOOL draw_alert(RSCTREE *tree)
 	const char *str;
 	_WORD err;
 	_WORD wo[57];
-	_WORD x, y, w, h;
+	GRECT gr;
 	
 	str = tree->rt_objects.alert.al_str;	
 	if (str == NULL)
@@ -395,14 +443,14 @@ static _BOOL draw_alert(RSCTREE *tree)
 	 * get clipping rect
 	 */
 	vq_extnd(phys_handle, 1, wo);
-	x = wo[45];
-	y = wo[46];
-	w = wo[47] - x + 1;
-	h = wo[48] - y + 1;
+	gr.g_x = wo[45];
+	gr.g_y = wo[46];
+	gr.g_w = wo[47] - gr.g_x + 1;
+	gr.g_h = wo[48] - gr.g_y + 1;
 	
-	err = write_png(tree, x, y, w, h, FALSE);
+	err = write_png(tree, gr.g_x, gr.g_y, gr.g_w, gr.g_h, FALSE);
 
-	form_dial(FMD_FINISH, x, y, w, h, x, y, w, h);
+	form_dial_grect(FMD_FINISH, &gr, &gr);
 	
 	return err == 0;
 }

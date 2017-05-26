@@ -173,24 +173,24 @@ static _WORD write_png(RSCTREE *tree, rsc_opts *opts, _WORD x, _WORD y, _WORD w,
 static _BOOL draw_dialog(RSCTREE *tree, rsc_opts *opts)
 {
 	OBJECT *ob;
-	_WORD x, y, w, h;
+	GRECT gr;
 	_WORD err;
 	
 	ob = tree->rt_objects.dial.di_tree;
 	if (ob == NULL)
 		return FALSE;
-	form_center(ob, &x, &y, &w, &h);
+	form_center_grect(ob, &gr);
 
 	wind_update(BEG_UPDATE);
-	form_dial(FMD_START, x, y, w, h, x, y, w, h);
+	form_dial_grect(FMD_START, &gr, &gr);
 	
 	clear_screen(tree->rt_name);
 	
-	objc_draw(ob, ROOT, MAX_DEPTH, x, y, w, h);
+	objc_draw_grect(ob, ROOT, MAX_DEPTH, &gr);
 	
-	err = write_png(tree, opts, x, y, w, h);
+	err = write_png(tree, opts, gr.g_x, gr.g_y, gr.g_w, gr.g_h);
 
-	form_dial(FMD_FINISH, x, y, w, h, x, y, w, h);
+	form_dial_grect(FMD_FINISH, &gr, &gr);
 	wind_update(END_UPDATE);
 
 	return err == 0;
@@ -205,7 +205,8 @@ static _BOOL draw_menu(RSCTREE *tree, rsc_opts *opts)
 	_WORD theactive;
 	_WORD themenus;
 	_WORD title, menubox;
-	_WORD x, y, w, h;
+	_WORD x;
+	GRECT gr;
 	_WORD err;
 	_WORD maxx, maxy;
 	
@@ -224,9 +225,9 @@ static _BOOL draw_menu(RSCTREE *tree, rsc_opts *opts)
 	ob[ROOT].ob_height = desk.g_y + desk.g_h;
 	ob[menu_the_menus(ob)].ob_height = ob[ROOT].ob_height - ob[menu_the_menus(ob)].ob_y;
 
-	objc_offset(ob, ROOT, &x, &y);
-	w = ob[ROOT].ob_width;
-	h = ob[ROOT].ob_height;
+	objc_offset(ob, ROOT, &gr.g_x, &gr.g_y);
+	gr.g_w = ob[ROOT].ob_width;
+	gr.g_h = ob[ROOT].ob_height;
 
 	wind_update(BEG_UPDATE);
 	
@@ -293,7 +294,7 @@ static _BOOL draw_menu(RSCTREE *tree, rsc_opts *opts)
 	err = write_png(tree, opts, 0, 0, maxx, maxy);
 
 	menu_bar(ob, FALSE);
-	form_dial(FMD_FINISH, x, y, w, h, x, y, w, h);
+	form_dial_grect(FMD_FINISH, &gr, &gr);
 	wind_update(END_UPDATE);
 	
 	return err == 0;
@@ -317,7 +318,7 @@ static _BOOL draw_alert(RSCTREE *tree, rsc_opts *opts)
 	const char *str;
 	_WORD err;
 	_WORD wo[57];
-	_WORD x, y, w, h;
+	GRECT gr;
 	
 	str = tree->rt_objects.alert.al_str;	
 	if (str == NULL)
@@ -334,14 +335,14 @@ static _BOOL draw_alert(RSCTREE *tree, rsc_opts *opts)
 	 * get clipping rect
 	 */
 	vq_extnd(phys_handle, 1, wo);
-	x = wo[45];
-	y = wo[46];
-	w = wo[47] - x + 1;
-	h = wo[48] - y + 1;
+	gr.g_x = wo[45];
+	gr.g_y = wo[46];
+	gr.g_w = wo[47] - gr.g_x + 1;
+	gr.g_h = wo[48] - gr.g_y + 1;
 	
-	err = write_png(tree, opts, x, y, w, h);
+	err = write_png(tree, opts, gr.g_x, gr.g_y, gr.g_w, gr.g_h);
 
-	form_dial(FMD_FINISH, x, y, w, h, x, y, w, h);
+	form_dial_grect(FMD_FINISH, &gr, &gr);
 	
 	return err == 0;
 }

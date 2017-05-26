@@ -218,6 +218,168 @@ RSCTREE *rsc_tree_index(RSCFILE *file, _UWORD idx, _UWORD type)
 	return NULL;
 }
 
+/******************************************************************************/
+/*** ---------------------------------------------------------------------- ***/
+/******************************************************************************/
+
+#define f_none			"NONE"
+#define f_selectable	"SELECTABLE"
+#define f_default		"DEFAULT"
+#define f_exit			"EXIT"
+#define f_editable		"EDITABLE"
+#define f_rbutton		"RBUTTON"
+#define f_lastob		"LASTOB"
+#define f_touchexit     "TOUCHEXIT"
+#define f_hidetree		"HIDETREE"
+#define f_indirect		"INDIRECT"
+#define f_3dind         "FL3DIND"
+#define f_3dbak         "FL3DBAK"
+#define f_3dact         "FL3DACT"
+
+const char *flags_name(char *sbuf, _UWORD flags)
+{
+	_UBYTE sname[12];
+	_UWORD oldflags;
+
+	if (flags == OF_NONE)
+		return f_none;
+	sbuf[0] = '\0';
+	do
+	{
+		oldflags = flags;
+		sname[0] = '\0';
+		if (flags & OF_SELECTABLE)
+		{
+			strcpy(sname, f_selectable);
+			flags &= ~OF_SELECTABLE;
+		} else if (flags & OF_DEFAULT)
+		{
+			strcpy(sname, f_default);
+			flags &= ~OF_DEFAULT;
+		} else if (flags & OF_EXIT)
+		{
+			strcat(sname, f_exit);
+			flags &= ~OF_EXIT;
+		} else if (flags & OF_EDITABLE)
+		{
+			strcpy(sname, f_editable);
+			flags &= ~OF_EDITABLE;
+		} else if (flags & OF_RBUTTON)
+		{
+			strcpy(sname, f_rbutton);
+			flags &= ~OF_RBUTTON;
+		} else if (flags & OF_LASTOB)
+		{
+			strcpy(sname, f_lastob);
+			flags &= ~OF_LASTOB;
+		} else if (flags & OF_TOUCHEXIT)
+		{
+			strcpy(sname, f_touchexit);
+			flags &= ~OF_TOUCHEXIT;
+		} else if (flags & OF_HIDETREE)
+		{
+			strcpy(sname, f_hidetree);
+			flags &= ~OF_HIDETREE;
+		} else if (flags & OF_INDIRECT)
+		{
+			strcpy(sname, f_indirect);
+			flags &= ~OF_INDIRECT;
+		} else if ((flags & OF_FL3DMASK) == OF_FL3DIND)
+		{
+			strcpy(sname, f_3dind);
+			flags &= ~OF_FL3DMASK;
+		} else if ((flags & OF_FL3DMASK) == OF_FL3DBAK)
+		{
+			strcpy(sname, f_3dbak);
+			flags &= ~OF_FL3DMASK;
+		} else if ((flags & OF_FL3DMASK) == OF_FL3DACT)
+		{
+			strcpy(sname, f_3dact);
+			flags &= ~OF_FL3DMASK;
+		}
+		if (sname[0] == '\0')
+		{
+			sprintf(sname, "0x%0X",
+				(unsigned int)(flags));
+			flags = 0;
+		}
+		strcat(sbuf, sname);
+		if (flags != 0)
+			strcat(sbuf, "|");
+	} while (flags != 0);
+	return sbuf;
+}
+
+/*** ---------------------------------------------------------------------- ***/
+
+#define s_normal		"NORMAL"
+#define s_selected		"SELECTED"
+#define s_crossed		"CROSSED"
+#define s_checked		"CHECKED"
+#define s_disabled		"DISABLED"
+#define s_outlined		"OUTLINED"
+#define s_shadowed		"SHADOWED"
+#define s_whitebak		"WHITEBAK"
+#define s_draw3d		"DRAW3D"
+
+const char *state_name(char *sbuf, _UWORD state)
+{
+	_UBYTE sname[12];
+	_UWORD oldstate;
+
+	if (state == OS_NORMAL)
+		return s_normal;
+	sbuf[0] = '\0';
+	do
+	{
+		oldstate = state;
+		sname[0] = '\0';
+		if (state & OS_SELECTED)
+		{
+			strcpy(sname, s_selected);
+			state &= ~OS_SELECTED;
+		} else if (state & OS_CROSSED)
+		{
+			strcpy(sname, s_crossed);
+			state &= ~OS_CROSSED;
+		} else if (state & OS_CHECKED)
+		{
+			strcpy(sname, s_checked);
+			state &= ~OS_CHECKED;
+		} else if (state & OS_DISABLED)
+		{
+			strcpy(sname, s_disabled);
+			state &= ~OS_DISABLED;
+		} else if (state & OS_OUTLINED)
+		{
+			strcpy(sname, s_outlined);
+			state &= ~OS_OUTLINED;
+		} else if (state & OS_SHADOWED)
+		{
+			strcpy(sname, s_shadowed);
+			state &= ~OS_SHADOWED;
+		} else if (state & OS_WHITEBAK)
+		{
+			strcpy(sname, s_whitebak);
+			state &= ~OS_WHITEBAK;
+		} else if (state & OS_DRAW3D)
+		{
+			strcpy(sname, s_draw3d);
+			state &= ~OS_DRAW3D;
+		}
+		if (sname[0] == '\0')
+		{
+			sprintf(sname, "0x%0X",
+				(unsigned int)(state));
+			state = 0;
+		}
+		strcat(sbuf, sname);
+		if (state != 0)
+			strcat(sbuf, "|");
+	} while (state != 0);
+	return sbuf;
+}
+
 /*** ---------------------------------------------------------------------- ***/
 
 const char *rtype_name(_WORD type)
@@ -1707,34 +1869,38 @@ static int underscore_length(const char *s)
 
 /*** ---------------------------------------------------------------------- ***/
 
-static void handle_flags(OBJECT *tree, _WORD obj, GRECT *gr, _WORD len)
+static void handle_flags(OBJECT *tree, _WORD obj, GRECT *gr, _WORD len, enum emutos rsctype)
 {
 	_WORD x;
-	
-	if (tree[obj].ob_flags & CENTRE_ALIGNED)
+	_WORD wchar, hchar;
+
+	GetTextSize(&wchar, &hchar);
+	x = tree[obj].ob_x;
+	if (rsctype == EMUTOS_DESK && (tree[obj].ob_flags & CENTRE_ALIGNED))
 	{
-		x = tree[obj].ob_x;
-		
 		tree[obj].ob_x += (tree[obj].ob_width - len) / 2;
 		if (tree[obj].ob_x < 0)
 			tree[obj].ob_x = 0;
-		objc_offset(tree, obj, &gr->g_x, &gr->g_y);
-		tree[obj].ob_x = x;
-	} else if (tree[obj].ob_flags & RIGHT_ALIGNED)
+	} else if (rsctype == EMUTOS_DESK && (tree[obj].ob_flags & RIGHT_ALIGNED))
 	{
-		x = tree[obj].ob_x;
 		tree[obj].ob_x += tree[obj].ob_width - len;
 		if (tree[obj].ob_x < 0)
 			tree[obj].ob_x = 0;
-		objc_offset(tree, obj, &gr->g_x, &gr->g_y);
-		tree[obj].ob_x = x;
+	} else if (rsctype != EMUTOS_NONE && obj == 1 && tree[obj].ob_type == G_STRING && tree[obj].ob_y == hchar)
+	{
+		/* if object #1 is a dialog title, center it */
+		tree[obj].ob_x = (tree[ROOT].ob_width - len) / 2;
+		if (tree[obj].ob_x < 0)
+			tree[obj].ob_x = 0;
 	}
+	objc_offset(tree, obj, &gr->g_x, &gr->g_y);
+	tree[obj].ob_x = x;
 	gr->g_w = len;
 }
 
 /*** ---------------------------------------------------------------------- ***/
 
-static void objc_minsize(OBJECT *tree, _WORD obj, GRECT *gr, const char *str)
+static void objc_minsize(OBJECT *tree, _WORD obj, GRECT *gr, const char *str, enum emutos rsctype)
 {
 	_WORD wchar, hchar;
 	_WORD len;
@@ -1754,7 +1920,7 @@ static void objc_minsize(OBJECT *tree, _WORD obj, GRECT *gr, const char *str)
 		if (str == NULL)
 			str = tree[obj].ob_spec.free_string;
 		len = wchar * (_WORD)strlen(str);
-		handle_flags(tree, obj, gr, len);
+		handle_flags(tree, obj, gr, len, rsctype);
 		break;
 	case G_TITLE:
 	case G_BUTTON:
@@ -1768,14 +1934,14 @@ static void objc_minsize(OBJECT *tree, _WORD obj, GRECT *gr, const char *str)
 		if (str == NULL)
 			str = tree[obj].ob_spec.tedinfo->te_ptext;
 		len = wchar * (_WORD)strlen(str);
-		handle_flags(tree, obj, gr, len);
+		handle_flags(tree, obj, gr, len, rsctype);
 		break;
 	case G_FTEXT:
 	case G_FBOXTEXT:
 		if (str == NULL)
 			str = tree[obj].ob_spec.tedinfo->te_ptmplt;
 		len = wchar * (_WORD)strlen(str);
-		handle_flags(tree, obj, gr, len);
+		handle_flags(tree, obj, gr, len, rsctype);
 		break;
 	case G_IMAGE:
 		{
@@ -1815,7 +1981,7 @@ static void objc_minsize(OBJECT *tree, _WORD obj, GRECT *gr, const char *str)
 
 /*** ---------------------------------------------------------------------- ***/
 
-static _BOOL obj_checksize(OBJECT *tree, _WORD obj, const char *str, _WORD *overlap, _WORD *reason)
+static _BOOL obj_checksize(OBJECT *tree, _WORD obj, const char *str, _WORD *overlap, _WORD *reason, enum emutos rsctype)
 {
 	_WORD j;
 	GRECT gr, o, root;
@@ -1825,7 +1991,7 @@ static _BOOL obj_checksize(OBJECT *tree, _WORD obj, const char *str, _WORD *over
 	objc_offset(tree, ROOT, &root.g_x, &root.g_y);
 	root.g_w = tree[ROOT].ob_width;
 	root.g_h = tree[ROOT].ob_height;
-	objc_minsize(tree, obj, &gr, str);
+	objc_minsize(tree, obj, &gr, str, rsctype);
 	switch (tree[obj].ob_type & 0xff)
 	{
 	case G_FTEXT:
@@ -1920,7 +2086,7 @@ static void xlate_file(RSCFILE *file, _BOOL trim_strings)
 					_WORD overlap, reason;
 					_WORD maxw = obj->ob_width / wchar;
 
-					if (obj_checksize(file->rs_trindex[i], j, newstr, &overlap, &reason))
+					if (obj_checksize(file->rs_trindex[i], j, newstr, &overlap, &reason, file->rsc_emutos))
 					{
 						const char *name = ob_name_or_index(file, tree, j);
 						const char *overlapname = ob_name_or_index(file, tree, overlap);
@@ -2042,7 +2208,7 @@ static void align_objects(OBJECT *obj_array, int nobj)
  *  handle translated titles.
  *
  *  If object 1 of a tree is a G_STRING and its y position equals
- *  one character height, we assume it's the title.
+ *  one character height, we assume it's the dialog title.
  */
 static void centre_title(OBJECT *root)
 {
@@ -2054,6 +2220,7 @@ static void centre_title(OBJECT *root)
 
 	title = root + 1;
 
+	/* if object #1 is a dialog title, center it */
 	if (title->ob_type == G_STRING && title->ob_y == hchar)
 	{
 		len = strlen(title->ob_spec.free_string) * wchar;
