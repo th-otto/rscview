@@ -176,7 +176,7 @@ _BOOL file_open(const char *filename, const char *mode);
 _BOOL file_close(_BOOL status);
 _BOOL test_read(void *buf, size_t size);
 const char *type_name(_WORD type);
-const char *flags_name(char *sbuf, _UWORD flags);
+const char *flags_name(char *sbuf, _UWORD flags, enum emutos rsctype);
 const char *state_name(char *sbuf, _UWORD flags);
 const char *c2_ti_fontname(char *buf, size_t bufsize, _UWORD size, _BOOL verbose);
 char *c2_ti_just(char *buf, size_t bufsize, _UWORD just, _BOOL verbose);

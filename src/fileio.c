@@ -47,8 +47,10 @@ static _BOOL fopen_mode;
 #define INPWC(x) if (inpwc(&(x)) == FALSE) return FALSE
 #define INPL(x) if (inpl(&(x)) == FALSE) return FALSE
 
+/* special flags for EmuTOS */
 #define CENTRE_ALIGNED  0x8000
 #define RIGHT_ALIGNED   0x4000
+
 
 /******************************************************************************/
 /*** ---------------------------------------------------------------------- ***/
@@ -236,9 +238,9 @@ RSCTREE *rsc_tree_index(RSCFILE *file, _UWORD idx, _UWORD type)
 #define f_3dbak         "FL3DBAK"
 #define f_3dact         "FL3DACT"
 
-const char *flags_name(char *sbuf, _UWORD flags)
+const char *flags_name(char *sbuf, _UWORD flags, enum emutos rsctype)
 {
-	_UBYTE sname[12];
+	char sname[20];
 	_UWORD oldflags;
 
 	if (flags == OF_NONE)
@@ -284,6 +286,14 @@ const char *flags_name(char *sbuf, _UWORD flags)
 		{
 			strcpy(sname, f_indirect);
 			flags &= ~OF_INDIRECT;
+		} else if (rsctype == EMUTOS_DESK && (flags & CENTRE_ALIGNED))
+		{
+			strcpy(sname, "CENTRE_ALIGNED");
+			flags &= ~CENTRE_ALIGNED;
+		} else if (rsctype == EMUTOS_DESK && (flags & RIGHT_ALIGNED))
+		{
+			strcpy(sname, "RIGHT_ALIGNED");
+			flags &= ~RIGHT_ALIGNED;
 		} else if ((flags & OF_FL3DMASK) == OF_FL3DIND)
 		{
 			strcpy(sname, f_3dind);
@@ -324,7 +334,7 @@ const char *flags_name(char *sbuf, _UWORD flags)
 
 const char *state_name(char *sbuf, _UWORD state)
 {
-	_UBYTE sname[12];
+	char sname[12];
 	_UWORD oldstate;
 
 	if (state == OS_NORMAL)
@@ -2195,7 +2205,7 @@ static void align_objects(OBJECT *obj_array, int nobj)
 					obj->ob_x = 0;
 				obj->ob_width = len;
 			}
-			obj->ob_flags &= ~(CENTRE_ALIGNED | RIGHT_ALIGNED);
+			/* obj->ob_flags &= ~(CENTRE_ALIGNED | RIGHT_ALIGNED); */
 			break;
 		default:
 			break;
