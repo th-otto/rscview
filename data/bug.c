@@ -1969,8 +1969,8 @@ static int print_canon(FILE *f, const char *t, const char *prefix, gboolean enco
 				if ((err = alert_check(line_start, t, 0)) < 0)
 					rc = err;
 			}
-			/* fallthrough */
 #endif /* CANON_GEM_ALERT */
+			/* fallthrough */
 		default:
 			a = ((unsigned char) (*t)) & 0xFF;
 			if (a < ' ' || a == 0x7f || (encode_extended_ascii && a >= 0x80))

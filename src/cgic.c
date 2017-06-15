@@ -1403,7 +1403,7 @@ cgiFormResultType cgiCookieString(const char *name, char *value, int space)
 		   Tomadakis. */
 		while (*p == *n)
 		{
-			if ((p == '\0') && (n == '\0'))
+			if (*p == '\0' && *n == '\0')
 			{
 				/* Malformed cookie header from client */
 				return cgiFormNotFound;
@@ -1517,7 +1517,8 @@ void cgiHeaderCookieSetString(FILE *out, const char *name, const char *value, in
 	time_t then;
 	struct tm *gt;
 
-	assert(!(name == NULL || *name == '\0'));
+	if (name == NULL || *name == '\0')
+		return;
 	time(&now);
 	then = now + secondsToLive;
 	gt = gmtime(&then);

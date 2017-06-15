@@ -34,20 +34,20 @@ typedef struct _nls_domain {
 	const char *const *const *hash;
 } nls_domain;
 
-char *dgettext(const nls_domain *domain, const char *key);
+char *nls_dgettext(const nls_domain *domain, const char *key);
 
 /* initialisation */
 
 void nls_init(nls_domain *domain);
-void gettext_init(nls_domain *domain);
+void nls_gettext_init(nls_domain *domain);
 unsigned int nls_hash(const char *t);
 
 #if CONF_WITH_NLS
 
 extern nls_domain nls_default_domain;
 
-# define _(a) gettext(a)
-# define gettext(key) dgettext(&nls_default_domain, key)
+# define _(a) nls_gettext(a)
+# define nls_gettext(key) nls_dgettext(&nls_default_domain, key)
 
 /* functions to query the lang database and to set the lang */
 
@@ -56,7 +56,7 @@ extern nls_domain nls_default_domain;
 /* Disable NLS / gettext completely */
 
 # define _(a) (a)
-# define gettext(a) (a)
+# define nls_gettext(a) (a)
 
 #endif
 

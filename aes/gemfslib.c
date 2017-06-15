@@ -507,7 +507,7 @@ bye2:
 			if (value >= 0)
 				goto up;
 			value = -value;
-			
+			/* fall through */
 		case FDNAROW:			/* scroll down  */
 		down:
 			if (fs_topptr == botptr)

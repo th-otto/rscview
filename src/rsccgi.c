@@ -323,7 +323,7 @@ static _BOOL draw_alert(RSCTREE *tree, rsc_opts *opts)
 	str = tree->rt_objects.alert.al_str;	
 	if (str == NULL)
 		return FALSE;
-	str = dgettext(&tree->rt_file->rsc_nls_domain, str);
+	str = nls_dgettext(&tree->rt_file->rsc_nls_domain, str);
 	
 	clear_screen(tree->rt_name);
 	/*

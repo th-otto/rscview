@@ -1002,7 +1002,7 @@ _BOOL nls_set_lang(RSCFILE *file, const char *id)
 		if (strcmp(id, lang->id) == 0)
 		{
 	    	file->rsc_nls_domain.hash = lang->hash;
-			gettext_init(&file->rsc_nls_domain);
+			nls_gettext_init(&file->rsc_nls_domain);
 			return TRUE;
 	    }
 	}

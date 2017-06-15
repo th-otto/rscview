@@ -45,16 +45,18 @@ static char const html_dropdown_pnode_style[] = "rscview_dropdown_pnode";
 static char const html_dropdown_info_style[] = "rscview_dropdown_info";
 static char const html_error_note_style[] = "rscview_error_note";
 static char const html_dropdown_style[] = "rscview_dropdown";
-static char const html_image_style[] = "rscview_image";
 
 static char const html_nav_back_png[] = "images/iback.png";
 static char const html_nav_prev_png[] = "images/iprev.png";
-static char const html_nav_toc_png[] = "images/itoc.png";
 static char const html_nav_next_png[] = "images/inext.png";
-static char const html_nav_xref_png[] = "images/ixref.png";
 static char const html_nav_load_png[] = "images/iload.png";
+#if 0 /* not used yet */
+static char const html_image_style[] = "rscview_image";
+static char const html_nav_toc_png[] = "images/itoc.png";
+static char const html_nav_xref_png[] = "images/ixref.png";
 static char const html_nav_index_png[] = "images/iindex.png";
 static char const html_nav_help_png[] = "images/ihelp.png";
+#endif
 static char const html_nav_info_png[] = "images/iinfo.png";
 static char const html_rsc_info_id[] = "rsc_info";
 static char const html_nav_dimensions[] = " width=\"32\" height=\"21\"";

@@ -28,11 +28,11 @@ static char *ram_hash[(TH_SIZE + 10) * 2];
 void nls_init(nls_domain *domain)
 {
 	domain->hash = NULL;
-	gettext_init(domain);
+	nls_gettext_init(domain);
 }
 
 
-void gettext_init(nls_domain *domain)
+void nls_gettext_init(nls_domain *domain)
 {
 	(void) domain;
 #if USE_RAM_HASH
@@ -59,7 +59,7 @@ unsigned int nls_hash(const char *t)
 }
 
 
-char *dgettext(const nls_domain *domain, const char *key)
+char *nls_dgettext(const nls_domain *domain, const char *key)
 {
 	unsigned int hash;
 	const char *const *chain;
@@ -119,18 +119,18 @@ void xlate_obj_array(nls_domain *domain, OBJECT *obj_array, _LONG nobs, _BOOL tr
 		{
 		case G_TEXT:
 		case G_FTEXT:
-			obj->ob_spec.tedinfo->te_ptext = dgettext(domain, obj->ob_spec.tedinfo->te_ptext);
+			obj->ob_spec.tedinfo->te_ptext = nls_dgettext(domain, obj->ob_spec.tedinfo->te_ptext);
 			break;
 		case G_BOXTEXT:
 		case G_FBOXTEXT:
-			obj->ob_spec.tedinfo->te_ptmplt = dgettext(domain, obj->ob_spec.tedinfo->te_ptmplt);
+			obj->ob_spec.tedinfo->te_ptmplt = nls_dgettext(domain, obj->ob_spec.tedinfo->te_ptmplt);
 			break;
 		case G_STRING:
 		case G_BUTTON:
 		case G_TITLE:
 			if (type == G_STRING && trim_strings)
 				trim_spaces(obj->ob_spec.free_string);
-			obj->ob_spec.free_string = dgettext(domain, obj->ob_spec.free_string);
+			obj->ob_spec.free_string = nls_dgettext(domain, obj->ob_spec.free_string);
 			break;
 		default:
 			break;

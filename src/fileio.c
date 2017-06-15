@@ -241,14 +241,12 @@ RSCTREE *rsc_tree_index(RSCFILE *file, _UWORD idx, _UWORD type)
 const char *flags_name(char *sbuf, _UWORD flags, enum emutos rsctype)
 {
 	char sname[20];
-	_UWORD oldflags;
 
 	if (flags == OF_NONE)
 		return f_none;
 	sbuf[0] = '\0';
 	do
 	{
-		oldflags = flags;
 		sname[0] = '\0';
 		if (flags & OF_SELECTABLE)
 		{
@@ -335,14 +333,12 @@ const char *flags_name(char *sbuf, _UWORD flags, enum emutos rsctype)
 const char *state_name(char *sbuf, _UWORD state)
 {
 	char sname[12];
-	_UWORD oldstate;
 
 	if (state == OS_NORMAL)
 		return s_normal;
 	sbuf[0] = '\0';
 	do
 	{
-		oldstate = state;
 		sname[0] = '\0';
 		if (state & OS_SELECTED)
 		{
@@ -2086,7 +2082,7 @@ static void xlate_file(RSCFILE *file, _BOOL trim_strings)
 			}
 			if (p)
 			{
-				char *newstr = dgettext(domain, *p);
+				char *newstr = nls_dgettext(domain, *p);
 				/*
 				 * for EmuTOS, do not check strings in menus,
 				 * as they are adjusted later
@@ -2399,10 +2395,10 @@ static void emutos_desktop_fix(RSCFILE *file)
 	align_objects(file->rs_object, file->header.rsh_nobs);
 	
 	tree = file->rs_trindex[ADFFINFO];
-	tree[1].ob_spec.free_string = dgettext(&file->rsc_nls_domain, file->rs_frstr[STFOINFO]);
+	tree[1].ob_spec.free_string = nls_dgettext(&file->rsc_nls_domain, file->rs_frstr[STFOINFO]);
 	
 	tree = file->rs_trindex[ADCPYDEL];
-	tree[1].ob_spec.free_string = dgettext(&file->rsc_nls_domain, file->rs_frstr[STDELETE]);
+	tree[1].ob_spec.free_string = nls_dgettext(&file->rsc_nls_domain, file->rs_frstr[STDELETE]);
 	
 	centre_titles(file);
 }
@@ -2503,7 +2499,7 @@ RSCFILE *load_all(const char *file_name, const char *lang, _UWORD flags, const c
 		if (strcmp(lang, "en") != 0)
 		{
 			po_create_hash(lang, &file->rsc_nls_domain, po_dir);
-			gettext_init(&file->rsc_nls_domain);
+			nls_gettext_init(&file->rsc_nls_domain);
 			xlate_file(file, TRUE);
 		}
 	}

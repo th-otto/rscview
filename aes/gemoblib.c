@@ -648,7 +648,7 @@ static void just_draw(OBJECT *tree, _WORD obj, _WORD sx, _WORD sy)
 			strmaxcpy(rawstr, sizeof(rawstr), edblk.te_ptext);
 			strmaxcpy(tmpstr, sizeof(tmpstr), edblk.te_ptmplt);
 			ob_format(edblk.te_just, rawstr, tmpstr, fmtstr);
-			/* fall thru to gr_gtext */
+			/* fall through */
 		case G_BOXCHAR:
 			edblk.te_ptext = fmtstr;
 			if (obtype == G_BOXCHAR)
@@ -658,7 +658,7 @@ static void just_draw(OBJECT *tree, _WORD obj, _WORD sx, _WORD sy)
 				edblk.te_just = TE_CNTR;
 				edblk.te_font = IBM;
 			}
-			/* fall thru to gr_gtext */
+			/* fall through */
 		case G_TEXT:
 		case G_BOXTEXT:
 			gr_inside(pt, tmpth);

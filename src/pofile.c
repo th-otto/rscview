@@ -1462,7 +1462,7 @@ void po_init(const char *po_dir)
 	if (languages != NULL)
 		return;
 	if (po_dir == NULL)
-		return;
+		po_dir = PO_DIR;
 	s = s_new();
 	s_addstr(s, po_dir);
 	i = strlen(po_dir);

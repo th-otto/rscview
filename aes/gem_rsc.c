@@ -47,5 +47,5 @@ void rsc_free(void)
 /* Get a string from the GEM-RSC */
 char *rs_str(_UWORD stnum)
 {
-	return dgettext(&aes_domain, aes_rsc_string[stnum]);
+	return nls_dgettext(&aes_domain, aes_rsc_string[stnum]);
 }

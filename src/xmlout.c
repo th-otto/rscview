@@ -782,7 +782,7 @@ static _BOOL xml_trees(RSCFILE *file, XRS_HEADER *xrsc_header, rsc_counter *coun
 		case RT_FRSTR:
 		case RT_ALERT:
 			str = tree->rt_type == RT_ALERT ? tree->rt_objects.alert.al_str : tree->rt_objects.str.fr_str;
-			str = dgettext(&file->rsc_nls_domain, str);
+			str = nls_dgettext(&file->rsc_nls_domain, str);
 			xml_indent(1); fprintf(ffp, "<freestring index=\"%ld\" name=\"%s\" type=\"%s\"%s%s%s>\n", tree->rt_index, tree->rt_name, rtype_name_short(tree->rt_type), lang1, lang, lang2);
 			if (do_comment)
 			{

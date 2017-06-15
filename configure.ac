@@ -579,6 +579,9 @@ fi
 ###############################################################################
 
 AM_PATH_CURL
+if test "$ac_cv_header_curl_curl_h" != yes -a "$ac_cv_header_curl_h" != yes; then
+   no_curl=yes
+fi
 AM_CONDITIONAL(HAVE_CURL, test "$no_curl" = "")
 
 # compute the final value of X_LIBS
