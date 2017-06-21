@@ -1038,18 +1038,21 @@ RSCFILE *xrsrc_load(const char *filename, _UWORD flags)
 
 	fclose(fp);
 	file = (RSCFILE *)buf;
-	memset(file, 0, sizeof(RSCFILE));
-	rsc_init_file(file);
-	strcpy(file->rsc_rsxfilename, filename);
-	strcpy(file->rsc_rsxname, basename(filename));
-	buf += sizeof(RSCFILE);
 	if (error == RSC_OK)
-		file->rsc_rsm_crc = rsc_rsm_calc_crc(buf, filesize);
-	file->data = buf;
-	file->header = xrsc_header;
-	file->rsc_swap_flag = swap_flag;
-	file->rsc_xrsc_flag = xrsc_flag;
-	file->rsc_little_endian = swap_flag ^ (HOST_BYTE_ORDER != BYTE_ORDER_BIG_ENDIAN);
+	{
+		memset(file, 0, sizeof(RSCFILE));
+		rsc_init_file(file);
+		strcpy(file->rsc_rsxfilename, filename);
+		strcpy(file->rsc_rsxname, basename(filename));
+		buf += sizeof(RSCFILE);
+		if (error == RSC_OK)
+			file->rsc_rsm_crc = rsc_rsm_calc_crc(buf, filesize);
+		file->data = buf;
+		file->header = xrsc_header;
+		file->rsc_swap_flag = swap_flag;
+		file->rsc_xrsc_flag = xrsc_flag;
+		file->rsc_little_endian = swap_flag ^ (HOST_BYTE_ORDER != BYTE_ORDER_BIG_ENDIAN);
+	}
 	
 #if SWAP_ALLOWED
 	if (error == RSC_OK && swap_flag)
