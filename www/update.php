@@ -60,11 +60,11 @@ function gen_images($lang, $dir)
 		mkdir($dir);
 		mkdir("$dir/aes");
 	}
-	system("rm -f $dir/*.png; mv *.png pngout.php $dir");
+	system("rm -f $dir/*.png; mv *.png pngout.php $dir 2>&1");
 
 	system("LD_LIBRARY_PATH=$top $top/rscview --lang $lang --podir . --create-html pngout.php --html-dir aes --imagemap gem.rsc 2>&1");
 	$dir .= "/aes";
-	system("rm -f $dir/*.png; mv *.png pngout.php $dir");
+	system("rm -f $dir/*.png; mv *.png pngout.php $dir 2>&1");
 	echo "\n";
 }
 
@@ -187,7 +187,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST')
 	{
 		mkdir($dir);
 	}
-	system("rm -f $dir/*.png; mv *.png pngout.php $dir");
+	system("rm -f $dir/*.png; mv *.png pngout.php $dir 2>&1");
 
 	ob_end_flush();
 	fclose($log);
