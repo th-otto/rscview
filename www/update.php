@@ -68,6 +68,21 @@ function gen_images($lang, $dir)
 	echo "\n";
 }
 
+function emutos_download($remotefile, $localfile)
+{
+	global $github;
+	echo "getting $remotefile\n";
+	$rsc = file_get_contents($github . $remotefile);
+	if (!$rsc)
+	{
+		echo "downloading $remotefile failed\n";
+	} else
+	{
+		file_put_contents($localfile, $rsc);
+	}
+}
+
+
 if ($_SERVER['REQUEST_METHOD'] == 'POST')
 {
 	# a single po-file to be tested has been uploaded
@@ -128,40 +143,24 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST')
 	#
 	if (!isset($_GET['download']) || $_GET['download'] != 0)
 	{
-		echo "getting LINGUAS\n";
-		$rsc = file_get_contents($github . 'po/LINGUAS');
-		file_put_contents('LINGUAS', $rsc);
+		emutos_download('po/LINGUAS', 'LINGUAS');
 		read_linguas('LINGUAS', 1);
 		
-		echo "getting desk/desktop.rsc\n";
-		$rsc = file_get_contents($github . 'desk/desktop.rsc');
-		file_put_contents('desktop.rsc', $rsc);
-		echo "getting desk/desktop.def\n";
-		$def = file_get_contents($github . 'desk/desktop.def');
-		file_put_contents('desktop.def', $def);
+		emutos_download('desk/desktop.rsc', 'desktop.rsc');
+		emutos_download('desk/desktop.def', 'desktop.def');
 		
-		echo "getting desk/icon.rsc\n";
-		$rsc = file_get_contents($github . 'desk/icon.rsc');
-		file_put_contents('icon.rsc', $rsc);
-		echo "getting desk/icon.def\n";
-		$def = file_get_contents($github . 'desk/icon.def');
-		file_put_contents('icon.def', $def);
-		
-		echo "getting aes/gem.rsc\n";
-		$rsc = file_get_contents($github . 'aes/gem.rsc');
-		file_put_contents('gem.rsc', $rsc);
-		echo "getting aes/gem.def\n";
-		$def = file_get_contents($github . 'aes/gem.def');
-		file_put_contents('gem.def', $def);
+		emutos_download('desk/icon.rsc', 'icon.rsc');
+		emutos_download('desk/icon.def', 'icon.def');
+
+		emutos_download('aes/gem.rsc', 'gem.rsc');
+		emutos_download('aes/gem.def', 'gem.def');
 		
 		foreach ($linguas as $lang)
 		{
 			$lang = $lang['lang'];
 			if ($lang != 'en')
 			{
-				echo "getting $lang.po\n";
-				$po = file_get_contents($github . 'po/' . $lang . '.po');
-				file_put_contents($lang . '.po', $po);
+				emutos_download("po/$lang.po", "$lang.po");
 			}
 		}
 	} else {
