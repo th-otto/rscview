@@ -895,7 +895,7 @@ static int get_c_string(IFILE *f, str *s)
 typedef void (*parse_oipl_callback)(da *d, char *str, int arg);
 
 __attribute__((__warn_unused_result__))
-static gboolean parse_oipl_file(const char *fname, da *d, parse_oipl_callback func, int arg)
+static gboolean parse_oipl_file(const char *fname, da *d, parse_oipl_callback func, int arg, int mustexist)
 {
 	int c;
 	IFILE *f;
@@ -903,7 +903,8 @@ static gboolean parse_oipl_file(const char *fname, da *d, parse_oipl_callback fu
 	f = ifopen(fname);
 	if (f == NULL)
 	{
-		error("could not open %s: %s", fname, strerror(errno));
+		if (mustexist)
+			error("could not open %s: %s", fname, strerror(errno));
 		return FALSE;
 	}
 	for (;;)
@@ -1452,7 +1453,7 @@ static converter_t get_converter(const char *from, int to_id)
 }
 
 
-void po_init(const char *po_dir)
+void po_init(const char *po_dir, int mustexist)
 {
 	str *s;
 	da *d;
@@ -1471,7 +1472,7 @@ void po_init(const char *po_dir)
 	s_addstr(s, "LINGUAS");
 	fname = s_detach(s);
 	d = da_new();
-	if (!parse_oipl_file(fname, d, parse_linguas_item, TRUE))
+	if (!parse_oipl_file(fname, d, parse_linguas_item, TRUE, mustexist))
 	{
 		/*
 		 * construct a list of languages as fallback
@@ -1484,7 +1485,7 @@ void po_init(const char *po_dir)
 		parse_linguas_item(d, g_strdup("nn atarist"), FALSE);
 		parse_linguas_item(d, g_strdup("sv atarist"), FALSE);
 		parse_linguas_item(d, g_strdup("cs latin2"), FALSE);
-		parse_linguas_item(d, g_strdup("es latin9 "), FALSE);
+		parse_linguas_item(d, g_strdup("es latin9"), FALSE);
 		parse_linguas_item(d, g_strdup("ru russian-atarist"), FALSE);
 		parse_linguas_item(d, g_strdup("gr cp737"), FALSE); /* deprecated */
 		parse_linguas_item(d, g_strdup("el cp737"), FALSE);
