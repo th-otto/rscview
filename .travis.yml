@@ -1,0 +1,31 @@
+# TODO: put into freemint-1_18, freemint-1_17, branch-1_16, branch-1_15
+
+# if you want to debug the deploy process, make a fork of freemint.github.io, travis-scripts
+# and travis-pr projects and use your own private key for decrypting .travis/deploy-key.enc
+
+language: c
+os: linux
+dist: trusty
+sudo: required
+
+branches:
+  except:
+  - builds
+
+compiler:
+  - gcc
+
+before_install:
+  - .travis/install_ssh_id.sh
+  - unset SSH_ID
+
+before_script:
+  - . ./.travis/setup_env.sh
+
+script:
+  - . ./.travis/build.sh "${PWD}/.travis/tmp" "${PWD}/.travis/out"
+
+deploy:
+  skip_cleanup: true
+  provider: script
+  script: .travis/deploy.sh
