@@ -34,7 +34,7 @@ typedef struct _nls_domain {
 	const char *const *const *hash;
 } nls_domain;
 
-char *nls_dgettext(const nls_domain *domain, const char *key);
+char *nls_dgettext(const nls_domain *domain, const char *key) __attribute__((__format_arg__(2)));
 
 /* initialisation */
 
