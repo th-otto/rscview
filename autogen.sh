@@ -12,7 +12,7 @@ test -n "$srcdir" || srcdir=.
    # produce config.h.in
    autoheader
    # get missing system files & produce Makefile.in
-   automake --add-missing
+   automake --copy --add-missing
    # produce configure
    autoconf
 
