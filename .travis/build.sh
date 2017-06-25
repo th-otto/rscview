@@ -3,8 +3,7 @@
 TMP="$1"
 OUT="$2"
 
-./autogen.sh
-./configure --enable-warnings
+./autogen.sh --enable-warnings
 make
 make DESTDIR="$TMP" install
 VERSION=$(grep PACKAGE_VERSION config.h | sed -e 's/^.*\"\(.*\)\".*/\1/')

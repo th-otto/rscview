@@ -19,6 +19,6 @@ test -n "$srcdir" || srcdir=.
    rm -rf autom4te.cache
 
 ) || exit 1
-if test -n "$NOCONFIGURE"; then
+if test -z "$NOCONFIGURE"; then
    "$srcdir/configure" "$@" || exit 1
 fi
