@@ -13,7 +13,6 @@ version_date.h
 *.framework
 *.xcworkspace
 xcuserdata
-build
 *.o
 *.a
 *.exe

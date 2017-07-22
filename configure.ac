@@ -313,6 +313,16 @@ AC_DEFUN([AC_GETTIMEOFDAY_ARGS],
 # to make
 m4_ifdef([AM_SILENT_RULES],[AM_SILENT_RULES([yes])])
 
+AH_TOP([
+#ifndef __CONFIG_H__
+#define __CONFIG_H__ 1
+
+#include "build/linux/libcwrap.h"
+
+])
+dnl append that also to confdefs.h
+echo "#include \"${srcdir}/build/linux/libcwrap.h\"" >> confdefs.h
+
 # random compiler setup
 AC_PROG_CC_ANSI
 AC_PROG_CXX
@@ -601,6 +611,10 @@ fi
 BUILD_PREFIX="${BUILD_PREFIX}-"
 AC_SUBST([BUILD_PREFIX])
 
+AH_BOTTOM([
+#endif /* __CONFIG_H__ */
+])
+
 ###############################################################################
 #
 #       spit out Makefiles
@@ -609,6 +623,7 @@ AC_SUBST([BUILD_PREFIX])
 
 AC_CONFIG_FILES([
 Makefile
+build/linux/Makefile
 data/Makefile
 gemlib/Makefile
 po/Makefile

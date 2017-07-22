@@ -1,7 +1,7 @@
 AUTOMAKE_OPTIONS = foreign dist-xz
 ACLOCAL_AMFLAGS = -I m4
 
-SUBDIRS = data gemlib po aes vdi util src
+SUBDIRS = build/linux data gemlib po aes vdi util src
 
 EXTRA_DIST = \
 	include \
