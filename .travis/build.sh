@@ -8,6 +8,10 @@ make
 make DESTDIR="$TMP" install
 VERSION=$(grep PACKAGE_VERSION config.h | sed -e 's/^.*\"\(.*\)\".*/\1/')
 
+if `git tag --points-at ${TRAVIS_COMMIT}` = ""; then
+	VERSION=$SHORT_ID
+fi
+
 (
 mkdir -p "${OUT}"
 cd "${TMP}"
