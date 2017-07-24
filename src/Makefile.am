@@ -2,6 +2,8 @@ include $(top_srcdir)/config.mk
 
 AM_CPPFLAGS += -I$(srcdir)
 AM_CPPFLAGS += $(GLIB_CFLAGS) $(CURL_CFLAGS)
+AM_CPPFLAGS += $(PNG_CFLAGS)
+AM_CPPFLAGS += $(Z_CFLAGS)
 
 GEMLIBS = ../aes/libaes.a ../vdi/libvdi.a ../gemlib/libgem.a ../util/libutil.a
 
@@ -12,7 +14,7 @@ endif
 
 SRVDIR = /srv/www/htdocs/rscview
 
-LIBS += -lpng -lz
+LIBS += $(PNG_LIBS) $(Z_LIBS)
 
 rscview_SOURCES = \
 	fileio.h rso.h \

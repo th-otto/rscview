@@ -46,6 +46,11 @@ OS2RC=		$(AM_V_RC)$(RC) -r $(AM_CPPFLAGS) $(CPPFLAGS) $(DEFINES) $< $@
 # OS/2 IPF compiler
 #IPFC=		ipfc$(EXEEXT)
 
+PNG_CFLAGS = 
+PNG_LIBS   = -lpng
+Z_CFLAGS   = 
+Z_LIBS     = -lz
+
 #
 # Common defines/libraries
 #
