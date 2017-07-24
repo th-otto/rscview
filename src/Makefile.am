@@ -1,6 +1,6 @@
 include $(top_srcdir)/config.mk
 
-INCLUDES += -I$(srcdir)
+AM_CPPFLAGS += -I$(srcdir)
 AM_CPPFLAGS += $(GLIB_CFLAGS) $(CURL_CFLAGS)
 
 GEMLIBS = ../aes/libaes.a ../vdi/libvdi.a ../gemlib/libgem.a ../util/libutil.a

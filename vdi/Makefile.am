@@ -2,7 +2,7 @@ AUTOMAKE_OPTIONS = subdir-objects
 
 include $(top_srcdir)/config.mk
 
-INCLUDES += -I$(srcdir)
+AM_CPPFLAGS += -I$(srcdir)
 
 noinst_LIBRARIES = libvdi.a
 

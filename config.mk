@@ -27,11 +27,10 @@ MKDIR_P = mkdir -p
 CDPATH= 
 
 # windows resource compiler
-RC_DEFINES=	`echo -D__WIN32__ -DRC_INVOKED $(AM_CPPFLAGS) $(CPPFLAGS) $(DEFINES) | sed -e 's/-D/--define /g'`
-RC_INCLUDES=	`echo $(INCLUDES) | sed -e 's/-I/--include-dir /g'`
+RC_DEFINES=	`echo -D__WIN32__ -DRC_INVOKED $(AM_CPPFLAGS) $(CPPFLAGS) $(DEFINES) $(INCLUDES) | sed -e 's/-D/--define /g' -e 's/-I/--include-dir /g'`
 WINDRES=	$(AM_V_RC)$(RC) $(RC_DEFINES) $(RC_INCLUDES) --input-format rc --output-format coff -o $@ $<
 # OS/2 resource compiler
-OS2RC=		$(AM_V_RC)$(RC) -r $(AM_CPPFLAGS) $(CPPFLAGS) $(DEFINES) $(INCLUDES) $< $@
+OS2RC=		$(AM_V_RC)$(RC) -r $(AM_CPPFLAGS) $(CPPFLAGS) $(DEFINES) $< $@
 
 # old Windows3 help compiler; obsolete since it is a 16bit program
 # and can't be run on newer OS
@@ -60,9 +59,7 @@ DEFINES+=	-DSTRICT=1 \
 		-DUSE_WINDOWS_RESOURCE=1
 endif
 
-INCLUDES=	-I$(top_srcdir)/include
-
-AM_CPPFLAGS = 
+AM_CPPFLAGS =	-I$(top_srcdir)/include
 
 GUI_CPPFLAGS=	-DCONSOLE_VERSION=0 -DGUI_VERSION=1
 CON_CPPFLAGS=	-DCONSOLE_VERSION=1 -DGUI_VERSION=0
@@ -71,7 +68,7 @@ CON_CPPFLAGS=	-DCONSOLE_VERSION=1 -DGUI_VERSION=0
 #ifdef HPArchitecture
 #X_EXTRA_LIBS +=	/usr/contrib/X11R6/lib/libXmu.a
 #X_EXTRA_LIBS +=	/usr/contrib/X11R6/lib/libXaw.a
-#INCLUDES +=		-I/usr/contrib/X11R6/include
+#AM_CPPFLAGS +=		-I/usr/contrib/X11R6/include
 #endif
 
 #

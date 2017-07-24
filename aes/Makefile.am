@@ -1,6 +1,6 @@
 include $(top_srcdir)/config.mk
 
-INCLUDES += -I$(srcdir)
+AM_CPPFLAGS += -I$(srcdir)
 
 noinst_LIBRARIES = libaes.a
 

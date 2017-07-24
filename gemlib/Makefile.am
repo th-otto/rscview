@@ -1,6 +1,6 @@
 include $(top_srcdir)/config.mk
 
-INCLUDES += -I$(srcdir)
+AM_CPPFLAGS += -I$(srcdir)
 AM_CPPFLAGS += -DPRIVATE_AES -DPRIVATE_VDI
 
 noinst_LIBRARIES = libgem.a
