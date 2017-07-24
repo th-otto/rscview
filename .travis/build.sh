@@ -7,14 +7,28 @@ OUT="$2"
 make
 make DESTDIR="$TMP" install
 VERSION=$(grep PACKAGE_VERSION config.h | sed -e 's/^.*\"\(.*\)\".*/\1/')
+ATAG=$VERSION
+isrelease=false
 
-if `git tag --points-at ${TRAVIS_COMMIT}` = ""; then
-	VERSION=$SHORT_ID
-fi
+mkdir -p "${OUT}"
+
+tag=`git tag --points-at ${TRAVIS_COMMIT}`
+case $tag in
+	VERSION*)
+		isrelease=true
+		;;
+	*)
+		ATAG=$SHORT_ID
+		;;
+esac
 
 (
-mkdir -p "${OUT}"
 cd "${TMP}"
-tar cvfj "${OUT}/${PROJECT}-${VERSION}-linux.tar.bz2" .
-tar cvfJ "${OUT}/${PROJECT}-${VERSION}-linux.tar.xz" .
+tar cvfj "${OUT}/${PROJECT}-${ATAG}-linux.tar.bz2" .
+tar cvfJ "${OUT}/${PROJECT}-${ATAG}-linux.tar.xz" .
 )
+
+if $isrelease; then
+	make dist
+	mv "${PROJECT}-${VERSION}.tar.xz" "$OUT"
+fi
