@@ -5,7 +5,6 @@ EXTRA_DIST = \
 	PrepareAppDir.sh \
 	README \
 	jhbuildrc \
-	libcwrap.h \
 	modulesets \
 	pangorc \
 	triggers \
@@ -15,5 +14,5 @@ EXTRA_DIST = \
 #	valac --pkg gee-0.8 --pkg posix --pkg glib-2.0 --pkg gio-2.0 $<
 #	./LibcWrapGenerator --output=$@ --libdir=/lib64
 
-$(srcdir)/libcwrap.h: $(srcdir)/LibcWrapGenerator.pl
+libcwrap.h: $(srcdir)/LibcWrapGenerator.pl
 	$(srcdir)/LibcWrapGenerator.pl --output=$@ --libdir=/lib64

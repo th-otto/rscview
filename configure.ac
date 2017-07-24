@@ -317,11 +317,11 @@ AH_TOP([
 #ifndef __CONFIG_H__
 #define __CONFIG_H__ 1
 
-#include "build/linux/libcwrap.h"
+#include "linux/libcwrap.h"
 
 ])
 dnl append that also to confdefs.h
-echo "#include \"${srcdir}/build/linux/libcwrap.h\"" >> confdefs.h
+echo "#include \"${srcdir}/include/linux/libcwrap.h\"" >> confdefs.h
 
 # random compiler setup
 AC_PROG_CC_ANSI
