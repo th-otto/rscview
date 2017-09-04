@@ -54,11 +54,14 @@ use vars qw(@ISA @EXPORT %ESCAPES $VERSION);
 
 sub cmd_x {
 	my ($self, $attrs, $text) = @_;
-	sub agettext($) { return $_[0]; };
-	my $margin = $$self{MARGIN} || 0;
-	my $spaces = ' ' x $margin;
 	if ($text eq 'me') {
 		return $me;
+	}
+	if ($text eq 'default_target') {
+		return $DEFAULT_TARGET;
+	}
+	if ($text eq 'output') {
+		return $args{'output'};
 	}
 	return '';
 }
@@ -283,7 +286,7 @@ sub appendSymbols($$)
 			next if ($unavailableSymbols);
 		}
 
-		printf $output '__asm__(".symver %s, %s@GLIBC_%s");' . "\n", $it, $it, $versionToUse;
+		printf $output 'SYMVER(%s, GLIBC_%s)' . "\n", $it, $versionToUse;
 	}
 }
 
@@ -304,20 +307,31 @@ sub generateHeader()
 	printf $output "/* glibc bindings for target ABI version glibc %s */\n", $args{'target'};
 	printf $output "#if defined(__linux__) && !defined (__LIBC_CUSTOM_BINDINGS_H__)\n";
 	printf $output "\n";
-	printf $output "#  if !defined (__OBJC__) && !defined (__ASSEMBLER__)\n";
-	printf $output "#    if defined (__cplusplus)\n";
+	printf $output "#if defined (__cplusplus)\n";
 	printf $output "extern \"C\" {\n";
-	printf $output "#    endif\n";
+	printf $output "#endif\n";
+	printf $output "\n";
+	printf $output "#undef SYMVER\n";
+	printf $output "#undef SYMVER1\n";
+	printf $output "#ifdef __ASSEMBLER__\n";
+	printf $output "#define SYMVER1(name, ver) .symver name, name##@##ver\n";
+	printf $output "#else\n";
+	printf $output "#define SYMVER1(name, ver) __asm__(\".symver \" #name \", \" #name \"@\" #ver );\n";
+	printf $output "#endif\n";
+	printf $output "#define SYMVER(name, ver) SYMVER1(name, ver)\n";
+	printf $output "\n";
 
 	# First generate the available redirected symbols, then the unavailable symbols
 	appendSymbols($output, 0);
 	appendSymbols($output, 1);
 
 	printf $output "\n";
-	printf $output "#    if defined (__cplusplus)\n";
+	printf $output "#undef SYMVER\n";
+	printf $output "#undef SYMVER1\n";
+	printf $output "\n";
+	printf $output "#if defined (__cplusplus)\n";
 	printf $output "}\n";
-	printf $output "#    endif\n";
-	printf $output "#  endif /* !defined (__OBJC__) && !defined (__ASSEMBLER__) */\n";
+	printf $output "#endif\n";
 	printf $output "#endif\n";
 
 	close($output);
@@ -379,9 +393,15 @@ X<me> [<options>]
 
 Options:
 
-  -L, --libdir <dir>                  Library directory
-  -t, --target <MAJOR.MINOR[.MICRO]>  Target glibc ABI (Default 2.11)
-  -o, --output <filename>             Header to create
+=over
+
+=item -L, --libdir <dir>                  Library directory
+
+=item -t, --target <MAJOR.MINOR[.MICRO]>  Target glibc ABI (Default: X<default_target>)
+
+=item -o, --output <filename>             Header to create (Default: X<output>)
+
+=back
 
 =head1 AUTHORS
 
