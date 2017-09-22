@@ -276,6 +276,27 @@
  *          - \a W3 and \a W4 are the horizontal elements of type bottomwidgets.
  *            (\a W3 is the left and \a W4 is the right widget of the horizotal
  *		      slider).
+ *
+ * <tr><td> #WF_USER_POINTER  <td>      230 <td>
+ *          Get the user value of the window
+ *          - \a W1 and \a W2 are the 2 values already set by user with wind_set()
+ *
+ *          MyAES feature
+ *
+ * <tr><td> WF_WIND_ATTACH  <td>      231 <td>
+ *          Get if a window is attach to the requested window
+ *          - \a W1 windows id attached values already set by user with wind_set()
+ *
+ *          MyAES feature
+ *
+ * <tr><td> #WF_BITMAP  <td>      233 <td>
+ *          Get bitmap content of the window if MyAES "windows_backup" option is set to true, 
+ *          any windows of any application can be read
+ *
+ *          TODO
+ *
+ *          MyAES 0.96 feature
+ *
  *	</table>
  *
  *
@@ -284,6 +305,8 @@
  *        of programmers only check for w and h = 0, and not the
  *        return value.
  *
+ * @note Under MyAES if \a WindowHandle is set to -2 then it is possible to know if option \a What is avaible or not,
+ * if available then return is 1 else return value is 0
  */
 
 short 
