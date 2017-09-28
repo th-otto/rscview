@@ -38,7 +38,7 @@ void vr_transfer_bits (short handle, GCBITMAP * src_bm, GCBITMAP * dst_bm, const
 
 	vdi_control_ptr(0, GCBITMAP *)  = src_bm;
 	vdi_control_ptr(1, GCBITMAP *)  = dst_bm;
-	vdi_control_ptr(2, void *)  = NULL;
+	vdi_control_ptr(2, void *) = NULL;
 
 	VDI_TRAP (vdi_params, handle, 170, 4,4);
 }

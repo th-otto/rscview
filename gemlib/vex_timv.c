@@ -23,8 +23,8 @@
 void
 vex_timv (short handle, VEX_TIMV time_addr, VEX_TIMV *otime_addr, short *time_conv)
 {
-	short vdi_control[VDI_CNTRLMAX]; 
-	short vdi_intout[VDI_INTOUTMAX]; 
+	short vdi_control[VDI_CNTRLMAX];
+	short vdi_intout[VDI_INTOUTMAX];
 
 	VDI_PARAMS(vdi_control, 0L, 0L, vdi_intout, vdi_dummy );
 	

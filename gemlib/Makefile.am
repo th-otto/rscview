@@ -11,6 +11,7 @@ libgem_a_SOURCES = \
 	mt_gem.h \
 	gem.h \
 	aes.c \
+	v_bez.h \
 	\
 	a_appl_exit.c \
 	a_appl_init.c \

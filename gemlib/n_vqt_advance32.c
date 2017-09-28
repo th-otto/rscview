@@ -38,7 +38,9 @@ vqt_advance32 (short handle, short ch, fix31 *advx, fix31 *advy)
 #if CHECK_NULLPTR
 	if (advx)
 #endif
-	*advx = vdi_ptsout_long(4);
+	{
+		*advx = vdi_ptsout_long(4);
+	}
 #if CHECK_NULLPTR
 	if (advy)
 #endif

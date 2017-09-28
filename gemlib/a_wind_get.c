@@ -309,14 +309,10 @@
  * if available then return is 1 else return value is 0
  */
 
-short 
-wind_get (short WindowHandle, short What,
-             short *W1, short *W2, short *W3, short *W4)
+short wind_get (short WindowHandle, short What, short *W1, short *W2, short *W3, short *W4)
 {
-	short **pptr;
-
-	static short const aes_control_color[AES_CTRLMAX]={104,3,5,0,0}; \
-	static short const aes_control_info[AES_CTRLMAX]={104,4,5,0,0}; \
+	static short const aes_control_color[AES_CTRLMAX]={104,3,5,0,0};
+	static short const aes_control_info[AES_CTRLMAX]={104,4,5,0,0};
 	AES_PARAMS(104,2,5,0,0);
 
 	if (sizeof(char *) > 4)
@@ -329,6 +325,9 @@ wind_get (short WindowHandle, short What,
 			return 0;
 		case WF_NEWDESK:
 		case WF_SCREEN:
+		case WF_TOOLBAR:
+		case WF_USER_POINTER:
+		case WF_WIND_ATTACH:
 			KINFO(("wind_get() with OBJECT ptr not supported on this machine, use wind_get_ptr() instead\n"));
 			return 0;
 		}
@@ -349,17 +348,17 @@ wind_get (short WindowHandle, short What,
 			break;
 		case WF_INFO:
 		case WF_NAME:
-		    pptr = (short**)&aes_intin[2];
-			*pptr = W1;
+			aes_intin_ptr(2, short *) = W1;
 			aes_params.control = aes_control_info;
 			break;
 	}
 
 	AES_TRAP(aes_params);
 	
-	if (What == WF_SCREEN || What == WF_NEWDESK)
+	if (What == WF_SCREEN || What == WF_NEWDESK || What == WF_TOOLBAR || What == WF_USER_POINTER || What == WF_WIND_ATTACH)
 	{
-		*((void **)W1) = aes_intout_ptr(1, void *);
+		void **p = (void **)W1;
+		*p = aes_intout_ptr(1, void *);
 		if (W2 && What == WF_NEWDESK)
 			*W2 = aes_intout[N_PTRINTS + 1];
 	} else if (What == WF_INFO || What == WF_NAME) {

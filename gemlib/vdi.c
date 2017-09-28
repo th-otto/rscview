@@ -5,8 +5,8 @@
 void vdi(VDIPB *pb)
 {
 	__asm__ volatile (
-		"move.l	%0,d1\n\t"	/* &vdipb */
-		"moveq	#115,d0\n\t"
+		"move.l	%0,%%d1\n\t"	/* &vdipb */
+		"moveq	#115,%%d0\n\t"
 		"trap	#2"
 		:
 		: "g"(pb)

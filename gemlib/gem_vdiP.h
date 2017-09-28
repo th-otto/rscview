@@ -1,7 +1,3 @@
-/*
- *  $Id$
- */
-
 #ifndef _GEM_VDI_P_
 # define _GEM_VDI_P_
 
@@ -126,14 +122,14 @@ _vdi_trap_esc (VDIPB * vdipb,
                int32_t cntrl_0_1, int32_t cntrl_3, int32_t cntrl_5, short handle)
 {
 	__asm__ volatile (
-		"movea.l	%0,a0\n\t"	/* &vdipb */
-		"move.l	a0,d1\n\t"
-		"move.l	(a0),a0\n\t"	/* vdipb->control */
-		"move.l	%1,(a0)+\n\t"	/* cntrl_0, cntrl_1 */
-		"move.l	%2,(a0)+\n\t"	/* cntrl_2, cntrl_3 */
-		"move.l	%3,(a0)+\n\t"	/* cntrl_4, cntrl_5 */
-		"move.w	%4,(a0)\n\t"	/* handle */
-		"move.w	#115,d0\n\t"	/* 0x0073 */
+		"movea.l	%0,%%a0\n\t"	/* &vdipb */
+		"move.l	%%a0,%%d1\n\t"
+		"move.l	(%%a0),%%a0\n\t"	/* vdipb->control */
+		"move.l	%1,(%%a0)+\n\t"	/* cntrl_0, cntrl_1 */
+		"move.l	%2,(%%a0)+\n\t"	/* cntrl_2, cntrl_3 */
+		"move.l	%3,(%%a0)+\n\t"	/* cntrl_4, cntrl_5 */
+		"move.w	%4,(%%a0)\n\t"	/* handle */
+		"move.w	#115,%%d0\n\t"	/* 0x0073 */
 		"trap	#2"
 		:
 		: "g"(vdipb), "g"(cntrl_0_1), "g"(cntrl_3), "g"(cntrl_5), "g"(handle)
@@ -147,15 +143,15 @@ static inline void
 _vdi_trap_00 (VDIPB * vdipb, int32_t cntrl_0_1, short handle)
 {
 	__asm__ volatile (
-		"movea.l %0,a0\n\t"	/* &vdipb */
-		"move.l  a0,d1\n\t"
-		"move.l  (a0),a0\n\t"	/* vdipb->control */
-		"move.l  %1,(a0)+\n\t"	/* cntrl_0, cntrl_1 */
-		"moveq   #0,d0\n\t"
-		"move.l  d0,(a0)+\n\t"	/* cntrl_2, cntrl_3 */
-		"move.l  d0,(a0)+\n\t"	/* cntrl_4, cntrl_5 */
-		"move.w  %2,(a0)\n\t"	/* handle */
-		"move.w  #115,d0\n\t"	/* 0x0073 */
+		"movea.l %0,%%a0\n\t"	/* &vdipb */
+		"move.l  %%a0,%%d1\n\t"
+		"move.l  (%%a0),%%a0\n\t"	/* vdipb->control */
+		"move.l  %1,(%%a0)+\n\t"	/* cntrl_0, cntrl_1 */
+		"moveq   #0,%%d0\n\t"
+		"move.l  %%d0,(%%a0)+\n\t"	/* cntrl_2, cntrl_3 */
+		"move.l  %%d0,(%%a0)+\n\t"	/* cntrl_4, cntrl_5 */
+		"move.w  %2,(%%a0)\n\t"	/* handle */
+		"move.w  #115,%%d0\n\t"	/* 0x0073 */
 		"trap    #2"
 		:
 		: "g"(vdipb), "g"(cntrl_0_1), "g"(handle)

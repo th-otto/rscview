@@ -30,9 +30,13 @@ vqt_trackkern (short handle, fix31 *x, fix31 *y)
 #if CHECK_NULLPTR
 	if (x)
 #endif
-	*x = vdi_intout_long(0);
+	{
+		*x = vdi_intout_long(0);
+	}
 #if CHECK_NULLPTR
 	if (y)
 #endif
-	*y = vdi_intout_long(2);
+	{
+		*y = vdi_intout_long(2);
+	}
 }

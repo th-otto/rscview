@@ -239,7 +239,19 @@
  *          - \a W3 and \a W4 are the horizontal elements of type bottomwidgets.
  *            (\a W3 is the left and \a W4 is the right widget of the horizotal
  *		      slider).
- *					   					
+ *
+ * <tr><td> #WF_USER_POINTER  <td>      230 <td>
+ *          Link a user value to the windows
+ *          - \a W1 and \a W2 are the 2 value you can transmit it could be used as 32 bits pointer but any value can be provided
+ *
+ *          MyAES feature
+ *
+ * <tr><td> #WF_WIND_ATTACH   <td>      231 <td>
+ *          attach a window to another, using it if you close the mother window other windows linked will be closed
+ *          - \a W1 the window to attach
+ *
+ *          MyAES feature
+ *
  * <tr><td> #WF_TOPMOST  <td>      232 <td>
  *          Sets the actual window at topmost level (details below).
  *          - \a W1 should be set to one of the following values:
@@ -263,17 +275,38 @@
  *          is untopped the toolbox window disappears, when owner regains focus, the
  *          window automatically reappears (no action required by the application, opening and
  *          closing of the window is performed by the AES).
- *         
+ *
+ *          MyAES feature
+ * 
+ * <tr><td> #WF_OPTIONS  <td>      234 <td>
+ *          Change window behavior
+ *          - \a W1 only one value available for the moment:
+ *            - 1 : request automatic close when application focus is lost and restore it when is back
+ *                  to add this feature or remove it you should use \a W2 
+ *          - \a W2  remove/add option:
+ *            - 1 : add option
+ *            - 0 : remove option
+ *
+ *          MyAES feature
+ *
+ * <tr><td> #WF_FULLSCREEN   <td>      235 <td>
+ *          Switch fullscreen - normal window mode. The fullscreen mode is without any widget.
+ *          Hit the key ESC escape from fullscreen mode  
+ *
+ *          MyAES 0.96 feature
+ *
+ *     
  *	</table>
  *
  *  @since All AES versions.
  *
  *  @sa mt_wind_get()
  *
+ *  @note Under MyAES if \a WindowHandle is set to -2 then it is possible to know if option \a What is avaible or not,
+ *  if available then return is 1 else return value is 0
  */
  
-short wind_set (short WindowHandle, short What,
-             short W1, short W2, short W3, short W4)
+short wind_set (short WindowHandle, short What, short W1, short W2, short W3, short W4)
 {
 	short *ptr;
 
@@ -286,14 +319,16 @@ short wind_set (short WindowHandle, short What,
 		case WF_INFO:
 		case WF_NAME:
 			KINFO(("wind_set() with string not supported on this machine, use wind_set_str() instead\n"));
-			break;
+			return 0;
 		case WF_NEWDESK:
+		case WF_TOOLBAR:
+		case WF_USER_POINTER:
+		case WF_WIND_ATTACH:
 			KINFO(("wind_set() with OBJECT ptr not supported on this machine, use wind_set_ptr() instead\n"));
-			break;
+			return 0;
 		}
-		return 0;
 	}
-	
+
 	ptr = aes_intin;
 	*(ptr ++) = WindowHandle;							/* aes_intin[0] */
 	*(ptr ++) = What;									/* aes_intin[1] */

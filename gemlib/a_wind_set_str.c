@@ -18,22 +18,26 @@
 
 short wind_set_str (short WindowHandle, short What, const char *str)
 {
-	AES_PARAMS(105,6,1,0,0);
+	AES_PARAMS(105,2 + 2 * N_PTRINTS,1,0,0);
 
 	aes_intin[0]                  = WindowHandle;
 	aes_intin[1]                  = What;
 
-	*(const char**)(aes_intin +2) = str;
+	aes_intin_ptr(2, char *) = (char *)NO_CONST(str);
+	aes_intin_ptr(2 + N_PTRINTS, char *) = NULL;
 	
 	switch (What)
 	{
 	case WF_INFO:
 	case WF_NAME:
 	case WF_NEWDESK:
+	case WF_TOOLBAR:
+	case WF_USER_POINTER:
+	case WF_WIND_ATTACH:
 		break;
 	default:
 		KINFO(("wind_set_str() called for type %d\n", What));
-		break;
+		return 0;
 	}
 	
 	AES_TRAP(aes_params);

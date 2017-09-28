@@ -45,8 +45,8 @@
 
 #define _AES_TRAP(pb) \
 	__asm__ volatile ( \
-		"move.l	%0,d1\n\t"	/* &aespb */ \
-		"move.w	#200,d0\n\t" \
+		"move.l	%0,%%d1\n\t"	/* &aespb */ \
+		"move.w	#200,%%d0\n\t" \
 		"trap	#2" \
 		: \
 		: "g"(pb) \
@@ -106,9 +106,17 @@ static __inline void **__aes_intout_ptr(short n, short *aes_intout)
 }
 #define aes_intout_ptr(n, t)  *((t *)__aes_intout_ptr(n, aes_intout))
 
+static __inline void **__aes_intin_ptr(short n, short *aes_intin)
+{
+	return ((void **)(aes_intin   +n));
+}
+#define aes_intin_ptr(n, t)  *((t *)__aes_intin_ptr(n, aes_intin))
+
 #else
 
 #define aes_intout_long(n)  *((int32_t *)(aes_intout+(n)))
+#define aes_intout_ptr(n, t)  *((t *)((void **)(aes_intout+(n))))
+#define aes_intin_ptr(n, t)  *((t *)((void **)(aes_intin+(n))))
 
 #endif
 
