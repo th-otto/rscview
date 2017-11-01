@@ -118,11 +118,11 @@ static __inline void **__vdi_control_ptr(short n, short *vdi_control)
 #if defined(__GNUC__) && !defined(__NO_INLINE__)
 
 static inline void
-_vdi_trap_esc (VDIPB * vdipb,
+_vdi_trap_esc (VDIPB *_vdipb,
                int32_t cntrl_0_1, int32_t cntrl_3, int32_t cntrl_5, short handle)
 {
+	register VDIPB *vdipb __asm__("a0") = _vdipb;
 	__asm__ volatile (
-		"movea.l	%0,%%a0\n\t"	/* &vdipb */
 		"move.l	%%a0,%%d1\n\t"
 		"move.l	(%%a0),%%a0\n\t"	/* vdipb->control */
 		"move.l	%1,(%%a0)+\n\t"	/* cntrl_0, cntrl_1 */
@@ -132,18 +132,18 @@ _vdi_trap_esc (VDIPB * vdipb,
 		"move.w	#115,%%d0\n\t"	/* 0x0073 */
 		"trap	#2"
 		:
-		: "g"(vdipb), "g"(cntrl_0_1), "g"(cntrl_3), "g"(cntrl_5), "g"(handle)
-		: "d0", "d1", "d2", "a0", "a1", "a2", "memory", "cc"
+		: "r"(vdipb), "g"(cntrl_0_1), "g"(cntrl_3), "g"(cntrl_5), "g"(handle)
+		: "d0", "d1", "d2", "a1", "a2", "memory", "cc"
 	);
 }
 #define VDI_TRAP_ESC(vdipb, handle, opcode, subop, cntrl_1, cntrl_3) \
 	_vdi_trap_esc (&vdipb, (opcode##uL<<16)|cntrl_1, cntrl_3, subop, handle)
 
 static inline void
-_vdi_trap_00 (VDIPB * vdipb, int32_t cntrl_0_1, short handle)
+_vdi_trap_00 (VDIPB *_vdipb, int32_t cntrl_0_1, short handle)
 {
+	register VDIPB *vdipb __asm__("a0") = _vdipb;
 	__asm__ volatile (
-		"movea.l %0,%%a0\n\t"	/* &vdipb */
 		"move.l  %%a0,%%d1\n\t"
 		"move.l  (%%a0),%%a0\n\t"	/* vdipb->control */
 		"move.l  %1,(%%a0)+\n\t"	/* cntrl_0, cntrl_1 */
@@ -154,8 +154,8 @@ _vdi_trap_00 (VDIPB * vdipb, int32_t cntrl_0_1, short handle)
 		"move.w  #115,%%d0\n\t"	/* 0x0073 */
 		"trap    #2"
 		:
-		: "g"(vdipb), "g"(cntrl_0_1), "g"(handle)
-		: "d0", "d1", "d2", "a0", "a1", "a2", "memory", "cc"
+		: "r"(vdipb), "g"(cntrl_0_1), "g"(handle)
+		: "d0", "d1", "d2", "a1", "a2", "memory", "cc"
 	);
 }
 #define VDI_TRAP_00(vdipb, handle, opcode) \

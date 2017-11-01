@@ -44,14 +44,16 @@
 #if defined(__GNUC__) && defined(__mc68000__) && !defined(PRIVATE_AES)
 
 #define _AES_TRAP(pb) \
-	__asm__ volatile ( \
-		"move.l	%0,%%d1\n\t"	/* &aespb */ \
-		"move.w	#200,%%d0\n\t" \
-		"trap	#2" \
-		: \
-		: "g"(pb) \
-		: "d0","d1","d2","a0","a1","a2","memory","cc" \
-	)
+	{ \
+		register AESPB *_aespb __asm__("d1") = pb; \
+		__asm__ volatile ( \
+			"move.w	#200,%%d0\n\t" \
+			"trap	#2" \
+			: \
+			: "r"(_aespb) \
+			: "d0", "d2","a0","a1","a2","memory","cc" \
+		); \
+	}
 
 #if defined(__GNUC__) && !defined(__NO_INLINE__)
 
