@@ -2337,14 +2337,18 @@ static void adjust_menu(RSCFILE *file, _WORD treeindex)
 			/*
 			 * if there is a separator, the string should not exceeds its length
 			 */
-			if (separator_width != 0 && (l + 1) > separator_width &&
-				!((item->ob_state & OS_DISABLED) && *item->ob_spec.free_string == '-'))
+			if (!((item->ob_state & OS_DISABLED) && *item->ob_spec.free_string == '-'))
 			{
-				const char *name = ob_name_or_index(file, tree, k);
-				char *utf8 = nls_conv_to_utf8(file->rsc_nls_domain.fontset, str, STR0TERM);
-				KINFO(("tree %s, object %s: translation '%s' exceeds max menu width of %d\n",
-					tree->rt_name, name, utf8, separator_width));
-				g_free(utf8);
+				if (l > 0 && str[l - 1] != ' ')
+					l++;
+				if (separator_width != 0 && l > separator_width)
+				{
+					const char *name = ob_name_or_index(file, tree, k);
+					char *utf8 = nls_conv_to_utf8(file->rsc_nls_domain.fontset, str, STR0TERM);
+					KINFO(("tree %s, object %s: translation '%s' exceeds max menu width of %d\n",
+						tree->rt_name, name, utf8, separator_width));
+					g_free(utf8);
+				}
 			}
 		}
 		dropbox->ob_width = m;
