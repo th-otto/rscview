@@ -1009,7 +1009,7 @@ static inline int underscore_length(const char *s)
  * parse po files
  */
 __attribute__((__warn_unused_result__))
-static gboolean parse_po_file(const char *fname, oh *o, gboolean ignore_ae)
+static gboolean parse_po_file(nls_domain *domain, const char *fname, oh *o, gboolean ignore_ae)
 {
 	int c;
 	IFILE *f;
@@ -1253,9 +1253,26 @@ static gboolean parse_po_file(const char *fname, oh *o, gboolean ignore_ae)
 			e->msgstr = s_detach(msgstr);
 #if 0 /* check now done in xlate_file */
 			if (e->msgstr && strlen(e->msgstr))		/* really translating */
+			{
 				if (underscore_length(e->msgid.key) != underscore_length(e->msgstr))
 					warn("%s: underscores appear invalid for translation of '%s'", fname, e->msgid.key);
+			}
 #endif
+			if (e->msgid.key && *e->msgid.key != '\0' && e->msgstr && *e->msgstr != '\0')
+			{
+				size_t lp = strlen(e->msgid.key);
+				size_t ln = strlen(e->msgstr);
+				if ((e->msgid.key[lp - 1] == '\n' && e->msgstr[ln - 1] != '\n') ||
+					(e->msgid.key[lp - 1] != '\n' && e->msgstr[ln - 1] == '\n'))
+				{
+					char *from = nls_conv_to_utf8(CHARSET_ST, e->msgid.key, lp, TRUE);
+					char *utf8 = nls_conv_to_utf8(domain->fontset, e->msgstr, ln, TRUE);
+					warn("entries do not both end with '\\n' in translation of '%s' to '%s'",
+						from, utf8);
+					g_free(utf8);
+					g_free(from);
+				}
+			}
 			if (refstr)
 			{
 				e->refstr = s_detach(refstr);
@@ -1546,7 +1563,7 @@ static oh *po_load(nls_domain *domain, const char *po_dir)
 	fname = s_detach(s);
 	
 	o = o_new();
-	if (parse_po_file(fname, o, FALSE) == FALSE)
+	if (parse_po_file(domain, fname, o, FALSE) == FALSE)
 		goto errout;
 
 	/* get the source charset from the po file */

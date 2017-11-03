@@ -2096,8 +2096,8 @@ static void xlate_file(RSCFILE *file, _BOOL trim_strings)
 					{
 						const char *name = ob_name_or_index(file, tree, j);
 						const char *overlapname = ob_name_or_index(file, tree, overlap);
-						char *from = nls_conv_to_utf8(CHARSET_ST, *p, STR0TERM);
-						char *utf8 = nls_conv_to_utf8(domain->fontset, newstr, STR0TERM);
+						char *from = nls_conv_to_utf8(CHARSET_ST, *p, STR0TERM, FALSE);
+						char *utf8 = nls_conv_to_utf8(domain->fontset, newstr, STR0TERM, FALSE);
 						switch (reason)
 						{
 						case 0:
@@ -2123,14 +2123,15 @@ static void xlate_file(RSCFILE *file, _BOOL trim_strings)
 					if (underscore_length(*p) != underscore_length(newstr))
 					{
 						const char *name = ob_name_or_index(file, tree, j);
-						char *from = nls_conv_to_utf8(CHARSET_ST, *p, STR0TERM);
-						char *utf8 = nls_conv_to_utf8(domain->fontset, newstr, STR0TERM);
+						char *from = nls_conv_to_utf8(CHARSET_ST, *p, STR0TERM, FALSE);
+						char *utf8 = nls_conv_to_utf8(domain->fontset, newstr, STR0TERM, FALSE);
 						KINFO(("tree %s, object %s: underscores appear invalid for translation of '%s' to '%s'\n",
 							tree->rt_name, name, from, utf8));
 						g_free(utf8);
 						g_free(from);
 					}
 				}
+				
 				*p = newstr;
 			}
 			if (obj->ob_flags & OF_LASTOB)
@@ -2344,7 +2345,7 @@ static void adjust_menu(RSCFILE *file, _WORD treeindex)
 				if (separator_width != 0 && l > separator_width)
 				{
 					const char *name = ob_name_or_index(file, tree, k);
-					char *utf8 = nls_conv_to_utf8(file->rsc_nls_domain.fontset, str, STR0TERM);
+					char *utf8 = nls_conv_to_utf8(file->rsc_nls_domain.fontset, str, STR0TERM, FALSE);
 					KINFO(("tree %s, object %s: translation '%s' exceeds max menu width of %d\n",
 						tree->rt_name, name, utf8, separator_width));
 					g_free(utf8);

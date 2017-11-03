@@ -124,7 +124,7 @@ static const nls_wchar_t *get_cset(int  charset)
 
 /*** ---------------------------------------------------------------------- ***/
 
-char *nls_conv_to_utf8(int charset, const void *src, size_t len)
+char *nls_conv_to_utf8(int charset, const void *src, size_t len, int quote_nl)
 {
 	char *dst;
 	const nls_wchar_t *cset;
@@ -147,8 +147,16 @@ char *nls_conv_to_utf8(int charset, const void *src, size_t len)
 			ptr = (const unsigned char *)src;
 			for (i = 0; i < len; i++)
 			{
-				wc = cset[*ptr++];
-				nls_put_unichar(p, wc);
+				unsigned char c = *ptr++;
+				if (quote_nl && c == '\n')
+				{
+					*p++ = '\\';
+					*p++ = 'n';
+				} else
+				{
+					wc = cset[c];
+					nls_put_unichar(p, wc);
+				}
 			}
 			*p++ = '\0';
 			dst = g_renew(char, dst, p - dst);
@@ -180,7 +188,7 @@ void latin1_to_atarist(char *s)
 			newc = replacements[i].ascii;
 			if (!warned)
 			{
-				char *utf8 = nls_conv_to_utf8(CHARSET_L1, s, STR0TERM);
+				char *utf8 = nls_conv_to_utf8(CHARSET_L1, s, STR0TERM, FALSE);
 				errout("warning: untranslatable character $%02x in %s, using '%c' instead\n", c, utf8, newc);
 				g_free(utf8);
 				warned = 1;
