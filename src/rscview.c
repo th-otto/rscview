@@ -413,10 +413,35 @@ static _BOOL draw_menu(RSCTREE *tree)
 
 static _BOOL draw_string(RSCTREE *tree)
 {
-	/* can't do much here */
-	if (verbose)
-		printf("%s %ld %s\n", rtype_name(tree->rt_type), tree->rt_number, tree->rt_name);
-	return TRUE;
+	const char *str;
+	_WORD err;
+	GRECT gr;
+	TEDINFO ted = { NULL, NULL, NULL, IBM, 0, TE_CNTR, COLSPEC_MAKE(G_BLACK, G_BLACK, TEXT_OPAQUE, 0, G_WHITE), 0, 0, 0, 0 };
+	OBJECT string[1] = { { NIL, NIL, NIL, G_TEXT, OF_LASTOB, OS_NORMAL, { 0 }, 0, 0, 0, 0 } };
+	_WORD len;
+	
+	str = tree->rt_objects.alert.al_str;	
+	if (str == NULL)
+		return FALSE;
+	str = nls_dgettext(&tree->rt_file->rsc_nls_domain, str);
+	
+	ted.te_ptext = (char *)NO_CONST(str);
+	string[0].ob_spec.tedinfo = &ted;
+	len = strlen(str);
+	string[0].ob_width = len * gl_wchar;
+	string[0].ob_height = gl_hchar;
+	form_center(string, &string[ROOT].ob_x, &string[ROOT].ob_y, &gr.g_w, &gr.g_h);
+	gr.g_x = string[ROOT].ob_x;
+	gr.g_y = string[ROOT].ob_y;
+	
+	clear_screen(tree->rt_name);
+	objc_draw_grect(string, ROOT, MAX_DEPTH, &gr);
+
+	err = write_png(tree, gr.g_x, gr.g_y, gr.g_w, gr.g_h, FALSE);
+
+	form_dial_grect(FMD_FINISH, &gr, &gr);
+	
+	return err == 0;
 }
 
 /* ------------------------------------------------------------------------- */

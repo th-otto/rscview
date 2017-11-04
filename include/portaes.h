@@ -244,6 +244,7 @@ typedef union obspecptr
 	USERBLK		*userblk;
 	CICONBLK	*ciconblk;
 	char		*free_string;
+	const char	*const_string;
 } OBSPEC;
 
 
