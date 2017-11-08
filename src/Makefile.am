@@ -59,7 +59,7 @@ rscview$(EXEEXT): $(rscview_OBJECTS) $(rscview_DEPENDENCIES) $(EXTRA_rscview_DEP
 if !CROSS_COMPILING
 	$(AM_V_at)if test -d "$(SRVDIR)"; then \
 	   echo "installing $@ in $(SRVDIR)"; \
-	   cp -a $@ "$(SRVDIR)/rscview"; \
+	   cp $@ "$(SRVDIR)/rscview"; \
 	fi
 endif
 
@@ -75,7 +75,7 @@ rscview.cgi$(EXEEXT): $(rscview_cgi_OBJECTS) $(rscview_cgi_DEPENDENCIES) $(EXTRA
 if !CROSS_COMPILING
 	$(AM_V_at)if test -d "$(SRVDIR)"; then \
 	   echo "installing $@ in $(SRVDIR)"; \
-	   cp -a $@ "$(SRVDIR)/rscview.cgi"; \
+	   cp $@ "$(SRVDIR)/rscview.cgi"; \
 	fi
 endif
 

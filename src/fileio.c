@@ -51,6 +51,8 @@ static _BOOL fopen_mode;
 #define CENTRE_ALIGNED  0x8000
 #define RIGHT_ALIGNED   0x4000
 
+/* minimum width for the "about" entry in the desktop */
+#define MIN_DESKMENU_WIDTH  20  /* in characters, compatible with Atari TOS */
 
 /******************************************************************************/
 /*** ---------------------------------------------------------------------- ***/
@@ -2296,28 +2298,54 @@ static void adjust_menu(RSCFILE *file, _WORD treeindex)
 		{
 			OBJECT *item = &menu[k];
 			int l;
+			int is_separator = FALSE;
+			char *str;
 			
-			/*
-			 * english strings where not translated,
-			 * trim their spaces now.
-			 */
-			if (file->rsc_nls_domain.lang && strcmp(file->rsc_nls_domain.lang, "en") == 0)
-				trim_spaces(item->ob_spec.free_string);
-			l = strlen(item->ob_spec.free_string);
-			
-			if ((item->ob_state & OS_DISABLED) && *item->ob_spec.free_string == '-')
+			if (item->ob_type == G_STRING)
 			{
-				if (separator_width != 0 && l != separator_width)
+				/*
+				 * english strings where not translated,
+				 * trim their spaces now.
+				 */
+				if (file->rsc_nls_domain.lang && strcmp(file->rsc_nls_domain.lang, "en") == 0)
+					trim_spaces(item->ob_spec.free_string);
+				str = item->ob_spec.free_string;
+				l = strlen(str);
+				
+				if ((item->ob_state & OS_DISABLED) && *str == '-')
 				{
-					KINFO(("tree %s, object %s: mismatch in separator length (was %d, now %d)\n",
-						tree->rt_name, ob_name_or_index(file, tree, k), separator_width, l));
+					if (separator_width != 0 && l != separator_width)
+					{
+						KINFO(("tree %s, object %s: mismatch in separator length (was %d, now %d)\n",
+							tree->rt_name, ob_name_or_index(file, tree, k), separator_width, l));
+					}
+					separator_width = l;
+					is_separator = TRUE;
+				} else
+				{
+					/*
+					 * correct for at least 1 space after last char
+					 */
+					if (l > 0 && str[l - 1] != ' ')
+						l++;
 				}
-				separator_width = l;
+				if (!is_separator || file->rsc_emutos != EMUTOS_DESK)
+				{
+					if (m < l)
+						m = l;
+				}
 			}
-			l *= wchar;
-			if (m < l)
-				m = l;
 		}
+		
+		if (m == 0)
+		{
+			KINFO(("tree %s, object %s: empty menu\n",
+				tree->rt_name, ob_name_or_index(file, tree, i)));
+		}
+		if (file->rsc_emutos == EMUTOS_DESK)
+			m += 1;
+		m *= wchar;
+		
 		dropbox->ob_x = menu[mbar].ob_x + title->ob_x;
 
 		/* make sure the menu is not too far on the right of the screen */
@@ -2334,30 +2362,44 @@ static void adjust_menu(RSCFILE *file, _WORD treeindex)
 			const char *str = item->ob_spec.free_string;
 			int l = strlen(str);
 			
-			item->ob_width = m;
-			/*
-			 * if there is a separator, the string should not exceeds its length
-			 */
-			if (!((item->ob_state & OS_DISABLED) && *item->ob_spec.free_string == '-'))
+			if (item->ob_type == G_STRING)
 			{
-				if (l > 0 && str[l - 1] != ' ')
-					l++;
-				if (separator_width != 0 && l > separator_width)
+				/*
+				 * if there is a separator, the string should not exceeds its length
+				 */
+				if (!((item->ob_state & OS_DISABLED) && *item->ob_spec.free_string == '-'))
 				{
-					const char *name = ob_name_or_index(file, tree, k);
-					char *utf8 = nls_conv_to_utf8(file->rsc_nls_domain.fontset, str, STR0TERM, FALSE);
-					KINFO(("tree %s, object %s: translation '%s' exceeds max menu width of %d\n",
-						tree->rt_name, name, utf8, separator_width));
-					g_free(utf8);
+					/*
+					 * correct for at least 1 space after last char
+					 */
+					if (l > 0 && str[l - 1] != ' ')
+						l++;
+					if (separator_width != 0 && l > separator_width && file->rsc_emutos != EMUTOS_DESK)
+					{
+						const char *name = ob_name_or_index(file, tree, k);
+						char *utf8 = nls_conv_to_utf8(file->rsc_nls_domain.fontset, str, STR0TERM, FALSE);
+						KINFO(("tree %s, object %s: translation '%s' exceeds max menu width of %d\n",
+							tree->rt_name, name, utf8, separator_width));
+						g_free(utf8);
+					}
+				} else if (file->rsc_emutos == EMUTOS_DESK)
+				{
+					int l = m / wchar;
+					char *str = g_new(char, l + 1);
+					memset(str, '-', l);
+					str[l] = '\0';
+					item->ob_spec.free_string = str; /* leaked */
 				}
 			}
+			item->ob_width = m;
 		}
 		dropbox->ob_width = m;
 
 		j = dropbox->ob_next;
 	}
-	KDEBUG(("desktop menu bar: x=0x%04x, w=0x%04x\n",mbar->ob_x,mbar->ob_width));
+	KDEBUG(("desktop menu bar: x=0x%04x, w=0x%04x\n", mbar->ob_x, mbar->ob_width));
 }
+
 
 static void emutos_desktop_fix(RSCFILE *file)
 {
@@ -2535,5 +2577,5 @@ RSCFILE *load_all(const char *file_name, const char *lang, _UWORD flags, const c
 	if (file->rsc_opts.crc_string)
 		rsc_remove_crc_string(file);
 	
-	return file; 
+	return file;
 }
