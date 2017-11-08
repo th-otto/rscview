@@ -41,6 +41,7 @@ static WS ws;
  */
 static _BOOL xml_out = FALSE;
 static _BOOL verbose = FALSE;
+static _BOOL use_timestamps = FALSE;
 static const char *pngdir;
 static const char *htmlout_name;
 static const char *html_dir;
@@ -217,7 +218,7 @@ static void generate_imagemap(RSCTREE *tree)
 static _WORD write_png(RSCTREE *tree, _WORD x, _WORD y, _WORD w, _WORD h, _BOOL write_imagemap)
 {
 	_WORD pxy[4];
-	char basename[MAXNAMELEN + 1];
+	char basename[PATH_MAX];
 	char filename[PATH_MAX];
 	_WORD err;
 	char *p;
@@ -229,7 +230,22 @@ static _WORD write_png(RSCTREE *tree, _WORD x, _WORD y, _WORD w, _WORD h, _BOOL 
 	pxy[2] = x + w - 1;
 	pxy[3] = y + h - 1;
 	vs_clip(vdi_handle, 1, pxy);
-	strcpy(basename, tree->rt_name);
+	if (use_timestamps)
+	{
+		time_t t = time(NULL);
+		struct tm *tp = gmtime(&t);
+		sprintf(basename, "%s_%04d%02d%02d%02d%02d%02d",
+			tree->rt_name,
+			tp->tm_year + 1900,
+			tp->tm_mon + 1,
+			tp->tm_mday,
+			tp->tm_hour,
+			tp->tm_min,
+			tp->tm_sec);
+	} else
+	{
+		strcpy(basename, tree->rt_name);
+	}
 	str_lwr(basename);
 	p = filename;
 	if (pngdir)
@@ -535,7 +551,8 @@ enum rscview_opt {
 	
 	OPT_CREATE_HTML = 256,
 	OPT_HTML_DIR,
-	OPT_IMAGEMAP
+	OPT_IMAGEMAP,
+	OPT_TIMESTAMPS
 };
 
 static struct option const long_options[] = {
@@ -548,6 +565,7 @@ static struct option const long_options[] = {
 	{ "create-html", required_argument, NULL, OPT_CREATE_HTML },
 	{ "imagemap", no_argument, NULL, OPT_IMAGEMAP },
 	{ "html-dir", required_argument, NULL, OPT_HTML_DIR },
+	{ "timestamps", no_argument, NULL, OPT_TIMESTAMPS },
 	{ "version", no_argument, NULL, OPT_VERSION },
 	{ "help", no_argument, NULL, OPT_HELP },
 	{ NULL, no_argument, NULL, 0 }
@@ -565,6 +583,7 @@ static void usage(FILE *fp)
 	fprintf(fp, _("   -p, --podir <dir>    lookup po-files in <dir>\n"));
 	fprintf(fp, _("   -c, --charset <name> use <charset> for display, overriding entry from po-file\n"));
 	fprintf(fp, _("   -P, --pngdir <dir>   write output files to <dir>\n"));
+	fprintf(fp, _("   -T, --timestamps     use timestamps in filenames\n"));
 	fprintf(fp, _("       --version        print version and exit\n"));
 	fprintf(fp, _("       --help           print this help and exit\n"));
 }
@@ -597,7 +616,7 @@ int main(int argc, char **argv)
 	const char *po_dir = NULL;
 	const char *charset = NULL;
 	
-	while ((c = getopt_long_only(argc, argv, "c:l:p:P:vXhV", long_options, NULL)) != EOF)
+	while ((c = getopt_long_only(argc, argv, "c:l:p:P:TvXhV", long_options, NULL)) != EOF)
 	{
 		switch ((enum rscview_opt) c)
 		{
@@ -635,6 +654,10 @@ int main(int argc, char **argv)
 			
 		case OPT_VERBOSE:
 			verbose = TRUE;
+			break;
+		
+		case OPT_TIMESTAMPS:
+			use_timestamps = TRUE;
 			break;
 		
 		case OPT_VERSION:
