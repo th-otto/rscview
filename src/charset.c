@@ -90,8 +90,8 @@ static struct {
 	{ 0x00d9, 'U' },	/* U` LATIN CAPITAL LETTER U WITH GRAVE */
 	{ 0x00da, 'U' },	/* U' LATIN CAPITAL LETTER U WITH ACUTE */
 	{ 0x00db, 'U' },	/* U^ LATIN CAPITAL LETTER U WITH CIRCUMFLEX */
-	{ 0x00dd, 'Y' },	/* Y` LATIN CAPITAL LETTER Y WITH ACUTE */
-	{ 0x00fd, 'y' },	/* Y' LATIN SMALL LETTER Y WITH ACUTE */
+	{ 0x00dd, 'Y' },	/* Y' LATIN CAPITAL LETTER Y WITH ACUTE */
+	{ 0x00fd, 'y' },	/* y' LATIN SMALL LETTER Y WITH ACUTE */
 	{ 0x0000, '?' }
 };
 

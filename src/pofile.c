@@ -1239,7 +1239,7 @@ static gboolean parse_po_file(nls_domain *domain, const char *fname, oh *o, gboo
 		e = o_find(o, s_close(msgid));
 		if (e)
 		{
-			warn("double entry %s", s_close(msgid));
+			warn("duplicate entry %s", s_close(msgid));
 			s_free(msgid);
 			s_free(msgstr);
 		} else if (ignore_ae && msgid->buf[0] == '\0')
