@@ -2342,8 +2342,6 @@ static void adjust_menu(RSCFILE *file, _WORD treeindex)
 			KINFO(("tree %s, object %s: empty menu\n",
 				tree->rt_name, ob_name_or_index(file, tree, i)));
 		}
-		if (file->rsc_emutos == EMUTOS_DESK)
-			m += 1;
 		m *= wchar;
 		
 		dropbox->ob_x = menu[mbar].ob_x + title->ob_x;
