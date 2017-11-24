@@ -58,6 +58,7 @@ typedef struct rsc_lang rsc_lang;
 struct rsc_lang {
 	char *id;			/* name of language */
 	char *filename;		/* associated file */
+	char *charset;
 	const char *const *const *hash;		/* hash of strings for this language */
 	rsc_lang *next;		
 };

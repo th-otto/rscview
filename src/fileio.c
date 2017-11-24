@@ -1397,7 +1397,7 @@ static _BOOL rso_read_header(RSO_HEADER *rso_header)
 		(rso_header->rso_version == 7 && rso_header->rso_hsize != RSO_VER7_SIZE) ||
 		(rso_header->rso_version == 8 && rso_header->rso_hsize != RSO_VER8_SIZE) ||
 		(rso_header->rso_version == 9 && rso_header->rso_hsize != RSO_VER9_SIZE) ||
-		(rso_header->rso_version == 10 && rso_header->rso_hsize < RSO_VER10_MIN_SIZE)
+		(rso_header->rso_version >= 10 && rso_header->rso_hsize < RSO_VER10_MIN_SIZE)
 		)
 	{
 		warn_def_damaged(fname);
@@ -1504,7 +1504,7 @@ static _BOOL rso_read_header(RSO_HEADER *rso_header)
 			_UWORD type;
 			_UWORD active;
 			rsc_module *mod;
-			char *id, *filename;
+			char *id, *filename, *charset;
 			
 			INPWC(rso_header->rso_rsm_crc);
 			for (;;)
@@ -1531,8 +1531,15 @@ static _BOOL rso_read_header(RSO_HEADER *rso_header)
 			}
 			while ((id = rso_strread()) != NULL)
 			{
+				_BOOL res;
+				
+				charset = rso_strread();
 				filename = rso_strread();
-				if (rsc_lang_add(&rso_header->rso_langs, id, filename) == FALSE)
+				res = rsc_lang_add(&rso_header->rso_langs, id, charset, filename);
+				g_free(filename);
+				g_free(charset);
+				g_free(id);
+				if (res == FALSE)
 					return FALSE;
 			}
 		}
@@ -1601,7 +1608,7 @@ static _BOOL rso_load(RSCFILE *file, const char *filename, _BOOL *def_found)
 	_UWORD trindex;
 	_UWORD trtype;
 	_ULONG mask;
-	_UBYTE namebuf[MAXNAMELEN+1];
+	_UBYTE namebuf[MAXNAMELEN + 1];
 	stringarray cmntbuf;
 	
 	fname = filename;
@@ -1750,9 +1757,9 @@ static _BOOL rso_load(RSCFILE *file, const char *filename, _BOOL *def_found)
 	/*
 	 * walk object trees once again for BubbleGem help strings
 	 */
-#if 0 /* not implemented here */
 	if (inpw(&trindex))
 	{
+#if 0 /* not implemented here */
 		while (trindex != RSO_ENDMARK)
 		{
 			INPW(trtype);
@@ -1788,8 +1795,8 @@ static _BOOL rso_load(RSCFILE *file, const char *filename, _BOOL *def_found)
 			}
 			INPW(trindex);
 		}
-	}
 #endif
+	}
 	
 	if (rso_header.rso_rsm_crc != RSC_CRC_NONE && rso_header.rso_rsm_crc != file->rsc_rsm_crc)
 	{

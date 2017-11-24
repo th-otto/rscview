@@ -418,6 +418,7 @@ static void rsc_lang_deletelist(rsc_lang **list)
 	{
 		next = lang->next;
 		g_free(lang->id);
+		g_free(lang->charset);
 		g_free(lang->filename);
 		g_free(lang);
 	}
@@ -426,7 +427,7 @@ static void rsc_lang_deletelist(rsc_lang **list)
 
 /*** ---------------------------------------------------------------------- ***/
 
-_BOOL rsc_lang_add(rsc_lang **list, const char *id, const char *filename)
+_BOOL rsc_lang_add(rsc_lang **list, const char *id, const char *charset, const char *filename)
 {
 	rsc_lang *lang;
 	
@@ -436,6 +437,7 @@ _BOOL rsc_lang_add(rsc_lang **list, const char *id, const char *filename)
 	if (lang == NULL)
 		return FALSE;
 	lang->id = g_strdup(id);
+	lang->charset = g_strdup(charset);
 	lang->filename = g_strdup(filename);
 	lang->next = NULL;
 	*list = lang;
