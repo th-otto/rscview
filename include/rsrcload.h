@@ -131,6 +131,8 @@ void GetTextSize(_WORD *width, _WORD *height);
 #define XRSC_NO_ZERO_ROOT     0x0002
 #define XRSC_NO_OBFIX         0x0004
 #define XRSC_SAFETY_CHECKS    0x0008
+#define XRSC_REPORT_PO        0x0010
+#define XRSC_REPORT_RSC       0x0020
 
 RSCFILE *xrsrc_load(const char *fname, _UWORD flags);
 _BOOL xrsrc_free(RSCFILE *file);

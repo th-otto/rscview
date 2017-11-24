@@ -567,7 +567,9 @@ enum rscview_opt {
 	OPT_HTML_DIR,
 	OPT_IMAGEMAP,
 	OPT_TIMESTAMPS,
-	OPT_CREATE_PNGLIST
+	OPT_CREATE_PNGLIST,
+	OPT_REPORT_PO,
+	OPT_REPORT_RSC
 };
 
 static struct option const long_options[] = {
@@ -582,6 +584,8 @@ static struct option const long_options[] = {
 	{ "imagemap", no_argument, NULL, OPT_IMAGEMAP },
 	{ "html-dir", required_argument, NULL, OPT_HTML_DIR },
 	{ "timestamps", no_argument, NULL, OPT_TIMESTAMPS },
+	{ "report-po", no_argument, NULL, OPT_REPORT_PO },
+	{ "report-rsc", no_argument, NULL, OPT_REPORT_RSC },
 	{ "version", no_argument, NULL, OPT_VERSION },
 	{ "help", no_argument, NULL, OPT_HELP },
 	{ NULL, no_argument, NULL, 0 }
@@ -631,6 +635,7 @@ int main(int argc, char **argv)
 	const char *lang = NULL;
 	const char *po_dir = NULL;
 	const char *charset = NULL;
+	_UWORD load_flags = XRSC_SAFETY_CHECKS;
 	
 	while ((c = getopt_long_only(argc, argv, "c:l:p:P:TvXhV", long_options, NULL)) != EOF)
 	{
@@ -678,6 +683,14 @@ int main(int argc, char **argv)
 		
 		case OPT_TIMESTAMPS:
 			use_timestamps = TRUE;
+			break;
+		
+		case OPT_REPORT_PO:
+			load_flags |= XRSC_REPORT_PO;
+			break;
+		
+		case OPT_REPORT_RSC:
+			load_flags |= XRSC_REPORT_RSC;
 			break;
 		
 		case OPT_VERSION:
@@ -735,7 +748,7 @@ int main(int argc, char **argv)
 	while (optind < argc)
 	{
 		filename = argv[optind++];
-		file = load_all(filename, lang, XRSC_SAFETY_CHECKS, po_dir);
+		file = load_all(filename, lang, load_flags, po_dir);
 		if (file != NULL)
 		{
 			if (charset)

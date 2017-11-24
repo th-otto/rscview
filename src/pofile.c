@@ -7,6 +7,7 @@
 #include <errno.h>
 #include <time.h>
 #include "nls.h"
+#include "portab.h"
 #include "pofile.h"
 #include "debug.h"
 
@@ -1535,7 +1536,7 @@ void po_exit(void)
  * load po file
  */
 __attribute__((__warn_unused_result__))
-static oh *po_load(nls_domain *domain, const char *po_dir)
+static oh *po_load(nls_domain *domain, const char *po_dir, _BOOL report_translations)
 {
 	oh *o;
 	poe *e;
@@ -1611,9 +1612,9 @@ static oh *po_load(nls_domain *domain, const char *po_dir)
 	}
 
 	/* print stats */
-	if (0)
+	if (report_translations)
 	{
-		KINFO(("translated %d, untranslated %d\n", numtransl, numuntransl));
+		KINFO(("%s.po: translated %d, untranslated %d\n", domain->lang, numtransl, numuntransl));
 	}
 	retval = TRUE;
 	
@@ -1637,7 +1638,7 @@ errout:
 #define TH_BITS 10
 #define TH_SIZE (1 << TH_BITS)
 
-gboolean po_create_hash(const char *lang, nls_domain *domain, const char *po_dir)
+gboolean po_create_hash(const char *lang, nls_domain *domain, const char *po_dir, _BOOL report_translations)
 {
 	oh *o;
 	da *th[TH_SIZE];
@@ -1645,7 +1646,7 @@ gboolean po_create_hash(const char *lang, nls_domain *domain, const char *po_dir
 	char ***hash;
 	
 	domain->lang = lang;
-	o = po_load(domain, po_dir);
+	o = po_load(domain, po_dir, report_translations);
 	if (o == NULL)
 		return FALSE;
 	

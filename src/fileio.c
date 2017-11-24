@@ -2116,7 +2116,7 @@ static int notranslate(const char *str, enum emutos emutos)
 
 /*** ---------------------------------------------------------------------- ***/
 
-static void xlate_file(RSCFILE *file, _BOOL trim_strings)
+static void xlate_file(RSCFILE *file, _BOOL trim_strings, _BOOL report_translations)
 {
 	OBJECT *obj;
 	nls_domain *domain = &file->rsc_nls_domain;
@@ -2247,7 +2247,10 @@ static void xlate_file(RSCFILE *file, _BOOL trim_strings)
 		}
 	}
 	
-	KINFO(("translated %d, untranslated %d\n", numtransl, numuntransl));
+	if (report_translations)
+	{
+		KINFO(("%s: translated %d, untranslated %d\n", file->rsc_rsxname, numtransl, numuntransl));
+	}
 }
 
 /*** ---------------------------------------------------------------------- ***/
@@ -2651,9 +2654,9 @@ RSCFILE *load_all(const char *file_name, const char *lang, _UWORD flags, const c
 		file->rsc_nls_domain.lang = lang;
 		if (strcmp(lang, "en") != 0)
 		{
-			po_create_hash(lang, &file->rsc_nls_domain, po_dir);
+			po_create_hash(lang, &file->rsc_nls_domain, po_dir, (flags & XRSC_REPORT_PO) != 0);
 			nls_gettext_init(&file->rsc_nls_domain);
-			xlate_file(file, TRUE);
+			xlate_file(file, TRUE, (flags & XRSC_REPORT_RSC) != 0);
 		}
 	}
 	

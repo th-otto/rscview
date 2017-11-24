@@ -51,7 +51,7 @@ function gen_images($lang, $dir, $genlist)
 	global $top;
 	
 	echo "generating images for $lang\n";
-	$cmd = "LD_LIBRARY_PATH=$top $top/rscview --lang $lang --podir . --timestamps --create-html pngout.php";
+	$cmd = "LD_LIBRARY_PATH=$top $top/rscview --lang $lang --podir . --timestamps --create-html pngout.php --report-po --report-rsc";
 	if ($genlist)
 		$cmd .= " --create-pnglist pnglist.php";
 	$cmd .= " --html-dir . --imagemap desktop.rsc 2>&1";
@@ -68,7 +68,7 @@ function gen_images($lang, $dir, $genlist)
 	if ($genlist)
 		system("mv pnglist.php $dir 2>&1");
 	
-	$cmd = "LD_LIBRARY_PATH=$top $top/rscview --lang $lang --podir . --timestamps --create-html pngout.php";
+	$cmd = "LD_LIBRARY_PATH=$top $top/rscview --lang $lang --podir . --timestamps --create-html pngout.php --report-rsc";
 	if ($genlist)
 		$cmd .= " --create-pnglist pnglist.php";
 	$cmd .= " --html-dir aes --imagemap gem.rsc 2>&1";
