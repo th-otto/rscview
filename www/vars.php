@@ -64,34 +64,4 @@ function read_linguas($filename, $warn = 0)
 	}
 }
 
-function cmp_name($a, $b)
-{
-	if ($a['file'] > $b['file'])
-		return 1;
-	if ($a['file'] < $b['file'])
-		return -1;
-	return 0;
-}
-
-function read_pngs($dirname)
-{
-	global $files;
-	$files = array();
-	if ($dir = opendir($dirname))
-	{
-		while (false !== ($entry = readdir($dir))) {
-			if ($entry == ".") continue;
-			if ($entry == "..") continue;
-			if (!fnmatch("*.png", $entry)) continue;
-			if (preg_match('/^[0-9]+_[a-z][a-z]_(.*)\.png/', $entry, $matches))
-				$name = strtoupper($matches[1]);
-			else if (preg_match('/^[0-9]+_(.*)\.png/', $entry, $matches))
-				$name = strtoupper($matches[1]);
-		    $files[] = array('file' => $entry, 'name' => $name);
-	    }
-	 	closedir($dir);
-	    usort($files, 'cmp_name');
-	}
-}
-
 ?>

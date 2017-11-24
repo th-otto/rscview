@@ -45,13 +45,17 @@ function log_output($str)
 	return $str;
 }
 
-function gen_images($lang, $dir)
+function gen_images($lang, $dir, $genlist)
 {
 	global $languages;
 	global $top;
 	
 	echo "generating images for $lang\n";
-	system("LD_LIBRARY_PATH=$top $top/rscview --lang $lang --podir . --create-html pngout.php --html-dir . --imagemap desktop.rsc 2>&1");
+	$cmd = "LD_LIBRARY_PATH=$top $top/rscview --lang $lang --podir . --timestamps --create-html pngout.php";
+	if ($genlist)
+		$cmd .= " --create-pnglist pnglist.php";
+	$cmd .= " --html-dir . --imagemap desktop.rsc 2>&1";
+	system($cmd);
 	$trans = $languages[$lang];
 	$stat = stat($dir);
 	if (!$stat)
@@ -61,10 +65,18 @@ function gen_images($lang, $dir)
 		mkdir("$dir/aes");
 	}
 	system("rm -f $dir/*.png; mv *.png pngout.php $dir 2>&1");
-
-	system("LD_LIBRARY_PATH=$top $top/rscview --lang $lang --podir . --create-html pngout.php --html-dir aes --imagemap gem.rsc 2>&1");
+	if ($genlist)
+		system("mv pnglist.php $dir 2>&1");
+	
+	$cmd = "LD_LIBRARY_PATH=$top $top/rscview --lang $lang --podir . --timestamps --create-html pngout.php";
+	if ($genlist)
+		$cmd .= " --create-pnglist pnglist.php";
+	$cmd .= " --html-dir aes --imagemap gem.rsc 2>&1";
+	system($cmd);
 	$dir .= "/aes";
 	system("rm -f $dir/*.png; mv *.png pngout.php $dir 2>&1");
+	if ($genlist)
+		system("mv pnglist.php $dir 2>&1");
 	echo "\n";
 }
 
@@ -112,7 +124,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST')
 	
 	foreach ($tests as $lang)
 	{
-		gen_images($lang, "../tests/$lang");
+		gen_images($lang, "../tests/$lang", 0);
 	}
 
 	echo "</pre>\n";
@@ -173,7 +185,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST')
 	foreach ($linguas as $lang)
 	{
 		$lang = $lang['lang'];
-		gen_images($lang, "../$lang");
+		gen_images($lang, "../$lang", 1);
 	}
 	
 	#

@@ -44,8 +44,10 @@ static _BOOL verbose = FALSE;
 static _BOOL use_timestamps = FALSE;
 static const char *pngdir;
 static const char *htmlout_name;
+static const char *pnglist_name;
 static const char *html_dir;
 static FILE *htmlout_file;
+static FILE *pnglist_file;
 static _BOOL gen_imagemap;
 
 /*****************************************************************************/
@@ -288,6 +290,10 @@ static _WORD write_png(RSCTREE *tree, _WORD x, _WORD y, _WORD w, _WORD h, _BOOL 
 			generate_imagemap(tree);
 		}
 	}
+	if (pnglist_file)
+	{
+		fprintf(pnglist_file, "$files[] = array('num' => %ld, 'file' => '%s', 'name' => '%s');\n", tree->rt_number, p, tree->rt_name);
+	}
 	return err;
 }
 
@@ -503,6 +509,10 @@ static _BOOL draw_all_trees(RSCFILE *file)
 	RSCTREE *tree;
 	_BOOL ret = TRUE;
 	
+	if (pnglist_file)
+	{
+		fprintf(pnglist_file, "<?php\n");
+	}
 	FOR_ALL_RSC(file, tree)
 	{
 		switch (tree->rt_type)
@@ -529,6 +539,10 @@ static _BOOL draw_all_trees(RSCFILE *file)
 			break;
 		}
 	}
+	if (pnglist_file)
+	{
+		fprintf(pnglist_file, "?>\n");
+	}
 	return ret;
 }
 
@@ -552,7 +566,8 @@ enum rscview_opt {
 	OPT_CREATE_HTML = 256,
 	OPT_HTML_DIR,
 	OPT_IMAGEMAP,
-	OPT_TIMESTAMPS
+	OPT_TIMESTAMPS,
+	OPT_CREATE_PNGLIST
 };
 
 static struct option const long_options[] = {
@@ -563,6 +578,7 @@ static struct option const long_options[] = {
 	{ "pngdir", required_argument, NULL, OPT_PNGDIR },
 	{ "charset", required_argument, NULL, OPT_CHARSET },
 	{ "create-html", required_argument, NULL, OPT_CREATE_HTML },
+	{ "create-pnglist", required_argument, NULL, OPT_CREATE_PNGLIST },
 	{ "imagemap", no_argument, NULL, OPT_IMAGEMAP },
 	{ "html-dir", required_argument, NULL, OPT_HTML_DIR },
 	{ "timestamps", no_argument, NULL, OPT_TIMESTAMPS },
@@ -644,6 +660,10 @@ int main(int argc, char **argv)
 			htmlout_name = optarg;
 			break;
 		
+		case OPT_CREATE_PNGLIST:
+			pnglist_name = optarg;
+			break;
+		
 		case OPT_HTML_DIR:
 			html_dir = optarg;
 			break;
@@ -691,6 +711,16 @@ int main(int argc, char **argv)
 		if (htmlout_file == NULL)
 		{
 			errout(_("%s: %s: %s\n"), program_name, htmlout_name, strerror(errno));
+			return EXIT_FAILURE;
+		}
+	}
+	
+	if (pnglist_name)
+	{
+		pnglist_file = fopen(pnglist_name, "w");
+		if (pnglist_file == NULL)
+		{
+			errout(_("%s: %s: %s\n"), program_name, pnglist_name, strerror(errno));
 			return EXIT_FAILURE;
 		}
 	}
@@ -751,6 +781,12 @@ int main(int argc, char **argv)
 	{
 		fclose(htmlout_file);
 		htmlout_file = NULL;
+	}
+	
+	if (pnglist_file != NULL)
+	{
+		fclose(pnglist_file);
+		pnglist_file = NULL;
 	}
 	
 	return exit_status;

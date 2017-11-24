@@ -26,9 +26,43 @@ echo "<h1>EmuTOS $which resources - $lang</h1>\n";
 <?php
 include('vars.php');
 read_linguas('tmp/LINGUAS');
-read_pngs('en');
-if (isset($_GET['type']) && $_GET['type'] == 'table')
+$files = array();
+include('en/pnglist.php');
+$en_files = $files;
+$all_files = array();
+foreach ($linguas as $lang)
 {
+	$lang = $lang['lang'];
+	$files = array();
+	include($lang . '/pnglist.php');
+	$all_files[$lang] = $files;
+}
+if (isset($_GET['type']) && $_GET['type'] == 'list')
+{
+	/* output as list */
+	echo "<table>\n";
+	foreach ($en_files as $entry)
+	{
+		$name = $entry['name'];
+		$file = $entry['file'];
+		$num = $entry['num'];
+		echo "<tr valign=\"bottom\"><td>$name:</td></tr>\n";
+		foreach ($linguas as $lang)
+		{
+			$lang = $lang['lang'];
+			$trans = $languages[$lang];
+			$en = $trans['en'];
+			$native = $trans['native'];
+			$flag = $trans['flag'];
+			$file = $all_files[$lang][$num]['file'];
+			echo "<tr valign=\"top\"><td><img src=\"images/$flag\" width=\"32\" height=\"21\" alt=\"$en\" /></td>";
+			echo "<td><img src=\"$lang/$file\" alt=\"$name\" /></td></tr>\n";
+		}
+	}
+	echo "</table>\n";
+} else
+{
+	/* output as large table */
 	echo "<table>\n";
 	echo "<tr valign=\"bottom\">\n";
 	echo "<td>&nbsp;</td>\n";
@@ -44,11 +78,12 @@ if (isset($_GET['type']) && $_GET['type'] == 'table')
 		echo "</td>\n";
 	}
 	echo "</tr>\n";
-	foreach ($files as $entry)
+	foreach ($en_files as $entry)
 	{
 		echo "<tr valign=\"top\">\n";
 		$name = $entry['name'];
 		$file = $entry['file'];
+		$num = $entry['num'];
 		echo "<td>$name</td>\n";
 		foreach ($linguas as $lang)
 		{
@@ -56,31 +91,10 @@ if (isset($_GET['type']) && $_GET['type'] == 'table')
 			$trans = $languages[$lang];
 			$en = $trans['en'];
 			$native = $trans['native'];
-			$file = preg_replace('/([0-9]+)_[a-z][a-z]_(.*)\.png/', '${1}_' . $lang . '_${2}.png', $file);
+			$file = $all_files[$lang][$num]['file'];
 			echo "<td style=\"width:320px\"><img src=\"$lang/$file\" alt=\"$en\" style=\"max-width: 320px\"/></td>\n";
 		}
 		echo "</tr>\n";
-	}
-	echo "</table>\n";
-} else
-{
-	echo "<table>\n";
-	foreach ($files as $entry)
-	{
-		$name = $entry['name'];
-		$file = $entry['file'];
-		echo "<tr valign=\"bottom\"><td>$name:</td></tr>\n";
-		foreach ($linguas as $lang)
-		{
-			$lang = $lang['lang'];
-			$trans = $languages[$lang];
-			$en = $trans['en'];
-			$native = $trans['native'];
-			$file = preg_replace('/([0-9]+)_[a-z][a-z]_(.*)\.png/', '${1}_' . $lang . '_${2}.png', $file);
-			$flag = $trans['flag'];
-			echo "<tr valign=\"top\"><td><img src=\"images/$flag\" width=\"32\" height=\"21\" alt=\"$en\" /></td>";
-			echo "<td><img src=\"$lang/$file\" alt=\"$name\" /></td></tr>\n";
-		}
 	}
 	echo "</table>\n";
 }
