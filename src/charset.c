@@ -5,11 +5,11 @@
 #include "debug.h"
 
 #include "cp_atari.h"
-#include "cp_latin1.h"
-#include "cp_latin2.h"
-#include "cp_latin9.h"
-#include "cp_737.h"
-#include "cp_1251.h"
+#include "cp_iso1.h"
+#include "cp_st_l2.h"
+#include "cp_st_l9.h"
+#include "cp_st_gr.h"
+#include "cp_st_ru.h"
 
 #define nls_put_unichar(p, wc) \
 	if (wc < 0x80) \
@@ -106,13 +106,13 @@ static const nls_wchar_t *get_cset(int  charset)
 	case CHARSET_L1:
 		return latin1_to_unicode;
 	case CHARSET_L9:
-		return latin9_to_unicode;
+		return atari_latin9_to_unicode;
 	case CHARSET_L2:
-		return latin2_to_unicode;
+		return atari_latin2_to_unicode;
 	case CHARSET_GR:
-		return cp737_to_unicode;
+		return atari_greek_to_unicode;
 	case CHARSET_RU:
-		return cp1251_to_unicode;
+		return atari_russian_to_unicode;
 	default:
 		/*
 		 * this should not happen at all
