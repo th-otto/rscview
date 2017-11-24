@@ -54,6 +54,39 @@ static _BOOL fopen_mode;
 /* minimum width for the "about" entry in the desktop */
 #define MIN_DESKMENU_WIDTH  20  /* in characters, compatible with Atari TOS */
 
+/*
+ *  no-translate prefixes
+ */
+typedef struct {
+	enum emutos emutos;
+    int exact;                    /* non-zero => exact match, not prefix match */
+    int length;                   /* length of prefix */
+    const char *string;           /* prefix string */
+} NOTRANS_ENTRY;
+
+static NOTRANS_ENTRY const notrans[] = {
+#define str(x) (int)sizeof(x) - 1, x
+    { EMUTOS_DESK, 0, str("- EmuTOS -") },
+    { EMUTOS_DESK, 0, str("http://") },
+    { EMUTOS_DESK, 0, str("640 x ") },
+    { EMUTOS_DESK, 0, str("640x") },
+    { EMUTOS_DESK, 0, str("320 x ") },
+    { EMUTOS_DESK, 0, str("320x") },
+    { EMUTOS_DESK, 1, str("TC") },
+    { EMUTOS_DESK, 1, str("GEM") },
+    { EMUTOS_DESK, 1, str("GTP") },
+    { EMUTOS_DESK, 1, str("TOS") },
+    { EMUTOS_DESK, 1, str("TTP") },
+    { EMUTOS_DESK, 1, str("am") },
+    { EMUTOS_DESK, 1, str("pm") },
+    { EMUTOS_DESK, 1, str("Amiga") },
+    { EMUTOS_DESK, 1, str("Falcon") },
+    { EMUTOS_DESK, 1, str("ST") },
+    { EMUTOS_AES,  0, str("__________________") },
+    { EMUTOS_AES,  0, str("xF") },
+#undef str
+};
+
 /******************************************************************************/
 /*** ---------------------------------------------------------------------- ***/
 /******************************************************************************/
@@ -2045,6 +2078,37 @@ static _BOOL obj_checksize(OBJECT *tree, _WORD obj, const char *str, _WORD *over
 
 /*** ---------------------------------------------------------------------- ***/
 
+static int notranslate(const char *str, enum emutos emutos)
+{
+	int i, rc;
+	const NOTRANS_ENTRY *e;
+	unsigned char c;
+	
+    /* single-character strings are not translated */
+	if (str == NULL || str[0] == '\0' || str[1] == '\0')
+		return TRUE;
+	
+	for (i = 0, e = notrans; i < (int)(sizeof(notrans) / sizeof(notrans[0])); i++, e++)
+	{
+		if (e->emutos == emutos)
+		{
+			rc = e->exact ? strcmp(str, e->string) : strncmp(str, e->string, e->length);
+			if (rc == 0)
+				return TRUE;
+		}
+	}
+
+    for (i = 0; (c = str[i]) != 0; i++)
+    {
+        if (!isdigit(c) && !ispunct(c) && !isspace(c) && !iscntrl(c))
+            return FALSE;
+	}
+	
+	return TRUE;
+}
+
+/*** ---------------------------------------------------------------------- ***/
+
 static void xlate_file(RSCFILE *file, _BOOL trim_strings)
 {
 	OBJECT *obj;
@@ -2052,6 +2116,8 @@ static void xlate_file(RSCFILE *file, _BOOL trim_strings)
 	_ULONG i;
 	_WORD j;
 	_WORD wchar, hchar;
+	int numtransl = 0;					/* number of translated entries */
+	int numuntransl = 0;				/* number of untranslated entries */
 	
 	GetTextSize(&wchar, &hchar);
 	for (i = 0; i < file->header.rsh_ntree; i++)
@@ -2085,6 +2151,18 @@ static void xlate_file(RSCFILE *file, _BOOL trim_strings)
 			if (p)
 			{
 				char *newstr = nls_dgettext(domain, *p);
+				
+				if (!notranslate(*p, file->rsc_emutos))
+				{
+					if (newstr == *p)
+					{
+						numuntransl++;
+					} else
+					{
+						numtransl++;
+					}
+				}
+				
 				/*
 				 * for EmuTOS, do not check strings in menus,
 				 * as they are adjusted later
@@ -2140,6 +2218,29 @@ static void xlate_file(RSCFILE *file, _BOOL trim_strings)
 				break;
 		}
 	}
+
+	/*
+	 * only check for existing translations;
+	 * currently the output routines will do the actual translation of free strings
+	 */
+	for (i = 0; i < file->header.rsh_nstring; i++)
+	{
+		RSCTREE *tree = rsc_tree_index(file, i, RT_FRSTR);
+		const char *str = tree->rt_objects.alert.al_str;
+
+		if (!notranslate(str, file->rsc_emutos))
+		{
+			if (nls_dgettext(domain, str) == str)
+			{
+				numuntransl++;
+			} else
+			{
+				numtransl++;
+			}
+		}
+	}
+	
+	KINFO(("translated %d, untranslated %d\n", numtransl, numuntransl));
 }
 
 /*** ---------------------------------------------------------------------- ***/

@@ -558,9 +558,8 @@ static gboolean ae_check_line(char **cc, const char *start, char **end)
 static gboolean parse_ae(char *msgstr, ae_t *a)
 {
 	char *c = msgstr;
-	char *tmp;
+	char *tmp = NULL;
 
-	tmp = NULL;
 	if (!ae_check_line(&c, "Last-Translator: ", &a->lasttrans))
 		goto fail;
 	if (!ae_check_line(&c, "Language-Team: ", &a->langteam))
@@ -1612,7 +1611,10 @@ static oh *po_load(nls_domain *domain, const char *po_dir)
 	}
 
 	/* print stats */
-	KINFO(("translated %d, untranslated %d\n", numtransl, numuntransl));
+	if (0)
+	{
+		KINFO(("translated %d, untranslated %d\n", numtransl, numuntransl));
+	}
 	retval = TRUE;
 	
 errout:

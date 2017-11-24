@@ -436,7 +436,7 @@ static _BOOL draw_string(RSCTREE *tree)
 	OBJECT string[1] = { { NIL, NIL, NIL, G_TEXT, OF_LASTOB, OS_NORMAL, { 0 }, 0, 0, 0, 0 } };
 	_WORD len;
 	
-	str = tree->rt_objects.alert.al_str;	
+	str = tree->rt_objects.str.fr_str;
 	if (str == NULL)
 		return FALSE;
 	str = nls_dgettext(&tree->rt_file->rsc_nls_domain, str);
@@ -469,7 +469,7 @@ static _BOOL draw_alert(RSCTREE *tree)
 	_WORD wo[57];
 	GRECT gr;
 	
-	str = tree->rt_objects.alert.al_str;	
+	str = tree->rt_objects.alert.al_str;
 	if (str == NULL)
 		return FALSE;
 	str = nls_dgettext(&tree->rt_file->rsc_nls_domain, str);
