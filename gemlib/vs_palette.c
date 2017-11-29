@@ -24,7 +24,7 @@ short
 vs_palette (short handle, short palette)
 {
 	short vdi_control[VDI_CNTRLMAX]; 
-	short vdi_intout[VDI_INTOUTMAX];
+	short vdi_intout[1];
 	
 	VDI_PARAMS(vdi_control, &palette, 0L, vdi_intout, vdi_dummy );
 		

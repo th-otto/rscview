@@ -64,7 +64,7 @@ vq_devinfo (short handle, short device,
 	 * In both cases, this binding returns a valid filename: "DRIVER.SYS"
 	 * with a null-character to ended the string. 
 	 */
-	for (len=0; len<VDI_N_INTOUT; len++) 
+	for (len=0; len < VDI_N_INTOUT; len++) 
 	{
 		*file_name = vdi_intout[len];
 		if (*file_name==' ')

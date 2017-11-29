@@ -29,7 +29,7 @@ short
 vsf_xperimeter (short handle, short vis, short style)
 {
 	short vdi_control[VDI_CNTRLMAX]; 
-	short vdi_intout[VDI_INTOUTMAX];
+	short vdi_intout[1];
 	short vdi_intin[2]; 
 	
 	VDI_PARAMS(vdi_control, vdi_intin, 0L, vdi_intout, vdi_dummy );

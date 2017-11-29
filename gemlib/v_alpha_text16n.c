@@ -18,7 +18,7 @@ void
 v_alpha_text16n (short handle, const WCHAR *wstr, short num)
 {
 	short vdi_control[VDI_CNTRLMAX]; 
-	short vdi_intout[VDI_INTOUTMAX];
+	short vdi_intout[5];
 
 	VDI_PARAMS(vdi_control, (short *)NO_CONST(wstr), 0L, vdi_intout, vdi_dummy);
 	

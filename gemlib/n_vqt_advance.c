@@ -33,7 +33,7 @@ vqt_advance (short handle, short ch,
              short *advx, short *advy, short *xrem, short *yrem)
 {
 	short vdi_control[VDI_CNTRLMAX]; 
-	short vdi_ptsout[VDI_PTSOUTMAX];
+	short vdi_ptsout[8];
 
 	VDI_PARAMS(vdi_control, &ch, 0L, vdi_dummy, vdi_ptsout);
 	

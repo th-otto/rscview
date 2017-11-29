@@ -35,7 +35,7 @@ short
 v_page_size (short handle, short page_id)
 {
 	short vdi_control[VDI_CNTRLMAX]; 
-	short vdi_intout[VDI_INTOUTMAX];
+	short vdi_intout[1];
 
 	VDI_PARAMS(vdi_control, &page_id, 0L, vdi_intout, vdi_dummy );
 		

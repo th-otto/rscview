@@ -27,7 +27,7 @@
 short v_bez_con(short handle, short onoff)
 {
 	short vdi_control[VDI_CNTRLMAX]; 
-	short vdi_intout[VDI_INTOUTMAX]; 
+	short vdi_intout[1]; 
 	short vdi_ptsin[2]; 
 
 	VDI_PARAMS(vdi_control, 0L, vdi_ptsin, vdi_intout, vdi_dummy);

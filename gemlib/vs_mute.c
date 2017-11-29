@@ -23,7 +23,7 @@ short
 vs_mute (short handle, short action)
 {
 	short vdi_control[VDI_CNTRLMAX]; 
-	short vdi_intout[VDI_INTOUTMAX];
+	short vdi_intout[1];
 	
 	VDI_PARAMS(vdi_control, &action, 0L, vdi_intout, vdi_dummy );
 		

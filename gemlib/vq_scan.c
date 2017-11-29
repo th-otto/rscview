@@ -31,7 +31,7 @@ vq_scan (short handle, short *g_slice, short *g_page,
          short *a_slice, short *a_page, short *div_fac)
 {
 	short vdi_control[VDI_CNTRLMAX]; 
-	short vdi_intout[VDI_INTOUTMAX];
+	short vdi_intout[5];
 
 	VDI_PARAMS(vdi_control, 0L, 0L, vdi_intout, vdi_dummy );
 	

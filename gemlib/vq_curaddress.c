@@ -20,7 +20,7 @@ void
 vq_curaddress (short handle, short *cur_row, short *cur_col)
 {
 	short vdi_control[VDI_CNTRLMAX]; 
-	short vdi_intout[VDI_INTOUTMAX];
+	short vdi_intout[2];
 
 	VDI_PARAMS(vdi_control, 0L, 0L, vdi_intout, vdi_dummy );
 	

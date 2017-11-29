@@ -28,7 +28,7 @@ vsm_locator (short handle, short x, short y,
 {
 	short vdi_control[VDI_CNTRLMAX]; 
 	short vdi_ptsin[2];   
-	short vdi_ptsout[VDI_PTSOUTMAX];
+	short vdi_ptsout[2];
 	
 	VDI_PARAMS(vdi_control, 0L, vdi_ptsin, term, vdi_ptsout );
 	

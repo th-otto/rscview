@@ -38,8 +38,8 @@ vqt_fontinfo (short handle, short *minade, short *maxade, short distances[],
               short *maxwidth, short effects[])
 {
 	short vdi_control[VDI_CNTRLMAX]; 
-	short vdi_intout[VDI_INTOUTMAX];
-	short vdi_ptsout[VDI_PTSOUTMAX];
+	short vdi_intout[2];
+	short vdi_ptsout[10];
 	
 	VDI_PARAMS(vdi_control, 0L, 0L, vdi_intout, vdi_ptsout );
 	

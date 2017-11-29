@@ -23,7 +23,7 @@ void
 vq_chcells (short handle, short *n_rows, short *n_cols)
 {
 	short vdi_control[VDI_CNTRLMAX]; 
-	short vdi_intout[VDI_INTOUTMAX];
+	short vdi_intout[2];
 
 	VDI_PARAMS(vdi_control, 0L, 0L, vdi_intout, vdi_dummy );
 	

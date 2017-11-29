@@ -23,7 +23,7 @@ short
 vst_load_fonts (short handle, short select)
 {
 	short vdi_control[VDI_CNTRLMAX]; 
-	short vdi_intout[VDI_INTOUTMAX];
+	short vdi_intout[1];
 	
 	VDI_PARAMS(vdi_control, &select, 0L, vdi_intout, vdi_dummy );
 		

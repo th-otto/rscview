@@ -34,8 +34,8 @@ vst_point (short handle, short point,
 	short *ptr;
 #endif
 	short vdi_control[VDI_CNTRLMAX];
-	short vdi_intout[VDI_INTOUTMAX];
-	short vdi_ptsout[VDI_PTSOUTMAX];
+	short vdi_intout[1];
+	short vdi_ptsout[4];
 	
 	VDI_PARAMS(vdi_control, &point, 0L, vdi_intout, vdi_ptsout );
 	
