@@ -112,6 +112,13 @@ foreach ($linguas as $lang)
 <td><a href="icons/index.php">Icons</a></td>
 </tr>
 
+<tr valign="bottom">
+<td>
+<p><br />All languages</p>
+</td>
+<td><a href="cursors/index.php">Mouse Cursors</a></td>
+</tr>
+
 </table>
 
 <!-- ******************************************************************************* -->

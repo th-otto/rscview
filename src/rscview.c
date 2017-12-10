@@ -35,6 +35,7 @@ static GRECT desk;
 static _WORD phys_handle;						/* physical workstation handle */
 static _WORD vdi_handle;						/* virtual screen handle */
 static WS ws;
+static _WORD xworkout[57];
 
 /*
  * program options
@@ -75,6 +76,7 @@ static void open_screen(void)
 		workin[i] = 1;
 	workin[10] = 2;
 	v_opnvwk(workin, &vdi_handle, &ws.ws_xres);
+	vq_extnd(vdi_handle, 1, xworkout);
 	vsf_interior(vdi_handle, FIS_SOLID);
 	vsf_perimeter(vdi_handle, FALSE);
 	vswr_mode(vdi_handle, MD_REPLACE);
@@ -504,6 +506,78 @@ static _BOOL draw_alert(RSCTREE *tree)
 
 /* ------------------------------------------------------------------------- */
 
+static _BOOL draw_image(RSCTREE *tree)
+{
+	_WORD err;
+	BITBLK *bit;
+	_WORD *data;
+	_WORD width;
+	_WORD height;
+	GRECT gr;
+	_WORD pxy[8];
+	_WORD colors[2];
+	MFDB src, dst;
+	
+	bit = tree->rt_objects.bit;
+	data = bit->bi_pdata;
+	width = bit->bi_wb * 8;
+	height = bit->bi_hl;
+	if (is_mouseform(bit))
+	{
+		data += 5;
+		height -= 5;
+	}
+
+	clear_screen(tree->rt_name);
+
+	gr.g_x = (desk.g_w - width) / 2 + desk.g_x;
+	gr.g_y = (desk.g_h - height) / 2 + desk.g_y;
+	gr.g_w = width;
+	gr.g_h = height;
+	
+	pxy[0] = gr.g_x;
+	pxy[1] = gr.g_y;
+	pxy[2] = gr.g_x + gr.g_w - 1;
+	pxy[3] = gr.g_y + gr.g_h - 1;
+	vs_clip(vdi_handle, 1, pxy);
+	vswr_mode(vdi_handle, MD_REPLACE);
+	vsf_color(vdi_handle, G_WHITE);
+	vr_recfl(vdi_handle, pxy);
+
+	pxy[0] = 0;
+	pxy[1] = 0;
+	pxy[2] = gr.g_w - 1;
+	pxy[3] = gr.g_h - 1;
+	pxy[4] = gr.g_x;
+	pxy[5] = gr.g_y;
+	pxy[6] = gr.g_x + gr.g_w - 1;
+	pxy[7] = gr.g_y + gr.g_h - 1;
+
+	src.fd_w = width;
+	src.fd_h = height;
+	src.fd_nplanes = 1;
+	src.fd_wdwidth = (src.fd_w + 15) >> 4;
+	src.fd_stand = FALSE;
+	src.fd_addr = data;
+	
+	dst.fd_w = ws.ws_xres + 1;
+	dst.fd_h = ws.ws_yres + 1;
+	dst.fd_nplanes = xworkout[4];
+	dst.fd_wdwidth = (dst.fd_w + 15) >> 4;
+	dst.fd_stand = FALSE;
+	dst.fd_addr = 0;
+	
+	colors[0] = G_BLACK;
+	colors[1] = G_WHITE;
+	vrt_cpyfm(vdi_handle, MD_TRANS, pxy, &src, &dst, colors);
+	
+	err = write_png(tree, gr.g_x, gr.g_y, gr.g_w, gr.g_h, FALSE);
+
+	return err == 0;
+}
+
+/* ------------------------------------------------------------------------- */
+
 static _BOOL draw_all_trees(RSCFILE *file)
 {
 	RSCTREE *tree;
@@ -533,6 +607,7 @@ static _BOOL draw_all_trees(RSCFILE *file)
 			break;
 		case RT_FRIMG:
 		case RT_MOUSE:
+			ret &= draw_image(tree);
 			break;
 		case RT_BUBBLEMORE:
 		case RT_BUBBLEUSER:

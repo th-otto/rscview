@@ -167,6 +167,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST')
 		emutos_download('aes/gem.rsc', 'gem.rsc');
 		emutos_download('aes/gem.def', 'gem.def');
 		
+		emutos_download('aes/mform.rsc', 'mform.rsc');
+		emutos_download('aes/mform.def', 'mform.def');
+		
 		foreach ($linguas as $lang)
 		{
 			$lang = $lang['lang'];
@@ -193,6 +196,18 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST')
 	#
 	system("LD_LIBRARY_PATH=$top $top/rscview --create-html pngout.php --html-dir . --imagemap icon.rsc 2>&1");
 	$dir = '../icons';
+	$stat = stat($dir);
+	if (!$stat)
+	{
+		mkdir($dir);
+	}
+	system("rm -f $dir/*.png; mv *.png pngout.php $dir 2>&1");
+
+	#
+	# create images for cursors
+	#
+	system("LD_LIBRARY_PATH=$top $top/rscview --create-html pngout.php --html-dir . --imagemap mform.rsc 2>&1");
+	$dir = '../cursors';
 	$stat = stat($dir);
 	if (!$stat)
 	{
