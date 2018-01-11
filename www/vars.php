@@ -21,7 +21,7 @@ $languages = array(
 	'nl' => array('en' => 'Dutch',     'html' => 'nl-NL', 'flag' => 'nl.gif', 'native' => 'Nederlands'),
 	'cs' => array('en' => 'Czech',     'html' => 'cs-CZ', 'flag' => 'cz.gif', 'native' => '&#268;esky'),
 	'hu' => array('en' => 'Hungarian', 'html' => 'hu-HU', 'flag' => 'hu.gif', 'native' => 'Magyar'),
-	'pl' => array('en' => 'Polish',    'html' => 'pl-PL', 'flag' => 'pl.gif', 'native' => 'Polskie'),
+	'pl' => array('en' => 'Polish',    'html' => 'pl-PL', 'flag' => 'pl.gif', 'native' => 'Polski'),
 	'lt' => array('en' => 'Lithuanian','html' => 'lt-LT', 'flag' => 'lt.gif', 'native' => 'Lietuvi&#x0173; kalba'),
 	'ru' => array('en' => 'Russian',   'html' => 'ru-RU', 'flag' => 'ru.gif', 'native' => '&#1056;&#1091;&#1089;&#1089;&#1082;&#1080;&#1081;'),
 	'et' => array('en' => 'Estonian',  'html' => 'et-EE', 'flag' => 'ee.gif', 'native' => 'Eesti'),
