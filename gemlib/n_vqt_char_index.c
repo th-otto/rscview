@@ -62,7 +62,7 @@ vqt_char_index (short handle, short scr_index, short scr_mode, short dst_mode)
 	vdi_intin[0] = scr_index;
 	vdi_intin[1] = scr_mode;
 	vdi_intin[2] = dst_mode;
-	vdi_intout[0] = 0xffff;
+	vdi_intout[0] = -1;
 	
 	VDI_TRAP (vdi_params, handle, 190, 0,3);
 	
