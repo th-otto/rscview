@@ -167,7 +167,7 @@ static void fnttoc(UB *b, int l, FILE *out, const char *filename, const char *na
 	UW firstc, lastc;
 	W top;
 	W max_cell_width;
-	char facename_buf[VDI_FONTNAMESIZE];
+	char facename_buf[VDI_FONTNAMESIZE + 1];
 	
 #define HOST_BIG (HOST_BYTE_ORDER == BYTE_ORDER_BIG_ENDIAN)
 #define FONT_BIG ((LOAD_UW(h + 66) & 0x04) != 0)

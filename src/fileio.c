@@ -2513,8 +2513,8 @@ static void adjust_menu(RSCFILE *file, _WORD treeindex)
 static void emutos_desktop_fix(RSCFILE *file)
 {
 	OBJECT *tree = file->rs_trindex[ADDINFO];
-	static char version[30];
-	static char copyright_year[6];
+	static char version[80];
+	static char copyright_year[12];
 	time_t now;
 	struct tm *tm;
 	_WORD wchar, hchar;
