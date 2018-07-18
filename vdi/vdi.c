@@ -6653,7 +6653,7 @@ static int vdi_vq_ext_devinfo(VDIPB *pb)
 	V_INTOUT(pb, 0) = 0;
 	V_INTOUT(pb, 1) = 0;
 	
-	if (V_NINTIN(pb) >= 7)
+	if (V_NINTIN(pb) >= 1 + 3 * (int)VDI_NPTRINTS)
 	{
 		_WORD device = V_INTIN(pb, 0);
 		char *file_path = vdi_intin_ptr(1, char *);
@@ -6667,19 +6667,19 @@ static int vdi_vq_ext_devinfo(VDIPB *pb)
 		{
 			const char *path = "C:\\GEMSYS\\"; /* FIXME */
 			l = strlen(path) + 1;
-			memcpy(file_path, path, l + 1);
+			memcpy(file_path, path, l);
 		}
 		if (file_name)
 		{
 			const char *name = info ? info->name : "";
 			l = strlen(name) + 1;
-			memcpy(file_name, name, l + 1);
+			memcpy(file_name, name, l);
 		}
 		if (name)
 		{
 			const char *desc = info ? info->desc : "";
 			l = strlen(desc) + 1;
-			memcpy(name, desc, l + 1);
+			memcpy(name, desc, l);
 		}
 		V_INTOUT(pb, 0) = info != NULL;
 		V_INTOUT(pb, 1) = info != NULL && info->device_id == VDI_SCREEN_DEVICE;
@@ -6772,7 +6772,7 @@ static int vdi_v_fontinit(VWK *v, VDIPB *pb)
 #endif
 
 	UNUSED(v);
-	if (V_NINTIN(pb) == 2)
+	if (V_NINTIN(pb) == 1 * VDI_NPTRINTS)
 	{
 		V("v_fontinit[%d]: $%p", v->handle, vdi_intin_ptr(0, void *));
 		V_INTOUT(pb, 0) = 0;

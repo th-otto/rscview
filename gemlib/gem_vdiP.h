@@ -38,7 +38,7 @@
  */
  
 /* Array sizes in vdi control block */
-#define VDI_CNTRLMAX     16		/* max size of vdi_control[] ; actually 15; use 16 to make it long aligned */
+#define VDI_CNTRLMAX     (8 + 4 * N_PTRINTS)		/* max size of vdi_control[] ; actually 15; use 16 to make it long aligned */
 #define VDI_INTINMAX   1024		/**< max size of vdi_intin[] */
 #define VDI_INTOUTMAX   256		/**< max size of vdi_intout[] */
 #define VDI_PTSINMAX    256		/**< max size of vdi_ptsin[] */
@@ -91,7 +91,7 @@ static __inline int32_t *__vdi_ptsin_long(short n, short *vdi_ptsin)
 
 static __inline void **__vdi_intin_ptr(short n, short *vdi_intin)
 {
-	return ((void**)(vdi_intin + n * N_PTRINTS));
+	return ((void**)(vdi_intin + n));
 }
 #define vdi_intin_ptr(n, t)  *((t *)__vdi_intin_ptr(n, vdi_intin))
 
@@ -104,10 +104,10 @@ static __inline void **__vdi_control_ptr(short n, short *vdi_control)
 #else
 
 #define vdi_control_ptr(n, t)   *((t *)(vdi_control + 7 + (n) * N_PTRINTS))
-#define vdi_intin_ptr(n, t)     *((t *)(vdi_intin + (n) * N_PTRINTS))
+#define vdi_intin_ptr(n, t)     *((t *)(vdi_intin + (n)))
 #define vdi_intin_long(n)       *((int32_t *)(vdi_intin + (n)))
 #define vdi_intout_long(n)      *((int32_t *)(vdi_intout + (n)))
-#define vdi_intout_ptr(n, t)    *((t *)(vdi_intout + n * N_PTRINTS))
+#define vdi_intout_ptr(n, t)    *((t *)(vdi_intout + n))
 #define vdi_ptsout_long(n)      *((int32_t *)(vdi_ptsout + n))
 #define vdi_ptsin_long(n)       *((int32_t *)(vdi_ptsin + n))
 

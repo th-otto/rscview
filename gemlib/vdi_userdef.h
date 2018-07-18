@@ -35,10 +35,10 @@ extern VDIPARBLK _VDIParBlk;
 #else
 
 #define vdi_control_ptr(n, t)   *((t *)(_VDIParBlk.vdi_control + 7 + (n) * N_PTRINTS))
-#define vdi_intin_ptr(n, t)     *((t *)(_VDIParBlk.vdi_intin + (n) * N_PTRINTS))
+#define vdi_intin_ptr(n, t)     *((t *)(_VDIParBlk.vdi_intin + (n)))
 #define vdi_intin_long(n)       *((long *)(_VDIParBlk.vdi_intin + (n)))
 #define vdi_intout_long(n)      *((long *)(_VDIParBlk.vdi_intout + (n)))
-#define vdi_intout_ptr(n, t)    *((t *)(_VDIParBlk.vdi_intout + n * N_PTRINTS))
+#define vdi_intout_ptr(n, t)    *((t *)(_VDIParBlk.vdi_intout + n))
 #define vdi_ptsout_long(n)      *((long *)(_VDIParBlk.vdi_ptsout + n))
 #define vdi_ptsin_long(n)       *((long *)(_VDIParBlk.vdi_ptsin + n))
 

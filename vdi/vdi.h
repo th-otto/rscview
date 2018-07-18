@@ -866,7 +866,7 @@ static __inline int32_t *__vdi_ptsin_long(_WORD n, _WORD *vdi_ptsin)
 
 static __inline void **__vdi_intin_ptr(_WORD n, _WORD *vdi_intin)
 {
-	return ((void**)(vdi_intin + n * VDI_NPTRINTS));
+	return ((void**)(vdi_intin + n));
 }
 #define vdi_intin_ptr(n, t)  *((t *)__vdi_intin_ptr(n, intin))
 
@@ -879,10 +879,10 @@ static __inline void **__vdi_control_ptr(_WORD n, _WORD *vdi_control)
 #else
 
 #define vdi_control_ptr(n, t)   *((t *)(control + 7 + (n) * VDI_NPTRINTS))
-#define vdi_intin_ptr(n, t)     *((t *)(intin + (n) * VDI_NPTRINTS))
+#define vdi_intin_ptr(n, t)     *((t *)(intin + (n)))
 #define vdi_intin_long(n)       *((int32_t *)(intin + (n)))
 #define vdi_intout_long(n)      *((int32_t *)(intout + (n)))
-#define vdi_intout_ptr(n, t)    *((t *)(intout + n * VDI_NPTRINTS))
+#define vdi_intout_ptr(n, t)    *((t *)(intout + n))
 #define vdi_ptsout_long(n)      *((int32_t *)(ptsout + n))
 #define vdi_ptsin_long(n)       *((int32_t *)(ptsin + n))
 
