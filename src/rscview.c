@@ -211,7 +211,7 @@ static void generate_imagemap(RSCTREE *tree)
 		fprintf(htmlout_file, "&#10;flags = %s", flags_name(sbuf, obj[j].ob_flags, tree->rt_file->rsc_emutos));
 		fprintf(htmlout_file, "&#10;state = %s", state_name(sbuf, obj[j].ob_state));
 		
-		fprintf(htmlout_file, "\">\n");
+		fprintf(htmlout_file, "\" />\n");
 		j--;
 	}
 	fprintf(htmlout_file, "</map>\n");

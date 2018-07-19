@@ -12,7 +12,7 @@ $which = 'desktop';
 echo "<title>EmuTOS $which resources - $lang</title>\n";
 ?>
 <meta name="keywords" content="ORCS, CAT, GC, PBEM, PBM, GC-Ork, GCORK, ARAnyM, UDO, EmuTOS" />
-<link rel="stylesheet" type="text/css" href="rscview.css" />
+<link rel="stylesheet" type="text/css" href="emutos.css" />
 </head>
 
 <body>
