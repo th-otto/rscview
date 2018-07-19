@@ -5,31 +5,7 @@
 <title>EmuTOS desktop resources</title>
 <meta http-equiv="content-type" content="text/html;charset=UTF-8" />
 <meta name="keywords" content="ORCS, CAT, GC, PBEM, PBM, GC-Ork, GCORK, ARAnyM, UDO, EmuTOS" />
-<style type="text/css">
-body {
-	margin:1em;
-	padding:1em;
-	background-color: #ffffff;
-	color: #0000FF;
-	link-color: #8000FF;
-}
-a:link, a:visited {
-	color: #8000FF;
-	text-decoration: underline;
-}
-tr {
-  margin:0;
-  padding:0;
-}
-td {
-  margin:0;
-  padding:0 0 0 10px;
-}
-p {
-  margin:0;
-  padding:0;
-}
-</style>
+<link rel="stylesheet" type="text/css" href="emutos.css" />
 </head>
 
 <body>

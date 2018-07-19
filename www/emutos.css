@@ -9,3 +9,15 @@ a:link, a:visited {
 	color: #8000FF;
 	text-decoration: underline;
 }
+tr {
+	margin:0;
+	padding:0;
+}
+td {
+	margin:0;
+	padding:0 0 0 10px;
+}
+p {
+	margin:0;
+	padding:0;
+}

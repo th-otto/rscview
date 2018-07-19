@@ -199,7 +199,9 @@ char *rsc_language_str(char *str, RSC_LANG lang)
 	LANG_ARRAY arr;
 	char *txt;
 
-	(void) rsc_lang_split(arr, str);
+	if (str == NULL)
+		return NULL;
+	rsc_lang_split(arr, str);
 	txt = arr[lang].start;
 	if (*txt == '\0')
 		txt = arr[0].start;

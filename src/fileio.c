@@ -695,6 +695,9 @@ static _BOOL rsc_load_trees(RSCFILE *file)
 			switch (type)
 			{
 			case G_STRING:
+			case G_TITLE:
+			case G_BUTTON:
+			case G_SHORTCUT:
 				ob->ob_spec.free_string = rsc_language_str(ob->ob_spec.free_string, file->rsc_extob.lang);
 				break;
 			case G_TEXT:
@@ -704,6 +707,10 @@ static _BOOL rsc_load_trees(RSCFILE *file)
 			case G_FTEXT:
 			case G_FBOXTEXT:
 				ob->ob_spec.tedinfo->te_ptmplt = rsc_language_str(ob->ob_spec.tedinfo->te_ptmplt, file->rsc_extob.lang);
+				break;
+			case G_ICON:
+			case G_CICON:
+				ob->ob_spec.iconblk->ib_ptext = rsc_language_str(ob->ob_spec.iconblk->ib_ptext, file->rsc_extob.lang);
 				break;
 			}
 		}

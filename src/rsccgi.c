@@ -136,13 +136,14 @@ static void clear_screen(char *title)
 
 /* ------------------------------------------------------------------------- */
 
-static void generate_imagemap(RSCTREE *tree, GString *out)
+static void generate_imagemap(RSCTREE *tree, rsc_opts *opts, GString *out)
 {
 	OBJECT *obj;
 	_WORD j;
 	GRECT gr;
 	_WORD dx, dy;
 	
+	UNUSED(opts);
 	g_string_append_printf(out, "<map name=\"%s\">\n", tree->rt_name);
 	if (tree->rt_type == RT_MENU)
 	{
@@ -211,7 +212,7 @@ static void generate_imagemap(RSCTREE *tree, GString *out)
 		g_string_append_printf(out, "&#10;flags = %s", flags_name(sbuf, obj[j].ob_flags, tree->rt_file->rsc_emutos));
 		g_string_append_printf(out, "&#10;state = %s", state_name(sbuf, obj[j].ob_state));
 		
-		g_string_append_printf(out, "\">\n");
+		g_string_append_printf(out, "\" />\n");
 		j--;
 	}
 	g_string_append_printf(out, "</map>\n");
@@ -262,9 +263,10 @@ static _WORD write_png(RSCTREE *tree, rsc_opts *opts, _WORD x, _WORD y, _WORD w,
 	{
 		KINFO(("write_png: %s: %s\n", filename, strerror(err)));
 	}
-	g_string_append_printf(out, "<p>%s:<br /><img src=\"%s/%s\" alt=\"%s\"",
+	g_string_append_printf(out, "<p>%s:<br /><img src=\"%s/%s\" width=\"%d\" height=\"%d\" style=\"border:0;\" alt=\"%s\"",
 		tree->rt_name,
 		opts->ref_output_dir ? opts->ref_output_dir : ".", namebuf,
+		w, h,
 		tree->rt_name);
 	if (write_imagemap)
 	{
@@ -273,7 +275,7 @@ static _WORD write_png(RSCTREE *tree, rsc_opts *opts, _WORD x, _WORD y, _WORD w,
 	g_string_append_printf(out, " /></p>\n");
 	if (write_imagemap)
 	{
-		generate_imagemap(tree, out);
+		generate_imagemap(tree, opts, out);
 	}
 	g_free(filename);
 	g_free(namebuf);
@@ -379,6 +381,7 @@ static _BOOL draw_menu(RSCTREE *tree, rsc_opts *opts, GString *out)
 		title = ob[title].ob_next;
 		menubox = ob[menubox].ob_next;
 	} while (title != theactive && menubox != themenus);
+	ob[theactive].ob_width = x;
 	
 	/*
 	 * draw the boxes
@@ -406,6 +409,10 @@ static _BOOL draw_menu(RSCTREE *tree, rsc_opts *opts, GString *out)
 			maxy = my;
 	} while (menubox != themenus);
 	
+	ob[ROOT].ob_width = maxx;
+	ob[ROOT].ob_height = maxy;
+	ob[thebar].ob_width = maxx;
+	ob[themenus].ob_width = maxx;
 	err = write_png(tree, opts, 0, 0, maxx, maxy, out, opts->gen_imagemap);
 
 	menu_bar(ob, FALSE);
@@ -490,6 +497,40 @@ static _BOOL draw_alert(RSCTREE *tree, rsc_opts *opts, GString *out)
 
 /* ------------------------------------------------------------------------- */
 
+static _BOOL draw_tree(RSCTREE *tree, rsc_opts *opts, GString *out)
+{
+	_BOOL ret = TRUE;
+	
+	if (tree == NULL)
+		return FALSE;
+	switch (tree->rt_type)
+	{
+	case RT_DIALOG:
+	case RT_FREE:
+	case RT_UNKNOWN:
+		ret &= draw_dialog(tree, opts, out);
+		break;
+	case RT_MENU:
+		ret &= draw_menu(tree, opts, out);
+		break;
+	case RT_FRSTR:
+		ret &= draw_string(tree, opts, out);
+		break;
+	case RT_ALERT:
+		ret &= draw_alert(tree, opts, out);
+		break;
+	case RT_FRIMG:
+	case RT_MOUSE:
+		break;
+	case RT_BUBBLEMORE:
+	case RT_BUBBLEUSER:
+		break;
+	}
+	return ret;
+}
+
+/* ------------------------------------------------------------------------- */
+
 static _BOOL draw_all_trees(RSCFILE *file, rsc_opts *opts, GString *out)
 {
 	RSCTREE *tree;
@@ -497,29 +538,7 @@ static _BOOL draw_all_trees(RSCFILE *file, rsc_opts *opts, GString *out)
 	
 	FOR_ALL_RSC(file, tree)
 	{
-		switch (tree->rt_type)
-		{
-		case RT_DIALOG:
-		case RT_FREE:
-		case RT_UNKNOWN:
-			ret &= draw_dialog(tree, opts, out);
-			break;
-		case RT_MENU:
-			ret &= draw_menu(tree, opts, out);
-			break;
-		case RT_FRSTR:
-			ret &= draw_string(tree, opts, out);
-			break;
-		case RT_ALERT:
-			ret &= draw_alert(tree, opts, out);
-			break;
-		case RT_FRIMG:
-		case RT_MOUSE:
-			break;
-		case RT_BUBBLEMORE:
-		case RT_BUBBLEUSER:
-			break;
-		}
+		ret &= draw_tree(tree, opts, out);
 	}
 	return ret;
 }
@@ -534,17 +553,6 @@ static gboolean display_tree(const char *filename, rsc_opts *opts, GString *out,
 	gboolean retval = FALSE;
 	_UWORD load_flags = XRSC_SAFETY_CHECKS;
 	
-	(void) treeindex;
-
-	file = load_all(filename, opts->lang, load_flags, opts->po_dir);
-	if (file == NULL)
-	{
-		html_out_header(NULL, opts, out, _("404 Not Found"), -1, TRUE);
-		g_string_append_printf(out, "%s: %s\n", rsc_basename(filename), strerror(errno));
-		html_out_trailer(NULL, opts, out, -1, TRUE);
-		return FALSE;
-	}
-
 	po_init(opts->po_dir, FALSE, FALSE);
 	appl_init();
 	
@@ -552,30 +560,43 @@ static gboolean display_tree(const char *filename, rsc_opts *opts, GString *out,
 	phys_handle = graf_handle(&gl_wchar, &gl_hchar, &gl_wbox, &gl_hbox);
 	wind_get(DESK, WF_WORKXYWH, &desk.g_x, &desk.g_y, &desk.g_w, &desk.g_h);
 
-	if (opts->charset)
+	file = load_all(filename, opts->lang, load_flags, opts->po_dir);
+	if (file == NULL)
 	{
-		int cset = po_get_charset_id(opts->charset);
-		if (cset >= 0)
-			file->rsc_nls_domain.fontset = cset;
+		html_out_header(NULL, opts, out, _("404 Not Found"), -1, TRUE);
+		g_string_append_printf(out, "%s: %s\n", rsc_basename(filename), strerror(errno));
+		html_out_trailer(NULL, opts, out, -1, TRUE);
+	} else
+	{
+		if (opts->charset)
+		{
+			int cset = po_get_charset_id(opts->charset);
+			if (cset >= 0)
+				file->rsc_nls_domain.fontset = cset;
+		}
+	
+		open_screen();
+		vst_font(vdi_handle, file->rsc_nls_domain.fontset);
+		vst_font(phys_handle, file->rsc_nls_domain.fontset);
+		
+		html_out_header(file, opts, out, rsc_basename(filename), treeindex, FALSE);
+	
+		if (treeindex >= 0)
+			retval = draw_tree(rsc_tree_index(file, treeindex, RT_ANY), opts, out);
+		else
+			retval = draw_all_trees(file, opts, out);
+		
+		vst_font(phys_handle, 1);
+		close_screen();
+	
+		html_out_trailer(file, opts, out, treeindex, FALSE);
+	
+		rsc_file_delete(file, FALSE);
+		xrsrc_free(file);
 	}
-
-	open_screen();
-	vst_font(vdi_handle, file->rsc_nls_domain.fontset);
-	vst_font(phys_handle, file->rsc_nls_domain.fontset);
-	
-	html_out_header(file, opts, out, rsc_basename(filename), treeindex, FALSE);
-
-	retval = draw_all_trees(file, opts, out);
-	
-	vst_font(phys_handle, 1);
-	close_screen();
-
-	html_out_trailer(file, opts, out, treeindex, FALSE);
-
-	rsc_file_delete(file, FALSE);
-	xrsrc_free(file);
-
+		
 	appl_exit();
+	po_exit();
 		
 	return retval;
 }
@@ -771,6 +792,16 @@ static char *curl_download(CURL *curl, rsc_opts *opts, GString *body, const char
 	return local_filename;
 }
 
+/* ------------------------------------------------------------------------- */
+
+static gboolean has_extension(const char *filename, const char *ext)
+{
+	const char *p = strrchr(filename, '.');
+	if (p == NULL)
+		return FALSE;
+	return g_ascii_strcasecmp(p + 1, ext) == 0;
+}
+
 /*****************************************************************************/
 /* ------------------------------------------------------------------------- */
 /*****************************************************************************/
@@ -795,7 +826,7 @@ int main(void)
 	opts->for_cgi = TRUE;
 	opts->verbose = 0;
 	opts->outfile = out;
-	opts->gen_imagemap = FALSE;
+	opts->gen_imagemap = TRUE;
 	opts->errorfile = fopen("rscview.log", "a");
 	if (opts->errorfile == NULL)
 		opts->errorfile = stderr;
@@ -826,6 +857,7 @@ int main(void)
 
 	if (cgiAccept && strstr(cgiAccept, "application/xhtml+xml") != NULL)
 		opts->use_xhtml = TRUE;
+	opts->use_xhtml = FALSE;
 
 	if (cgiScriptName)
 		cgi_scriptname = cgiScriptName;
@@ -838,7 +870,7 @@ int main(void)
 	}
 	if ((val = cgiFormString("index")) != NULL)
 	{
-		treeindex = (int)strtoul(val, NULL, 10);
+		treeindex = (int)strtol(val, NULL, 10);
 		g_free(val);
 	} else
 	{
@@ -919,11 +951,14 @@ int main(void)
 		g_ascii_strcasecmp(cgiRequestMethod, "BOTH") == 0)
 	{
 		char *filename;
+		const char *data;
 		int len;
+		cgiFormResultType result;
+		int first = TRUE;
 		
 		g_string_truncate(body, 0);
-		filename = cgiFormFileName("file", &len);
-		if (filename == NULL || len == 0)
+		result = cgiFormFileFind(first, "file", &filename, NULL, &data, &len);
+		if (result != cgiFormSuccess || filename == NULL || len == 0)
 		{
 			const char *scheme = "undefined";
 			html_out_header(NULL, opts, body, _("403 Forbidden"), -1, TRUE);
@@ -939,63 +974,119 @@ int main(void)
 		{
 			FILE *fp;
 			char *local_filename;
-			const char *data;
+			char *rsc_filename = NULL;
 			
-			if (*filename == '\0')
-			{
-				g_free(filename);
+			do {
+				
+				if (*filename == '\0')
+				{
+					g_free(filename);
 #if defined(HAVE_MKSTEMPS)
-				{
-				int fd;
-				filename = g_strdup("tmpfile.XXXXXX.rsc");
-				local_filename = g_build_filename(opts->output_dir, hyp_basename(filename), NULL);
-				fd = mkstemps(local_filename, 4);
-				if (fd > 0)
-					close(fd);
-				}
+					{
+						int fd;
+						
+						filename = g_strdup("tmpfile.XXXXXX.rsc");
+						local_filename = g_build_filename(opts->output_dir, filename, NULL);
+						fd = mkstemps(local_filename, 4);
+						if (fd > 0)
+							close(fd);
+					}
 #elif defined(HAVE_MKSTEMP)
-				{
-				int fd;
-				filename = g_strdup("tmpfile.rsc.XXXXXX");
-				local_filename = g_build_filename(opts->output_dir, hyp_basename(filename), NULL);
-				fd = mkstemp(local_filename);
-				if (fd > 0)
-					close(fd);
-				}
+					{
+						int fd;
+						char *tmp, *tmp2;
+						
+						tmp = g_strdup("tmpfile.XXXXXX");
+						tmp2 = g_build_filename(opts->output_dir, tmp, NULL);
+						fd = mkstemp(tmp2);
+						if (fd > 0)
+							close(fd);
+						filename = g_strconcat(tmp, ".rsc", NULL);
+						local_filename = g_strconcat(tmp2, ".rsc", NULL);
+						g_free(tmp2);
+						g_free(tmp);
+					}
 #else
-				filename = g_strdup("tmpfile.rsc.XXXXXX");
-				local_filename = g_build_filename(opts->output_dir, hyp_basename(filename), NULL);
-				mktemp(local_filename);
+					{
+						char *tmp, *tmp2;
+						
+						tmp = g_strdup("tmpfile.XXXXXX");
+						tmp2 = g_build_filename(opts->output_dir, tmp, NULL);
+						mktemp(tmp2);
+						filename = g_strconcat(tmp, ".rsc", NULL);
+						local_filename = g_strconcat(tmp2, ".rsc", NULL);
+						g_free(tmp2);
+						g_free(tmp);
+					}
 #endif
-			} else
-			{
-				local_filename = g_build_filename(opts->output_dir, hyp_basename(filename), NULL);
-			}
-
-			hyp_utf8_fprintf(opts->errorfile, "%s: POST from %s, file=%s, size=%d\n", currdate(), fixnull(cgiRemoteHost), hyp_basename(filename), len);
-
-			fp = hyp_utf8_fopen(local_filename, "wb");
-			if (fp == NULL)
-			{
-				const char *err = hyp_utf8_strerror(errno);
-				hyp_utf8_fprintf(opts->errorfile, "%s: %s\n", local_filename, err);
-				html_out_header(NULL, opts, body, _("404 Not Found"), -1, TRUE);
-				g_string_append_printf(body, "%s: %s\n", hyp_basename(filename), err);
-				html_out_trailer(NULL, opts, body, -1, TRUE);
-				exit_status = EXIT_FAILURE;
-			} else
-			{
-				data = cgiFormFileData("file", &len);
-				fwrite(data, 1, len, fp);
-				fclose(fp);
-				opts->cgi_cached = TRUE;
-				html_referer_url = g_strdup(filename);
-				if (display_tree(local_filename, opts, body, treeindex) == FALSE)
+				} else
 				{
+					local_filename = g_build_filename(opts->output_dir, hyp_basename(filename), NULL);
+				}
+	
+				if (first)
+					hyp_utf8_fprintf(opts->errorfile, "%s: POST from %s, file=%s, size=%d", currdate(), fixnull(cgiRemoteHost), hyp_basename(filename), len);
+				else
+					hyp_utf8_fprintf(opts->errorfile, ", file=%s, size=%d", hyp_basename(filename), len);
+	
+				fp = hyp_utf8_fopen(local_filename, "wb");
+				if (fp == NULL)
+				{
+					const char *err = hyp_utf8_strerror(errno);
+					hyp_utf8_fprintf(opts->errorfile, "\n%s: %s\n", local_filename, err);
+					html_out_header(NULL, opts, body, _("404 Not Found"), -1, TRUE);
+					g_string_append_printf(body, "%s: %s\n", hyp_basename(filename), err);
+					html_out_trailer(NULL, opts, body, -1, TRUE);
 					exit_status = EXIT_FAILURE;
+				} else
+				{
+					fwrite(data, 1, len, fp);
+					fclose(fp);
+					opts->cgi_cached = TRUE;
+				}
+				
+				if (has_extension(filename, "rsc"))
+				{
+					if (rsc_filename != NULL)
+					{
+						hyp_utf8_fprintf(opts->errorfile, " duplicate RSC\n");
+						html_out_header(NULL, opts, body, _("More than one resource file specified"), -1, TRUE);
+						g_string_append_printf(body, "%s, %s\n", hyp_basename(rsc_filename), hyp_basename(filename));
+						html_out_trailer(NULL, opts, body, -1, TRUE);
+						exit_status = EXIT_FAILURE;
+					} else
+					{
+						rsc_filename = g_strdup(local_filename);
+						html_referer_url = g_strdup(filename);
+					}
+				}
+				
+				g_free(local_filename);
+				first = FALSE;
+				g_free(filename);
+				filename = NULL;
+				result = cgiFormFileFind(first, "file", &filename, NULL, &data, &len);
+			} while (result == cgiFormSuccess && exit_status == EXIT_SUCCESS);
+			
+			if (exit_status == EXIT_SUCCESS)
+			{
+				hyp_utf8_fprintf(opts->errorfile, "\n");
+				
+				if (rsc_filename == NULL)
+				{
+					html_out_header(NULL, opts, body, _("No resource file specified"), -1, TRUE);
+					g_string_append_printf(body, _("There was no resource file found in POSTED data"));
+					html_out_trailer(NULL, opts, body, -1, TRUE);
+					exit_status = EXIT_FAILURE;
+				} else
+				{
+					if (display_tree(rsc_filename, opts, body, treeindex) == FALSE)
+					{
+						exit_status = EXIT_FAILURE;
+					}
 				}
 			}
-			g_free(local_filename);
+			g_free(rsc_filename);
 		}
 		g_free(filename);
 		g_free(html_referer_url);
@@ -1024,3 +1115,14 @@ int main(void)
 	
 	return exit_status;
 }
+
+/*
+export SERVER_NAME=127.0.0.2
+export HTTP_REFERER=http://127.0.0.2/rscview/
+export SCRIPT_FILENAME=/srv/www/htdocs/rscview/rscview.cgi
+export SCRIPT_NAME=/rscview/rscview.cgi
+export REQUEST_METHOD=GET
+export DOCUMENT_ROOT=/srv/www/htdocs
+export REQUEST_URI='/rscview/rscview.cgi?url=/rsc/orcs.rsc'
+export QUERY_STRING='url=/rsc/orcs.rsc'
+*/

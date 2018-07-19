@@ -488,7 +488,7 @@ static void decomposeValue(char *value, char *mvalue, int mvalueSpace, const cha
 		{
 			argName[argNameLen] = '\0';
 		}
-		while ((*value) && g_ascii_isspace(*value))
+		while (*value && g_ascii_isspace(*value))
 		{
 			value++;
 		}
@@ -498,7 +498,7 @@ static void decomposeValue(char *value, char *mvalue, int mvalueSpace, const cha
 			return;
 		}
 		value++;
-		while ((*value) && g_ascii_isspace(*value))
+		while (*value && g_ascii_isspace(*value))
 		{
 			value++;
 		}
@@ -1057,7 +1057,7 @@ const char *cgiFormFileData(const char *name, int *bodyLength)
 
 /* ------------------------------------------------------------------------- */
 
-char *cgiFormFileContentType(const char *name)
+const char *cgiFormFileContentType(const char *name)
 {
 	cgiFormEntry *e;
 
@@ -1065,8 +1065,8 @@ char *cgiFormFileContentType(const char *name)
 	if (e == NULL)
 		return NULL;
 	if (e->contentType == NULL)
-		return g_strdup("");
-	return g_strdup(e->contentType);
+		return "";
+	return e->contentType;
 }
 
 /* ------------------------------------------------------------------------- */
@@ -1075,22 +1075,49 @@ cgiFormResultType cgiFormFileSize(const char *name, int *sizeP)
 {
 	cgiFormEntry *e;
 
+	if (sizeP)
+		*sizeP = 0;
 	e = cgiFormEntryFindFirst(name);
 	if (!e)
-	{
-		if (sizeP)
-		{
-			*sizeP = 0;
-		}
 		return cgiFormNotFound;
-	} else
+	if (sizeP)
+		*sizeP = e->valueLength;
+	return cgiFormSuccess;
+}
+
+/* ------------------------------------------------------------------------- */
+
+cgiFormResultType cgiFormFileFind(int first, const char *name, char **filename, const char **contentType, const char **value, int *valueLength)
+{
+	cgiFormEntry *e;
+
+	if (filename)
+		*filename = NULL;
+	if (contentType)
+		*contentType = NULL;
+	if (value)
+		*value = NULL;
+	if (valueLength)
+		*valueLength = 0;
+	if (first)
 	{
-		if (sizeP)
-		{
-			*sizeP = e->valueLength;
-		}
-		return cgiFormSuccess;
+		cgiFindTarget = name;
+		cgiFindPos = cgiFormEntryFirst;
 	}
+	e = cgiFormEntryFindNext();
+	if (e == NULL)
+		return cgiFormNotFound;
+
+	if (filename != NULL)
+		*filename = e->fileName == NULL ? g_strdup("") : g_strdup(e->fileName);
+	if (contentType != NULL)
+		*contentType = e->contentType == NULL ? "" : e->contentType;
+	if (valueLength != NULL)
+		*valueLength = e->valueLength;
+	if (value != NULL)
+		*value = e->value;
+
+	return cgiFormSuccess;
 }
 
 /* ------------------------------------------------------------------------- */
@@ -1927,6 +1954,20 @@ int cgiInit(GString *out)
 			return FALSE;
 		}
 	}
+#if 0
+	{
+		cgiFormEntry *pos;
+		
+		for (pos = cgiFormEntryFirst; pos; pos = pos->next)
+		{
+			fprintf(stderr, "attr: %s\n", pos->attr);
+			fprintf(stderr, "value: %s\n", pos->value);
+			fprintf(stderr, "valuelength: %d\n", pos->valueLength);
+			fprintf(stderr, "filename: %s\n", pos->fileName);
+			fprintf(stderr, "type: %s\n", pos->contentType);
+		}
+	}
+#endif
 	return TRUE;
 }
 

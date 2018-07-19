@@ -25,7 +25,7 @@ static gboolean css_written = FALSE;
 static gboolean js_written = FALSE;
 
 #define COLOR_BG         "#ffffff"
-#define COLOR_TEXT       "#000000"
+#define COLOR_TEXT       "#0000ff"
 #define COLOR_LINK       "#0000ff"
 #define COLOR_POPUP      "#00ff00"
 #define COLOR_ERROR      "#ff0000"
@@ -165,6 +165,9 @@ static char *html_filename_for_tree(RSCFILE *file, rsc_opts *opts, _WORD treeind
 	RSCTREE *tree;
 	
 	tree = rsc_tree_index(file, treeindex, RT_ANY);
+	if (tree == NULL)
+		return g_strdup("null");
+
 	{
 		char *name = g_ascii_strdown(tree->rt_name, STR0TERM);
 		if (strcmp(name, "index") == 0)
@@ -201,7 +204,7 @@ static char *html_filename_for_tree(RSCFILE *file, rsc_opts *opts, _WORD treeind
 
 /* ------------------------------------------------------------------------- */
 
-static void html_out_entities(GString *out)
+void html_out_entities(GString *out)
 {
 	g_string_append(out, " [\n");
 	g_string_append(out, "<!ENTITY uparrow \"&#8679;\">          <!-- 0x01 U+21E7 -->\n");
@@ -761,13 +764,18 @@ static gboolean html_out_stylesheet(rsc_opts *opts, GString *outstr, gboolean do
 	}
 	
 	g_string_append(out, "body {\n");
-	g_string_append_printf(out, "  background-color: %s;\n", COLOR_BG);
-	g_string_append_printf(out, "  color: %s;\n", COLOR_TEXT);
+	g_string_append_printf(out, "  background-color: %s; /* COLOR_BG */\n", COLOR_BG);
+	g_string_append_printf(out, "  color: %s; /* COLOR_TEXT */\n", COLOR_TEXT);
+	g_string_append_printf(out, "  link-color: %s; /* COLOR_LINK */\n", COLOR_LINK);
+	g_string_append_printf(out, "  font-family: Verdana,Arial,Helvetica;\n");
+	g_string_append_printf(out, "  font-size: 11pt;\n");
+	g_string_append_printf(out, "  margin:1em;\n");
+	g_string_append_printf(out, "  padding:1em;\n");
 	g_string_append(out, "}\n");
 	
 	g_string_append(out, "/* style used to display links */\n");
 	g_string_append(out, "a:link, a:visited {\n");
-	g_string_append_printf(out, "  color: %s;\n", COLOR_LINK);
+	g_string_append_printf(out, "  color: %s; /* COLOR_LINK */\n", COLOR_LINK);
 	g_string_append(out, "  text-decoration: underline;\n");
 	g_string_append(out, "}\n");
 	
@@ -787,8 +795,8 @@ static gboolean html_out_stylesheet(rsc_opts *opts, GString *outstr, gboolean do
 	g_string_append(out, "  z-index:3;\n");
 	g_string_append(out, "  margin:0;\n");
 	g_string_append(out, "  padding:0;\n");
-	g_string_append_printf(out, "  background-color: %s;\n", COLOR_BG);
-	g_string_append_printf(out, "  color: %s;\n", COLOR_TEXT);
+	g_string_append_printf(out, "  background-color: %s; /* COLOR_BG */\n", COLOR_BG);
+	g_string_append_printf(out, "  color: %s; /* COLOR_TEXT */\n", COLOR_TEXT);
 	g_string_append(out, "}\n");
 	
 	g_string_append(out, "/* style used for images in the navigation toolbar */\n");
@@ -819,7 +827,7 @@ static gboolean html_out_stylesheet(rsc_opts *opts, GString *outstr, gboolean do
 	g_string_append(out, "/* style used for the body of popup nodes */\n");
 	g_string_append_printf(out, ".%s {\n", html_pnode_style);
 	g_string_append_printf(out, "  background-color: %s;\n", COLOR_BG);
-	g_string_append_printf(out, "  color: %s;\n", COLOR_TEXT);
+	g_string_append_printf(out, "  color: %s; /* COLOR_TEXT */\n", COLOR_TEXT);
 	g_string_append(out, "  z-index:3;\n");
 	g_string_append(out, "  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);\n");
 	g_string_append(out, "}\n");
@@ -827,7 +835,7 @@ static gboolean html_out_stylesheet(rsc_opts *opts, GString *outstr, gboolean do
 	g_string_append(out, "/* style used for the body of popup nodes */\n");
 	g_string_append_printf(out, ".%s {\n", html_dropdown_pnode_style);
 	g_string_append_printf(out, "  background-color: %s;\n", COLOR_BG);
-	g_string_append_printf(out, "  color: %s;\n", COLOR_TEXT);
+	g_string_append_printf(out, "  color: %s; /* COLOR_TEXT */\n", COLOR_TEXT);
 	g_string_append(out, "  z-index:4;\n");
 	g_string_append(out, "  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);\n");
 	g_string_append(out, "  border: solid 1px;\n");
@@ -839,7 +847,7 @@ static gboolean html_out_stylesheet(rsc_opts *opts, GString *outstr, gboolean do
 	g_string_append(out, "/* style used for the body of the file info */\n");
 	g_string_append_printf(out, ".%s {\n", html_dropdown_info_style);
 	g_string_append_printf(out, "  background-color: %s;\n", COLOR_BG);
-	g_string_append_printf(out, "  color: %s;\n", COLOR_TEXT);
+	g_string_append_printf(out, "  color: %s; /* COLOR_TEXT */\n", COLOR_TEXT);
 	g_string_append(out, "  z-index:5;\n");
 	g_string_append(out, "  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);\n");
 	g_string_append(out, "  border: solid 1px;\n");
@@ -944,7 +952,7 @@ static gboolean html_out_javascript(rsc_opts *opts, GString *outstr, gboolean do
 	
 /* ------------------------------------------------------------------------- */
 
-static void html_out_nav_toolbar(RSCFILE *file, rsc_opts *opts, GString *out, _WORD treeindex)
+void html_out_nav_toolbar(RSCFILE *file, rsc_opts *opts, GString *out, _WORD treeindex)
 {
 	char *str;
 	char *title;
@@ -1103,7 +1111,6 @@ void html_out_header(RSCFILE *file, rsc_opts *opts, GString *out, const char *ti
 
 	if (doctype)
 		g_string_append(out, doctype);
-	(void) html_out_entities;
 	if (doctype)
 		g_string_append(out, ">\n");
 	g_string_append(out, "<html");
@@ -1113,13 +1120,13 @@ void html_out_header(RSCFILE *file, rsc_opts *opts, GString *out, const char *ti
 	g_free(html_lang);
 	}
 	
+	if (file != NULL && treeindex <= 0)
+		html_out_globals(file, opts, out);
+	g_string_append(out, "<head>\n");
 	g_string_append_printf(out, "<!-- This file was automatically generated by %s version %s -->\n", program_name, program_version);
 	g_string_append_printf(out, "<!-- %s -->\n", RSCVIEW_COPYRIGHT);
-	if (file != NULL && treeindex == 0)
-		html_out_globals(file, opts, out);
 	if (treeindex >= 0)
 		g_string_append_printf(out, _("<!-- Tree #%d -->\n"), treeindex);
-	g_string_append(out, "<head>\n");
 	if (html_doctype >= HTML_DOCTYPE_HTML5)
 		g_string_append_printf(out, "<meta charset=\"%s\"%s\n", charset, html_closer);
 	else
@@ -1175,8 +1182,10 @@ void html_out_header(RSCFILE *file, rsc_opts *opts, GString *out, const char *ti
 
 	g_string_append(out, "</head>\n");
 	g_string_append(out, "<body>\n");
+#if 0
 	if (file)
 		g_string_append_printf(out, "<div style=\"width:%dex;position:absolute;left:%dpx;\">\n", LINE_WIDTH, TEXT_XOFFSET);
+#endif
 
 	if (for_error)
 	{
@@ -1184,6 +1193,7 @@ void html_out_header(RSCFILE *file, rsc_opts *opts, GString *out, const char *ti
 		g_string_append(out, "<p>\n");
 	} else if (treeindex >= 0)
 	{
+#if 0
 		if (opts->hidemenu)
 		{
 			g_string_append_printf(out, "<div class=\"%s\">\n", html_node_style);
@@ -1193,10 +1203,13 @@ void html_out_header(RSCFILE *file, rsc_opts *opts, GString *out, const char *ti
 			g_string_append_printf(out, "<div class=\"%s\" style=\"position:absolute; top:32px;\">\n", html_node_style);
 		}
 		g_string_append(out, "<pre style=\"margin-top:0;\">");
+#endif
 	} else
 	{
+#if 0
 		g_string_append_printf(out, "<div class=\"%s\">\n", html_pnode_style);
 		g_string_append(out, "<pre>");
+#endif
 	}
 
 	if (file)
@@ -1216,6 +1229,7 @@ void html_out_trailer(RSCFILE *file, rsc_opts *opts, GString *out, _WORD treeind
 {
 	/* RSCTREE *tree = file ? rsc_tree_index(file, treeindex, RT_ANY) : NULL; */
 
+	UNUSED(file);
 	UNUSED(opts);
 	UNUSED(treeindex);
 	if (for_error)
@@ -1224,10 +1238,12 @@ void html_out_trailer(RSCFILE *file, rsc_opts *opts, GString *out, _WORD treeind
 		g_string_append(out, "</div>\n");
 	} else
 	{
+#if 0
 		g_string_append(out, "</pre>\n");
 		g_string_append(out, "</div>\n");
 		if (file != NULL)
 			g_string_append(out, "</div>\n");
+#endif
 	}
 #if 0
 	/*
