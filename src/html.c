@@ -1206,7 +1206,7 @@ void html_out_header(RSCFILE *file, rsc_opts *opts, GString *out, const char *ti
 		 */
 		g_string_append_printf(out, "<span class=\"%s\">", html_dropdown_style);
 		g_string_append_printf(out, "<span class=\"%s\" id=\"%s_content\">", html_dropdown_info_style, html_rsc_info_id);
-		g_string_append_printf(out, "</span></span>");
+		g_string_append_printf(out, "</span></span>\n");
 	}
 }
 

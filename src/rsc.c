@@ -347,6 +347,7 @@ void rsc_init_file(RSCFILE *file)
 	file->rsc_flags = RF_C | RF_RSO | RF_RSC;
 	file->rsc_flags2 = 0;
 	file->rsc_extob.mode = EXTOB_NONE;
+	file->rsc_extob.lang = RSC_LANG_DEFAULT;
 	file->rsc_namelen = MAXNAMELEN;
 	file->rsc_exact = TRUE;
 	file->rsc_rule1 = op_rule1;
@@ -359,6 +360,7 @@ void rsc_init_file(RSCFILE *file)
 	file->rsc_emutos_frstrcond_string = NULL;
 	file->rsc_emutos_othercond_name = NULL;
 	file->rsc_emutos_othercond_string = NULL;
+	file->rsc_use_oldlang = FALSE;
 	file->rsc_output_prefix = NULL;
 	file->rsc_output_basename = NULL;
 	file->rsc_date_created = time(NULL);

@@ -44,7 +44,7 @@ static void warn(const char *fmt, ...)
 	va_list ap;
 
 	va_start(ap, fmt);
-	errout("Warning: ");
+	errout(_("Warning: "));
 	erroutv(fmt, ap);
 	errout("\n");
 	va_end(ap);
@@ -56,7 +56,7 @@ static void fatal(const char *fmt, ...)
 	va_list ap;
 
 	va_start(ap, fmt);
-	errout("Fatal: ");
+	errout(_("Fatal: "));
 	erroutv(fmt, ap);
 	errout("\n");
 	va_end(ap);
@@ -69,7 +69,7 @@ static void error(const char *fmt, ...)
 	va_list ap;
 
 	va_start(ap, fmt);
-	errout("Error: ");
+	errout(_("Error: "));
 	erroutv(fmt, ap);
 	errout("\n");
 	va_end(ap);
@@ -536,13 +536,13 @@ static gboolean ae_check_line(char **cc, const char *start, char **end)
 	c = *cc;
 	if (c == NULL || strncmp(c, start, n) != 0)
 	{
-		warn("Expecting \"%s\" in administrative entry", start);
+		warn(_("Expecting \"%s\" in administrative entry"), start);
 		return FALSE;
 	}
 	t = strchr(c + n, '\n');
 	if (t == NULL)
 	{
-		warn("Fields in administrative entry must end with \\n");
+		warn(_("Fields in administrative entry must end with \\n"));
 		return FALSE;
 	}
 	*cc = t + 1;
@@ -586,7 +586,7 @@ static gboolean parse_ae(char *msgstr, ae_t *a)
 	g_free(tmp);
 	return TRUE;
   fail:
-	warn("Error in administrative entry");
+	warn(_("Error in administrative entry"));
 	g_free(tmp);
 	return FALSE;
 }
@@ -627,7 +627,7 @@ static void iback(IFILE *f)
 {
 	if (f->index == 0)
 	{
-		fatal("too far backward");
+		fatal(_("too far backward"));
 	} else
 	{
 		if (f->buf[f->index] == 012)
@@ -643,7 +643,7 @@ static void ibackn(IFILE *f, int n)
 	f->index -= n;
 	if (f->index < 0)
 	{
-		fatal("too far backward");
+		fatal(_("too far backward"));
 	}
 }
 
@@ -798,14 +798,14 @@ static int get_c_string(IFILE *f, str *s)
 		c = inextc(f);
 		if (c == EOF)
 		{
-			warn("EOF reached inside string");
+			warn(_("EOF reached inside string"));
 			return 0;
 		} else if (c == '\\')
 		{
 			c = inextc(f);
 			if (c == EOF)
 			{
-				warn("EOF reached inside string");
+				warn(_("EOF reached inside string"));
 				return 0;
 			} else if (is_octal(c))
 			{
@@ -895,7 +895,7 @@ static int get_c_string(IFILE *f, str *s)
 typedef void (*parse_oipl_callback)(da *d, char *str, int arg);
 
 __attribute__((__warn_unused_result__))
-static gboolean parse_oipl_file(const char *fname, da *d, parse_oipl_callback func, int arg, int mustexist)
+static gboolean parse_oipl_file(const char *fname, da *d, parse_oipl_callback func, int arg, gboolean mustexist)
 {
 	int c;
 	IFILE *f;
@@ -904,7 +904,7 @@ static gboolean parse_oipl_file(const char *fname, da *d, parse_oipl_callback fu
 	if (f == NULL)
 	{
 		if (mustexist)
-			error("could not open %s: %s", fname, strerror(errno));
+			error(_("could not open %s: %s"), fname, strerror(errno));
 		return FALSE;
 	}
 	for (;;)
@@ -927,7 +927,7 @@ static gboolean parse_oipl_file(const char *fname, da *d, parse_oipl_callback fu
 			}
 			if (c != EOF && c != '\n')
 			{
-				warn("syntax error in %s line %d", fname, f->lineno);
+				warn(_("syntax error in %s line %d"), fname, f->lineno);
 				while (c != EOF && c != '\n')
 				{
 					c = inextsh(f);
@@ -980,7 +980,7 @@ static void parse_linguas_item(da *d, char *s, int in_use)
 			return;
 		}
 	}
-	warn("LINGUAS: bad lang/charset specification \"%s\"", s);
+	warn(_("LINGUAS: bad lang/charset specification \"%s\""), s);
 	g_free(s);
 }
 
@@ -1023,10 +1023,10 @@ static gboolean parse_po_file(nls_domain *domain, const char *fname, oh *o, gboo
 		/* TODO: UGLY HACK !!! */
 		if (strcmp(PO_DIR "messages.pot", fname) == 0)
 		{
-			error("could not open %s (run 'bug xgettext' to generate it)", fname);
+			error(_("could not open %s (run 'bug xgettext' to generate it)"), fname);
 		} else
 		{
-			error("could not open %s", fname);
+			error(_("could not open %s"), fname);
 		}
 		goto errout;
 	}
@@ -1042,7 +1042,7 @@ static gboolean parse_po_file(nls_domain *domain, const char *fname, oh *o, gboo
 			}
 			if (c != EOF && c != '\n')
 			{
-				warn("syntax error in %s line %d", fname, f->lineno);
+				warn(_("syntax error in %s line %d"), fname, f->lineno);
 				while (c != EOF && c != '\n')
 				{
 					c = inextsh(f);
@@ -1123,7 +1123,7 @@ static gboolean parse_po_file(nls_domain *domain, const char *fname, oh *o, gboo
 				if (refstr)
 				{
 					s_free(refstr);
-					warn("stray ref ignored in %s:%d", fname, f->lineno);
+					warn(_("stray ref ignored in %s:%d"), fname, f->lineno);
 				}
 				/* we will reach here when an entry is followed by more than one
 				 * empty line, at each additional empty line.
@@ -1239,7 +1239,7 @@ static gboolean parse_po_file(nls_domain *domain, const char *fname, oh *o, gboo
 		e = o_find(o, s_close(msgid));
 		if (e)
 		{
-			warn("duplicate entry %s", s_close(msgid));
+			warn(_("duplicate entry %s"), s_close(msgid));
 			s_free(msgid);
 			s_free(msgstr);
 		} else if (ignore_ae && msgid->buf[0] == '\0')
@@ -1255,7 +1255,7 @@ static gboolean parse_po_file(nls_domain *domain, const char *fname, oh *o, gboo
 			if (e->msgstr && strlen(e->msgstr))		/* really translating */
 			{
 				if (underscore_length(e->msgid.key) != underscore_length(e->msgstr))
-					warn("%s: underscores appear invalid for translation of '%s'", fname, e->msgid.key);
+					warn(_("%s: underscores appear invalid for translation of '%s'"), fname, e->msgid.key);
 			}
 #endif
 			if (e->msgid.key && *e->msgid.key != '\0' && e->msgstr && *e->msgstr != '\0')
@@ -1267,7 +1267,7 @@ static gboolean parse_po_file(nls_domain *domain, const char *fname, oh *o, gboo
 				{
 					char *from = nls_conv_to_utf8(CHARSET_ST, e->msgid.key, lp, TRUE);
 					char *utf8 = nls_conv_to_utf8(domain->fontset, e->msgstr, ln, TRUE);
-					warn("entries do not both end with '\\n' in translation of '%s' to '%s'",
+					warn(_("entries do not both end with '\\n' in translation of '%s' to '%s'"),
 						from, utf8);
 					g_free(utf8);
 					g_free(from);
@@ -1291,7 +1291,7 @@ static gboolean parse_po_file(nls_domain *domain, const char *fname, oh *o, gboo
 		s_free(userstr);
 		continue;
 	  err:
-		warn("syntax error at %s:%d (c = '%c')", fname, f->lineno, c);
+		warn(_("syntax error at %s:%d (c = '%c')"), fname, f->lineno, c);
 		while (c != '\n' && c != EOF)
 		{
 			c = inextsh(f);
@@ -1342,8 +1342,8 @@ int po_get_charset_id(const char *name)
 			return charsets[i].id;
 		}
 	}
-	warn("unknown charset name %s", name);
-	errout("known charsets are:\n");
+	warn(_("unknown charset name %s"), name);
+	errout(_("known charsets are:\n"));
 	for (i = 0; i < n; i++)
 	{
 		errout("  %s\n", charsets[i].name);
@@ -1428,8 +1428,8 @@ static int get_language_charset(const char *lang)
 	
 	if (info != NULL)
 		return info->fontcharset;
-	warn("unknown language %s.", lang);
-	errout("known languages are:\n");
+	warn(_("unknown language %s."), lang);
+	errout(_("known languages are:\n"));
 	n = da_len(languages);
 	for (i = 0; i < n; i++)
 	{
@@ -1460,8 +1460,8 @@ static converter_t get_converter(const char *from, int to_id)
 			return converters[i].func;
 		}
 	}
-	warn("unknown charset conversion %s..%s.", from, get_charset_name(to_id));
-	errout("known conversions are:\n");
+	warn(_("unknown charset conversion %s..%s."), from, get_charset_name(to_id));
+	errout(_("known conversions are:\n"));
 	for (i = 0; i < n; i++)
 	{
 		errout("  %s..%s\n", get_charset_name(converters[i].from), get_charset_name(converters[i].to));
@@ -1470,7 +1470,7 @@ static converter_t get_converter(const char *from, int to_id)
 }
 
 
-void po_init(const char *po_dir, int mustexist)
+void po_init(const char *po_dir, gboolean mustexist, gboolean use_defaults)
 {
 	str *s;
 	da *d;
@@ -1491,21 +1491,24 @@ void po_init(const char *po_dir, int mustexist)
 	d = da_new();
 	if (!parse_oipl_file(fname, d, parse_linguas_item, TRUE, mustexist))
 	{
-		/*
-		 * construct a list of languages as fallback
-		 */
-		parse_linguas_item(d, g_strdup("en atarist"), FALSE);
-		parse_linguas_item(d, g_strdup("de atarist"), FALSE);
-		parse_linguas_item(d, g_strdup("fr atarist"), FALSE);
-		parse_linguas_item(d, g_strdup("fi atarist"), FALSE);
-		parse_linguas_item(d, g_strdup("it atarist"), FALSE);
-		parse_linguas_item(d, g_strdup("nn atarist"), FALSE);
-		parse_linguas_item(d, g_strdup("sv atarist"), FALSE);
-		parse_linguas_item(d, g_strdup("cs latin2"), FALSE);
-		parse_linguas_item(d, g_strdup("es latin9"), FALSE);
-		parse_linguas_item(d, g_strdup("ru russian-atarist"), FALSE);
-		parse_linguas_item(d, g_strdup("gr cp737"), FALSE); /* deprecated */
-		parse_linguas_item(d, g_strdup("el cp737"), FALSE);
+		if (use_defaults)
+		{
+			/*
+			 * construct a list of languages as fallback
+			 */
+			parse_linguas_item(d, g_strdup("en atarist"), FALSE);
+			parse_linguas_item(d, g_strdup("de atarist"), FALSE);
+			parse_linguas_item(d, g_strdup("fr atarist"), FALSE);
+			parse_linguas_item(d, g_strdup("fi atarist"), FALSE);
+			parse_linguas_item(d, g_strdup("it atarist"), FALSE);
+			parse_linguas_item(d, g_strdup("nn atarist"), FALSE);
+			parse_linguas_item(d, g_strdup("sv atarist"), FALSE);
+			parse_linguas_item(d, g_strdup("cs latin2"), FALSE);
+			parse_linguas_item(d, g_strdup("es latin9"), FALSE);
+			parse_linguas_item(d, g_strdup("ru russian-atarist"), FALSE);
+			parse_linguas_item(d, g_strdup("gr cp737"), FALSE); /* deprecated */
+			parse_linguas_item(d, g_strdup("el cp737"), FALSE);
+		}
 	}
 	languages = d;
 	g_free(fname);
@@ -1573,7 +1576,7 @@ static oh *po_load(nls_domain *domain, const char *po_dir, _BOOL report_translat
 
 		if (e == NULL || !parse_ae(e->msgstr, &a))
 		{
-			warn("%s: bad administrative entry", fname);
+			warn(_("%s: bad administrative entry"), fname);
 			from_charset = g_strdup("ISO-8859-1");
 		} else
 		{

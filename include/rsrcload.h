@@ -99,6 +99,7 @@ struct _rscfile {
 	_UBYTE rsc_rsxfilename[PATH_MAX];	/* full pathname */
 	stringarray rsc_cmnt;
 	enum emutos rsc_emutos;
+	_BOOL rsc_use_oldlang;
 	char *rsc_emutos_frstrcond_name;
 	char *rsc_emutos_frstrcond_string;
 	char *rsc_emutos_othercond_name;
@@ -127,12 +128,16 @@ struct _rscfile {
 
 void GetTextSize(_WORD *width, _WORD *height);
 
-#define XRSC_NO_INSERT_POPUPS 0x0001
-#define XRSC_NO_ZERO_ROOT     0x0002
-#define XRSC_NO_OBFIX         0x0004
-#define XRSC_SAFETY_CHECKS    0x0008
-#define XRSC_REPORT_PO        0x0010
-#define XRSC_REPORT_RSC       0x0020
+/*
+ * xrsrc_load() flags
+ */
+#define XRSC_NO_INSERT_POPUPS 0x0001	/* do not do ORCS style popup inserts */
+#define XRSC_NO_ZERO_ROOT     0x0002	/* do not set root object to 0x0 */
+#define XRSC_NO_OBFIX         0x0004	/* do not run rsrc_obfix() on dialogs */
+#define XRSC_SAFETY_CHECKS    0x0008	/* perform lots of validation checks */
+#define XRSC_REPORT_PO        0x0010	/* report message statistics from loading po file */
+#define XRSC_REPORT_RSC       0x0020	/* report translation statistics from translating resource */
+
 
 RSCFILE *xrsrc_load(const char *fname, _UWORD flags);
 _BOOL xrsrc_free(RSCFILE *file);

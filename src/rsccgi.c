@@ -11,6 +11,7 @@
 #include "nls.h"
 #include "fileio.h"
 #include "rsc.h"
+#include "rsc_lang.h"
 #include "ws.h"
 #include "debug.h"
 #include "pofile.h"
@@ -135,33 +136,147 @@ static void clear_screen(char *title)
 
 /* ------------------------------------------------------------------------- */
 
-static _WORD write_png(RSCTREE *tree, rsc_opts *opts, _WORD x, _WORD y, _WORD w, _WORD h)
+static void generate_imagemap(RSCTREE *tree, GString *out)
+{
+	OBJECT *obj;
+	_WORD j;
+	GRECT gr;
+	_WORD dx, dy;
+	
+	g_string_append_printf(out, "<map name=\"%s\">\n", tree->rt_name);
+	if (tree->rt_type == RT_MENU)
+	{
+		obj = tree->rt_objects.menu.mn_tree;
+		objc_offset(obj, ROOT, &gr.g_x, &gr.g_y);
+		gr.g_w = obj[ROOT].ob_width;
+		gr.g_h = obj[ROOT].ob_height;
+		dx = dy = 0;
+	} else
+	{
+		obj = tree->rt_objects.dial.di_tree;
+		form_center_grect(obj, &gr);
+		objc_offset(obj, ROOT, &dx, &dy);
+		dx = dx - gr.g_x;
+		dy = dy - gr.g_y;
+	}
+	
+	/*
+	 * if area definitions overlap, the first one will be used,
+	 * so we have to output them in reverse order
+	 */
+	for (j = 0; !(obj[j].ob_flags & OF_LASTOB); j++)
+	{
+	}
+	
+	while (j >= 0)
+	{
+		const char *name;
+		_WORD x, y, w, h;
+		_WORD type;
+		char sbuf[128];
+		
+		objc_offset(obj, j, &x, &y);
+		x -= gr.g_x;
+		y -= gr.g_y;
+		w = obj[j].ob_width;
+		h = obj[j].ob_height;
+		type = obj[j].ob_type & OBTYPEMASK;
+		/* if object #1 is a dialog title, recalc the width */
+		if (tree->rt_file->rsc_emutos != EMUTOS_NONE && j == 1 && type == G_STRING && obj[j].ob_y == gl_hchar)
+			w = strlen(obj[j].ob_spec.free_string) * gl_wchar;
+		g_string_append_printf(out, "<area shape=\"rect\" coords=\"%d,%d,%d,%d\" title=\"Object #%d",
+			x, y,
+			x + w - 1, y + h - 1,
+			j);
+		name = ob_name(tree->rt_file, tree, j);
+		if (name)
+		{
+			g_string_append_printf(out, "&#10;%s", name);
+		}
+		x = x - dx;
+		y = y - dy;
+		g_string_append_printf(out, "&#10;type = %s", type_name(type));
+		g_string_append_printf(out, "&#10;x = %d", x / gl_wchar);
+		if (x % gl_wchar != 0)
+			g_string_append_printf(out, " + %d", x % gl_wchar);
+		g_string_append_printf(out, "&#10;y = %d", y / gl_hchar);
+		if (y % gl_hchar != 0)
+			g_string_append_printf(out, " + %d", y % gl_wchar);
+		g_string_append_printf(out, "&#10;w = %d", w / gl_wchar);
+		if (w % gl_wchar != 0)
+			g_string_append_printf(out, " + %d", w % gl_wchar);
+		g_string_append_printf(out, "&#10;h = %d", h / gl_hchar);
+		if (h % gl_hchar != 0)
+			g_string_append_printf(out, " + %d", h % gl_wchar);
+		g_string_append_printf(out, "&#10;flags = %s", flags_name(sbuf, obj[j].ob_flags, tree->rt_file->rsc_emutos));
+		g_string_append_printf(out, "&#10;state = %s", state_name(sbuf, obj[j].ob_state));
+		
+		g_string_append_printf(out, "\">\n");
+		j--;
+	}
+	g_string_append_printf(out, "</map>\n");
+}
+
+/* ------------------------------------------------------------------------- */
+
+static _WORD write_png(RSCTREE *tree, rsc_opts *opts, _WORD x, _WORD y, _WORD w, _WORD h, GString *out, _BOOL write_imagemap)
 {
 	_WORD pxy[4];
 	char *basename;
-	char namebuf[PATH_MAX];
+	char *namebuf;
 	char *filename;
 	_WORD err;
 	
 	if (verbose)
-		printf("%s %ld %s: %dx%d\n", rtype_name(tree->rt_type), tree->rt_index, tree->rt_name, w, h);
+		printf("%s %ld %s: %dx%d\n", rtype_name(tree->rt_type), tree->rt_number, tree->rt_name, w, h);
 	pxy[0] = x;
 	pxy[1] = y;
 	pxy[2] = x + w - 1;
 	pxy[3] = y + h - 1;
 	vs_clip(vdi_handle, 1, pxy);
-	basename = g_ascii_strdown(tree->rt_name, STR0TERM);
+	if (opts->use_timestamps)
+	{
+		time_t t = time(NULL);
+		struct tm *tp = gmtime(&t);
+		char *tmp = g_ascii_strdown(tree->rt_name, STR0TERM);;
+		basename = g_strdup_printf("%s_%04d%02d%02d%02d%02d%02d",
+			tmp,
+			tp->tm_year + 1900,
+			tp->tm_mon + 1,
+			tp->tm_mday,
+			tp->tm_hour,
+			tp->tm_min,
+			tp->tm_sec);
+		g_free(tmp);
+	} else
+	{
+		basename = g_ascii_strdown(tree->rt_name, STR0TERM);
+	}
 	if (tree->rt_file->rsc_nls_domain.lang)
-		sprintf(namebuf, "%03ld_%s_%s.png", tree->rt_index, tree->rt_file->rsc_nls_domain.lang, basename);
+		namebuf = g_strdup_printf("%03ld_%s_%s.png", tree->rt_number, tree->rt_file->rsc_nls_domain.lang, basename);
 	else
-		sprintf(namebuf, "%03ld_%s.png", tree->rt_index, basename);
+		namebuf = g_strdup_printf("%03ld_%s.png", tree->rt_number, basename);
 	filename = g_build_filename(opts->output_dir, namebuf, NULL);
 	err = v_write_png(vdi_handle, filename);
 	if (err != 0)
 	{
 		KINFO(("write_png: %s: %s\n", filename, strerror(err)));
 	}
+	g_string_append_printf(out, "<p>%s:<br /><img src=\"%s/%s\" alt=\"%s\"",
+		tree->rt_name,
+		opts->ref_output_dir ? opts->ref_output_dir : ".", namebuf,
+		tree->rt_name);
+	if (write_imagemap)
+	{
+		g_string_append_printf(out, " usemap=\"#%s\"", tree->rt_name);
+	}
+	g_string_append_printf(out, " /></p>\n");
+	if (write_imagemap)
+	{
+		generate_imagemap(tree, out);
+	}
 	g_free(filename);
+	g_free(namebuf);
 	g_free(basename);
 	return err;
 }
@@ -170,7 +285,7 @@ static _WORD write_png(RSCTREE *tree, rsc_opts *opts, _WORD x, _WORD y, _WORD w,
 /* ------------------------------------------------------------------------- */
 /*****************************************************************************/
 
-static _BOOL draw_dialog(RSCTREE *tree, rsc_opts *opts)
+static _BOOL draw_dialog(RSCTREE *tree, rsc_opts *opts, GString *out)
 {
 	OBJECT *ob;
 	GRECT gr;
@@ -180,7 +295,7 @@ static _BOOL draw_dialog(RSCTREE *tree, rsc_opts *opts)
 	if (ob == NULL)
 		return FALSE;
 	form_center_grect(ob, &gr);
-
+	
 	wind_update(BEG_UPDATE);
 	form_dial_grect(FMD_START, &gr, &gr);
 	
@@ -188,7 +303,7 @@ static _BOOL draw_dialog(RSCTREE *tree, rsc_opts *opts)
 	
 	objc_draw_grect(ob, ROOT, MAX_DEPTH, &gr);
 	
-	err = write_png(tree, opts, gr.g_x, gr.g_y, gr.g_w, gr.g_h);
+	err = write_png(tree, opts, gr.g_x, gr.g_y, gr.g_w, gr.g_h, out, opts->gen_imagemap);
 
 	form_dial_grect(FMD_FINISH, &gr, &gr);
 	wind_update(END_UPDATE);
@@ -198,7 +313,7 @@ static _BOOL draw_dialog(RSCTREE *tree, rsc_opts *opts)
 
 /* ------------------------------------------------------------------------- */
 
-static _BOOL draw_menu(RSCTREE *tree, rsc_opts *opts)
+static _BOOL draw_menu(RSCTREE *tree, rsc_opts *opts, GString *out)
 {
 	OBJECT *ob;
 	_WORD thebar;
@@ -291,7 +406,7 @@ static _BOOL draw_menu(RSCTREE *tree, rsc_opts *opts)
 			maxy = my;
 	} while (menubox != themenus);
 	
-	err = write_png(tree, opts, 0, 0, maxx, maxy);
+	err = write_png(tree, opts, 0, 0, maxx, maxy, out, opts->gen_imagemap);
 
 	menu_bar(ob, FALSE);
 	form_dial_grect(FMD_FINISH, &gr, &gr);
@@ -302,25 +417,51 @@ static _BOOL draw_menu(RSCTREE *tree, rsc_opts *opts)
 
 /* ------------------------------------------------------------------------- */
 
-static _BOOL draw_string(RSCTREE *tree, rsc_opts *opts)
+static _BOOL draw_string(RSCTREE *tree, rsc_opts *opts, GString *out)
 {
-	/* can't do much here */
-	UNUSED(opts);
-	if (verbose)
-		printf("%s %ld %s\n", rtype_name(tree->rt_type), tree->rt_index, tree->rt_name);
-	return TRUE;
+	const char *str;
+	_WORD err;
+	GRECT gr;
+	TEDINFO ted = { NULL, NULL, NULL, IBM, 0, TE_CNTR, COLSPEC_MAKE(G_BLACK, G_BLACK, TEXT_OPAQUE, 0, G_WHITE), 0, 0, 0, 0 };
+	OBJECT string[1] = { { NIL, NIL, NIL, G_TEXT, OF_LASTOB, OS_NORMAL, { 0 }, 0, 0, 0, 0 } };
+	_WORD len;
+	
+	str = tree->rt_objects.str.fr_str;
+	if (str == NULL)
+		return FALSE;
+	str = nls_dgettext(&tree->rt_file->rsc_nls_domain, str);
+	
+	ted.te_ptext = (char *)NO_CONST(str);
+	string[0].ob_spec.tedinfo = &ted;
+	len = strlen(str);
+	string[0].ob_width = len * gl_wchar;
+	string[0].ob_height = gl_hchar;
+	form_center(string, &string[ROOT].ob_x, &string[ROOT].ob_y, &gr.g_w, &gr.g_h);
+	gr.g_x = string[ROOT].ob_x;
+	gr.g_y = string[ROOT].ob_y;
+	
+	clear_screen(tree->rt_name);
+	objc_draw_grect(string, ROOT, MAX_DEPTH, &gr);
+
+	err = write_png(tree, opts, gr.g_x, gr.g_y, gr.g_w, gr.g_h, out, FALSE);
+	if (string[0].ob_width > desk.g_w)
+		g_string_append_printf(out, _("<p>string width %d exceeds desktop width %d</p>\n"), string[0].ob_width, desk.g_w);
+
+	form_dial_grect(FMD_FINISH, &gr, &gr);
+	
+	return err == 0;
 }
 
 /* ------------------------------------------------------------------------- */
 
-static _BOOL draw_alert(RSCTREE *tree, rsc_opts *opts)
+static _BOOL draw_alert(RSCTREE *tree, rsc_opts *opts, GString *out)
 {
 	const char *str;
 	_WORD err;
 	_WORD wo[57];
 	GRECT gr;
 	
-	str = tree->rt_objects.alert.al_str;	
+	str = tree->rt_objects.alert.al_str;
 	if (str == NULL)
 		return FALSE;
 	str = nls_dgettext(&tree->rt_file->rsc_nls_domain, str);
@@ -340,7 +481,7 @@ static _BOOL draw_alert(RSCTREE *tree, rsc_opts *opts)
 	gr.g_w = wo[47] - gr.g_x + 1;
 	gr.g_h = wo[48] - gr.g_y + 1;
 	
-	err = write_png(tree, opts, gr.g_x, gr.g_y, gr.g_w, gr.g_h);
+	err = write_png(tree, opts, gr.g_x, gr.g_y, gr.g_w, gr.g_h, out, FALSE);
 
 	form_dial_grect(FMD_FINISH, &gr, &gr);
 	
@@ -349,7 +490,7 @@ static _BOOL draw_alert(RSCTREE *tree, rsc_opts *opts)
 
 /* ------------------------------------------------------------------------- */
 
-static _BOOL draw_all_trees(RSCFILE *file, rsc_opts *opts)
+static _BOOL draw_all_trees(RSCFILE *file, rsc_opts *opts, GString *out)
 {
 	RSCTREE *tree;
 	_BOOL ret = TRUE;
@@ -361,16 +502,16 @@ static _BOOL draw_all_trees(RSCFILE *file, rsc_opts *opts)
 		case RT_DIALOG:
 		case RT_FREE:
 		case RT_UNKNOWN:
-			ret &= draw_dialog(tree, opts);
+			ret &= draw_dialog(tree, opts, out);
 			break;
 		case RT_MENU:
-			ret &= draw_menu(tree, opts);
+			ret &= draw_menu(tree, opts, out);
 			break;
 		case RT_FRSTR:
-			ret &= draw_string(tree, opts);
+			ret &= draw_string(tree, opts, out);
 			break;
 		case RT_ALERT:
-			ret &= draw_alert(tree, opts);
+			ret &= draw_alert(tree, opts, out);
 			break;
 		case RT_FRIMG:
 		case RT_MOUSE:
@@ -390,12 +531,12 @@ static _BOOL draw_all_trees(RSCFILE *file, rsc_opts *opts)
 static gboolean display_tree(const char *filename, rsc_opts *opts, GString *out, _WORD treeindex)
 {
 	RSCFILE *file;
-	const char *po_dir = NULL;
 	gboolean retval = FALSE;
+	_UWORD load_flags = XRSC_SAFETY_CHECKS;
 	
 	(void) treeindex;
 
-	file = load_all(filename, opts->lang, XRSC_SAFETY_CHECKS, po_dir);
+	file = load_all(filename, opts->lang, load_flags, opts->po_dir);
 	if (file == NULL)
 	{
 		html_out_header(NULL, opts, out, _("404 Not Found"), -1, TRUE);
@@ -404,6 +545,7 @@ static gboolean display_tree(const char *filename, rsc_opts *opts, GString *out,
 		return FALSE;
 	}
 
+	po_init(opts->po_dir, FALSE, FALSE);
 	appl_init();
 	
 	menu_register(-1, program_name);
@@ -421,12 +563,13 @@ static gboolean display_tree(const char *filename, rsc_opts *opts, GString *out,
 	vst_font(vdi_handle, file->rsc_nls_domain.fontset);
 	vst_font(phys_handle, file->rsc_nls_domain.fontset);
 	
-	retval = draw_all_trees(file, opts);
+	html_out_header(file, opts, out, rsc_basename(filename), treeindex, FALSE);
+
+	retval = draw_all_trees(file, opts, out);
 	
 	vst_font(phys_handle, 1);
 	close_screen();
 
-	html_out_header(file, opts, out, rsc_basename(filename), treeindex, FALSE);
 	html_out_trailer(file, opts, out, treeindex, FALSE);
 
 	rsc_file_delete(file, FALSE);
@@ -441,6 +584,13 @@ static gboolean display_tree(const char *filename, rsc_opts *opts, GString *out,
 /* ------------------------------------------------------------------------- */
 /*****************************************************************************/
 
+#define hyp_utf8_fopen fopen
+#define hyp_utf8_fclose fclose
+#define hyp_utf8_fprintf fprintf
+#define hyp_utf8_strerror strerror
+#define hyp_utf8_stat stat
+#define hyp_basename rsc_basename
+
 static size_t mycurl_write_callback(char *ptr, size_t size, size_t nmemb, void *userdata)
 {
 	struct curl_parms *parms = (struct curl_parms *) userdata;
@@ -449,9 +599,9 @@ static size_t mycurl_write_callback(char *ptr, size_t size, size_t nmemb, void *
 		return 0;
 	if (parms->fp == NULL)
 	{
-		parms->fp = fopen(parms->filename, "wb");
+		parms->fp = hyp_utf8_fopen(parms->filename, "wb");
 		if (parms->fp == NULL)
-			fprintf(parms->opts->errorfile, "%s: %s\n", parms->filename, strerror(errno));
+			hyp_utf8_fprintf(parms->opts->errorfile, "%s: %s\n", parms->filename, hyp_utf8_strerror(errno));
 	}
 	if (parms->fp == NULL)
 		return 0;
@@ -468,29 +618,29 @@ static int mycurl_trace(CURL *handle, curl_infotype type, char *data, size_t siz
 	switch (type)
 	{
 	case CURLINFO_TEXT:
-		fprintf(parms->opts->errorfile, "== Info: %s", data);
+		hyp_utf8_fprintf(parms->opts->errorfile, "== Info: %s", data);
 		if (size == 0 || data[size - 1] != '\n')
 			fputc('\n', parms->opts->errorfile);
 		break;
 	case CURLINFO_HEADER_OUT:
-		fprintf(parms->opts->errorfile, "=> Send header %ld\n", (long)size);
+		hyp_utf8_fprintf(parms->opts->errorfile, "=> Send header %ld\n", (long)size);
 		fwrite(data, 1, size, parms->opts->errorfile);
 		break;
 	case CURLINFO_DATA_OUT:
-		fprintf(parms->opts->errorfile, "=> Send data %ld\n", (long)size);
+		hyp_utf8_fprintf(parms->opts->errorfile, "=> Send data %ld\n", (long)size);
 		break;
 	case CURLINFO_SSL_DATA_OUT:
-		fprintf(parms->opts->errorfile, "=> Send SSL data %ld\n", (long)size);
+		hyp_utf8_fprintf(parms->opts->errorfile, "=> Send SSL data %ld\n", (long)size);
 		break;
 	case CURLINFO_HEADER_IN:
-		fprintf(parms->opts->errorfile, "<= Recv header %ld\n", (long)size);
+		hyp_utf8_fprintf(parms->opts->errorfile, "<= Recv header %ld\n", (long)size);
 		fwrite(data, 1, size, parms->opts->errorfile);
 		break;
 	case CURLINFO_DATA_IN:
-		fprintf(parms->opts->errorfile, "<= Recv data %ld\n", (long)size);
+		hyp_utf8_fprintf(parms->opts->errorfile, "<= Recv data %ld\n", (long)size);
 		break;
 	case CURLINFO_SSL_DATA_IN:
-		fprintf(parms->opts->errorfile, "<= Recv SSL data %ld\n", (long)size);
+		hyp_utf8_fprintf(parms->opts->errorfile, "<= Recv SSL data %ld\n", (long)size);
 		break;
 	case CURLINFO_END:
 	default:
@@ -526,6 +676,7 @@ static const char *currdate(void)
 static char *curl_download(CURL *curl, rsc_opts *opts, GString *body, const char *filename)
 {
 	char *local_filename;
+	struct curl_parms parms;
 	struct stat st;
 	long unmet;
 	long respcode;
@@ -533,11 +684,10 @@ static char *curl_download(CURL *curl, rsc_opts *opts, GString *body, const char
 	double size;
 	char err[CURL_ERROR_SIZE];
 	char *content_type;
-	struct curl_parms parms;
-	
+
 	curl_easy_setopt(curl, CURLOPT_URL, filename);
 	curl_easy_setopt(curl, CURLOPT_REFERER, filename);
-	local_filename = g_build_filename(parms.opts->output_dir, rsc_basename(filename), NULL);
+	local_filename = g_build_filename(opts->output_dir, hyp_basename(filename), NULL);
 	parms.filename = local_filename;
 	parms.fp = NULL;
 	parms.opts = opts;
@@ -556,7 +706,7 @@ static char *curl_download(CURL *curl, rsc_opts *opts, GString *body, const char
 	/* set this to 1 to activate debug code above */
 	curl_easy_setopt(curl, CURLOPT_VERBOSE, (long)0);
 
-	if (stat(local_filename, &st) == 0)
+	if (hyp_utf8_stat(local_filename, &st) == 0)
 	{
 		curlcode = curl_easy_setopt(curl, CURLOPT_TIMECONDITION, (long)CURL_TIMECOND_IFMODSINCE);
 		curlcode = curl_easy_setopt(curl, CURLOPT_TIMEVALUE, (long)st.st_mtime);
@@ -575,15 +725,15 @@ static char *curl_download(CURL *curl, rsc_opts *opts, GString *body, const char
 	curl_easy_getinfo(curl, CURLINFO_CONDITION_UNMET, &unmet);
 	curl_easy_getinfo(curl, CURLINFO_SIZE_DOWNLOAD, &size);
 	curl_easy_getinfo(curl, CURLINFO_CONTENT_TYPE, &content_type);
-	fprintf(opts->errorfile, "%s: GET from %s, url=%s, curl=%d, resp=%ld, size=%ld\n", currdate(), fixnull(cgiRemoteHost), filename, curlcode, respcode, (long)size);
+	hyp_utf8_fprintf(opts->errorfile, "%s: GET from %s, url=%s, curl=%d, resp=%ld, size=%ld, content=%s\n", currdate(), fixnull(cgiRemoteHost), filename, curlcode, respcode, (long)size, printnull(content_type));
 	
 	if (parms.fp)
 	{
-		fclose(parms.fp);
+		hyp_utf8_fclose(parms.fp);
 		parms.fp = NULL;
 	}
 	
-	if (curlcode != CURLE_OK)
+	if (curlcode != CURLE_OK || stat(local_filename, &st) != 0)
 	{
 		html_out_header(NULL, opts, body, err, -1, TRUE);
 		g_string_append_printf(body, "%s:\n%s", _("Download error"), err);
@@ -592,17 +742,17 @@ static char *curl_download(CURL *curl, rsc_opts *opts, GString *body, const char
 		g_free(local_filename);
 		local_filename = NULL;
 	} else if ((respcode != 200 && respcode != 304) ||
-		(respcode == 200 && (content_type == NULL || strcmp(content_type, "text/plain") != 0)))
+		(respcode == 200 && content_type != NULL && strcmp(content_type, "text/plain") == 0))
 	{
 		/* most likely the downloaded data will contain the error page */
-		parms.fp = fopen(local_filename, "rb");
+		parms.fp = hyp_utf8_fopen(local_filename, "rb");
 		if (parms.fp != NULL)
 		{
 			size_t nread;
 			
 			while ((nread = fread(err, 1, sizeof(err), parms.fp)) > 0)
 				g_string_append_len(body, err, nread);
-			fclose(parms.fp);
+			hyp_utf8_fclose(parms.fp);
 		}
 		unlink(local_filename);
 		g_free(local_filename);
@@ -621,7 +771,9 @@ static char *curl_download(CURL *curl, rsc_opts *opts, GString *body, const char
 	return local_filename;
 }
 
+/*****************************************************************************/
 /* ------------------------------------------------------------------------- */
+/*****************************************************************************/
 
 int main(void)
 {
@@ -633,7 +785,8 @@ int main(void)
 	rsc_opts _opts;
 	rsc_opts *opts = &_opts;
 	_WORD treeindex = -1;
-	
+
+	memset(opts, 0, sizeof(*opts));
 	opts->cgi_cached = FALSE;
 	opts->use_xhtml = FALSE;
 	opts->to_xml = FALSE;
@@ -642,6 +795,7 @@ int main(void)
 	opts->for_cgi = TRUE;
 	opts->verbose = 0;
 	opts->outfile = out;
+	opts->gen_imagemap = FALSE;
 	opts->errorfile = fopen("rscview.log", "a");
 	if (opts->errorfile == NULL)
 		opts->errorfile = stderr;
@@ -653,12 +807,19 @@ int main(void)
 	cgiInit(body);
 
 	{
-		opts->output_dir = g_build_filename(cgi_cachedir, cgiRemoteAddr, NULL);
+		char *dir = rsc_path_get_dirname(cgiScriptFilename);
+		char *cache_dir = g_build_filename(dir, cgi_cachedir, NULL);
+		opts->output_dir = g_build_filename(cache_dir, cgiRemoteAddr, NULL);
+		opts->ref_output_dir = g_build_filename(cgi_cachedir, cgiRemoteAddr, NULL);
+		opts->po_dir = g_build_filename(opts->output_dir, "po", NULL);
 
-		if (mkdir(cgi_cachedir, 0750) < 0 && errno != EEXIST)
-			fprintf(opts->errorfile, "%s: %s\n", cgi_cachedir, strerror(errno));
+		if (mkdir(cache_dir, 0750) < 0 && errno != EEXIST)
+			fprintf(opts->errorfile, "%s: %s\n", cache_dir, strerror(errno));
 		if (mkdir(opts->output_dir, 0750) < 0 && errno != EEXIST)
 			fprintf(opts->errorfile, "%s: %s\n", opts->output_dir, strerror(errno));
+		
+		g_free(cache_dir);
+		g_free(dir);
 	}
 	
 	html_init(opts);
@@ -694,7 +855,7 @@ int main(void)
 		{
 			html_referer_url = filename;
 			filename = g_strconcat(cgiDocumentRoot, filename, NULL);
-		} else if (empty(rsc_basename(filename)) || (!opts->cgi_cached && g_ascii_strcasecmp(scheme, "file") == 0))
+		} else if (empty(hyp_basename(filename)) || (!opts->cgi_cached && g_ascii_strcasecmp(scheme, "file") == 0))
 		{
 			/*
 			 * disallow file URIs, they would resolve to local files on the WEB server
@@ -726,7 +887,7 @@ int main(void)
 				
 				if (opts->cgi_cached)
 				{
-					html_referer_url = g_strdup(rsc_basename(filename));
+					html_referer_url = g_strdup(hyp_basename(filename));
 					local_filename = g_build_filename(opts->output_dir, html_referer_url, NULL);
 					g_free(filename);
 					filename = local_filename;
@@ -736,6 +897,8 @@ int main(void)
 					local_filename = curl_download(curl, opts, body, filename);
 					g_free(filename);
 					filename = local_filename;
+					if (filename)
+						opts->cgi_cached = TRUE;
 				}
 			}
 		}
@@ -750,7 +913,7 @@ int main(void)
 		g_free(scheme);
 		g_free(html_referer_url);
 		html_referer_url = NULL;
-
+		
 		g_free(url);
 	} else if (g_ascii_strcasecmp(cgiRequestMethod, "POST") == 0 ||
 		g_ascii_strcasecmp(cgiRequestMethod, "BOTH") == 0)
@@ -784,8 +947,8 @@ int main(void)
 #if defined(HAVE_MKSTEMPS)
 				{
 				int fd;
-				filename = g_strdup("tmpfile.XXXXXX.hyp");
-				local_filename = g_build_filename(opts->output_dir, rsc_basename(filename), NULL);
+				filename = g_strdup("tmpfile.XXXXXX.rsc");
+				local_filename = g_build_filename(opts->output_dir, hyp_basename(filename), NULL);
 				fd = mkstemps(local_filename, 4);
 				if (fd > 0)
 					close(fd);
@@ -793,31 +956,31 @@ int main(void)
 #elif defined(HAVE_MKSTEMP)
 				{
 				int fd;
-				filename = g_strdup("tmpfile.hyp.XXXXXX");
-				local_filename = g_build_filename(opts->output_dir, rsc_basename(filename), NULL);
+				filename = g_strdup("tmpfile.rsc.XXXXXX");
+				local_filename = g_build_filename(opts->output_dir, hyp_basename(filename), NULL);
 				fd = mkstemp(local_filename);
 				if (fd > 0)
 					close(fd);
 				}
 #else
-				filename = g_strdup("tmpfile.hyp.XXXXXX");
-				local_filename = g_build_filename(opts->output_dir, rsc_basename(filename), NULL);
+				filename = g_strdup("tmpfile.rsc.XXXXXX");
+				local_filename = g_build_filename(opts->output_dir, hyp_basename(filename), NULL);
 				mktemp(local_filename);
 #endif
 			} else
 			{
-				local_filename = g_build_filename(opts->output_dir, rsc_basename(filename), NULL);
+				local_filename = g_build_filename(opts->output_dir, hyp_basename(filename), NULL);
 			}
 
-			fprintf(opts->errorfile, "%s: POST from %s, file=%s, size=%d\n", currdate(), fixnull(cgiRemoteHost), rsc_basename(filename), len);
+			hyp_utf8_fprintf(opts->errorfile, "%s: POST from %s, file=%s, size=%d\n", currdate(), fixnull(cgiRemoteHost), hyp_basename(filename), len);
 
-			fp = fopen(local_filename, "wb");
+			fp = hyp_utf8_fopen(local_filename, "wb");
 			if (fp == NULL)
 			{
-				const char *err = strerror(errno);
-				fprintf(opts->errorfile, "%s: %s\n", local_filename, err);
+				const char *err = hyp_utf8_strerror(errno);
+				hyp_utf8_fprintf(opts->errorfile, "%s: %s\n", local_filename, err);
 				html_out_header(NULL, opts, body, _("404 Not Found"), -1, TRUE);
-				g_string_append_printf(body, "%s: %s\n", rsc_basename(filename), err);
+				g_string_append_printf(body, "%s: %s\n", hyp_basename(filename), err);
 				html_out_trailer(NULL, opts, body, -1, TRUE);
 				exit_status = EXIT_FAILURE;
 			} else
@@ -847,8 +1010,10 @@ int main(void)
 	g_free(opts->lang);
 	if (opts->errorfile && opts->errorfile != stderr)
 	{
-		fclose(opts->errorfile);
+		hyp_utf8_fclose(opts->errorfile);
 	}
+	g_free(opts->po_dir);
+	g_free(opts->ref_output_dir);
 	g_free(opts->output_dir);
 	
 	if (curl)

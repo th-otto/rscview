@@ -33,9 +33,13 @@ typedef struct _rsc_opts {
 	gboolean hidemenu;
 	char *lang;
 	const char *charset;
-	char *output_dir;
+	char *output_dir;			/* local filename */
+	char *ref_output_dir;		/* filename to use in html references */
+	char *po_dir;
 	int verbose;
 	FILE *outfile;
+	_BOOL gen_imagemap;
+	gboolean use_timestamps;
 } rsc_opts;
 
 extern const char *cgi_scriptname;

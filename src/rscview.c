@@ -813,7 +813,7 @@ int main(int argc, char **argv)
 		}
 	}
 	
-	po_init(po_dir, lang != NULL);
+	po_init(po_dir, lang != NULL, TRUE);
 	appl_init();
 	
 	menu_register(-1, program_name);

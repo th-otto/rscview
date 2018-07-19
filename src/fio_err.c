@@ -36,7 +36,7 @@ static void warn(const char *msg, ...)
 
 /*** ---------------------------------------------------------------------- ***/
 
-static _BOOL yorn(_VOID)
+static _BOOL yorn(void)
 {
 	fprintf(stdout, " (y/n) ? "); fflush(stdout);
 	fprintf(stdout, "y\n");

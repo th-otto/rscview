@@ -37,10 +37,75 @@ typedef enum extob_mode {
 #define EXTOB_MAX		EXTOB_OVERLAY
 
 
+typedef enum extob_lang {
+	RSC_LANG_NONE = -1,
+	/* en   */  RSC_LANG_ENGLISH = 0,
+	/* de   */  RSC_LANG_GERMAN,
+	/* es   */  RSC_LANG_SPANISH,
+	/* fr   */  RSC_LANG_FRENCH,
+	/* it   */  RSC_LANG_ITALIAN,
+	/* nl   */  RSC_LANG_DUTCH,
+
+	RSC_LANG_MAX,
+	/* en_GB */ RSC_LANG_ENGLISH_GB = 6,
+	/* sv    */ RSC_LANG_SWEDISH,
+	/* de_CH */ RSC_LANG_SWISS_GERMAN,
+	/* fr_CH */ RSC_LANG_SWISS_FRENCH,
+	/* tr    */ RSC_LANG_TURKISH,
+	/* fi    */ RSC_LANG_FINNISH,
+	/* nb    */ RSC_LANG_NORWEGIAN,
+	/* da    */ RSC_LANG_DANISH,
+	/* ar    */ RSC_LANG_ARABIC,
+	/* cs    */ RSC_LANG_CZECH,
+	/* hu    */ RSC_LANG_HUNGARIAN,
+	/* pl    */ RSC_LANG_POLISH,
+	/* lt    */ RSC_LANG_LITHUANIAN,
+	/* ru    */ RSC_LANG_RUSSIAN,
+	/* et    */ RSC_LANG_ESTONIAN,
+	/* be    */ RSC_LANG_BELARUSIAN,
+	/* uk    */ RSC_LANG_UKRAINIAN,
+	/* sk    */ RSC_LANG_SLOVAK,
+	/* ro    */ RSC_LANG_ROMANIAN,
+	/* bg    */ RSC_LANG_BULGARIAN,
+	/* sl    */ RSC_LANG_SLOVENIAN,
+	/* hr    */ RSC_LANG_CROATIAN,
+	/* sr    */ RSC_LANG_SERBIAN,
+	/* sr_ME */ RSC_LANG_MONTENEGRIN,
+	/* mk    */ RSC_LANG_MACEDONIAN,
+	/* el    */ RSC_LANG_GREEK,
+	/* lv    */ RSC_LANG_LATVIAN,
+	/* he    */ RSC_LANG_HEBREW,
+	/* af    */ RSC_LANG_AFRIKAANS_SOUTH_AFRICA,
+	/* pt    */ RSC_LANG_PORTUGUESE,
+	/* nl_BE */ RSC_LANG_BELGIAN,
+	/* ja    */ RSC_LANG_JAPANESE,
+	/* zh    */ RSC_LANG_CHINESE,
+	/* ko    */ RSC_LANG_KOREAN,
+	/* vi    */ RSC_LANG_VIETNAMESE,
+	/* hi    */ RSC_LANG_HINDI,
+	/* fa    */ RSC_LANG_FARSI,
+	/* mn    */ RSC_LANG_MONGOLIAN,
+	/* ne    */ RSC_LANG_NEPALI,
+	/* lo    */ RSC_LANG_LAO,
+	/* km    */ RSC_LANG_CAMBODIAN,
+	/* id    */ RSC_LANG_INDONESIAN,
+	/* bn    */ RSC_LANG_BENGALI,
+	
+	RSC_LANG_LAST
+} RSC_LANG;
+#define RSC_LANG_FIRST RSC_LANG_ENGLISH
+#define RSC_LANG_DEFAULT RSC_LANG_ENGLISH
+
+typedef struct _lang_arr {
+	char *start;
+	char *end;
+} LANG_ARRAY[RSC_LANG_MAX];
+
+
 typedef struct {
 	EXTOB_MODE mode;
+	RSC_LANG lang;
 } EXTOB_OPTIONS;
-
 
 enum ext_type {
 	EXTTYPE_NONE,

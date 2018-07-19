@@ -12,6 +12,7 @@
 #include "aesutils.h"
 #include "rso.h"
 #include "pofile.h"
+#include "rsc_lang.h"
 
 FILE *ffp = NULL;
 const char *fname;
@@ -660,6 +661,21 @@ static _BOOL Form_Al_is_Str_Ok(const char *str)
 
 /*** ---------------------------------------------------------------------- ***/
 
+static _BOOL uses_oldlang(RSCFILE *file)
+{
+	const char *str;
+	
+	if (file->header.rsh_nstring == 0)
+		return FALSE;
+	str = file->rs_frstr[0];
+	if (str != NULL && strchr(str, RSC_LANG_DELIM) != NULL)
+		return TRUE;
+	
+	return FALSE;
+}
+	
+/*** ---------------------------------------------------------------------- ***/
+
 static _BOOL rsc_load_trees(RSCFILE *file)
 {
 	_ULONG i;
@@ -667,6 +683,36 @@ static _BOOL rsc_load_trees(RSCFILE *file)
 	RSCTREE *tree;
 	char name[MAXNAMELEN+1];
 	const char *prefix;
+	
+	if (uses_oldlang(file))
+	{
+		file->rsc_use_oldlang = TRUE;
+
+		for (i = 0; i < file->header.rsh_nobs; i++)
+		{
+			OBJECT *ob = &file->rs_object[i];
+			_WORD type = ob->ob_type & OBTYPEMASK;
+			switch (type)
+			{
+			case G_STRING:
+				ob->ob_spec.free_string = rsc_language_str(ob->ob_spec.free_string, file->rsc_extob.lang);
+				break;
+			case G_TEXT:
+			case G_BOXTEXT:
+				ob->ob_spec.tedinfo->te_ptext = rsc_language_str(ob->ob_spec.tedinfo->te_ptext, file->rsc_extob.lang);
+				break;
+			case G_FTEXT:
+			case G_FBOXTEXT:
+				ob->ob_spec.tedinfo->te_ptmplt = rsc_language_str(ob->ob_spec.tedinfo->te_ptmplt, file->rsc_extob.lang);
+				break;
+			}
+		}
+
+		for (i = 0; i < file->header.rsh_nstring; i++)
+		{
+			file->rs_frstr[i] = rsc_language_str(file->rs_frstr[i], file->rsc_extob.lang);
+		}
+	}
 	
 	for (i = 0; i < file->header.rsh_ntree; i++)
 	{
@@ -732,6 +778,7 @@ static _BOOL rsc_load_trees(RSCFILE *file)
 			return FALSE;
 		}
 	}
+
 	return TRUE;
 }
 
@@ -2597,6 +2644,15 @@ RSCFILE *load_all(const char *file_name, const char *lang, _UWORD flags, const c
 	file = xrsrc_load(file_name, flags);
 	if (file == NULL)
 		return NULL;
+	
+	/* translate strings in objects */
+	if (lang)
+	{
+		file->rsc_nls_domain.lang = lang;
+		file->rsc_extob.lang = rsc_lang_name_to_id(lang);
+		if (file->rsc_extob.lang == RSC_LANG_NONE)
+			file->rsc_extob.lang = RSC_LANG_DEFAULT;
+	}
 	
 	rsc_load_trees(file);
 	

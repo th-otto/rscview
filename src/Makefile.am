@@ -23,6 +23,7 @@ rscview_SOURCES = \
 	xmlout.c \
 	object.c \
 	rsc.c \
+	rsc_lang.c rsc_lang.h langtab.h \
 	fileio.c \
 	bghio.c \
 	fio_err.c \
@@ -38,6 +39,7 @@ rscview_cgi_SOURCES = \
 	xmlout.c \
 	object.c \
 	rsc.c \
+	rsc_lang.c rsc_lang.h langtab.h \
 	fileio.c \
 	bghio.c \
 	fio_err.c \
