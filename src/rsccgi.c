@@ -1118,6 +1118,7 @@ int main(void)
 
 /*
 export SERVER_NAME=127.0.0.2
+export REMOTE_ADDR=127.0.0.1
 export HTTP_REFERER=http://127.0.0.2/rscview/
 export SCRIPT_FILENAME=/srv/www/htdocs/rscview/rscview.cgi
 export SCRIPT_NAME=/rscview/rscview.cgi
