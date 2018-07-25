@@ -46,8 +46,13 @@ OS2RC=		$(AM_V_RC)$(RC) -r $(AM_CPPFLAGS) $(CPPFLAGS) $(DEFINES) $< $@
 # OS/2 IPF compiler
 #IPFC=		ipfc$(EXEEXT)
 
+if WITH_SYSTEM_LIBPNG
 PNG_CFLAGS = 
 PNG_LIBS   = -lpng
+else
+PNG_CFLAGS = -I$(top_srcdir)/libpng
+PNG_LIBS   = $(top_builddir)/libpng/libpng.a -lm
+endif
 Z_CFLAGS   = 
 Z_LIBS     = -lz
 

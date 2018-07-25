@@ -1,7 +1,7 @@
 AUTOMAKE_OPTIONS = foreign dist-xz
 ACLOCAL_AMFLAGS = -I m4
 
-SUBDIRS = build/linux data gemlib po aes vdi util src
+SUBDIRS = build/linux data gemlib po aes vdi util libpng src
 
 EXTRA_DIST = \
 	include \
@@ -27,7 +27,6 @@ bindist:
 	$(CROSS_WIN32_PREFIX)strip src/rscview.exe
 	cp -a src/rscview.exe $(TMPDIR)
 	cp -a /usr/$(CROSS_WIN32_HOST)/sys-root/mingw/bin/zlib1.dll $(TMPDIR)
-	cp -a /usr/$(CROSS_WIN32_HOST)/sys-root/mingw/bin/libpng16-16.dll $(TMPDIR)
 	cp -a /usr/lib/gcc/$(CROSS_WIN32_HOST)/libgcc_s_dw2-1.dll $(TMPDIR)
 	$(RM) $(DOWNLOADS)/rscview-$(VERSION)-win32.zip
 	(cd $(TMPDIR)/..; zip -r $(DOWNLOADS)/rscview-$(VERSION)-win32.zip rscview)
@@ -39,7 +38,6 @@ bindist:
 	$(CROSS_WIN64_PREFIX)strip src/rscview.exe
 	cp -a src/rscview.exe $(TMPDIR)
 	cp -a /usr/$(CROSS_WIN64_HOST)/sys-root/mingw/bin/zlib1.dll $(TMPDIR)
-	cp -a /usr/$(CROSS_WIN64_HOST)/sys-root/mingw/bin/libpng16-16.dll $(TMPDIR)
 	cp -a /usr/lib/gcc/$(CROSS_WIN64_HOST)/libgcc_s_sjlj-1.dll $(TMPDIR)
 	$(RM) $(DOWNLOADS)/rscview-$(VERSION)-win64.zip
 	(cd $(TMPDIR)/..; zip -r $(DOWNLOADS)/rscview-$(VERSION)-win64.zip rscview)
@@ -50,44 +48,15 @@ bindist:
 	(cd src; mv rscview rscview.ttp; zip -r $(DOWNLOADS)/rscview-$(VERSION)-mint.zip rscview.ttp; rm -f rscview.ttp)
 	$(MAKE) clean
 	./configure $(CONFIGURE_ARGS)
-	$(MAKE) -j8 PNG_CFLAGS=-I$(HOME)/gtk/inst/usr/include/libpng14 PNG_LIBS="-L$(HOME)/gtk/inst/usr/lib64 -lpng14"
-	strip src/rscview
-	(cd src; \
-	 set -- `ldd rscview | sed -n 's/.*\(libpng.*\) => \([^ ]*\).*/\1 \2/p'`; \
-	 so=$$1; \
-	 f=`readlink -f $$2`; \
-	 short=$${so%%.so.*}; \
-	 short=$${short##lib}; \
-	 cp -a $$f $$so; tar cvfj $(DOWNLOADS)/rscview-$(VERSION)-linux-$${short}.tar.bz2 rscview $$so; rm $$so)
-	$(MAKE) clean
 	$(MAKE) -j8
 	strip src/rscview
 	(cd src; \
-	 set -- `ldd rscview | sed -n 's/.*\(libpng.*\) => \([^ ]*\).*/\1 \2/p'`; \
-	 so=$$1; \
-	 f=`readlink -f $$2`; \
-	 short=$${so%%.so.*}; \
-	 short=$${short##lib}; \
-	 cp -a $$f $$so; tar cvfj $(DOWNLOADS)/rscview-$(VERSION)-linux-$${short}.tar.bz2 rscview $$so; rm $$so)
+	 tar cvfj $(DOWNLOADS)/rscview-$(VERSION)-linux.tar.bz2 rscview)
+	$(MAKE) clean
 
 bd:
 	$(MAKE) clean
-	$(MAKE) -j8 PNG_CFLAGS=-I$(HOME)/gtk/inst/usr/include/libpng14 PNG_LIBS="-L$(HOME)/gtk/inst/usr/lib64 -lpng14"
-	strip src/rscview
-	(cd src; \
-	 set -- `ldd rscview | sed -n 's/.*\(libpng.*\) => \([^ ]*\).*/\1 \2/p'`; \
-	 so=$$1; \
-	 f=`readlink -f $$2`; \
-	 short=$${so%%.so.*}; \
-	 short=$${short##lib}; \
-	 cp -a $$f $$so; tar cvfj $(DOWNLOADS)/rscview-$(VERSION)-linux-$${short}.tar.bz2 rscview $$so; rm $$so)
-	$(MAKE) clean
 	$(MAKE) -j8
 	strip src/rscview
 	(cd src; \
-	 set -- `ldd rscview | sed -n 's/.*\(libpng.*\) => \([^ ]*\).*/\1 \2/p'`; \
-	 so=$$1; \
-	 f=`readlink -f $$2`; \
-	 short=$${so%%.so.*}; \
-	 short=$${short##lib}; \
-	 cp -a $$f $$so; tar cvfj $(DOWNLOADS)/rscview-$(VERSION)-linux-$${short}.tar.bz2 rscview $$so; rm $$so)
+	 tar cvfj $(DOWNLOADS)/rscview-$(VERSION)-linux.tar.bz2 rscview)

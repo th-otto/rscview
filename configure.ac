@@ -582,6 +582,15 @@ if test "$GCC" = "yes" -a "$enable_fatal_warnings" = "yes"; then
 fi
 ])
 
+AC_ARG_WITH(system_libpng,
+[AC_HELP_STRING(--with-system-libpng, [use systems libpng])],
+[case $withval in
+yes | no) ;;
+*)   AC_MSG_ERROR([must be yes or no: --with-system-libpng=$enableval]) ;;
+esac
+], with_system_libpng=no)
+AM_CONDITIONAL(WITH_SYSTEM_LIBPNG, test "$with_system_libpng" = yes)
+
 ###############################################################################
 #
 #       Curl support
@@ -630,6 +639,7 @@ po/Makefile
 aes/Makefile
 vdi/Makefile
 util/Makefile
+libpng/Makefile
 src/Makefile
 ])
 

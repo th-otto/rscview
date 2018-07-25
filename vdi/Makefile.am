@@ -3,6 +3,7 @@ AUTOMAKE_OPTIONS = subdir-objects
 include $(top_srcdir)/config.mk
 
 AM_CPPFLAGS += -I$(srcdir)
+AM_CPPFLAGS += $(PNG_CFLAGS)
 
 noinst_LIBRARIES = libvdi.a
 
