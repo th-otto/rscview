@@ -107,6 +107,19 @@ static void writepng_error_handler(png_structp png_ptr, png_const_charp msg)
 }
 
 
+static void writepng_warning_handler(png_structp png_ptr, png_const_charp msg)
+{
+	/*
+	 * Silently ignore any warning messages from libpng.
+	 * They stupidly tend to introduce new warnings with every release,
+	 * with the default warning handler writing to stdout and/or stderr,
+	 * messing up the output of the CGI scripts.
+	 */
+	(void) png_ptr;
+	(void) msg;
+}
+
+
 
 void writepng_version_info(void)
 {
@@ -131,7 +144,7 @@ writepng_info *writepng_new(void)
 	wpnginfo->image_data = NULL;
 	wpnginfo->row_pointers = NULL;
 	wpnginfo->interlaced = FALSE;
-	wpnginfo->have_bg = FALSE;
+	wpnginfo->have_bg = -1;
 	wpnginfo->gamma = 0.0;
 	wpnginfo->sample_depth = 8;
 	
@@ -222,7 +235,7 @@ int writepng_init(writepng_info *wpnginfo)
 
 	/* could also replace libpng warning-handler (final NULL), but no need: */
 
-	png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, wpnginfo, writepng_error_handler, NULL);
+	png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, wpnginfo, writepng_error_handler, writepng_warning_handler);
 	if (!png_ptr)
 		return ENOMEM;						/* out of memory */
 
@@ -305,7 +318,7 @@ int writepng_init(writepng_info *wpnginfo)
 		png_set_PLTE(png_ptr, info_ptr, wpnginfo->palette, wpnginfo->num_palette);
 	}
 	
-	if (wpnginfo->have_bg)
+	if (wpnginfo->bpp > 8 && wpnginfo->have_bg >= 0)
 	{									/* we know it's RGBA, not gray+alpha */
 		png_color_16 background;
 
@@ -313,6 +326,18 @@ int writepng_init(writepng_info *wpnginfo)
 		background.green = wpnginfo->bg.green;
 		background.blue = wpnginfo->bg.blue;
 		png_set_bKGD(png_ptr, info_ptr, &background);
+	}
+
+	if (wpnginfo->bpp <= 8 && wpnginfo->have_bg >= 0)
+	{
+		png_color_16 background;
+		png_byte trans;
+		
+		background.red = wpnginfo->bg.red;
+		background.green = wpnginfo->bg.green;
+		background.blue = wpnginfo->bg.blue;
+		trans = wpnginfo->have_bg;
+		png_set_tRNS(png_ptr, info_ptr, &trans, 1, &background);
 	}
 
 	if (wpnginfo->modtime != 0)
@@ -377,7 +402,6 @@ int writepng_init(writepng_info *wpnginfo)
 	/* write all chunks up to (but not including) first IDAT */
 
 	png_write_info(png_ptr, info_ptr);
-
 
 	/* if we wanted to write any more text info *after* the image data, we
 	 * would set up text struct(s) here and call png_set_text() again, with
@@ -510,6 +534,10 @@ void writepng_cleanup(writepng_info *wpnginfo)
 			wpnginfo->row_pointers = NULL;
 		}
 		if (wpnginfo->png_ptr && wpnginfo->info_ptr)
+		{
 			png_destroy_write_struct(&wpnginfo->png_ptr, &wpnginfo->info_ptr);
+			wpnginfo->png_ptr = NULL;
+			wpnginfo->info_ptr = NULL;
+		}
 	}
 }
