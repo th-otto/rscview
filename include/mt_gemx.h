@@ -965,12 +965,12 @@ typedef struct
 
 void	v_ftext         (VdiHdl, _WORD x, _WORD y, const char  *str);
 void	v_ftextn         (VdiHdl, _WORD x, _WORD y, const char  *str, _WORD num);
-void	v_ftext16       (VdiHdl, _WORD x, _WORD y, const WCHAR *wstr);
-void	v_ftext16n      (VdiHdl, _WORD x, _WORD y, const WCHAR *wstr, _WORD num);
+void	v_ftext16       (VdiHdl, _WORD x, _WORD y, const vdi_wchar_t *wstr);
+void	v_ftext16n      (VdiHdl, _WORD x, _WORD y, const vdi_wchar_t *wstr, _WORD num);
 void	v_ftext_offset  (VdiHdl, _WORD x, _WORD y,
                                const char  *str,  const _WORD *offset);
 void	v_ftext_offset16(VdiHdl, _WORD x, _WORD y,
-                               const WCHAR *wstr, const _WORD *offset);
+                               const vdi_wchar_t *wstr, const _WORD *offset);
 void	v_getbitmap_info(VdiHdl, _WORD ch, fix31 *advancex, fix31 *advancey,
                                fix31 *xoffset, fix31 *yoffset, _WORD *width,
                                _WORD *height, _WORD **bitmap);
@@ -991,8 +991,8 @@ _WORD	vqt_ext_name    (VdiHdl, _WORD __index,
                                char *name, _WORD *font_format, _WORD *flags);
 void	vqt_f_extent    (VdiHdl, const char  *str, _WORD extent[]);
 void	vqt_f_extentn    (VdiHdl, const char  *str, _WORD num, _WORD extent[]);
-void	vqt_f_extent16  (VdiHdl, const WCHAR *str, _WORD extent[]);
-void	vqt_f_extent16n (VdiHdl, const WCHAR *str, _WORD num, _WORD extent[]);
+void	vqt_f_extent16  (VdiHdl, const vdi_wchar_t *str, _WORD extent[]);
+void	vqt_f_extent16n (VdiHdl, const vdi_wchar_t *str, _WORD num, _WORD extent[]);
 void	vqt_fontheader  (VdiHdl, char *buffer, char *pathname);
 _WORD	vqt_name_and_id (VdiHdl, _WORD font_format,
                                char *font_name, char *ret_name);

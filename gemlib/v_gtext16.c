@@ -16,7 +16,7 @@
  */
 
 void
-v_gtext16 (short handle, short x, short y, const short *wstr)
+v_gtext16 (short handle, short x, short y, const vdi_wchar_t *wstr)
 {
 	short n = vdi_wstrlen (wstr);
 	short vdi_control[VDI_CNTRLMAX]; 

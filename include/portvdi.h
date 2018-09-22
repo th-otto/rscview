@@ -42,7 +42,7 @@ extern VDIPB _VdiParBlk;
 
 typedef int32_t fix31;
 
-typedef unsigned short WCHAR; /* 16bit string, eg. for unicode */
+typedef unsigned short vdi_wchar_t; /* 16bit string, eg. for unicode */
 
 #define fix31_to_point(a) ((_WORD)((((a) + 32768L) >> 16)))
 #define point_to_fix31(a) (((fix31)(a)) << 16)
@@ -82,8 +82,8 @@ void    v_pline( _WORD handle, _WORD count, _WORD *pxyarray );
 void    v_pmarker( _WORD handle, _WORD count, _WORD *pxyarray );
 void    v_gtext( _WORD handle, _WORD x, _WORD y, const char *string );
 void    v_gtextn( _WORD handle, _WORD x, _WORD y, const char *string, _WORD len );
-void    v_gtext16( _WORD handle, _WORD x, _WORD y, const _WORD *string );
-void    v_gtext16n( _WORD handle, _WORD x, _WORD y, const _WORD *string, _WORD len );
+void    v_gtext16( _WORD handle, _WORD x, _WORD y, const vdi_wchar_t *string );
+void    v_gtext16n( _WORD handle, _WORD x, _WORD y, const vdi_wchar_t *string, _WORD len );
 void    v_fillarea( _WORD handle, _WORD count, _WORD *pxyarray );
 void    v_cellarray( _WORD handle, _WORD *pxyarray, _WORD row_length,
                      _WORD el_used, _WORD num_rows, _WORD wrt_mode,
@@ -107,7 +107,7 @@ void    v_rfbox ( _WORD handle, _WORD *pxyarray );
 void    v_justified( _WORD handle, _WORD x, _WORD y, const char *string,
                      _WORD length, _WORD word_space,
                      _WORD char_space );
-void	v_justified16n(_WORD handle, _WORD x, _WORD y, const WCHAR *wstr, _WORD num, _WORD len, _WORD word_space, _WORD char_space);
+void	v_justified16n(_WORD handle, _WORD x, _WORD y, const vdi_wchar_t *wstr, _WORD num, _WORD len, _WORD word_space, _WORD char_space);
 
 
 /****** Attribute definitions *****************************************/
@@ -363,10 +363,16 @@ void	v_justified16n(_WORD handle, _WORD x, _WORD y, const WCHAR *wstr, _WORD num
 #define SCRATCH_NONE		2
 
 /* v_updwk return values */
-#define SLM_OK			0x00
-#define SLM_ERROR		0x02
-#define SLM_NOTONER		0x03
-#define SLM_NOPAPER		0x04
+#define SLM_OK			0 /* no error */
+#define SLM_ERROR		2 /* general printer error */
+#define SLM_NOTONER		3 /* toner empty */
+#define SLM_NOPAPER		5 /* paper empty */
+
+#define	PRINTER_OK			0
+#define	PRINTER_ERROR		(-1)
+#define	PRINTER_NOTREADY	(-2)
+#define	PRINTER_NOPAPER		(-9)
+#define	DRIVER_NOEXIST		(-15)
 
 
 /****** Escape library *******************************************************/
@@ -566,9 +572,9 @@ void    vqm_attributes( _WORD handle, _WORD *attrib );
 void    vqf_attributes( _WORD handle, _WORD *attrib );
 void    vqt_attributes( _WORD handle, _WORD *attrib );
 void    vqt_extent( _WORD handle, const char *string, _WORD *extent );
-void  vqt_extent16(VdiHdl handle, const _WORD *wstr, _WORD *extent);
+void  vqt_extent16(VdiHdl handle, const vdi_wchar_t *wstr, _WORD *extent);
 void    vqt_extentn( _WORD handle, const char *string, _WORD len, _WORD *extent );
-void  vqt_extent16n  (VdiHdl , const _WORD *wstr, _WORD num, _WORD *extent);
+void  vqt_extent16n  (VdiHdl , const vdi_wchar_t *wstr, _WORD num, _WORD *extent);
 _WORD    vqt_width( _WORD handle, _WORD character,
                    _WORD *cell_width, _WORD *left_delta,
                    _WORD *right_delta );
@@ -597,7 +603,7 @@ void    v_eeol( _WORD handle );
 void    vs_curaddress( _WORD handle, _WORD row, _WORD column );
 void    v_curaddress( _WORD handle, _WORD row, _WORD column );
 void    v_curtext( _WORD handle, const char *string );
-void	v_curtext16n(_WORD handle, const WCHAR *wstr, _WORD num);
+void	v_curtext16n(_WORD handle, const vdi_wchar_t *wstr, _WORD num);
 void    v_rvon( _WORD handle );
 void    v_rvoff( _WORD handle );
 void    vq_curaddress( _WORD handle, _WORD *row, _WORD *column );
@@ -614,7 +620,7 @@ void    v_bit_image( _WORD handle, const char *filename,
 void    vq_scan( _WORD handle, _WORD *g_slice, _WORD *g_page,
                  _WORD *a_slice, _WORD *a_page, _WORD *div_fac);
 void    v_alpha_text( _WORD handle, const char *string );
-void	v_alpha_text16n(_WORD handle, const WCHAR *wstr, _WORD num);
+void	v_alpha_text16n(_WORD handle, const vdi_wchar_t *wstr, _WORD num);
 _WORD   vs_palette( _WORD handle, _WORD palette );
 void	v_sound( _WORD handle, _WORD frequency, _WORD duration );
 _WORD	vs_mute( _WORD handle, _WORD action );
@@ -719,9 +725,9 @@ typedef struct fsm_component_t
 
 
 void    vqt_f_extent( _WORD handle, const char *string, _WORD *extent );
-void	vqt_f_extent16  (VdiHdl, const WCHAR *str, _WORD extent[]);
+void	vqt_f_extent16  (VdiHdl, const vdi_wchar_t *str, _WORD extent[]);
 void    vqt_f_extentn( _WORD handle, const char *string, _WORD len, _WORD *extent );
-void	vqt_f_extent16n (VdiHdl, const WCHAR *str, _WORD num, _WORD extent[]);
+void	vqt_f_extent16n (VdiHdl, const vdi_wchar_t *str, _WORD num, _WORD extent[]);
 void    v_killoutline( _WORD handle, fsm_component_t *component );
 /* void    v_getoutline( _WORD handle, _WORD ch, fsm_component_t **component ); */
 void    v_getoutline(_WORD handle, _WORD ch, _WORD *xyarray, char *bezarray, _WORD maxpts, _WORD *count);
@@ -767,7 +773,38 @@ void v_get_driver_info(_WORD device, _WORD select, char *info_string);
 
 void vqt_real_extent(_WORD handle, _WORD x, _WORD y, const char *string, _WORD *extent);
 void vqt_real_extentn(_WORD handle, _WORD x, _WORD y, const char *string, _WORD len, _WORD *extent);
-void vqt_real_extent16n(_WORD handle, _WORD x, _WORD y, const WCHAR *wstring, _WORD num, _WORD *extent);
+void vqt_real_extent16n(_WORD handle, _WORD x, _WORD y, const vdi_wchar_t *wstring, _WORD num, _WORD *extent);
+
+
+/****** SPEEDO definitions ********************************************/
+
+#define IMG_MASK	0x1
+#define IMG_OK		0x1
+
+#define TGA_MASK	0x00000110
+#define	TGA_TYPE_2	0x4
+
+#define APPL	0
+#define DOC		1
+#define CREAT	2
+#define REM		3
+
+typedef struct
+{
+	_WORD nbplanes;
+	_WORD width;
+	_WORD height;
+} BIT_IMAGE;
+
+_WORD vq_margins(_WORD handle, _WORD *top, _WORD *bot, _WORD *lft, _WORD *rgt, _WORD *xdpi, _WORD *ydpi);
+_WORD vq_driver_info(_WORD handle, _WORD *lib, _WORD *drv, _WORD *plane, _WORD *attr, char name[27]);
+_WORD vq_bit_image(_WORD handle, _WORD *ver, _WORD *maximg, _WORD *form);
+_WORD vs_page_info(_WORD handle, _WORD type, const char txt[60]);
+_WORD vs_crop(_WORD handle, _WORD ltx1, _WORD lty1, _WORD ltx2, _WORD lty2, _WORD ltlen, _WORD ltoffset);
+_WORD vq_image_type(_WORD handle, const char *file, BIT_IMAGE *img);
+_WORD vs_save_disp_list(_WORD handle, const char *name);
+_WORD vs_load_disp_list(_WORD handle, const char *name);
+
 
 
 /*
@@ -801,10 +838,10 @@ typedef struct
 void    v_ftext( _WORD handle, _WORD x, _WORD y, const char *string );
 void	v_ftext_offset(_WORD handle, _WORD x, _WORD y, const char *sstr, const _WORD *offset);
 void    v_ftextn( _WORD handle, _WORD x, _WORD y, const char *string, _WORD len );
-void	v_ftext16       (VdiHdl, _WORD x, _WORD y, const WCHAR *wstr);
-void	v_ftext16n      (VdiHdl, _WORD x, _WORD y, const WCHAR *wstr, _WORD num);
-void	v_ftext_offset16(VdiHdl, _WORD x, _WORD y, const WCHAR *wstr, const _WORD *offset);
-void	v_ftext_offset16n(VdiHdl, _WORD x, _WORD y, const WCHAR *wstr, _WORD num, const _WORD *offset);
+void	v_ftext16       (VdiHdl, _WORD x, _WORD y, const vdi_wchar_t *wstr);
+void	v_ftext16n      (VdiHdl, _WORD x, _WORD y, const vdi_wchar_t *wstr, _WORD num);
+void	v_ftext_offset16(VdiHdl, _WORD x, _WORD y, const vdi_wchar_t *wstr, const _WORD *offset);
+void	v_ftext_offset16n(VdiHdl, _WORD x, _WORD y, const vdi_wchar_t *wstr, _WORD num, const _WORD *offset);
 _WORD	vq_ext_devinfo (VdiHdl, _WORD device, _WORD *dev_exists, char *file_path, char *file_name, char *name);
 _WORD	vqt_ext_name    (VdiHdl, _WORD __index, char *name, _WORD *font_format, _WORD *flags);
 _WORD	vqt_name_and_id (VdiHdl, _WORD font_format, char *font_name, char *ret_name);
@@ -1145,7 +1182,7 @@ _WORD v_write_png(_WORD handle, const char *filename);
 void  vdi_array2str (const _WORD *src, char  *des, _WORD len);
 _WORD vdi_str2array (const char  *src, _WORD *des);
 _WORD vdi_str2arrayn (const char  *src, _WORD *des, _WORD len);
-_WORD vdi_wstrlen   (const _WORD *wstr);
+_WORD vdi_wstrlen   (const vdi_wchar_t *wstr);
 
 EXTERN_C_END
 

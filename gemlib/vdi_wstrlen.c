@@ -14,7 +14,7 @@
  */
 
 short
-vdi_wstrlen (const short *wstr)
+vdi_wstrlen (const vdi_wchar_t *wstr)
 {
 	register short len = 0;
 	

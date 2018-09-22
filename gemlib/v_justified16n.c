@@ -23,7 +23,7 @@
 
 void
 v_justified16n (short handle, short x, short y,
-              const WCHAR * wstr, short num, short len, short word_space, short char_space)
+              const vdi_wchar_t * wstr, short num, short len, short word_space, short char_space)
 {
 	short vdi_control[VDI_CNTRLMAX];  
 	short vdi_ptsin[4];   

@@ -15,7 +15,7 @@
 
 void
 v_ftext_offset16n (short handle, short x, short y,
-                  const WCHAR * wstr, short num, const short * offset)
+                  const vdi_wchar_t * wstr, short num, const short * offset)
 {
 	short vdi_control[VDI_CNTRLMAX]; 
 	short vdi_ptsin[VDI_PTSINMAX*2+2];   

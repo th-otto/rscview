@@ -12,7 +12,7 @@
  */
 
 void
-v_curtext16n (short handle, const WCHAR * wstr, short num)
+v_curtext16n (short handle, const vdi_wchar_t * wstr, short num)
 {
 	short vdi_control[VDI_CNTRLMAX];   
 

@@ -15,7 +15,7 @@
  */
 
 void
-v_alpha_text16n (short handle, const WCHAR *wstr, short num)
+v_alpha_text16n (short handle, const vdi_wchar_t *wstr, short num)
 {
 	short vdi_control[VDI_CNTRLMAX]; 
 	short vdi_intout[5];

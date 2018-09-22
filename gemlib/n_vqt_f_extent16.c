@@ -18,10 +18,10 @@
  */
 
 void
-vqt_f_extent16 (short handle, const WCHAR * wstr, short extent[])
+vqt_f_extent16 (short handle, const vdi_wchar_t * wstr, short extent[])
 {
 	short vdi_control[VDI_CNTRLMAX]; 
-	short n = vdi_wstrlen ((const short *)wstr);
+	short n = vdi_wstrlen (wstr);
 
 	VDI_PARAMS(vdi_control, (short *)NO_CONST(wstr), 0L, vdi_dummy, extent);
 

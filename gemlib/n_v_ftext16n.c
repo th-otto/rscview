@@ -17,7 +17,7 @@
  */
 
 void
-v_ftext16n (short handle, short x, short y, const WCHAR *wstr, short num)
+v_ftext16n (short handle, short x, short y, const vdi_wchar_t *wstr, short num)
 {
 	short vdi_control[VDI_CNTRLMAX]; 
 	short vdi_ptsin[2];   

@@ -333,6 +333,13 @@ libgem_a_SOURCES = \
 	n_vst_skew.c \
 	n_vst_track_offset.c \
 	n_vst_width.c \
+	n_vq_driver_info.c \
+	n_vq_bit_image.c \
+	n_vs_page_info.c \
+	n_vs_crop.c \
+	n_vq_image_type.c \
+	n_vs_save_disp_list.c \
+	n_vs_load_disp_list.c \
 	\
 	vdi_array2str.c \
 	vdi_str2array.c \

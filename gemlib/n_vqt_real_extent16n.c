@@ -17,7 +17,7 @@
  */
 
 void
-vqt_real_extent16n (short handle, short x, short y, const WCHAR *wstring, short num, short *extent)
+vqt_real_extent16n (short handle, short x, short y, const vdi_wchar_t *wstring, short num, short *extent)
 {
 	short vdi_control[VDI_CNTRLMAX];  
 	short vdi_ptsin[2];   

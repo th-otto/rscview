@@ -14,7 +14,7 @@
  */
 
 void
-vqt_extent16n (short handle, const short *wstr, short num, short extent[])
+vqt_extent16n (short handle, const vdi_wchar_t *wstr, short num, short extent[])
 {
 	short vdi_control[VDI_CNTRLMAX]; 
 	

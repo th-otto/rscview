@@ -17,11 +17,11 @@
  */
 
 void
-v_ftext16 (short handle, short x, short y, const WCHAR * wstr)
+v_ftext16 (short handle, short x, short y, const vdi_wchar_t * wstr)
 {
 	short vdi_control[VDI_CNTRLMAX]; 
 	short vdi_ptsin[2];   
-	short n = vdi_wstrlen ((const short *)wstr);
+	short n = vdi_wstrlen (wstr);
 
 	VDI_PARAMS(vdi_control, (short *)NO_CONST(wstr), vdi_ptsin, vdi_dummy, vdi_dummy);
 	

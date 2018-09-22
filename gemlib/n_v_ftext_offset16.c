@@ -18,13 +18,13 @@
 
 void
 v_ftext_offset16 (short handle, short x, short y,
-                  const WCHAR * wstr, const short * offset)
+                  const vdi_wchar_t * wstr, const short * offset)
 {
 	short vdi_control[VDI_CNTRLMAX]; 
 	short vdi_ptsin[VDI_PTSINMAX*2+2];   
 	const int32_t * src = (const int32_t*)offset;
 	int32_t       * dst =       (int32_t*)vdi_ptsin;
-	short     i, len = vdi_wstrlen ((const short *)wstr);
+	short     i, len = vdi_wstrlen (wstr);
 
 	VDI_PARAMS(vdi_control, (short *)NO_CONST(wstr), vdi_ptsin, vdi_dummy, vdi_dummy);
 	if(len > VDI_PTSINMAX) len=VDI_PTSINMAX;
