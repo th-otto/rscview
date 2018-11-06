@@ -1,7 +1,3 @@
-/*
- *  $Id$
- */
-
 #include "gem_aesP.h"
 
 /** transform a PXY-array structure to a GRECT structure

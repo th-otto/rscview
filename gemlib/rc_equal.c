@@ -1,7 +1,3 @@
-/*
- *  $Id$
- */
-
 #include "gem_aesP.h"
 
 /** return non-zero value if both area are equal

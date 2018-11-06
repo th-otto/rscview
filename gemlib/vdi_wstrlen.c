@@ -1,7 +1,3 @@
-/*
- *  $Id$
- */
-
 #include "gem_vdiP.h"
 
 /** return the length of a w-string
