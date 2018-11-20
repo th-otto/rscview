@@ -132,7 +132,7 @@ static __inline void **__aes_intin_ptr(short n, short *aes_intin)
 
 
 #define AES_PARAMS(opcode,nintin,nintout,naddrin,naddrout) \
-	static short const aes_control[AES_CTRLMAX]={opcode,nintin,nintout,naddrin,naddrout}; \
+	static short aes_control[5]={opcode,nintin,nintout,naddrin,naddrout}; \
 	short			aes_intin[AES_INTINMAX];			  \
 	short			aes_intout[AES_INTOUTMAX];			  \
 	void	        *aes_addrin[AES_ADDRINMAX];			  \
