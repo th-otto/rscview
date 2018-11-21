@@ -1920,9 +1920,6 @@ static _BOOL is_emutos_desktop(RSCFILE *file)
 
 #define ADCPYDEL 7
 
-#define STFOINFO 4
-#define STDELETE 7
-
 	if (strcasecmp(rsx_basename(file->rsc_rsxname), "desktop") != 0)
 		return FALSE;
 	if ((rsctree = rsc_tree_index(file, ADDINFO, RT_UNKNOWN)) == NULL || rsctree->rt_type != RT_DIALOG)
@@ -2621,10 +2618,10 @@ static void emutos_desktop_fix(RSCFILE *file)
 	align_objects(file->rs_object, file->header.rsh_nobs);
 	
 	tree = file->rs_trindex[ADFFINFO];
-	tree[1].ob_spec.free_string = nls_dgettext(&file->rsc_nls_domain, file->rs_frstr[STFOINFO]);
+	tree[1].ob_spec.free_string = nls_dgettext(&file->rsc_nls_domain, "FOLDER INFORMATION" /* file->rs_frstr[STFOINFO] */);
 	
 	tree = file->rs_trindex[ADCPYDEL];
-	tree[1].ob_spec.free_string = nls_dgettext(&file->rsc_nls_domain, file->rs_frstr[STDELETE]);
+	tree[1].ob_spec.free_string = nls_dgettext(&file->rsc_nls_domain, "DELETE FILE(S)" /* file->rs_frstr[STDELETE] */);
 	
 	centre_titles(file);
 }
