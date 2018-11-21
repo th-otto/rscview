@@ -591,6 +591,15 @@ esac
 ], with_system_libpng=no)
 AM_CONDITIONAL(WITH_SYSTEM_LIBPNG, test "$with_system_libpng" = yes)
 
+AC_ARG_WITH(system_zlib,
+[AC_HELP_STRING(--with-system-zlib, [use systems zlib])],
+[case $withval in
+yes | no) ;;
+*)   AC_MSG_ERROR([must be yes or no: --with-system-zlib=$enableval]) ;;
+esac
+], with_system_zlib=no)
+AM_CONDITIONAL(WITH_SYSTEM_ZLIB, test "$with_system_zlib" = yes)
+
 ###############################################################################
 #
 #       Curl support
@@ -640,6 +649,7 @@ aes/Makefile
 vdi/Makefile
 util/Makefile
 libpng/Makefile
+zlib/Makefile
 src/Makefile
 ])
 

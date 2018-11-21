@@ -53,8 +53,13 @@ else
 PNG_CFLAGS = -I$(top_srcdir)/libpng
 PNG_LIBS   = $(top_builddir)/libpng/libpng.a -lm
 endif
+if WITH_SYSTEM_ZLIB
 Z_CFLAGS   = 
 Z_LIBS     = -lz
+else
+Z_CFLAGS   = -I$(top_srcdir)/zlib
+Z_LIBS     = $(top_builddir)/zlib/libz.a
+endif
 
 #
 # Common defines/libraries
