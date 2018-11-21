@@ -2211,23 +2211,27 @@ static void xlate_file(RSCFILE *file, _BOOL trim_strings, _BOOL report_translati
 			}
 			if (p)
 			{
-				char *newstr = nls_dgettext(domain, *p);
+				char *newstr;
 				
 				if (!notranslate(*p, file->rsc_emutos))
 				{
+					newstr = nls_dgettext(domain, *p);
 					if (newstr == *p)
 					{
 						numuntransl++;
 						if (report_translations)
 						{
-							char *utf8 = nls_conv_to_utf8(domain->fontset, newstr, STR0TERM, FALSE);
-							KINFO((_("%s: untranslated: '%s'\n"), file->rsc_rsxname, utf8));
-							g_free(utf8);
+							char *from = nls_conv_to_utf8(CHARSET_ST, *p, STR0TERM, FALSE);
+							KINFO((_("%s: untranslated: '%s'\n"), file->rsc_rsxname, from));
+							g_free(from);
 						}
 					} else
 					{
 						numtransl++;
 					}
+				} else
+				{
+					newstr = *p;
 				}
 				
 				/*
