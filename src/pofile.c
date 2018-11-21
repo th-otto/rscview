@@ -1610,6 +1610,10 @@ static oh *po_load(nls_domain *domain, const char *po_dir, _BOOL report_translat
 				numuntransl++;
 				/* if there is no translation, we must recode the original string */
 				converter(e->msgid.key);
+				if (report_translations)
+				{
+					KINFO((_("%s.po: untranslated: '%s'\n"), domain->lang, e->msgid.key));
+				}
 			}
 		}
 	}
@@ -1617,7 +1621,7 @@ static oh *po_load(nls_domain *domain, const char *po_dir, _BOOL report_translat
 	/* print stats */
 	if (report_translations)
 	{
-		KINFO(("%s.po: translated %d, untranslated %d\n", domain->lang, numtransl, numuntransl));
+		KINFO((_("%s.po: translated %d, untranslated %d\n"), domain->lang, numtransl, numuntransl));
 	}
 	retval = TRUE;
 	

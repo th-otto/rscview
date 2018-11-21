@@ -2218,6 +2218,12 @@ static void xlate_file(RSCFILE *file, _BOOL trim_strings, _BOOL report_translati
 					if (newstr == *p)
 					{
 						numuntransl++;
+						if (report_translations)
+						{
+							char *utf8 = nls_conv_to_utf8(domain->fontset, newstr, STR0TERM, FALSE);
+							KINFO((_("%s: untranslated: '%s'\n"), file->rsc_rsxname, utf8));
+							g_free(utf8);
+						}
 					} else
 					{
 						numtransl++;
@@ -2294,6 +2300,12 @@ static void xlate_file(RSCFILE *file, _BOOL trim_strings, _BOOL report_translati
 			if (nls_dgettext(domain, str) == str)
 			{
 				numuntransl++;
+				if (report_translations)
+				{
+					char *utf8 = nls_conv_to_utf8(domain->fontset, str, STR0TERM, FALSE);
+					KINFO((_("%s: untranslated: '%s'\n"), file->rsc_rsxname, utf8));
+					g_free(utf8);
+				}
 			} else
 			{
 				numtransl++;
@@ -2303,7 +2315,7 @@ static void xlate_file(RSCFILE *file, _BOOL trim_strings, _BOOL report_translati
 	
 	if (report_translations)
 	{
-		KINFO(("%s: translated %d, untranslated %d\n", file->rsc_rsxname, numtransl, numuntransl));
+		KINFO((_("%s: translated %d, untranslated %d\n"), file->rsc_rsxname, numtransl, numuntransl));
 	}
 }
 

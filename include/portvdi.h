@@ -423,7 +423,7 @@ void	v_justified16n(_WORD handle, _WORD x, _WORD y, const vdi_wchar_t *wstr, _WO
 #define XBIT_BOTTOM      2
 
 _WORD    vswr_mode( _WORD handle, _WORD mode );
-void    vs_color( _WORD handle, _WORD index, _WORD rgb_in[3] );
+void    vs_color( _WORD handle, _WORD index, const _WORD rgb_in[3] );
 _WORD    vsl_type( _WORD handle, _WORD style );
 void    vsl_udsty( _WORD handle, _WORD pattern );
 _WORD    vsl_width( _WORD handle, _WORD width );
