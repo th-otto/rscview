@@ -259,7 +259,7 @@ static void fm_build(OBJECT *tree, _BOOL haveicon, _WORD nummsg, _WORD mlenmsg, 
 	} else
 	{
 		tree[ROOT].ob_state = SHADOWED;
-		OBSPEC_SET_FRAMESIZE(tree[ROOT].ob_spec, 2); /* inside 2 */
+		OBSPEC_SET_FRAMESIZE(tree[ROOT].ob_spec, 1); /* inside 2 */
 	}
 	
 	/* init. root object */
