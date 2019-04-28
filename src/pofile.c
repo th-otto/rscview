@@ -1584,6 +1584,8 @@ static oh *po_load(nls_domain *domain, const char *po_dir, _BOOL report_translat
 		}
 		free_pot_ae(&a);
 		o->to_charset = get_language_charset(domain->lang);
+		if (o->to_charset < 0)
+			o->to_charset = CHARSET_ST;
 		domain->fontset = o->to_charset;
 	}
 	converter = get_converter(from_charset, o->to_charset);
