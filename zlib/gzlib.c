@@ -210,7 +210,7 @@ local gzFile gz_open(const void *path, int fd, const char *mode)
             *(state->path) = 0;
     else
 #endif
-        strcpy(state->path, path);
+        strcpy(state->path, (const char *)path);
 
     /* compute the flags for open() */
     oflag =

@@ -173,7 +173,7 @@ void ZLIB_INTERNAL inflate_fast(z_streamp strm, unsigned start)
                     if (op > whave) {
                         if (state->sane) {
                             strm->msg =
-                                (char *)"invalid distance too far back";
+                                "invalid distance too far back";
                             state->mode = BAD;
                             break;
                         }
