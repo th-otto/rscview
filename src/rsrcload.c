@@ -1,6 +1,7 @@
 #define _GNU_SOURCE
 
 #include "config.h"
+#include <stdint.h>
 #include <gem.h>
 #include <s_endian.h>
 #include <debug.h>
@@ -409,7 +410,15 @@ static void flip_xrsrc_header(XRS_HEADER *header)
 
 /*** ---------------------------------------------------------------------- ***/
 
-#define FLIP_DATA 1
+/*
+ * whether to swap the image data of BITBLKs/ICONs/CICONs to native format.
+ * image data is normally treated as array of unsigned shorts, if
+ * FLIP_DATA is unset it is left in big-endian order.
+ * If unset, compiled-in resources must be stored as bytes.
+ * If you change this, you also have to change vdi_put_image
+ * and vro_cpy_to_screen in the VDI.
+ */
+#define FLIP_DATA 0
 
 #if FLIP_DATA
 static void flip_image(size_t words, _WORD *data)
@@ -2040,17 +2049,17 @@ RSCFILE *xrsrc_load(const char *filename, _UWORD flags)
 		{
 			_WORD idx;
 			
-			ob = MAKEPTR(buf, xrsc_header.rsh_object);
+			ob = (_UBYTE *)MAKEPTR(buf, xrsc_header.rsh_object);
 			idx = 0;
 			for (i = 0; i < xrsc_header.rsh_nobs; i++, ob += RSC_SIZEOF_OBJECT)
 			{
 				crc += 19;
-				crc += (idx + 1 + (_WORD)get_word(ob + 0)) * 23; /* ob_next */
-				crc += (idx + 1 + (_WORD)get_word(ob + 2)) * 29; /* ob_head */
-				crc += (idx + 1 + (_WORD)get_word(ob + 4)) * 31; /* ob_tail */
-				crc += (idx + 1 + (_WORD)get_word(ob + 6)) * 37; /* ob_type */
+				crc += (idx + 1 + (_WORD)get_word((char *)ob + 0)) * 23; /* ob_next */
+				crc += (idx + 1 + (_WORD)get_word((char *)ob + 2)) * 29; /* ob_head */
+				crc += (idx + 1 + (_WORD)get_word((char *)ob + 4)) * 31; /* ob_tail */
+				crc += (idx + 1 + (_WORD)get_word((char *)ob + 6)) * 37; /* ob_type */
 				idx++;
-				if (get_word(ob + 8) & OF_LASTOB)
+				if (get_word((char *)ob + 8) & OF_LASTOB)
 					idx = 0;
 			}
 		}

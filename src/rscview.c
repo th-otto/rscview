@@ -1,4 +1,5 @@
 #include "config.h"
+#include <stdint.h>
 #include <gem.h>
 #include <getopt.h>
 #include <errno.h>

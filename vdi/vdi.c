@@ -8,6 +8,7 @@
 #include "maptab.h"
 #include "pattern.h"
 #include "writepng.h"
+#include "s_endian.h"
 #include <errno.h>
 
 /*
@@ -2453,7 +2454,8 @@ static void vro_cpy_to_screen(VWK *v, int mode, int x, int y, int w, int h, MFDB
 			
 			for (val = 0, l = 0; l < planes; l++)
 			{
-				if (srclp[l * planesize] & srcmask)
+				/* n2hs depends on FLIP_DATA in the resource loader */
+				if (n2hs(srclp[l * planesize]) & srcmask)
 					val |= 1 << l;
 			}
 			if (planes == 2)
@@ -2699,7 +2701,10 @@ static void vdi_put_image(VWK *v, vdi_rectangle *sr, MFDB *s, int dx, int dy, in
 		for (x = 0; x < sr->width; x++)
 		{
 			int sx = x + sr->x;
-			bit = src[sx >> 4] & (0x8000 >> (sx & 0x0f));
+			bit = src[sx >> 4];
+			/* n2hs depends on FLIP_DATA in the resource loader */
+			bit = n2hs(bit);
+			bit &= (0x8000 >> (sx & 0x0f));
 			switch (op)
 			{
 			case MD_REPLACE:

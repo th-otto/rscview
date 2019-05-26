@@ -3,6 +3,7 @@
  *****************************************************************************/
 
 #include "config.h"
+#include <stdint.h>
 #include <gem.h>
 #include <mobject.h>
 #include <object.h>
@@ -913,16 +914,16 @@ static _BOOL output_xml_data(RSCFILE *file, XRS_HEADER *xrsc_header, rsc_counter
 	xml_indent(3); putprop("lower", "%d", file->rsc_rule1.lower);
 	xml_indent(3); putprop("alpha", "%d", file->rsc_rule1.alpha);
 	xml_indent(3); putprop("alnum", "%d", file->rsc_rule1.alnum);
-	xml_indent(3); xml_quotestring("add", file->rsc_rule1.add, -1);
-	xml_indent(3); xml_quotestring("sub", file->rsc_rule1.sub, -1);
+	xml_indent(3); xml_quotestring("add", (const char *)file->rsc_rule1.add, -1);
+	xml_indent(3); xml_quotestring("sub", (const char *)file->rsc_rule1.sub, -1);
 	xml_indent(2); outstr("</namerule>\n");
 	xml_indent(2); outstr("<namerule type=\"other\">\n");
 	xml_indent(3); putprop("upper", "%d", file->rsc_rule2.upper);
 	xml_indent(3); putprop("lower", "%d", file->rsc_rule2.lower);
 	xml_indent(3); putprop("alpha", "%d", file->rsc_rule2.alpha);
 	xml_indent(3); putprop("alnum", "%d", file->rsc_rule2.alnum);
-	xml_indent(3); xml_quotestring("add", file->rsc_rule2.add, -1);
-	xml_indent(3); xml_quotestring("sub", file->rsc_rule2.sub, -1);
+	xml_indent(3); xml_quotestring("add", (const char *)file->rsc_rule2.add, -1);
+	xml_indent(3); xml_quotestring("sub", (const char *)file->rsc_rule2.sub, -1);
 	xml_indent(2); outstr("</namerule>\n");
 	xml_indent(2); putprop("fillchar", "%d", file->rsc_opts.ted_fillchar);
 	xml_indent(2); putprop("menu_leftmargin", "%d", file->rsc_opts.menu_leftmargin);

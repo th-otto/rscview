@@ -1,6 +1,7 @@
 #define _GNU_SOURCE
 
 #include "config.h"
+#include <stdint.h>
 #include <gem.h>
 #include <object.h>
 #include <ctype.h>
@@ -950,7 +951,7 @@ static _BOOL hrd_load(RSCFILE *file, const char *filename, _BOOL *def_found)
 			if (tree != NULL)
 			{
 				tree->rt_type = lasttype;
-				strmaxcpy(tree->rt_name, min(HRD_NAMELEN,MAXNAMELEN) + 1, entry.hrd_name);
+				strmaxcpy(tree->rt_name, min(HRD_NAMELEN,MAXNAMELEN) + 1, (const char *)entry.hrd_name);
 			}
 			break;
 		case HRD_OBJECT:
@@ -979,7 +980,7 @@ static _BOOL hrd_load(RSCFILE *file, const char *filename, _BOOL *def_found)
 				}
 				if (ob != NULL)
 				{
-					ob_setname(file, tree, entry.ob_index, entry.hrd_name, min(HRD_NAMELEN,MAXNAMELEN) + 1);
+					ob_setname(file, tree, entry.ob_index, (const char *)entry.hrd_name, min(HRD_NAMELEN,MAXNAMELEN) + 1);
 				}
 			}
 			break;
@@ -1025,7 +1026,7 @@ static _BOOL dfn_nameinfo_read(NAMEINFO *nameinfo)
 	INPC(nameinfo->na_nametype);
 	for (i = 0; i < RSDNAMELEN; i++)
 	{
-		INPC(nameinfo->na_name[i]);
+		INPC(*((unsigned char *)(&nameinfo->na_name[i])));
 	}
 	return TRUE;
 }
@@ -1288,12 +1289,12 @@ static _UWORD checksum;
 
 static _BOOL rso_cmntread(stringarray *cmnt)
 {
-	_UBYTE cmntbuf[COMMENTLINES][COMMENTLEN+1];
+	char cmntbuf[COMMENTLINES][COMMENTLEN+1];
 	_WORD ncmnt;
 	_UBYTE len, rlen;
 	size_t total;
 	_WORD i;
-	_UBYTE *p;
+	char *p;
 	
 	ncmnt = 0;
 	INPC(len);
@@ -1326,7 +1327,7 @@ static _BOOL rso_cmntread(stringarray *cmnt)
 		*cmnt = NULL;
 		return TRUE;
 	}
-	*cmnt = p = g_new(_UBYTE, total + 1);
+	*cmnt = p = g_new(char, total + 1);
 	if (p == NULL)
 		return FALSE;
 	
@@ -1341,7 +1342,7 @@ static _BOOL rso_cmntread(stringarray *cmnt)
 
 /*** ---------------------------------------------------------------------- ***/
 
-static _BOOL rso_nameread(_UBYTE *name, _WORD maxlen)
+static _BOOL rso_nameread(char *name, _WORD maxlen)
 {
 	_UBYTE len, rlen;
 
@@ -1405,10 +1406,10 @@ static _BOOL __attribute_noinline__ inpl(_ULONG *x)
 
 /*** ---------------------------------------------------------------------- ***/
 
-static _UBYTE *rso_strread(void)
+static char *rso_strread(void)
 {
 	_UWORD len;
-	_UBYTE *str;
+	char *str;
 	
 	INPWC(len);
 	if (len == 0)
@@ -1422,7 +1423,7 @@ static _UBYTE *rso_strread(void)
 		return NULL;
 	}
 	str[len] = '\0';
-	update_checksum(str, len);
+	update_checksum((const unsigned char *)str, len);
 	return str;
 }
 
@@ -1623,9 +1624,9 @@ static _BOOL rso_read_header(RSO_HEADER *rso_header)
 
 /*** ---------------------------------------------------------------------- ***/
 
-static _BOOL rso_obtree(RSCFILE *file, CONST _UBYTE *filename, RSCTREE *tree)
+static _BOOL rso_obtree(RSCFILE *file, const char *filename, RSCTREE *tree)
 {
-	_UBYTE namebuf[MAXNAMELEN+1];
+	char namebuf[MAXNAMELEN+1];
 	stringarray cmntbuf;
 	_UWORD obindex;
 
@@ -1662,7 +1663,7 @@ static _BOOL rso_load(RSCFILE *file, const char *filename, _BOOL *def_found)
 	_UWORD trindex;
 	_UWORD trtype;
 	_ULONG mask;
-	_UBYTE namebuf[MAXNAMELEN + 1];
+	char namebuf[MAXNAMELEN + 1];
 	stringarray cmntbuf;
 	
 	fname = filename;
