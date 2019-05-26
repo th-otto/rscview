@@ -10,25 +10,27 @@ noinst_LIBRARIES = libz.a
 endif
 
 libz_a_SOURCES = \
+	zlib.h zconf.h \
 	adler32.c \
-	crc32.c \
-	deflate.c \
+	crc32.c crc32.h \
+	deflate.c deflate.h \
 	infback.c \
-	inffast.c \
-	inflate.c \
-	inftrees.c \
-	trees.c \
-	zutil.c \
+	inffast.c inffast.h inffixed.h \
+	inflate.c inflate.h \
+	inftrees.c inftrees.h \
+	trees.c trees.h \
+	zutil.c zutil.h \
+	dbgmem.h \
 	compress.c \
 	uncompr.c \
-	gzclose.c \
+	gzclose.c gzguts.h \
 	gzlib.c \
 	gzread.c \
-	gzwrite.o \
-	contrib/minizip/ioapi.c \
-	contrib/minizip/zip.c \
-	contrib/minizip/unzip.c \
-	contrib/minizip/iowin32.c
+	gzwrite.c \
+	contrib/minizip/ioapi.c contrib/minizip/ioapi.h contrib/minizip/crypt.h \
+	contrib/minizip/zip.c contrib/minizip/zip.h \
+	contrib/minizip/unzip.c contrib/minizip/unzip.h \
+	contrib/minizip/iowin32.c contrib/minizip/iowin32.h
 
 match.o: match.S
 	$(CPP) match.S > _match.s

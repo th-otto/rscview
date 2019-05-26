@@ -11,6 +11,8 @@ noinst_LIBRARIES = libpng.a
 endif
 
 libpng_a_SOURCES = \
+	png.h pngconf.h pnglibconf.h \
+	pngdebug.h pnginfo.h pngpriv.h pngstruct.h \
 	png.c \
 	pngerror.c \
 	pngget.c \
