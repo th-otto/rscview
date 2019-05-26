@@ -29,7 +29,7 @@ v_ftext_offset (short handle, short x, short y,
 	short vdi_ptsin[VDI_PTSINMAX*2+2];
 	const int32_t * src = (const int32_t*)offset;
 	int32_t       * dst =       (int32_t*)vdi_ptsin;
-	short     i, len = vdi_str2arrayn (str, vdi_intin, VDI_INTINMAX);
+	short     i, len = vdi_str2arrayn (str, (vdi_wchar_t *)vdi_intin, VDI_INTINMAX);
 
 	VDI_PARAMS(vdi_control, vdi_intin, vdi_ptsin, vdi_dummy, vdi_dummy);
 	

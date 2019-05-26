@@ -36,7 +36,7 @@ vs_document_info (short handle, short type, const char *s, short wchar)
 		  vdi_intin[n + i] = ws[i];
 		n += i;
 	} else {
-		n += vdi_str2arrayn(s, vdi_intin + 1, VDI_INTINMAX-1);
+		n += vdi_str2arrayn(s, (vdi_wchar_t *)vdi_intin + 1, VDI_INTINMAX-1);
 	}
 	VDI_TRAP_ESC (vdi_params, handle, 5,2103, 0,n);
 	

@@ -22,7 +22,7 @@ vqt_extent (short handle, const char *str, short extent[])
 {
 	short vdi_control[VDI_CNTRLMAX]; 
 	short vdi_intin[VDI_INTINMAX];   
-	short n = vdi_str2arrayn(str, vdi_intin, VDI_INTINMAX);
+	short n = vdi_str2arrayn(str, (vdi_wchar_t *)vdi_intin, VDI_INTINMAX);
 	
 	VDI_PARAMS(vdi_control, vdi_intin, NULL, vdi_dummy, extent);
 

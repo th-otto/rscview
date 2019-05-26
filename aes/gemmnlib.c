@@ -84,7 +84,7 @@ _UWORD do_chg(OBJECT *tree, _WORD iitem, _UWORD chgvalue, _WORD dochg, _WORD dod
 	_UWORD curr_state;
 
 	curr_state = tree[iitem].ob_state;
-	if (chkdisabled && (curr_state & DISABLED))
+	if (chkdisabled && (curr_state & OS_DISABLED))
 		return FALSE;
 
 	if (dochg)
@@ -108,7 +108,7 @@ static _WORD menu_set(OBJECT *tree, _WORD last_item, _WORD cur_item, _WORD setit
 {
 	if (last_item != NIL && last_item != cur_item)
 	{
-		return do_chg(tree, last_item, SELECTED, setit, TRUE, TRUE);
+		return do_chg(tree, last_item, OS_SELECTED, setit, TRUE, TRUE);
 	}
 	return FALSE;
 }
@@ -166,7 +166,7 @@ static _WORD menu_down(OBJECT *tree, _WORD ititle)
 	imenu = menu_sub(tree, ititle);
 
 	/* draw title selected */
-	if (do_chg(tree, ititle, SELECTED, TRUE, TRUE, TRUE))
+	if (do_chg(tree, ititle, OS_SELECTED, TRUE, TRUE, TRUE))
 	{
 		/* save area underneath the menu */
 		menu_sr(TRUE, tree, imenu);
@@ -253,7 +253,7 @@ _WORD mn_do(_WORD *ptitle, _WORD *pitem)
 			/* see if over the bar */
 			cur_title = ob_find(tree, THEACTIVE, 1, lrets[0], lrets[1]);
 			curstate = tree[cur_title].ob_state;
-			if (cur_title != NIL && !(curstate & DISABLED))
+			if (cur_title != NIL && !(curstate & OS_DISABLED))
 			{
 				menu_state = OUTTITLE;
 				if (gl_mnclick == 0 || lrets[5] == 1)
@@ -270,7 +270,7 @@ _WORD mn_do(_WORD *ptitle, _WORD *pitem)
 				} else
 				{
 					menu_state = INBAR;
-					if (!(curstate & DISABLED))
+					if (!(curstate & OS_DISABLED))
 						done = TRUE;
 				}
 			}
@@ -290,7 +290,7 @@ _WORD mn_do(_WORD *ptitle, _WORD *pitem)
 	if (cur_title != NIL)
 	{
 		menu_sr(FALSE, tree, cur_menu);
-		if ((cur_item != NIL) && (do_chg(tree, cur_item, SELECTED, FALSE, FALSE, TRUE)))
+		if ((cur_item != NIL) && (do_chg(tree, cur_item, OS_SELECTED, FALSE, FALSE, TRUE)))
 		{
 			/* only return TRUE when item is enabled and is not NIL */
 			*ptitle = cur_title;
@@ -298,7 +298,7 @@ _WORD mn_do(_WORD *ptitle, _WORD *pitem)
 			flag = TRUE;
 		} else
 		{
-			do_chg(tree, cur_title, SELECTED, FALSE, TRUE, TRUE);
+			do_chg(tree, cur_title, OS_SELECTED, FALSE, TRUE, TRUE);
 		}
 	}
 

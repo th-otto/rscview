@@ -558,7 +558,7 @@ void w_bldactive(_WORD w_handle)
 			setcol(W_NAME, pw, istop);
 			w_adjust(W_TITLE, W_NAME, pt->g_x, pt->g_y, tempw, gl_hbox);
 #if 0
-			W_ACTIVE[W_NAME].ob_state = istop ? NORMAL : DISABLED;
+			W_ACTIVE[W_NAME].ob_state = istop ? OS_NORMAL : OS_DISABLED;
 
 			/* comment out following line to enable pattern in window title */
 			gl_aname.te_color = (istop && !issub) ? WTS_FG : WTN_FG;
@@ -844,13 +844,13 @@ _BOOL wm_start(void)
 		W_ACTIVE[i].ob_type = gl_watype[i];
 		W_ACTIVE[i].ob_spec.index = gl_waspec[i];
 	}
-	W_ACTIVE[ROOT].ob_state = SHADOWED;
+	W_ACTIVE[ROOT].ob_state = OS_SHADOWED;
 
 	/* init rectangle list */
 	D.w_win[0].w_rlist = po = get_orect();
 	po->o_link = NULL;
 	r_set(&po->o_gr, XFULL, YFULL, WFULL, HFULL);
-	w_setup(rlr, DESK, NONE);
+	w_setup(rlr, DESK, OF_NONE);
 	w_setsize(WS_CURR, DESK, &gl_rscreen);
 	w_setsize(WS_PREV, DESK, &gl_rscreen);
 	w_setsize(WS_FULL, DESK, &gl_rfull);

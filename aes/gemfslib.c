@@ -262,7 +262,7 @@ static void r_sfiles(_WORD index)
 
 	for (i = index; i < (index + NM_NAMES); i++)
 	{
-		tree[label].ob_state = NORMAL;
+		tree[label].ob_state = OS_NORMAL;
 		fs_sset(ad_fstree, label, " ", &addr, &dummy);
 		fs_draw(label++, ad_fsnames[i].snames, &addr);
 	}
@@ -439,7 +439,7 @@ bye2:
 	/* start from A drive set the button    */
 	for (ret = 0, i = FS1STDRV; i <= FSLSTDRV; i++, ret++)
 	{
-		tree[i].ob_state = count & j ? NORMAL : DISABLED;
+		tree[i].ob_state = count & j ? OS_NORMAL : OS_DISABLED;
 		j = j << 1;
 	}
 
@@ -448,7 +448,7 @@ bye2:
 	for (i = 0; i < NM_NAMES; i++)		/* clean up fields  */
 	{
 		fs_sset(tree, label, " ", &addr, (_WORD *)&addr); /* WTF */
-		tree[label++].ob_state = NORMAL;
+		tree[label++].ob_state = OS_NORMAL;
 	}
 	/* save the current dta   */
 	savedta = dos_getdta();
@@ -585,7 +585,7 @@ bye2:
 
 			/* reset the last one   */
 			if (curdrv <= FSLSTDRV)
-				ob_change(tree, curdrv, NORMAL, TRUE);
+				ob_change(tree, curdrv, OS_NORMAL, TRUE);
 
 			if (*(ad_fpath + 1) == ':')	/* if there a drive */
 				defdrv = (_WORD) (*ad_fpath - 'A');
@@ -593,7 +593,7 @@ bye2:
 			curdrv = defdrv + FS1STDRV;
 
 			if (curdrv <= FSLSTDRV)
-				ob_change(tree, curdrv, SELECTED, TRUE);
+				ob_change(tree, curdrv, OS_SELECTED, TRUE);
 
 			break;
 
@@ -618,14 +618,14 @@ bye2:
 				goto rdir;
 			} else /* must be a file   */ if (chr)
 			{							/* clean up the last selected */
-				ob_change(tree, last, NORMAL, TRUE);
+				ob_change(tree, last, OS_NORMAL, TRUE);
 				strcpy(tree[FSSELECT].ob_spec.tedinfo->te_ptext, addr);
-				ob_change(tree, ret, SELECTED, TRUE);
+				ob_change(tree, ret, OS_SELECTED, TRUE);
 				ob_draw(tree, FSSELECT, MAX_DEPTH);
 				last = ret;
 				if (bret & 0x8000)		/* double click     */
 				{
-					ob_change(tree, FSOK, SELECTED, TRUE);
+					ob_change(tree, FSOK, OS_SELECTED, TRUE);
 					goto fdone;			/* force to exit    */
 				}
 			}
@@ -656,7 +656,7 @@ bye2:
 
 		if (!streq(ad_fpath, pathcopy))	/*  is dir changed ?  */
 		{
-			ob_change(tree, ret, NORMAL, TRUE);
+			ob_change(tree, ret, OS_NORMAL, TRUE);
 			ret = FSDIRECT;			/* force a read again   */
 		} else
 		{
@@ -678,7 +678,7 @@ bye2:
 	if ((*pbutton = inf_what(tree, FSOK)) < 0)
 		*pbutton = FALSE;
 
-	ob_change(tree, ret, NORMAL, FALSE);
+	ob_change(tree, ret, OS_NORMAL, FALSE);
 	fm_dial(FMD_FINISH, &gl_rcenter, &gl_rfs);
 	dos_setdta(savedta);
 	gsx_sclip(&clip);
@@ -802,7 +802,7 @@ static void FXSelect(OBJECT *tree, _WORD obj)
 	GRECT rect;
 	_WORD dummy;
 
-	tree[obj].ob_state |= SELECTED;
+	tree[obj].ob_state |= OS_SELECTED;
 	rect = *(GRECT *) & tree[(obj)].ob_x;
 	ob_gclip(tree, obj, &dummy, &dummy, &rect.g_x, &rect.g_y, &rect.g_w, &rect.g_h);
 	gsx_sclip(&rect);
@@ -815,7 +815,7 @@ static void FXDeselect(OBJECT *tree, _WORD obj)
 	GRECT rect;
 	_WORD dummy;
 
-	tree[obj].ob_state &= ~SELECTED;
+	tree[obj].ob_state &= ~OS_SELECTED;
 	rect = *(GRECT *) & tree[(obj)].ob_x;
 	ob_gclip(tree, obj, &dummy, &dummy, &rect.g_x, &rect.g_y, &rect.g_w, &rect.g_h);
 	gsx_sclip(&rect);

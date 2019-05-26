@@ -478,7 +478,7 @@ static _UWORD ch_height(_WORD fn)
 }
 
 
-_WORD gsx_tcalc(_WORD font, const char *ptext, _WORD *ptextw, _WORD *ptexth, _WORD *textout)
+_WORD gsx_tcalc(_WORD font, const char *ptext, _WORD *ptextw, _WORD *ptexth, vdi_wchar_t *textout)
 {
 	_WORD wc, hc;
 	_WORD numchs;
@@ -506,7 +506,7 @@ _WORD gsx_tcalc(_WORD font, const char *ptext, _WORD *ptextw, _WORD *ptexth, _WO
 }
 
 
-void gsx_tblt(_WORD tb_f, _WORD x, _WORD y, const _WORD *wtext, _WORD tb_nc)
+void gsx_tblt(_WORD tb_f, _WORD x, _WORD y, const vdi_wchar_t *wtext, _WORD tb_nc)
 {
 	if (tb_f == IBM)
 	{
@@ -569,7 +569,7 @@ void gr_rect(_UWORD icolor, _UWORD ipattern, GRECT *pt)
  *	account for its justification.	The number of characters in
  *	the string is also returned.
  */
-_WORD gr_just(_WORD just, _WORD font, const char *ptext, _WORD w, _WORD h, GRECT *pt, _WORD *textout)
+_WORD gr_just(_WORD just, _WORD font, const char *ptext, _WORD w, _WORD h, GRECT *pt, vdi_wchar_t *textout)
 {
 	_WORD numchs;
 
@@ -623,7 +623,7 @@ void gr_gtext(_WORD just, _WORD font, const char *ptext, GRECT *pt)
 {
 	_WORD numchs;
 	GRECT t;
-	_WORD wtext[MAX_LEN];
+	vdi_wchar_t wtext[MAX_LEN];
 	
 	/* figure out where & how to put out the text */
 	rc_copy(pt, &t);
@@ -668,7 +668,7 @@ static void gr_gblt(_WORD *pimage, GRECT *pi, _WORD col1, _WORD col2)
  *	Routine to draw an icon, which is a graphic image with a text
  *	string underneath it.
  */
-void gr_gicon(_WORD state, _WORD *pmask, _WORD *pdata, const char *ptext, _WORD ch,
+void gr_gicon(_WORD state, _WORD *pmask, _WORD *pdata, const char *ptext, vdi_wchar_t ch,
 			  _WORD chx, _WORD chy, GRECT *pi, GRECT *pt)
 {
 	_WORD ifgcol, ibgcol;
@@ -680,12 +680,12 @@ void gr_gicon(_WORD state, _WORD *pmask, _WORD *pdata, const char *ptext, _WORD 
 	ch &= 0x00ff;
 
 	/* invert if selected */
-	if (state & SELECTED)
+	if (state & OS_SELECTED)
 	{
 		tmp = tfgcol;
 		tfgcol = tbgcol;
 		tbgcol = tmp;
-		if (!(state & DRAW3D))
+		if (!(state & OS_DRAW3D))
 		{
 			tmp = ifgcol;
 			ifgcol = ibgcol;
@@ -694,10 +694,10 @@ void gr_gicon(_WORD state, _WORD *pmask, _WORD *pdata, const char *ptext, _WORD 
 	}
 
 	/* do mask unless it's on a white background */
-	if (!((state & WHITEBAK) && ibgcol == G_WHITE))
+	if (!((state & OS_WHITEBAK) && ibgcol == G_WHITE))
 		gr_gblt(pmask, pi, ibgcol, ifgcol);
 
-	if (!((state & WHITEBAK) && tbgcol == G_WHITE))
+	if (!((state & OS_WHITEBAK) && tbgcol == G_WHITE))
 	{
 		if (pt->g_w)
 			gr_rect(tbgcol, IP_SOLID, pt);
@@ -706,7 +706,7 @@ void gr_gicon(_WORD state, _WORD *pmask, _WORD *pdata, const char *ptext, _WORD 
 	/* draw the data */
 	gr_gblt(pdata, pi, ifgcol, ibgcol);
 
-	if (!gl_aes3d && (state & SELECTED) && (state & DRAW3D))
+	if (!gl_aes3d && (state & OS_SELECTED) && (state & OS_DRAW3D))
 	{
 		pi->g_x--;
 		pi->g_y--;

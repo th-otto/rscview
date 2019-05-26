@@ -70,8 +70,8 @@ void bb_screen(_WORD scrule, _WORD scsx, _WORD scsy, _WORD scdx, _WORD scdy, _WO
 void gsx_trans(_WORD *saddr, _UWORD sw, _WORD *daddr, _UWORD dw, _UWORD h, _WORD fg, _WORD bg);
 void gsx_start(void);
 void bb_fill(_WORD mode, _WORD fis, _WORD patt, _WORD hx, _WORD hy, _WORD hw, _WORD hh);
-_WORD gsx_tcalc(_WORD font, const char *ptext, _WORD *ptextw, _WORD *ptexth, _WORD *textout);
-void gsx_tblt(_WORD tb_f, _WORD x, _WORD y, const _WORD *wtext, _WORD len);
+_WORD gsx_tcalc(_WORD font, const char *ptext, _WORD *ptextw, _WORD *ptexth, vdi_wchar_t *textout);
+void gsx_tblt(_WORD tb_f, _WORD x, _WORD y, const vdi_wchar_t *wtext, _WORD len);
 void gsx_xbox(GRECT *pt);
 void gsx_xcbox(GRECT *pt);
 

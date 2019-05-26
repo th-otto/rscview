@@ -2,7 +2,7 @@
  * GEM.H
  *****************************************************************************/
 
-#include <portaes.h>
 #include <stdint.h>
+#include <portaes.h>
 #include <rsrcload.h>
 #include <ro_mem.h>

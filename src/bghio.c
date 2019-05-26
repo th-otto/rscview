@@ -3,12 +3,36 @@
  *****************************************************************************/
 
 #include "config.h"
+#include <stdint.h>
 #include <gem.h>
 #include <mobject.h>
 #include <xrsrc.h>
 #include <rsc.h>
 #include <ro_mem.h>
 #include "fileio.h"
+
+/******************************************************************************/
+/*** ---------------------------------------------------------------------- ***/
+/******************************************************************************/
+
+/*
+ * like strdup, but append an additional '\0' for use as string array
+ */
+char *g_strdup0(const char *str)
+{
+	char *p;
+	size_t len;
+	
+	if (str == NULL)
+		return NULL;
+	len = strlen(str);
+	if ((p = g_new(char, len + 2)) != NULL)
+	{
+		strcpy(p, str);
+		p[len + 1] = '\0';
+	}
+	return p;
+}
 
 /******************************************************************************/
 /*** ---------------------------------------------------------------------- ***/

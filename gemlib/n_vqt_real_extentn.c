@@ -25,7 +25,7 @@ vqt_real_extentn (short handle, short x, short y, const char *string, short num,
 	short vdi_control[VDI_CNTRLMAX]; 
 	short vdi_intin[VDI_INTINMAX];   
 	short vdi_ptsin[2];   
-	register short n = vdi_str2arrayn (string, vdi_intin, num);
+	register short n = vdi_str2arrayn (string, (vdi_wchar_t *)vdi_intin, num);
 
 	VDI_PARAMS(vdi_control, vdi_intin, vdi_ptsin, vdi_dummy, extent);
 

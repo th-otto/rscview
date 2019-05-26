@@ -17,7 +17,7 @@ void v_xbit_image(short handle, const char *filename, short aspect, short x_scal
     vdi_intin[6] = background;
     vdi_intin[7] = foreground;
     
-    n = 8 + vdi_str2array(filename, vdi_intin + 8);
+    n = 8 + vdi_str2array(filename, (vdi_wchar_t *)vdi_intin + 8);
     
 	VDI_TRAP_ESC (vdi_params, handle, 5,101, 2,n);
 }

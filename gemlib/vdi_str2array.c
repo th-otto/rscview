@@ -10,7 +10,7 @@
  */
 
 short
-vdi_str2array (const char *src, short *des)
+vdi_str2array (const char *src, vdi_wchar_t *des)
 {
 	short len = 0;
 	const unsigned char *c  = (const unsigned char *) src;
@@ -34,7 +34,7 @@ vdi_str2array (const char *src, short *des)
  */
 
 short
-vdi_str2arrayn (const char *src, short *des, short nmax)
+vdi_str2arrayn (const char *src, vdi_wchar_t *des, short nmax)
 {
 	short i = 0;
 	const unsigned char *c  = (const unsigned char *) src;

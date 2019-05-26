@@ -254,11 +254,11 @@ static void fm_build(OBJECT *tree, _BOOL haveicon, _WORD nummsg, _WORD mlenmsg, 
 			al.g_h -= 1;
 			al.g_h += ((gl_hchar / 2) << 8);
 		}
-		tree[ROOT].ob_state = OUTLINED;
+		tree[ROOT].ob_state = OS_OUTLINED;
 		OBSPEC_SET_FRAMESIZE(tree[ROOT].ob_spec, 1); /* inside 1 */
 	} else
 	{
-		tree[ROOT].ob_state = SHADOWED;
+		tree[ROOT].ob_state = OS_SHADOWED;
 		OBSPEC_SET_FRAMESIZE(tree[ROOT].ob_spec, 1); /* inside 2 */
 	}
 	
@@ -285,15 +285,15 @@ static void fm_build(OBJECT *tree, _BOOL haveicon, _WORD nummsg, _WORD mlenmsg, 
 	/* add button objects with 1 space between them */
 	for (i = 0, obj = tree + BUTOFF; i < numbut; i++, obj++)
 	{
-		obj->ob_flags = SELECTABLE | EXIT | (gl_aes3d ? OF_FL3DACT : 0);
-		obj->ob_state = NORMAL;
+		obj->ob_flags = OF_SELECTABLE | OF_EXIT | (gl_aes3d ? OF_FL3DACT : 0);
+		obj->ob_state = OS_NORMAL;
 		ob_setxywh(tree, BUTOFF + i, &bt);
 		bt.g_x += mlenbut + 2;
 		ob_add(tree, ROOT, BUTOFF + i);
 	}
 
 	/* set last object flag */
-	(--obj)->ob_flags |= LASTOB;
+	(--obj)->ob_flags |= OF_LASTOB;
 }
 
 
@@ -335,7 +335,7 @@ _WORD fm_alert(_WORD defbut, const char *palstr, _UWORD flags)
 
 	if (defbut)
 	{
-		tree[BUTOFF + defbut - 1].ob_flags |= DEFAULT;
+		tree[BUTOFF + defbut - 1].ob_flags |= OF_DEFAULT;
 	}
 
 	if (inm != 0)

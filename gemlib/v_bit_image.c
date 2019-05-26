@@ -35,7 +35,7 @@ v_bit_image (short handle, const char *filename, short aspect, short x_scale,
 {
 	short vdi_control[VDI_CNTRLMAX]; 
 	short vdi_intin[VDI_INTINMAX];
-	short n = 5 + vdi_str2arrayn(filename, vdi_intin + 5, VDI_INTINMAX-5);
+	short n = 5 + vdi_str2arrayn(filename, (vdi_wchar_t *)vdi_intin + 5, VDI_INTINMAX-5);
 
 	VDI_PARAMS(vdi_control, vdi_intin, pxy, vdi_dummy, vdi_dummy);
 

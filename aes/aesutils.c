@@ -263,7 +263,7 @@ _WORD inf_gindex(OBJECT *tree, _UWORD baseobj, _UWORD numobj)
 	tree += baseobj;
 	for (retobj = 0; retobj < numobj; retobj++)
 	{
-		if (tree[retobj].ob_state & SELECTED)
+		if (tree[retobj].ob_state & OS_SELECTED)
 			return retobj;
 	}
 	return -1;
@@ -282,7 +282,7 @@ _WORD inf_what(OBJECT *tree, _WORD ok)
 
 	if (field >= 0)
 	{
-		tree[ok + field].ob_state = NORMAL;
+		tree[ok + field].ob_state = OS_NORMAL;
 		field = field == 0;
 	}
 	return field;

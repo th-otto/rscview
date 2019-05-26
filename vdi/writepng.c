@@ -60,9 +60,9 @@
 #include <time.h>
 #include <errno.h>
 #include <unistd.h>
-#include <zlib.h>
 #include "writepng.h"					/* typedefs, common macros, public prototypes */
 #include "debug.h"
+#include "zlib.h"
 
 #ifndef NO_CONST
 #  ifdef __GNUC__
@@ -277,15 +277,6 @@ int writepng_init(writepng_info *wpnginfo)
 	 * be left alone */
 
 	png_set_compression_level(png_ptr, Z_BEST_COMPRESSION);
-/*
-    >> this is default for no filtering; Z_FILTERED is default otherwise:
-    png_set_compression_strategy(png_ptr, Z_DEFAULT_STRATEGY);
-    >> these are all defaults:
-    png_set_compression_mem_level(png_ptr, 8);
-    png_set_compression_window_bits(png_ptr, 15);
-    png_set_compression_method(png_ptr, 8);
- */
-
 
 	/* set the image parameters appropriately */
 

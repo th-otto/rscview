@@ -255,19 +255,19 @@ static _WORD crysbind(AESPB *pb)
 	case MENU_ICHECK:
 		aestrace("menu_icheck()");
 		AES_PARAMS(31,2,1,1,0);
-		do_chg((OBJECT *)MM_ITREE, ITEM_NUM, CHECKED, CHECK_IT, FALSE, FALSE);
+		do_chg((OBJECT *)MM_ITREE, ITEM_NUM, OS_CHECKED, CHECK_IT, FALSE, FALSE);
 		break;
 
 	case MENU_IENABLE:
 		aestrace("menu_ienable()");
 		AES_PARAMS(32,2,1,1,0);
-		do_chg((OBJECT *)MM_ITREE, (ITEM_NUM & 0x7FFF), DISABLED, !ENABLE_IT, ((ITEM_NUM & 0x8000) != 0x0), FALSE);
+		do_chg((OBJECT *)MM_ITREE, (ITEM_NUM & 0x7FFF), OS_DISABLED, !ENABLE_IT, ((ITEM_NUM & 0x8000) != 0x0), FALSE);
 		break;
 
 	case MENU_TNORMAL:
 		aestrace("menu_tnormal()");
 		AES_PARAMS(33,2,1,1,0);
-		do_chg((OBJECT *)MM_ITREE, TITLE_NUM, SELECTED, !NORMAL_IT, TRUE, TRUE);
+		do_chg((OBJECT *)MM_ITREE, TITLE_NUM, OS_SELECTED, !NORMAL_IT, TRUE, TRUE);
 		break;
 
 	case MENU_TEXT:

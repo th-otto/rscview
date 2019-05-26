@@ -11,7 +11,7 @@ short vs_page_info(short handle, short type, const char txt[60])
 	VDI_PARAMS (vdi_control, vdi_intin, vdi_dummy, vdi_intout, vdi_dummy);
 	
 	vdi_intin[0] = type;
-	i = vdi_str2arrayn(txt, &vdi_intin[1], 60) + 1;
+	i = vdi_str2arrayn(txt, (vdi_wchar_t *)&vdi_intin[1], 60) + 1;
 	vdi_intin[i++] = '\0';
 	vdi_intout[0] = 0;
 	VDI_TRAP_ESC (vdi_params, handle, 5,2103, 0, i);

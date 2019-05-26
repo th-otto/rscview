@@ -95,8 +95,8 @@ struct _rscfile {
 	NAMERULE rsc_rule1;
 	NAMERULE rsc_rule2;
 	RSCTREE rsc_treehead;		/* head of resource tree list */
-	_UBYTE rsc_rsxname[FNAMELEN+1];/* name of resource */
-	_UBYTE rsc_rsxfilename[PATH_MAX];	/* full pathname */
+	char rsc_rsxname[FNAMELEN+1];/* name of resource */
+	char rsc_rsxfilename[PATH_MAX];	/* full pathname */
 	stringarray rsc_cmnt;
 	enum emutos rsc_emutos;
 	_BOOL rsc_use_oldlang;

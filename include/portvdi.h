@@ -1180,8 +1180,8 @@ _WORD v_write_png(_WORD handle, const char *filename);
  */
 
 void  vdi_array2str (const _WORD *src, char  *des, _WORD len);
-_WORD vdi_str2array (const char  *src, _WORD *des);
-_WORD vdi_str2arrayn (const char  *src, _WORD *des, _WORD len);
+_WORD vdi_str2array (const char  *src, vdi_wchar_t *des);
+_WORD vdi_str2arrayn (const char  *src, vdi_wchar_t *des, _WORD len);
 _WORD vdi_wstrlen   (const vdi_wchar_t *wstr);
 
 EXTERN_C_END

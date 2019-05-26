@@ -11,7 +11,7 @@ short vq_image_type(short handle, const char *file, BIT_IMAGE *image)
 
 	VDI_PARAMS (vdi_control, vdi_intin, vdi_ptsin, vdi_intout, vdi_dummy);
 	
-	i = vdi_str2array(file, vdi_intin);
+	i = vdi_str2array(file, (vdi_wchar_t *)vdi_intin);
 	vdi_intin[i++] = 0;
 	vdi_ptsin_long(0) = (long)image;
 	vdi_intout[0] = 0;

@@ -24,7 +24,7 @@ char ob_sst(OBJECT *tree, _WORD obj, OBSPEC *pspec, _WORD *pstate, _WORD *ptype,
 	*ptype = tmp->ob_type & OBTYPEMASK;	/* set user type variable */
 
 	/* IF indirect then get pointer */
-	if (*pflags & INDIRECT)
+	if (*pflags & OF_INDIRECT)
 		*pspec = *(tmp->ob_spec.indirect);
 
 
@@ -51,9 +51,9 @@ char ob_sst(OBJECT *tree, _WORD obj, OBSPEC *pspec, _WORD *pstate, _WORD *ptype,
 
 	case G_BUTTON:						/* for a button make thicker */
 		th--;
-		if (*pflags & EXIT)				/* one thicker ( - (neg) is thicker) */
+		if (*pflags & OF_EXIT)			/* one thicker ( - (neg) is thicker) */
 			th--;
-		if (*pflags & DEFAULT)			/* still one more thick */
+		if (*pflags & OF_DEFAULT)		/* still one more thick */
 			th--;
 		break;
 	}
@@ -102,7 +102,7 @@ void everyobj(OBJECT *tree, _WORD thisobj, _WORD last, EVERYOBJ_CALLBACK routine
 		tmp1 = tree[thisobj].ob_head;
 		if (tmp1 != NIL)
 		{
-			if (!(tree[thisobj].ob_flags & HIDETREE) && depth <= maxdep)
+			if (!(tree[thisobj].ob_flags & OF_HIDETREE) && depth <= maxdep)
 			{
 				depth++;
 				thisobj = tmp1;

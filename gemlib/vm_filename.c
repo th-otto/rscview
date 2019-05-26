@@ -24,7 +24,7 @@ vm_filename (short handle, const char *filename)
 {
 	short vdi_control[VDI_CNTRLMAX]; 
 	short vdi_intin[VDI_INTINMAX];   
-	short n = vdi_str2arrayn(filename, vdi_intin, VDI_INTINMAX);
+	short n = vdi_str2arrayn(filename, (vdi_wchar_t *)vdi_intin, VDI_INTINMAX);
 
 	VDI_PARAMS(vdi_control, vdi_intin, 0L, vdi_dummy, vdi_dummy);
 	

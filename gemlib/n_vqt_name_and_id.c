@@ -28,7 +28,7 @@ vqt_name_and_id (short handle, short font_format, char *font_name, char *ret_nam
 	short vdi_control[VDI_CNTRLMAX]; 
 	short vdi_intin[VDI_INTINMAX];   
 	short vdi_intout[VDI_INTOUTMAX]; 
-	short n = 1 + vdi_str2arrayn (font_name, vdi_intin+1, VDI_INTINMAX-1);
+	short n = 1 + vdi_str2arrayn (font_name, (vdi_wchar_t *)vdi_intin+1, VDI_INTINMAX-1);
 
 	VDI_PARAMS(vdi_control, vdi_intin, 0L, vdi_intout, vdi_dummy);
 	

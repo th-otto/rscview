@@ -109,7 +109,7 @@ static _WORD find_obj(OBJECT *tree, _WORD start_obj, _WORD which)
 	_WORD theflag;
 	
 	obj = 0;
-	flag = EDITABLE;
+	flag = OF_EDITABLE;
 	inc = 1;
 
 	switch (which)
@@ -119,15 +119,15 @@ static _WORD find_obj(OBJECT *tree, _WORD start_obj, _WORD which)
 		obj = start_obj + inc;
 		break;
 
-	case FORWARD:						/* check if it is LASTOB before inc */
-		if (!(tree[start_obj].ob_flags & LASTOB))
+	case FORWARD:						/* check if it is OF_LASTOB before inc */
+		if (!(tree[start_obj].ob_flags & OF_LASTOB))
 			obj = start_obj + inc;
 		else
 			obj = -1;
 		break;
 
 	case DEFLT:
-		flag = DEFAULT;
+		flag = OF_DEFAULT;
 		break;
 	}
 
@@ -135,10 +135,10 @@ static _WORD find_obj(OBJECT *tree, _WORD start_obj, _WORD which)
 	{
 		theflag = tree[obj].ob_flags;
 
-		if (!(theflag & HIDETREE) && !(tree[obj].ob_state & DISABLED) && (theflag & flag))
+		if (!(theflag & OF_HIDETREE) && !(tree[obj].ob_state & OS_DISABLED) && (theflag & flag))
 			return obj;
 
-		if (theflag & LASTOB)
+		if (theflag & OF_LASTOB)
 			obj = NIL;
 		else
 			obj += inc;
@@ -192,7 +192,7 @@ _WORD fm_keybd(OBJECT *tree, _WORD obj, _WORD *pchar, _WORD *pnew_obj)
 		*pnew_obj = find_obj(tree, obj, direction);
 		if (direction == DEFLT && *pnew_obj != 0)
 		{
-			ob_change(tree, *pnew_obj, tree[*pnew_obj].ob_state | SELECTED, TRUE);
+			ob_change(tree, *pnew_obj, tree[*pnew_obj].ob_state | OS_SELECTED, TRUE);
 			return FALSE;
 		}
 	}
@@ -218,7 +218,7 @@ _WORD fm_button(OBJECT *tree, _WORD new_obj, _WORD clks, _WORD *pnew_obj)
 	state = ob_fs(tree, new_obj, &flags);
 
 	/* handle touchexit case: if double click, then set high bit */
-	if (flags & TOUCHEXIT)
+	if (flags & OF_TOUCHEXIT)
 	{
 		if (clks == 2)
 			orword = 0x8000;
@@ -226,23 +226,23 @@ _WORD fm_button(OBJECT *tree, _WORD new_obj, _WORD clks, _WORD *pnew_obj)
 	}
 
 	/* handle selectable case */
-	if ((flags & SELECTABLE) && !(state & DISABLED))
+	if ((flags & OF_SELECTABLE) && !(state & OS_DISABLED))
 	{
 		/* if it's a radio button */
-		if (flags & RBUTTON)
+		if (flags & OF_RBUTTON)
 		{
-			/* check siblings to find and turn off the old RBUTTON */
+			/* check siblings to find and turn off the old OF_RBUTTON */
 			parent = get_par(tree, new_obj);
 			tobj = tree[parent].ob_head;
 			while (tobj != parent)
 			{
 				tstate = ob_fs(tree, tobj, &tflags);
-				if ((tflags & RBUTTON) && ((tstate & SELECTED) || tobj == new_obj))
+				if ((tflags & OF_RBUTTON) && ((tstate & OS_SELECTED) || tobj == new_obj))
 				{
 					if (tobj == new_obj)
-						state = tstate |= SELECTED;
+						state = tstate |= OS_SELECTED;
 					else
-						tstate &= ~SELECTED;
+						tstate &= ~OS_SELECTED;
 					ob_change(tree, tobj, tstate, TRUE);
 				}
 				tobj = tree[tobj].ob_next;
@@ -250,20 +250,20 @@ _WORD fm_button(OBJECT *tree, _WORD new_obj, _WORD clks, _WORD *pnew_obj)
 		} else
 		{
 			/* turn on new object */
-			if (gr_watchbox(tree, new_obj, state ^ SELECTED, state))
-				state ^= SELECTED;
+			if (gr_watchbox(tree, new_obj, state ^ OS_SELECTED, state))
+				state ^= OS_SELECTED;
 		}
 		/* if not touchexit then wait for button up */
-		if (cont && (flags & (SELECTABLE | EDITABLE)))
+		if (cont && (flags & (OF_SELECTABLE | OF_EDITABLE)))
 			ev_button(1, 0x0001, 0x0000, lrets);
 	}
 
 	/* see if this selection gets us out */
-	if ((state & SELECTED) && (flags & EXIT))
+	if ((state & OS_SELECTED) && (flags & OF_EXIT))
 		cont = FALSE;
 
 	/* handle click on another editable field */
-	if (cont && ((flags & HIDETREE) || (state & DISABLED) || !(flags & EDITABLE)))
+	if (cont && ((flags & OF_HIDETREE) || (state & OS_DISABLED) || !(flags & OF_EDITABLE)))
 		new_obj = 0;
 
 	*pnew_obj = new_obj | orword;

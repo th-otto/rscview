@@ -269,7 +269,7 @@ static void draw_hi(GRECT *prect, _WORD state, _WORD clip, _WORD th, _WORD icol)
 	pts[1] = pts[3] + r.g_h - 2;
 	pts[4] = pts[2] + r.g_w - 2;
 
-	col = (state & SELECTED) ? G_BLACK : G_WHITE;
+	col = (state & OS_SELECTED) ? G_BLACK : G_WHITE;
 	gsx_attr(FALSE, MD_REPLACE, col);
 	v_pline(gl_handle, 3, pts);
 
@@ -286,7 +286,7 @@ static void draw_hi(GRECT *prect, _WORD state, _WORD clip, _WORD th, _WORD icol)
 	pts[2] = ++pts[4];
 	pts[5]++;
 
-	if (state & SELECTED)
+	if (state & OS_SELECTED)
 	{
 		col = G_LWHITE;
 		if (icol == col || gl_ws.ws_ncolors < col)
@@ -350,7 +350,7 @@ static _WORD xor16(_WORD col)
 
 
 /*
- * Return 1 if XOR writing mode is OK to toggle an object's SELECTED state,
+ * Return 1 if XOR writing mode is OK to toggle an object's OS_SELECTED state,
  * otherwise return 0.
  *
  * All strings and titles are OK to XOR, since they're always white/black.
@@ -366,7 +366,7 @@ static _BOOL xor_ok(_WORD type, _WORD flags, OBSPEC spec)
 	
 	if (type == G_STRING || type == G_TITLE || type == G_IBOX)
 		return 1;
-	if (type == G_IMAGE || (flags & FL3DIND))
+	if (type == G_IMAGE || (flags & OF_FL3DIND))
 		return 0;
 	if (gl_ws.ws_ncolors <= 16)
 		return 1;
@@ -391,7 +391,7 @@ static _BOOL xor_ok(_WORD type, _WORD flags, OBSPEC spec)
 	}
 	gr_crack(i, &dummy, &tcol, &dummy, &icol, &dummy);
 
-	return tcol < RED && icol < RED;
+	return tcol < G_RED && icol < G_RED;
 }
 
 
@@ -422,7 +422,7 @@ static void just_draw(OBJECT *tree, _WORD obj, _WORD sx, _WORD sy)
 
 	ch = ob_sst(tree, obj, &spec, &state, &obtype, &flags, pt, &th);
 
-	if (flags & HIDETREE)
+	if (flags & OF_HIDETREE)
 		return;
 
 	thick = th;
@@ -433,7 +433,7 @@ static void just_draw(OBJECT *tree, _WORD obj, _WORD sx, _WORD sy)
 	/*
 	 * Adjust 3d object extents & get color change/move text flags
 	 */
-	if (gl_aes3d && (flags & FL3DIND))
+	if (gl_aes3d && (flags & OF_FL3DIND))
 	{
 		three_d = TRUE;					/* object is 3D */
 		tmpx = ADJ3DPIX;
@@ -442,7 +442,7 @@ static void just_draw(OBJECT *tree, _WORD obj, _WORD sx, _WORD sy)
 		pt->g_w += (tmpx << 1);
 		pt->g_h += (tmpx << 1);
 
-		if ((flags & FL3DBAK) == 0)
+		if ((flags & OF_FL3DBAK) == 0)
 		{								/* if it's a 3D indicator */
 			mvtxt = ind3dtxt;
 			chcol = ind3dface;
@@ -468,7 +468,7 @@ static void just_draw(OBJECT *tree, _WORD obj, _WORD sx, _WORD sy)
 	if (gl_clip.g_w && gl_clip.g_h)
 	{
 		rc_copy(pt, &c);
-		if (state & OUTLINED)
+		if (state & OS_OUTLINED)
 			gr_inside(&c, -3);
 		else
 			gr_inside(&c, th < 0 ? 3 * th : -3 * th);
@@ -505,18 +505,18 @@ static void just_draw(OBJECT *tree, _WORD obj, _WORD sx, _WORD sy)
 			 * into BOXTEXT objects with the right color background and with
 			 * transparent text (and no borders)
 			 */
-			if (gl_aes3d && (flags & (FL3DIND | FL3DBAK)) && icol == G_WHITE && ipat == IP_HOLLOW)
+			if (gl_aes3d && (flags & (OF_FL3DIND | OF_FL3DBAK)) && icol == G_WHITE && ipat == IP_HOLLOW)
 			{
 				ipat = IP_SOLID;
-				switch (flags & (FL3DIND | FL3DBAK))
+				switch (flags & (OF_FL3DIND | OF_FL3DBAK))
 				{
-				case FL3DIND:
+				case OF_FL3DIND:
 					icol = gl_indbutcol;
 					break;
-				case (FL3DIND | FL3DBAK):
+				case (OF_FL3DIND | OF_FL3DBAK):
 					icol = gl_actbutcol;
 					break;
-				case FL3DBAK:
+				case OF_FL3DBAK:
 					icol = gl_alrtcol;
 					/* fall through */
 				default:				/* should never happen!! */
@@ -558,17 +558,17 @@ static void just_draw(OBJECT *tree, _WORD obj, _WORD sx, _WORD sy)
 			gr_crack(LOWORD(spec.index), &bcol, &tcol, &ipat, &icol, &tmode);
 			if (gl_aes3d && obtype != G_IBOX && ipat == IP_HOLLOW && icol == G_WHITE)
 			{
-				switch (flags & (FL3DIND | FL3DBAK))
+				switch (flags & (OF_FL3DIND | OF_FL3DBAK))
 				{
-				case FL3DIND:
+				case OF_FL3DIND:
 					icol = gl_indbutcol;
 					ipat = IP_SOLID;
 					break;
-				case (FL3DIND | FL3DBAK):
+				case (OF_FL3DIND | OF_FL3DBAK):
 					icol = gl_actbutcol;
 					ipat = IP_SOLID;
 					break;
-				case FL3DBAK:
+				case OF_FL3DBAK:
 					icol = gl_alrtcol;
 					ipat = IP_SOLID;
 					/* fall through */
@@ -584,7 +584,7 @@ static void just_draw(OBJECT *tree, _WORD obj, _WORD sx, _WORD sy)
 				if (three_d)
 				{
 					ipat = IP_SOLID;
-					if ((flags & FL3DBAK) == 0)
+					if ((flags & OF_FL3DBAK) == 0)
 					{
 						icol = gl_indbutcol;
 					} else
@@ -610,7 +610,7 @@ static void just_draw(OBJECT *tree, _WORD obj, _WORD sx, _WORD sy)
 			if (obtype != G_IBOX)
 			{
 				gr_inside(pt, tmpth);
-				if (gl_aes3d && chcol && (state & SELECTED))
+				if (gl_aes3d && chcol && (state & OS_SELECTED))
 				{
 					/* Explicitly set a 4-bit XOR fill color.
 					 * If pattern is hollow, make it solid
@@ -632,7 +632,7 @@ static void just_draw(OBJECT *tree, _WORD obj, _WORD sx, _WORD sy)
 			break;
 		}
 
-		if (gl_aes3d && chcol && (state & SELECTED))
+		if (gl_aes3d && chcol && (state & OS_SELECTED))
 		{
 			tmode = MD_TRANS;
 			tcol = xor16(tcol);
@@ -666,7 +666,7 @@ static void just_draw(OBJECT *tree, _WORD obj, _WORD sx, _WORD sy)
 			/* Draw text of 3D objects */
 			if (three_d)
 			{
-				if (!(state & SELECTED) && mvtxt)
+				if (!(state & OS_SELECTED) && mvtxt)
 				{
 					pt->g_x -= 1;
 					pt->g_y -= 1;
@@ -685,7 +685,7 @@ static void just_draw(OBJECT *tree, _WORD obj, _WORD sx, _WORD sy)
 			break;
 		case G_IMAGE:
 			bi = *spec.bitblk;
-			if (gl_aes3d && (state & SELECTED))
+			if (gl_aes3d && (state & OS_SELECTED))
 			{
 				/* If selected, XOR the background before drawing the image */
 				bb_fill(MD_XOR, FIS_SOLID, IP_SOLID, pt->g_x, pt->g_y, pt->g_w, pt->g_h);
@@ -702,7 +702,7 @@ static void just_draw(OBJECT *tree, _WORD obj, _WORD sx, _WORD sy)
 			ib.ib_ytext += pt->g_y;
 			gr_gicon(state, ib.ib_pmask, ib.ib_pdata, ib.ib_ptext,
 					ib.ib_char, ib.ib_xchar, ib.ib_ychar, (GRECT *)&ib.ib_xicon, (GRECT *)&ib.ib_xtext);
-			state &= ~SELECTED;
+			state &= ~OS_SELECTED;
 			break;
 		case G_CICON:
 			/*
@@ -716,7 +716,7 @@ static void just_draw(OBJECT *tree, _WORD obj, _WORD sx, _WORD sy)
 			ib.ib_ytext += pt->g_y;
 			gr_cicon(state, ib.ib_pmask, ib.ib_pdata, ib.ib_ptext,
 					 ib.ib_char, ib.ib_xchar, ib.ib_ychar, (GRECT *)&ib.ib_xicon, (GRECT *)&ib.ib_xtext, spec.ciconblk);
-			state &= ~SELECTED;
+			state &= ~OS_SELECTED;
 			break;
 		case G_USERDEF:
 			state = ob_user(tree, obj, pt, spec.userblk, state, state);
@@ -731,12 +731,12 @@ static void just_draw(OBJECT *tree, _WORD obj, _WORD sx, _WORD sy)
 		obtype == G_TITLE ||
 		obtype == G_BUTTON)
 	{
-		_WORD wtext[MAX_LEN];
+		vdi_wchar_t wtext[MAX_LEN];
 		
 		len = vdi_str2arrayn(spec.free_string, wtext, MAX_LEN);
 		if (len)
 		{
-			if (gl_aes3d && (state & SELECTED) && obtype == G_BUTTON && chcol)
+			if (gl_aes3d && (state & OS_SELECTED) && obtype == G_BUTTON && chcol)
 				tcol = G_WHITE;
 			else
 				tcol = G_BLACK;
@@ -749,7 +749,7 @@ static void just_draw(OBJECT *tree, _WORD obj, _WORD sx, _WORD sy)
 
 				if (three_d)
 				{
-					if (!(state & SELECTED) && mvtxt)
+					if (!(state & OS_SELECTED) && mvtxt)
 					{
 						tmpx -= 1;
 						tmpy -= 1;
@@ -769,9 +769,9 @@ static void just_draw(OBJECT *tree, _WORD obj, _WORD sx, _WORD sy)
 	 */
 	if (state)
 	{
-		if (state & OUTLINED)
+		if (state & OS_OUTLINED)
 		{
-			if (!gl_aes3d || (flags & (FL3DBAK | FL3DIND)) != FL3DBAK)
+			if (!gl_aes3d || (flags & (OF_FL3DBAK | OF_FL3DIND)) != OF_FL3DBAK)
 			{
 				gsx_attr(FALSE, MD_REPLACE, G_BLACK);
 				gr_box(pt->g_x - 3, pt->g_y - 3, pt->g_w + 6, pt->g_h + 6, 1);
@@ -803,7 +803,7 @@ static void just_draw(OBJECT *tree, _WORD obj, _WORD sx, _WORD sy)
 		else
 			th = -th;
 
-		if ((state & SHADOWED) && th)
+		if ((state & OS_SHADOWED) && th)
 		{
 			vsf_color(gl_handle, bcol);
 			/* draw the vertical line */
@@ -812,23 +812,23 @@ static void just_draw(OBJECT *tree, _WORD obj, _WORD sx, _WORD sy)
 			bb_fill(MD_REPLACE, FIS_SOLID, IP_HOLLOW, pt->g_x + pt->g_w + th, pt->g_y, 2 * th, pt->g_h + (3 * th));
 		}
 
-		if (state & CHECKED)
+		if (state & OS_CHECKED)
 		{
-			_WORD ch = 0x08;   /* a check mark */
+			vdi_wchar_t ch = 0x08;   /* a check mark */
 			gsx_attr(TRUE, MD_TRANS, G_BLACK);
 			gsx_tblt(IBM, pt->g_x + 2, pt->g_y, &ch, 1);
 		}
 
-		if (state & CROSSED)
+		if (state & OS_CROSSED)
 		{
 			gsx_attr(FALSE, MD_TRANS, G_WHITE);
 			gsx_cline(pt->g_x, pt->g_y, pt->g_x + pt->g_w - 1, pt->g_y + pt->g_h - 1);
 			gsx_cline(pt->g_x, pt->g_y + pt->g_h - 1, pt->g_x + pt->g_w - 1, pt->g_y);
 		}
 
-		if (state & DISABLED)
+		if (state & OS_DISABLED)
 		{
-			if (gl_aes3d && (flags & (FL3DIND | FL3DBAK)) == FL3DBAK)
+			if (gl_aes3d && (flags & (OF_FL3DIND | OF_FL3DBAK)) == OF_FL3DBAK)
 				vsf_color(gl_handle, gl_alrtcol);
 			else
 				vsf_color(gl_handle, G_WHITE);
@@ -836,7 +836,7 @@ static void just_draw(OBJECT *tree, _WORD obj, _WORD sx, _WORD sy)
 			bb_fill(MD_TRANS, FIS_PATTERN, IP_4PATT, pt->g_x, pt->g_y, pt->g_w, pt->g_h);
 		}
 
-		if ((state & SELECTED)
+		if ((state & OS_SELECTED)
 			&& (!gl_aes3d || (!(chcol || three_d)))
 			)
 		{
@@ -846,10 +846,10 @@ static void just_draw(OBJECT *tree, _WORD obj, _WORD sx, _WORD sy)
 
 	if (three_d)
 	{
-		if (state & SELECTED)
-			draw_hi(&c, SELECTED, FALSE, thick, icol);
+		if (state & OS_SELECTED)
+			draw_hi(&c, OS_SELECTED, FALSE, thick, icol);
 		else
-			draw_hi(&c, NORMAL, FALSE, thick, icol);
+			draw_hi(&c, OS_NORMAL, FALSE, thick, icol);
 	}
 }
 
@@ -951,7 +951,7 @@ _WORD ob_find(OBJECT *tree, _WORD currobj, _WORD depth, _WORD mx, _WORD my)
 		 */
 
 		state = tree[currobj].ob_state;
-		if (gl_aes3d && !(state & SHADOWED))
+		if (gl_aes3d && !(state & OS_SHADOWED))
 		{
 			ob_gclip(tree, currobj, &dummy, &dummy, &pt->g_x, &pt->g_y, &pt->g_w, &pt->g_h);
 		} else
@@ -962,7 +962,7 @@ _WORD ob_find(OBJECT *tree, _WORD currobj, _WORD depth, _WORD mx, _WORD my)
 		}
 		
 		flags = tree[currobj].ob_flags;
-		if (inside(mx, my, pt) && !(flags & HIDETREE))
+		if (inside(mx, my, pt) && !(flags & OF_HIDETREE))
 		{
 			lastfound = currobj;
 
@@ -1159,7 +1159,7 @@ _BOOL ob_change(OBJECT *tree, _WORD obj, _WORD new_state, _WORD redraw)
 		{
 			ob_user(tree, obj, pt, spec.userblk, curr_state, new_state);
 			redraw = FALSE;
-		} else if (obtype != G_ICON && ((new_state ^ curr_state) & SELECTED))
+		} else if (obtype != G_ICON && ((new_state ^ curr_state) & OS_SELECTED))
 		{
 			/* For non-icon objects, see if we can toggle selection by XOR.
 			 * G_IMAGE objects must be DEselected by XOR draw, *and*
@@ -1168,7 +1168,7 @@ _BOOL ob_change(OBJECT *tree, _WORD obj, _WORD new_state, _WORD redraw)
 			 */
 			_BOOL xok = xor_ok(obtype, flags, spec);
 
-			if (!gl_aes3d || xok || (obtype == G_IMAGE && !(new_state & SELECTED)))
+			if (!gl_aes3d || xok || (obtype == G_IMAGE && !(new_state & OS_SELECTED)))
 			{
 				bb_fill(MD_XOR, FIS_SOLID, IP_SOLID, pt->g_x + th, pt->g_y + th, pt->g_w - (2 * th), pt->g_h - (2 * th));
 				redraw = gl_aes3d && !xok;
@@ -1289,7 +1289,7 @@ void ob_gclip(OBJECT *tree, _WORD obj, _WORD *pxoff, _WORD *pyoff, _WORD *pxcl, 
 
 	/*
 	 * Get the object's base rectangle, & other stuff.
-	 * NOTE: ob_sst() accounts for EXIT/DEFAULT button & G_TITLE outlines.
+	 * NOTE: ob_sst() accounts for OF_EXIT/OF_DEFAULT button & G_TITLE outlines.
 	 */
 	ob_offset(tree, obj, &x, &y);
 	ob_sst(tree, obj, &spec, &state, &type, &flags, &r, &border);
@@ -1297,9 +1297,9 @@ void ob_gclip(OBJECT *tree, _WORD obj, _WORD *pxoff, _WORD *pyoff, _WORD *pxcl, 
 	*pyoff = r.g_y = y;
 
 	/* Get gr_inside() offset */
-	off3d = (flags & FL3DIND) ? ADJ3DPIX : 0;
+	off3d = (flags & OF_FL3DIND) ? ADJ3DPIX : 0;
 
-	if (state & OUTLINED)
+	if (state & OS_OUTLINED)
 		offset = -ADJOUTLPIX - off3d;
 	else if (border >= 0)				/* interior or no border */
 		offset = -off3d, border = -border;
@@ -1310,7 +1310,7 @@ void ob_gclip(OBJECT *tree, _WORD obj, _WORD *pxoff, _WORD *pyoff, _WORD *pxcl, 
 		gr_inside(&r, offset);
 
 	/* Adjust for shadow */
-	if (state & SHADOWED)
+	if (state & OS_SHADOWED)
 	{
 		border = border * ADJSHADPIX - offset + border;
 		if (border < 0)
@@ -1513,7 +1513,7 @@ static void gsx_cblt(_WORD *saddr, _UWORD sx, _UWORD sy, _UWORD sw, _WORD *daddr
  *	gr_icon().   It has an extra parameter which is the list of color
  *	icons for different resolutions.
  */
-void gr_cicon(_WORD state, _WORD *pmask, _WORD *pdata, const char *ptext, _WORD ch, _WORD chx, _WORD chy, GRECT *pi, GRECT *pt, CICONBLK *cicon)
+void gr_cicon(_WORD state, _WORD *pmask, _WORD *pdata, const char *ptext, vdi_wchar_t ch, _WORD chx, _WORD chy, GRECT *pi, GRECT *pt, CICONBLK *cicon)
 {
 	_WORD fgcol, bgcol, tmp;
 	/* crack the color/char definition word */
@@ -1526,7 +1526,7 @@ void gr_cicon(_WORD state, _WORD *pmask, _WORD *pdata, const char *ptext, _WORD 
 	bgcol = (ch >> 8) & 0x000f;
 	ch &= 0x0ff;
 	/* invert if selected */
-	if (state & SELECTED)
+	if (state & OS_SELECTED)
 	{
 		tmp = fgcol;
 		fgcol = bgcol;
@@ -1537,7 +1537,7 @@ void gr_cicon(_WORD state, _WORD *pmask, _WORD *pdata, const char *ptext, _WORD 
 	/* substitute mask if color avail */
 	if (color)
 	{
-		if ((state & SELECTED) && color->sel_data)
+		if ((state & OS_SELECTED) && color->sel_data)
 		{
 			col_select = 1;
 			pdata = color->sel_data;
@@ -1547,7 +1547,7 @@ void gr_cicon(_WORD state, _WORD *pmask, _WORD *pdata, const char *ptext, _WORD 
 			pdata = color->col_data;
 			pmask = color->col_mask;
 		}
-		if (state & SELECTED)
+		if (state & OS_SELECTED)
 		{
 			tmp = fgcol;
 			fgcol = bgcol;
@@ -1556,7 +1556,7 @@ void gr_cicon(_WORD state, _WORD *pmask, _WORD *pdata, const char *ptext, _WORD 
 	}
 
 	/* do mask unless its on a white background */
-	if (!((state & WHITEBAK) && bgcol == G_WHITE))
+	if (!((state & OS_WHITEBAK) && bgcol == G_WHITE))
 	{
 		/* for pixel-packed mode, must blit in black (to zero out backgd) */
 		if (gl_nplanes == 16 && color)
@@ -1569,7 +1569,7 @@ void gr_cicon(_WORD state, _WORD *pmask, _WORD *pdata, const char *ptext, _WORD 
 		/* only print bar if string is not null */
 		if (ptext[0])
 		{
-			if (color && (state & SELECTED))
+			if (color && (state & OS_SELECTED))
 				gr_rect(fgcol, IP_SOLID, pt);
 			else
 				gr_rect(bgcol, IP_SOLID, pt);
@@ -1587,7 +1587,7 @@ void gr_cicon(_WORD state, _WORD *pmask, _WORD *pdata, const char *ptext, _WORD 
 		/* my_trans( pdata, pi->g_w, pdata,pi->g_w,pi->g_h ); */
 
 		gsx_cblt(pdata, 0, 0, pi->g_w, ORGADDR, pi->g_x, pi->g_y, gl_width, pi->g_w, pi->g_h, S_OR_D, color->num_planes);
-		if (state & SELECTED)
+		if (state & OS_SELECTED)
 		{
 			tmp = fgcol;
 			fgcol = bgcol;

@@ -45,7 +45,7 @@ static void ob_getsp(OBJECT *tree, _WORD obj, TEDINFO *pted)
 	OBSPEC spec;
 
 	spec = tree[obj].ob_spec;
-	if (tree[obj].ob_flags & INDIRECT)
+	if (tree[obj].ob_flags & OF_INDIRECT)
 		spec = *(spec.indirect);
 	*pted = *(spec.tedinfo);	/* return TEDINFO */
 }
@@ -70,7 +70,7 @@ void ob_center(OBJECT *tree, GRECT *pt)
 	tree[ROOT].ob_y = yd;
 
 	/* account for outline */
-	if (tree[ROOT].ob_state & OUTLINED)
+	if (tree[ROOT].ob_state & OS_OUTLINED)
 	{
 		/* don't go off the screen */
 		xd -= (xd >= 3) ? 3 : xd;
@@ -80,7 +80,7 @@ void ob_center(OBJECT *tree, GRECT *pt)
 	}
 
 	/* account for shadow */
-	if (tree[ROOT].ob_state & SHADOWED)
+	if (tree[ROOT].ob_state & OS_SHADOWED)
 	{
 		ob_sst(tree, ROOT, &spec, &iword, &iword, &iword, &rec, &th);
 		th = (th > 0) ? th : -th;
@@ -170,7 +170,7 @@ static _WORD find_pos(const char *str, _WORD pos)
 static void pxl_rect(OBJECT *tree, _WORD obj, _WORD ch_pos, GRECT *pt)
 {
 	GRECT o;
-	_WORD wtext[MAX_LEN];
+	vdi_wchar_t wtext[MAX_LEN];
 	
 	ob_actxywh(tree, obj, &o);
 	gr_just(edblk.te_just, edblk.te_font, edblk.te_ptmplt, o.g_w, o.g_h, &o, wtext);

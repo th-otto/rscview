@@ -1,5 +1,6 @@
 #include "config.h"
 #include <portab.h>
+#include <stdint.h>
 #include <portaes.h>
 #include <portvdi.h>
 #include <string.h>
@@ -105,13 +106,6 @@ void pinit(AESPD *ppd, CDA *pcda);
 int32_t set_cache(int32_t newcacr);
 _WORD pred_dinf(void);
 void set_defdrv(void);
-
-
-/*
- * gemaints.c
- */
-void signal(EVB *e);
-void zombie(EVB *e);
 
 
 /*
@@ -347,7 +341,7 @@ void ob_setxywh(OBJECT *tree, _WORD obj, const GRECT *pt);
 void ob_offset(OBJECT *tree, _WORD obj, _WORD *pxoff, _WORD *pyoff);
 void ob_dxywh(OBJECT *tree, _WORD obj, _WORD *pdx, _WORD *pdy, _WORD *pdw, _WORD *pdh);
 void ob_gclip(OBJECT *tree, _WORD obj, _WORD *pxoff, _WORD *pyoff, _WORD *pxcl, _WORD *pycl, _WORD *pwcl, _WORD *phcl);
-void gr_cicon(_WORD state, _WORD *pmask, _WORD *pdata, const char *ptext, _WORD ch, _WORD chx, _WORD chy, GRECT *pi, GRECT *pt, CICONBLK *cicon);
+void gr_cicon(_WORD state, _WORD *pmask, _WORD *pdata, const char *ptext, vdi_wchar_t ch, _WORD chx, _WORD chy, GRECT *pi, GRECT *pt, CICONBLK *cicon);
 void get_color_rsc(CICONBLK **cicondata);
 void free_cicon(CICONBLK **carray);
 
@@ -357,10 +351,10 @@ void free_cicon(CICONBLK **carray);
  */
 void gr_inside(GRECT *pt, _WORD th);
 void gr_rect(_UWORD icolor, _UWORD ipattern, GRECT *pt);
-_WORD gr_just(_WORD just, _WORD font, const char *ptext, _WORD w, _WORD h, GRECT *pt, _WORD *textout);
+_WORD gr_just(_WORD just, _WORD font, const char *ptext, _WORD w, _WORD h, GRECT *pt, vdi_wchar_t *textout);
 void gr_gtext(_WORD just, _WORD font, const char *ptext, GRECT *pt);
 void gr_crack(_UWORD color, _WORD *pbc, _WORD *ptc, _WORD *pip, _WORD *pic, _WORD *pmd);
-void gr_gicon(_WORD state, _WORD *pmask, _WORD *pdata, const char *ptext, _WORD ch, _WORD chx, _WORD chy, GRECT *pi, GRECT *pt);
+void gr_gicon(_WORD state, _WORD *pmask, _WORD *pdata, const char *ptext, vdi_wchar_t ch, _WORD chx, _WORD chy, GRECT *pi, GRECT *pt);
 void gr_box(_WORD x, _WORD y, _WORD w, _WORD h, _WORD th);
 
 
@@ -613,7 +607,7 @@ _BOOL deskmain(void);
 #define wm_update(x)
 #define get_ctrl(pt)
 #define get_mkown(m)
-#define ct_chgown(a, b) (void)(a); (void)(b)
+#define ct_chgown(a, b) (void)(a), (void)(b)
 #define sound(a, b, c)
 #define fq()
 #define ev_multi(flags, mo1, mo2, count, parm, mebuff, rets) (rets[0] = 0, rets[1] = 0, rets[2] = 0, rets[3] = 0, rets[5] = 0, rets[4] = 0x1c0d, (void)(mo1), (void)(rets), MU_KEYBD)
