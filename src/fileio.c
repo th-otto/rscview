@@ -1884,7 +1884,7 @@ static _BOOL is_emutos_aes(RSCFILE *file)
 	/*
 	 * check for at least 11 images (3 icons & 8 mouse types)
 	 */
-	if (rsc_tree_index(file, 10, RT_MOUSE) == NULL)
+	if (rsc_tree_index(file, 2, RT_FRIMG) == NULL)
 		return FALSE;
 	return TRUE;
 }

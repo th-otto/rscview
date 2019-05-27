@@ -208,7 +208,7 @@
 #    define _WORD short
 #  endif
 #endif
-extern _WORD gem_rsc_load(_WORD wchar, _WORD hchar);
+extern _WORD gem_rsc_load(void);
 extern _WORD gem_rsc_gaddr(_WORD type, _WORD idx, void *gaddr);
 extern _WORD gem_rsc_free(void);
 #endif
