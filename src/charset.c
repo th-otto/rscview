@@ -97,7 +97,7 @@ static struct {
 
 /*** ---------------------------------------------------------------------- ***/
 
-static const nls_wchar_t *get_cset(int  charset)
+static const nls_wchar_t *get_cset(int charset)
 {
 	switch (charset)
 	{

@@ -126,6 +126,7 @@ void warn_names_truncated(_WORD maxlen)
 {
 	warn(_("Names truncated (maxlen = %d)"), maxlen);
 }
+
 /*** ---------------------------------------------------------------------- ***/
 
 void warn_interface_flags(const char *filename)
