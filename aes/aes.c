@@ -571,7 +571,7 @@ static _WORD crysbind(AESPB *pb)
 			aestrace("fsel_exinput()");
 		}
 		AES_PARAMS(91,0,2,3,0);
-		ret = fs_input((char *)FS_IPATH, (char *)FS_ISEL, &FS_BUTTON, (char *)FS_ILABEL);
+		ret = fs_input((char *)FS_IPATH, (char *)FS_ISEL, &FS_BUTTON, (const char *)FS_ILABEL);
 		break;
 
 

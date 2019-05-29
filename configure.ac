@@ -138,7 +138,7 @@ if test -n "$GCC"; then
      if test "$enable_warnings" = "yes"; then
        AC_ADD_CFLAG(CC, -Wnested-externs)
      fi
-     AC_ADD_CFLAG(CC, -ffast-math)
+     dnl AC_ADD_CFLAG(CC, -ffast-math)
     else
      AC_ADD_CFLAG(CC, "-fp-model fast")
     fi
@@ -147,7 +147,8 @@ if test -n "$GCC"; then
     # AC_ADD_CFLAG(CXX, -pedantic)
     AC_ADD_CFLAG(CXX, -Wall -W -Wunused -Wundef $math_opts)
     if test "$ICC" != yes; then
-      AC_ADD_CFLAG(CXX, -ffast-math)
+      :
+      dnl AC_ADD_CFLAG(CXX, -ffast-math)
     else
       AC_ADD_CFLAG(CXX, "-fp-model fast")
     fi

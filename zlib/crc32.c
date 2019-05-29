@@ -22,6 +22,7 @@
  */
 
 #define ZLIB_COMPILATION
+#include <linux/libcwrap.h>
 #include "zutil.h"      /* for STDC and FAR definitions */
 
 #ifndef NO_DUMMY_DECL

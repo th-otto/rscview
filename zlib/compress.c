@@ -7,6 +7,7 @@
 
 #define ZLIB_INTERNAL
 #define ZLIB_COMPILATION
+#include <linux/libcwrap.h>
 #include "zlib.h"
 
 #ifndef NO_DUMMY_DECL

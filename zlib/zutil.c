@@ -6,6 +6,7 @@
 /* @(#) $Id$ */
 
 #define ZLIB_COMPILATION
+#include <linux/libcwrap.h>
 #include "zutil.h"
 #ifndef Z_SOLO
 #  include "gzguts.h"

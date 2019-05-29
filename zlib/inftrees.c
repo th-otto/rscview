@@ -4,6 +4,7 @@
  */
 
 #define ZLIB_COMPILATION
+#include <linux/libcwrap.h>
 #include "zutil.h"
 #include "inftrees.h"
 

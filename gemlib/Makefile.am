@@ -31,6 +31,7 @@ libgem_a_SOURCES = \
 	a_objc_draw.c \
 	a_objc_draw_grect.c \
 	a_objc_offset.c \
+	a_objc_find.c \
 	\
 	a_wind_get.c \
 	a_wind_set.c \
@@ -112,6 +113,7 @@ libgem_a_SOURCES = \
 	v_fontinit.c \
 	v_form_adv.c \
 	v_hardcopy.c \
+	v_hardcopy_ex.c \
 	v_meta_extents.c \
 	v_offset.c \
 	v_orient.c \

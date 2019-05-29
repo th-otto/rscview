@@ -50,6 +50,7 @@
 /* @(#) $Id$ */
 
 #define ZLIB_COMPILATION
+#include <linux/libcwrap.h>
 #include "deflate.h"
 
 const char deflate_copyright[] =

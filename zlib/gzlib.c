@@ -4,6 +4,7 @@
  */
 
 #define ZLIB_COMPILATION
+#include <linux/libcwrap.h>
 #include "gzguts.h"
 
 #if defined(_WIN32) && !defined(__BORLANDC__) && !defined(__MINGW32__)

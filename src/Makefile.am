@@ -14,7 +14,7 @@ endif
 
 SRVDIR = /srv/www/htdocs/rscview
 
-LIBS += $(PNG_LIBS) $(Z_LIBS)
+LIBS += $(PNG_LIBS) $(Z_LIBS) -lm
 
 rscview_SOURCES = \
 	fileio.h rso.h \
@@ -68,6 +68,12 @@ endif
 
 rscview_cgi_LDADD = -L../aes -L../vdi -L../gemlib -L../util -laes -lgem -lvdi -laes -lgem -lvdi -lutil $(GLIB_LIBS) $(CURL_LIBS)
 rscview_cgi_DEPENDENCIES = $(GEMLIBS)
+if !WITH_SYSTEM_LIBPNG
+rscview_cgi_DEPENDENCIES += $(PNG_LIBS)
+endif
+if !WITH_SYSTEM_ZLIB
+rscview_cgi_DEPENDENCIES += $(Z_LIBS)
+endif
 if OS_UNIX
 rscview_cgi_LDFLAGS=-Wl,-rpath,'$$ORIGIN:$$ORIGIN/../lib64:$$ORIGIN/../lib' -Wl,-z,origin
 endif

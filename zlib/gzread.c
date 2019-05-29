@@ -4,6 +4,7 @@
  */
 
 #define ZLIB_COMPILATION
+#include <linux/libcwrap.h>
 #include "gzguts.h"
 
 #ifndef NO_DUMMY_DECL

@@ -35,6 +35,7 @@
 /* #define GEN_TREES_H */
 
 #define ZLIB_COMPILATION
+#include <linux/libcwrap.h>
 #include "deflate.h"
 
 #ifdef ZLIB_DEBUG

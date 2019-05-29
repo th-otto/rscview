@@ -51,7 +51,7 @@ PNG_CFLAGS =
 PNG_LIBS   = -lpng
 else
 PNG_CFLAGS = -I$(top_srcdir)/libpng
-PNG_LIBS   = $(top_builddir)/libpng/libpng.a -lm
+PNG_LIBS   = $(top_builddir)/libpng/libpng.a
 endif
 if WITH_SYSTEM_ZLIB
 Z_CFLAGS   = 

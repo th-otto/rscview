@@ -350,7 +350,7 @@ static _WORD r_dir(char *path, char *select, uint32_t *count)
  *	the selected path, filename, and exit button.
  *	Add the label parameter
  */
-_WORD fs_input(char *pipath, char *pisel, _WORD *pbutton, char *lstring)
+_WORD fs_input(char *pipath, char *pisel, _WORD *pbutton, const char *lstring)
 {
 	_UWORD i;
 	uint32_t j;

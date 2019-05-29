@@ -15,6 +15,8 @@
 
 #define	ADJ3DPIX    2	/* pixel adjustment for 3D objects */
 
+#undef LOWORD /* clashes with Win32 */
+#undef HIWORD
 
 #define HW(x) (((uint32_t)(uint16_t)(x) << 16))
 #define MAKE_ULONG(hi,lo) (HW(hi) | (uint16_t)(lo))
@@ -225,7 +227,7 @@ _WORD fm_alert(_WORD defbut, const char *palstr, _UWORD flags);
 /*
  * gemfslib.c
  */
-_WORD fs_input(char *pipath, char *pisel, _WORD *pbutton, char *lstring);
+_WORD fs_input(char *pipath, char *pisel, _WORD *pbutton, const char *lstring);
 void fs_start(void);
 
 
