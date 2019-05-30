@@ -67,16 +67,6 @@ struct curl_parms {
 /* ------------------------------------------------------------------------- */
 /*****************************************************************************/
 
-void GetTextSize(_WORD *wchar, _WORD *hchar)
-{
-	*wchar = gl_wchar;
-	*hchar = gl_hchar;
-}
-
-/*****************************************************************************/
-/* ------------------------------------------------------------------------- */
-/*****************************************************************************/
-
 static void open_screen(void)
 {
 	int i;
@@ -560,7 +550,7 @@ static gboolean display_tree(const char *filename, rsc_opts *opts, GString *out,
 	phys_handle = graf_handle(&gl_wchar, &gl_hchar, &gl_wbox, &gl_hbox);
 	wind_get(DESK, WF_WORKXYWH, &desk.g_x, &desk.g_y, &desk.g_w, &desk.g_h);
 
-	file = load_all(filename, opts->lang, load_flags, opts->po_dir);
+	file = load_all(filename, gl_wchar, gl_hchar, opts->lang, load_flags, opts->po_dir);
 	if (file == NULL)
 	{
 		html_out_header(NULL, opts, out, _("404 Not Found"), -1, TRUE);

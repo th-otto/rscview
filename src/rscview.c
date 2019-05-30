@@ -56,16 +56,6 @@ static _BOOL gen_imagemap;
 /* ------------------------------------------------------------------------- */
 /*****************************************************************************/
 
-void GetTextSize(_WORD *wchar, _WORD *hchar)
-{
-	*wchar = gl_wchar;
-	*hchar = gl_hchar;
-}
-
-/*****************************************************************************/
-/* ------------------------------------------------------------------------- */
-/*****************************************************************************/
-
 static void open_screen(void)
 {
 	int i;
@@ -824,7 +814,7 @@ int main(int argc, char **argv)
 	while (optind < argc)
 	{
 		filename = argv[optind++];
-		file = load_all(filename, lang, load_flags, po_dir);
+		file = load_all(filename, gl_wchar, gl_hchar, lang, load_flags, po_dir);
 		if (file != NULL)
 		{
 			if (charset)

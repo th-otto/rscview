@@ -6,10 +6,10 @@
 #define __RSRCLOAD_H__
 
 #include <portab.h>
-#include <portaes.h>
-#include <xrsrc.h>
-#include <mobject.h>
-#include <extob.h>
+#include "portaes.h"
+#include "xrsrc.h"
+#include "mobject.h"
+#include "extob.h"
 #include <time.h>
 #include "nls.h"
 
@@ -126,8 +126,6 @@ struct _rscfile {
 	nls_domain rsc_nls_domain;
 };
 
-void GetTextSize(_WORD *width, _WORD *height);
-
 /*
  * xrsrc_load() flags
  */
@@ -139,7 +137,7 @@ void GetTextSize(_WORD *width, _WORD *height);
 #define XRSC_REPORT_RSC       0x0020	/* report translation statistics from translating resource */
 
 
-RSCFILE *xrsrc_load(const char *fname, _UWORD flags);
+RSCFILE *xrsrc_load(const char *fname, _WORD wchar, _WORD hchar, _UWORD flags);
 _BOOL xrsrc_free(RSCFILE *file);
 _BOOL xrsrc_gaddr(RSCFILE *file, _WORD type, _WORD idx, void *gaddr);
 _BOOL xrsrc_saddr(RSCFILE *file, _WORD type, _WORD idx, void *saddr);

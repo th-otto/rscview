@@ -389,23 +389,23 @@ static void flip_xrsrc_header(XRS_HEADER *header)
 {
 	header->rsh_vrsn = bswap_16(header->rsh_vrsn);
 	header->rsh_extvrsn = bswap_16(header->rsh_extvrsn);
-	header->rsh_object = bswap_32(header->rsh_object);
-	header->rsh_tedinfo = bswap_32(header->rsh_tedinfo);
-	header->rsh_iconblk = bswap_32(header->rsh_iconblk);
-	header->rsh_bitblk = bswap_32(header->rsh_bitblk);
-	header->rsh_frstr = bswap_32(header->rsh_frstr);
-	header->rsh_string = bswap_32(header->rsh_string);
-	header->rsh_imdata = bswap_32(header->rsh_imdata);
-	header->rsh_frimg = bswap_32(header->rsh_frimg);
-	header->rsh_trindex = bswap_32(header->rsh_trindex);
-	header->rsh_nobs = bswap_32(header->rsh_nobs);
-	header->rsh_ntree = bswap_32(header->rsh_ntree);
-	header->rsh_nted = bswap_32(header->rsh_nted);
-	header->rsh_nib = bswap_32(header->rsh_nib);
-	header->rsh_nbb = bswap_32(header->rsh_nbb);
-	header->rsh_nstring = bswap_32(header->rsh_nstring);
-	header->rsh_nimages = bswap_32(header->rsh_nimages);
-	header->rsh_rssize = bswap_32(header->rsh_rssize);
+	header->rsh_object = bswap_32((uint32_t)header->rsh_object);
+	header->rsh_tedinfo = bswap_32((uint32_t)header->rsh_tedinfo);
+	header->rsh_iconblk = bswap_32((uint32_t)header->rsh_iconblk);
+	header->rsh_bitblk = bswap_32((uint32_t)header->rsh_bitblk);
+	header->rsh_frstr = bswap_32((uint32_t)header->rsh_frstr);
+	header->rsh_string = bswap_32((uint32_t)header->rsh_string);
+	header->rsh_imdata = bswap_32((uint32_t)header->rsh_imdata);
+	header->rsh_frimg = bswap_32((uint32_t)header->rsh_frimg);
+	header->rsh_trindex = bswap_32((uint32_t)header->rsh_trindex);
+	header->rsh_nobs = bswap_32((uint32_t)header->rsh_nobs);
+	header->rsh_ntree = bswap_32((uint32_t)header->rsh_ntree);
+	header->rsh_nted = bswap_32((uint32_t)header->rsh_nted);
+	header->rsh_nib = bswap_32((uint32_t)header->rsh_nib);
+	header->rsh_nbb = bswap_32((uint32_t)header->rsh_nbb);
+	header->rsh_nstring = bswap_32((uint32_t)header->rsh_nstring);
+	header->rsh_nimages = bswap_32((uint32_t)header->rsh_nimages);
+	header->rsh_rssize = bswap_32((uint32_t)header->rsh_rssize);
 }
 
 /*** ---------------------------------------------------------------------- ***/
@@ -819,11 +819,8 @@ static _BOOL intel_2_m68k(RSCFILE *file, _LONG filesize)
 
 /*** ---------------------------------------------------------------------- ***/
 
-static void rsc_obfix(OBJECT *tree, _ULONG count)
+static void rsc_obfix(OBJECT *tree, _ULONG count, _WORD wchar, _WORD hchar)
 {
-	_WORD wchar, hchar;
-
-	GetTextSize(&wchar, &hchar);
 	/* Koordinaten fuer alle Objekte umrechnen */
 	while (count)
 	{
@@ -912,14 +909,18 @@ _BOOL W_Cicon_Setpalette(_WORD *palette)
 /*
  * xrsrc_load: like rsrc_load()
  */
-RSCFILE *xrsrc_load(const char *filename, _UWORD flags)
+RSCFILE *xrsrc_load(const char *filename, _WORD wchar, _WORD hchar, _UWORD flags)
 {
 	_ULONG UObj;
 	CICONBLK *cicon_p;
 	CICONBLK *cicon_dst;
 	char headerbuf[max(RSC_SIZEOF_XRS_HEADER, RSC_SIZEOF_RS_HEADER)];
 	RS_HEADER rs_header;
-	XRS_HEADER xrsc_header;
+	XRS_HEADER xrsc_header
+#ifdef __clang__
+	= { 0 } /* pacify compiler */
+#endif
+	;
 	char *buf = NULL;
 	_BOOL swap_flag = FALSE;
 	_BOOL xrsc_flag = FALSE;
@@ -1052,7 +1053,7 @@ RSCFILE *xrsrc_load(const char *filename, _UWORD flags)
 		memset(file, 0, sizeof(RSCFILE));
 		rsc_init_file(file);
 		strcpy(file->rsc_rsxfilename, filename);
-		strcpy(file->rsc_rsxname, basename(filename));
+		strcpy(file->rsc_rsxname, rsc_basename(filename));
 		buf += sizeof(RSCFILE);
 		if (error == RSC_OK)
 			file->rsc_rsm_crc = rsc_rsm_calc_crc(buf, filesize);
@@ -1695,7 +1696,7 @@ RSCFILE *xrsrc_load(const char *filename, _UWORD flags)
 		OBJECT *rs_object = file->rs_object;
 		
 		if (!(flags & XRSC_NO_OBFIX))
-			rsc_obfix(rs_object, xrsc_header.rsh_nobs);
+			rsc_obfix(rs_object, xrsc_header.rsh_nobs, wchar, hchar);
 		for (UObj = 0; UObj < xrsc_header.rsh_nobs; UObj++, rs_object++)
 		{
 			idx = rs_object->ob_spec.index;

@@ -547,16 +547,14 @@ static _BOOL out_iconblk(ICONBLK *icon, int level)
 
 /*** ---------------------------------------------------------------------- ***/
 
-static _BOOL xml_ob_object(RSCFILE *file, XRS_HEADER *xrsc_header, RSCTREE *rsctree, _WORD parent, _BOOL verbose, int level)
+static _BOOL xml_ob_object(RSCFILE *file, XRS_HEADER *xrsc_header, RSCTREE *rsctree, _WORD parent, _BOOL verbose, int level, _WORD cw, _WORD ch)
 {
 	_WORD ob;
 	_WORD x, y, w, h;
-	_WORD cw, ch;
 	_UWORD flags, state, type;
 	OBJECT *tree = rsctree->rt_objects.dial.di_tree;;
 	
 	ob = parent == NIL ? ROOT : tree[parent].ob_head;
-	GetTextSize(&cw, &ch);
 	do
 	{
 		flags = tree[ob].ob_flags;
@@ -707,7 +705,7 @@ static _BOOL xml_ob_object(RSCFILE *file, XRS_HEADER *xrsc_header, RSCTREE *rsct
 		{
 			xml_indent(level + 1);
 			outstr("<child>\n");
-			if (xml_ob_object(file, xrsc_header, rsctree, ob, verbose, level + 2) == FALSE)
+			if (xml_ob_object(file, xrsc_header, rsctree, ob, verbose, level + 2, cw, ch) == FALSE)
 				return FALSE;
 			xml_indent(level + 1);
 			outstr("</child>\n");
@@ -736,7 +734,7 @@ static _BOOL xml_bghinfo(BGHINFO *bgh, int level)
 
 /*** ---------------------------------------------------------------------- ***/
 
-static _BOOL xml_trees(RSCFILE *file, XRS_HEADER *xrsc_header, rsc_counter *counter, _BOOL verbose)
+static _BOOL xml_trees(RSCFILE *file, XRS_HEADER *xrsc_header, rsc_counter *counter, _BOOL verbose, _WORD cw, _WORD ch)
 {
 	RSCTREE *tree;
 	OBJECT *ob;
@@ -775,7 +773,7 @@ static _BOOL xml_trees(RSCFILE *file, XRS_HEADER *xrsc_header, rsc_counter *coun
 				{
 					xml_comment(tree->rt_cmnt, 2);
 				}
-				if (xml_ob_object(file, xrsc_header, tree, NIL, verbose, 2) == FALSE)
+				if (xml_ob_object(file, xrsc_header, tree, NIL, verbose, 2, cw, ch) == FALSE)
 					return FALSE;
 				xml_indent(1); outstr("</tree>\n");
 			}
@@ -840,7 +838,9 @@ static _BOOL output_xml_data(RSCFILE *file, XRS_HEADER *xrsc_header, rsc_counter
 	_ULONG xrs_diff_size = xrsc_header->rsh_rssize <= (RS_THRESHOLD + XRS_DIFF_SIZE) ? XRS_DIFF_SIZE : 0;
 	char strbuf[40];
 	struct tm *tm;
-	
+	_WORD cw = 8; /* gl_wchar */
+	_WORD ch = 16; /* gl_hchar */
+
 	UNUSED(buf);
 	verbose = file->rsc_flags & RF_VERBOSE ? TRUE : FALSE;
 	
@@ -963,7 +963,7 @@ static _BOOL output_xml_data(RSCFILE *file, XRS_HEADER *xrsc_header, rsc_counter
 	}
 #endif
 
-	if (xml_trees(file, xrsc_header, counter, verbose) == FALSE)
+	if (xml_trees(file, xrsc_header, counter, verbose, cw, ch) == FALSE)
 		return FALSE;
 	
 	return TRUE;

@@ -43,6 +43,7 @@ static _BOOL fopen_mode;
 #define g_oblink		"G_OBLINK"
 #define g_unknown		"  ERROR: Unknown type"
 
+#undef FREAD
 #define FREAD(buf, size) if (test_read(buf, size) == FALSE) return FALSE
 #define INPC(x) if (inpc(&(x)) == FALSE) return FALSE
 #define INPW(x) if (inpw(&(x)) == FALSE) return FALSE
@@ -93,7 +94,7 @@ static NOTRANS_ENTRY const notrans[] = {
 /*** ---------------------------------------------------------------------- ***/
 /******************************************************************************/
 
-static _BOOL __attribute_noinline__ inpc(_UBYTE *x)
+static _BOOL __attribute__((__noinline__)) inpc(_UBYTE *x)
 {
 	int c;
 	
@@ -105,7 +106,7 @@ static _BOOL __attribute_noinline__ inpc(_UBYTE *x)
 
 /*** ---------------------------------------------------------------------- ***/
 
-static _BOOL __attribute_noinline__ inpw(_UWORD *x)
+static _BOOL __attribute__((__noinline__)) inpw(_UWORD *x)
 {
 	_UWORD c1;
 	int c;
@@ -1384,7 +1385,7 @@ static void update_checksum(const unsigned char *buf, _WORD bytes)
 
 /*** ---------------------------------------------------------------------- ***/
 
-static _BOOL __attribute_noinline__ inpwc(_UWORD *x)
+static _BOOL __attribute__((__noinline__)) inpwc(_UWORD *x)
 {
 	if (inpw(x) == FALSE)
 		return FALSE;
@@ -1394,7 +1395,7 @@ static _BOOL __attribute_noinline__ inpwc(_UWORD *x)
 
 /*** ---------------------------------------------------------------------- ***/
 
-static _BOOL __attribute_noinline__ inpl(_ULONG *x)
+static _BOOL __attribute__((__noinline__)) inpl(_ULONG *x)
 {
 	_UWORD l1, l2;
 	
@@ -1969,12 +1970,11 @@ static int underscore_length(const char *s)
 
 /*** ---------------------------------------------------------------------- ***/
 
-static void handle_flags(OBJECT *tree, _WORD obj, GRECT *gr, _WORD len, enum emutos rsctype)
+static void handle_flags(OBJECT *tree, _WORD obj, GRECT *gr, _WORD len, enum emutos rsctype, _WORD wchar, _WORD hchar)
 {
 	_WORD x;
-	_WORD wchar, hchar;
 
-	GetTextSize(&wchar, &hchar);
+	UNUSED(wchar);
 	x = tree[obj].ob_x;
 	if (rsctype == EMUTOS_DESK && (tree[obj].ob_flags & CENTRE_ALIGNED))
 	{
@@ -2000,12 +2000,10 @@ static void handle_flags(OBJECT *tree, _WORD obj, GRECT *gr, _WORD len, enum emu
 
 /*** ---------------------------------------------------------------------- ***/
 
-static void objc_minsize(OBJECT *tree, _WORD obj, GRECT *gr, const char *str, enum emutos rsctype)
+static void objc_minsize(OBJECT *tree, _WORD obj, GRECT *gr, const char *str, enum emutos rsctype, _WORD wchar, _WORD hchar)
 {
-	_WORD wchar, hchar;
 	_WORD len;
 	
-	GetTextSize(&wchar, &hchar);
 	objc_offset(tree, obj, &gr->g_x, &gr->g_y);
 	gr->g_w = tree[obj].ob_width;
 	gr->g_h = tree[obj].ob_height;
@@ -2020,7 +2018,7 @@ static void objc_minsize(OBJECT *tree, _WORD obj, GRECT *gr, const char *str, en
 		if (str == NULL)
 			str = tree[obj].ob_spec.free_string;
 		len = wchar * (_WORD)strlen(str);
-		handle_flags(tree, obj, gr, len, rsctype);
+		handle_flags(tree, obj, gr, len, rsctype, wchar, hchar);
 		break;
 	case G_TITLE:
 	case G_BUTTON:
@@ -2034,14 +2032,14 @@ static void objc_minsize(OBJECT *tree, _WORD obj, GRECT *gr, const char *str, en
 		if (str == NULL)
 			str = tree[obj].ob_spec.tedinfo->te_ptext;
 		len = wchar * (_WORD)strlen(str);
-		handle_flags(tree, obj, gr, len, rsctype);
+		handle_flags(tree, obj, gr, len, rsctype, wchar, hchar);
 		break;
 	case G_FTEXT:
 	case G_FBOXTEXT:
 		if (str == NULL)
 			str = tree[obj].ob_spec.tedinfo->te_ptmplt;
 		len = wchar * (_WORD)strlen(str);
-		handle_flags(tree, obj, gr, len, rsctype);
+		handle_flags(tree, obj, gr, len, rsctype, wchar, hchar);
 		break;
 	case G_IMAGE:
 		{
@@ -2081,7 +2079,7 @@ static void objc_minsize(OBJECT *tree, _WORD obj, GRECT *gr, const char *str, en
 
 /*** ---------------------------------------------------------------------- ***/
 
-static _BOOL obj_checksize(OBJECT *tree, _WORD obj, const char *str, _WORD *overlap, _WORD *reason, enum emutos rsctype)
+static _BOOL obj_checksize(OBJECT *tree, _WORD obj, const char *str, _WORD *overlap, _WORD *reason, enum emutos rsctype, _WORD wchar, _WORD hchar)
 {
 	_WORD j;
 	GRECT gr, o, root;
@@ -2091,7 +2089,7 @@ static _BOOL obj_checksize(OBJECT *tree, _WORD obj, const char *str, _WORD *over
 	objc_offset(tree, ROOT, &root.g_x, &root.g_y);
 	root.g_w = tree[ROOT].ob_width;
 	root.g_h = tree[ROOT].ob_height;
-	objc_minsize(tree, obj, &gr, str, rsctype);
+	objc_minsize(tree, obj, &gr, str, rsctype, wchar, hchar);
 	switch (tree[obj].ob_type & 0xff)
 	{
 	case G_FTEXT:
@@ -2168,17 +2166,15 @@ static int notranslate(const char *str, enum emutos emutos)
 
 /*** ---------------------------------------------------------------------- ***/
 
-static void xlate_file(RSCFILE *file, _BOOL trim_strings, _BOOL report_translations)
+static void xlate_file(RSCFILE *file, _BOOL trim_strings, _BOOL report_translations, _WORD wchar, _WORD hchar)
 {
 	OBJECT *obj;
 	nls_domain *domain = &file->rsc_nls_domain;
 	_ULONG i;
 	_WORD j;
-	_WORD wchar, hchar;
 	int numtransl = 0;					/* number of translated entries */
 	int numuntransl = 0;				/* number of untranslated entries */
 	
-	GetTextSize(&wchar, &hchar);
 	for (i = 0; i < file->header.rsh_ntree; i++)
 	{
 		RSCTREE *tree = rsc_tree_index(file, i, RT_UNKNOWN);
@@ -2241,7 +2237,7 @@ static void xlate_file(RSCFILE *file, _BOOL trim_strings, _BOOL report_translati
 					_WORD overlap, reason;
 					_WORD maxw = obj->ob_width / wchar;
 
-					if (obj_checksize(file->rs_trindex[i], j, newstr, &overlap, &reason, file->rsc_emutos))
+					if (obj_checksize(file->rs_trindex[i], j, newstr, &overlap, &reason, file->rsc_emutos, wchar, hchar))
 					{
 						const char *name = ob_name_or_index(file, tree, j);
 						const char *overlapname = ob_name_or_index(file, tree, overlap);
@@ -2344,15 +2340,14 @@ static void xlate_file(RSCFILE *file, _BOOL trim_strings, _BOOL report_translati
  *  the object.  It is perfectly reasonable (and common) to have
  *  left-aligned text within a right-aligned TEDINFO object.
  */
-static void align_objects(OBJECT *obj_array, int nobj)
+static void align_objects(OBJECT *obj_array, int nobj, _WORD wchar, _WORD hchar)
 {
 	OBJECT *obj;
 	char *p;
 	_WORD len;		 /* string length in pixels */
-	_WORD wchar, hchar;
 	_WORD type;
 	
-	GetTextSize(&wchar, &hchar);
+	UNUSED(hchar);
 	for (obj = obj_array; --nobj >= 0; obj++)
 	{
 		type = obj->ob_type & OBTYPEMASK;
@@ -2398,14 +2393,11 @@ static void align_objects(OBJECT *obj_array, int nobj)
  *  If object 1 of a tree is a G_STRING and its y position equals
  *  one character height, we assume it's the dialog title.
  */
-static void centre_title(OBJECT *root)
+static void centre_title(OBJECT *root, _WORD wchar, _WORD hchar)
 {
 	OBJECT *title;
 	_WORD len;
-	_WORD wchar, hchar;
 	
-	GetTextSize(&wchar, &hchar);
-
 	title = root + 1;
 
 	/* if object #1 is a dialog title, center it */
@@ -2420,12 +2412,12 @@ static void centre_title(OBJECT *root)
 
 /*** ---------------------------------------------------------------------- ***/
 
-static void centre_titles(RSCFILE *file)
+static void centre_titles(RSCFILE *file, _WORD wchar, _WORD hchar)
 {
 	_ULONG i;
 	
 	for (i = 0; i < file->header.rsh_ntree; i++)
-		centre_title(file->rs_trindex[i]);
+		centre_title(file->rs_trindex[i], wchar, hchar);
 }
 
 /*** ---------------------------------------------------------------------- ***/
@@ -2433,7 +2425,7 @@ static void centre_titles(RSCFILE *file)
 /*
  *  Change the sizes of the menus after translation
  */
-static void adjust_menu(RSCFILE *file, _WORD treeindex)
+static void adjust_menu(RSCFILE *file, _WORD treeindex, _WORD wchar, _WORD hchar)
 {
 	OBJECT *menu = file->rs_trindex[treeindex];
 	_WORD i, j;	/* index in the menu bar */
@@ -2441,11 +2433,9 @@ static void adjust_menu(RSCFILE *file, _WORD treeindex)
 	_WORD mbar = menu_the_active(menu);
 	_WORD the_menus;
 	OBJECT *title;
-	_WORD wchar, hchar;
 	RSCTREE *tree = rsc_tree_index(file, treeindex, RT_UNKNOWN);
 	
-	GetTextSize(&wchar, &hchar);
-
+	UNUSED(hchar);
 	/*
 	 * first, set ob_x & ob_width for all the menu headings, and
 	 * determine the required width of the (translated) menu bar.
@@ -2453,7 +2443,7 @@ static void adjust_menu(RSCFILE *file, _WORD treeindex)
 	for (i = menu[mbar].ob_head, x = 0; i != mbar; i = menu[i].ob_next, x += n)
 	{
 		title = &menu[i];
-		n = strlen(title->ob_spec.free_string) * wchar;
+		n = (int)strlen(title->ob_spec.free_string) * wchar;
 		title->ob_x = x;
 		title->ob_width = n;
 	}
@@ -2489,7 +2479,7 @@ static void adjust_menu(RSCFILE *file, _WORD treeindex)
 				if (file->rsc_nls_domain.lang && strcmp(file->rsc_nls_domain.lang, "en") == 0)
 					trim_spaces(item->ob_spec.free_string);
 				str = item->ob_spec.free_string;
-				l = strlen(str);
+				l = (int)strlen(str);
 				
 				if ((item->ob_state & OS_DISABLED) && *str == '-')
 				{
@@ -2537,7 +2527,7 @@ static void adjust_menu(RSCFILE *file, _WORD treeindex)
 		{
 			OBJECT *item = &menu[k];
 			const char *str = item->ob_spec.free_string;
-			int l = strlen(str);
+			int l = (int)strlen(str);
 			
 			if (item->ob_type == G_STRING)
 			{
@@ -2578,16 +2568,13 @@ static void adjust_menu(RSCFILE *file, _WORD treeindex)
 }
 
 
-static void emutos_desktop_fix(RSCFILE *file)
+static void emutos_desktop_fix(RSCFILE *file, _WORD wchar, _WORD hchar)
 {
 	OBJECT *tree = file->rs_trindex[ADDINFO];
 	static char version[80];
 	static char copyright_year[12];
 	time_t now;
 	struct tm *tm;
-	_WORD wchar, hchar;
-	
-	GetTextSize(&wchar, &hchar);
 	
 	now = time(NULL);
 	tm = localtime(&now);
@@ -2610,13 +2597,13 @@ static void emutos_desktop_fix(RSCFILE *file)
 	tree[DECOPYRT].ob_spec.free_string = copyright_year;
 
 	/* adjust the size and coordinates of menu items */
-	adjust_menu(file, ADMENU);
+	adjust_menu(file, ADMENU, wchar, hchar);
 
 	/*
 	 * perform special object alignment - this must be done after
 	 * translation and coordinate fixing
 	 */
-	align_objects(file->rs_object, file->header.rsh_nobs);
+	align_objects(file->rs_object, (int)file->header.rsh_nobs, wchar, hchar);
 	
 	tree = file->rs_trindex[ADFFINFO];
 	tree[1].ob_spec.free_string = nls_dgettext(&file->rsc_nls_domain, "FOLDER INFORMATION" /* file->rs_frstr[STFOINFO] */);
@@ -2624,7 +2611,7 @@ static void emutos_desktop_fix(RSCFILE *file)
 	tree = file->rs_trindex[ADCPYDEL];
 	tree[1].ob_spec.free_string = nls_dgettext(&file->rsc_nls_domain, "DELETE FILE(S)" /* file->rs_frstr[STDELETE] */);
 	
-	centre_titles(file);
+	centre_titles(file, wchar, hchar);
 }
 
 
@@ -2635,14 +2622,14 @@ static void emutos_desktop_fix(RSCFILE *file)
 #undef DEVERSN
 #undef DECOPYRT
 
-static void emutos_aes_fix(RSCFILE *file)
+static void emutos_aes_fix(RSCFILE *file, _WORD wchar, _WORD hchar)
 {
-	centre_titles(file);
+	centre_titles(file, wchar, hchar);
 }
 
 /*** ---------------------------------------------------------------------- ***/
 
-RSCFILE *load_all(const char *file_name, const char *lang, _UWORD flags, const char *po_dir)
+RSCFILE *load_all(const char *file_name, _WORD wchar, _WORD hchar, const char *lang, _UWORD flags, const char *po_dir)
 {
 	RSCFILE *file;
 	char filename[PATH_MAX];
@@ -2662,7 +2649,7 @@ RSCFILE *load_all(const char *file_name, const char *lang, _UWORD flags, const c
 		{ "def", rsd_load, RF_DEF },
 	};
 	
-	file = xrsrc_load(file_name, flags);
+	file = xrsrc_load(file_name, wchar, hchar, flags);
 	if (file == NULL)
 		return NULL;
 	
@@ -2733,17 +2720,17 @@ RSCFILE *load_all(const char *file_name, const char *lang, _UWORD flags, const c
 		{
 			po_create_hash(lang, &file->rsc_nls_domain, po_dir, (flags & XRSC_REPORT_PO) != 0);
 			nls_gettext_init(&file->rsc_nls_domain);
-			xlate_file(file, TRUE, (flags & XRSC_REPORT_RSC) != 0);
+			xlate_file(file, TRUE, (flags & XRSC_REPORT_RSC) != 0, wchar, hchar);
 		}
 	}
 	
 	switch (file->rsc_emutos)
 	{
 	case EMUTOS_AES:
-		emutos_aes_fix(file);
+		emutos_aes_fix(file, wchar, hchar);
 		break;
 	case EMUTOS_DESK:
-		emutos_desktop_fix(file);
+		emutos_desktop_fix(file, wchar, hchar);
 		break;
 	case EMUTOS_ICONS:
 	case EMUTOS_NONE:
