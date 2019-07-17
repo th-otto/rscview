@@ -16,12 +16,10 @@
  */
 
 /** release number of this lib in constant string */
-#ifdef GEMLIB_PATCHLEVEL
 #define GEMLIB_PATCHLEVEL	str(__GEMLIB_MAJOR__) "." str(__GEMLIB_MINOR__) "." str(__GEMLIB_REVISION__) __GEMLIB_BETATAG__
 
 /** global identify string for the lib */
 char const __Ident_gem[] = "$PatchLevel: GEM library: " GEMLIB_PATCHLEVEL " $";
-#endif
 
 
 /*
