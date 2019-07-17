@@ -15,6 +15,11 @@
  *  global data related to the lib
  */
 
+#define	__GEMLIB_MAJOR__	0				/**< MAJOR version number of gemlib */
+#define	__GEMLIB_MINOR__	50				/**< MINOR version number of gemlib */
+#define __GEMLIB_REVISION__	0				/**< REVISION version number of gemlib */
+#define __GEMLIB_BETATAG__	""				/**< BETATAG of gemlib */
+
 /** release number of this lib in constant string */
 #define GEMLIB_PATCHLEVEL	str(__GEMLIB_MAJOR__) "." str(__GEMLIB_MINOR__) "." str(__GEMLIB_REVISION__) __GEMLIB_BETATAG__
 
