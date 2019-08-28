@@ -461,6 +461,95 @@ static _BOOL draw_string(RSCTREE *tree)
 
 /* ------------------------------------------------------------------------- */
 
+/*
+ * the logic of these functions should match the ones in gemfmalt.c
+ */
+#define MAX_LINENUM     5
+#define MAX_LINELEN     40
+#define MAX_BUTNUM      3
+#define MAX_BUTLEN      10
+#define TOS_MAX_LINELEN 32
+#define TOS_MAX_BUTLEN      10
+
+#define endstring(a)	( ((a)==']') || ((a)=='\0') )
+#define endsubstring(a) ( ((a)=='|') || ((a)==']') || ((a)=='\0') )
+
+static const char *fm_strbrk(RSCTREE *tree, const char *which, const char *type, _WORD maxnum, _WORD maxlen, _WORD maxtoslen, const char *alert, _WORD *pnum, _WORD *plen)
+{
+	int i, len;
+	char *p;
+	char buf[MAX_LINELEN + 1];
+
+	*plen = 0;
+
+	if (*alert == '[')					/* ignore a leading [ */
+		alert++;
+
+	for (i = 0; i < maxnum; i++, alert++)
+	{
+		p = buf;
+		for (len = 0; ; )
+		{
+			if (endsubstring(*alert))
+				break;
+			if (len == maxtoslen)
+			{
+				KINFO(("Warning: alert %s #%d in %s of %s exceeds TOS standard length %d\n", which, i, type, tree->rt_name, maxtoslen));
+			} else if (len == maxlen)
+			{
+				KINFO(("Warning: alert %s #%d in %s of %s exceeds EmuTOS max length %d\n", which, i, type, tree->rt_name, maxlen));
+			}
+			len++;
+			if (len < maxlen)
+				*p++ = *alert;
+			alert++;
+		}
+		*p = '\0';
+
+		if (len > *plen)				/* track max substring length */
+			*plen = len;
+
+		if (endstring(*alert))			/* end of all substrings */
+			break;
+	}
+	if (i >= maxnum)					/* too many substrings */
+	{
+		KINFO(("Warning: %s of %s has more than %d substrings\n", type, tree->rt_name, maxlen));
+	}
+
+	for (;;)							/* eat any remaining characters */
+	{
+		if (endstring(*alert))
+			break;
+		alert++;
+	}
+
+	*pnum = i < maxnum ? (i + 1) : maxnum;	/* count of substrings found */
+
+	if (*alert)							/* if not at null byte, */
+		alert++;						/* point to next one    */
+
+	return alert;
+}
+
+
+static void fm_parse(RSCTREE *tree, const char *alert, const char *type)
+{
+	_WORD nummsg;
+	_WORD mlenmsg;
+	_WORD numbut;
+	_WORD mlenbut;
+
+	if (alert[1] < '0' || alert[1] > '3')
+	{
+		KINFO(("Warning: invalid icon number 0x%02x in %s of %s\n", (unsigned char)alert[1], type, tree->rt_name));
+	}
+
+	alert = fm_strbrk(tree, "line", type, MAX_LINENUM, MAX_LINELEN, TOS_MAX_LINELEN, alert + 3, &nummsg, &mlenmsg);
+	fm_strbrk(tree, "button", type, MAX_BUTNUM, MAX_BUTLEN, TOS_MAX_BUTLEN, alert, &numbut, &mlenbut);
+}
+
+
 static _BOOL draw_alert(RSCTREE *tree)
 {
 	const char *str;
@@ -471,7 +560,14 @@ static _BOOL draw_alert(RSCTREE *tree)
 	str = tree->rt_objects.alert.al_str;
 	if (str == NULL)
 		return FALSE;
+	fm_parse(tree, str, "definition");
 	str = nls_dgettext(&tree->rt_file->rsc_nls_domain, str);
+	if (str != tree->rt_objects.alert.al_str)
+		fm_parse(tree, str, "translation");
+
+	/*
+	 * parse the alert string, so we can print warnings if needed.
+	 */
 	
 	clear_screen(tree->rt_name);
 	/*
