@@ -85,6 +85,7 @@ static NOTRANS_ENTRY const notrans[] = {
     { EMUTOS_DESK, 1, str("Amiga") },
     { EMUTOS_DESK, 1, str("Falcon") },
     { EMUTOS_DESK, 1, str("ST") },
+    { EMUTOS_DESK, 1, str("F__") },
     { EMUTOS_AES,  0, str("__________________") },
     { EMUTOS_AES,  0, str("xF") },
 #undef str
