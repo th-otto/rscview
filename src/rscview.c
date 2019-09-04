@@ -474,24 +474,91 @@ static _BOOL draw_string(RSCTREE *tree)
 #define endstring(a)	( ((a)==']') || ((a)=='\0') )
 #define endsubstring(a) ( ((a)=='|') || ((a)==']') || ((a)=='\0') )
 
-static const char *fm_strbrk(RSCTREE *tree, const char *which, const char *type, _WORD maxnum, _WORD maxlen, _WORD maxtoslen, const char *alert, _WORD *pnum, _WORD *plen)
+struct button_translation {
+	char treename[MAXNAMELEN + 1];
+	struct button_translation *next;
+};
+
+struct alert_button {
+	char treename[MAXNAMELEN + 1];
+	char english[MAX_BUTLEN + 1];
+	char translation[MAX_BUTLEN + 1];
+	int buttonnum;
+	struct alert_button *next;
+};
+
+struct alert_button *alert_buttons;
+
+static void add_button_translation(RSCTREE *tree, int buttonnum, struct alert_button *english, const char *translation)
+{
+	struct alert_button *button;
+	
+	(void)buttonnum;
+	for (button = alert_buttons; button; button = button->next)
+	{
+		if (strcmp(english->english, button->english) == 0)
+		{
+			if (button->translation[0])
+			{
+				if (strcmp(translation, button->translation) != 0)
+				{
+					char *str1 = nls_conv_to_utf8(tree->rt_file->rsc_nls_domain.fontset, translation, STR0TERM, FALSE); 
+					char *str2 = nls_conv_to_utf8(tree->rt_file->rsc_nls_domain.fontset, button->translation, STR0TERM, FALSE); 
+					KINFO(("Warning: translation %s in %s was translated to %s in %s\n", str1, tree->rt_name, str2, button->treename));
+					g_free(str2);
+					g_free(str1);
+				}
+			} else
+			{
+				strcpy(button->translation, translation);
+			}
+			return;
+		}
+	}
+	KINFO(("internal error: button %s not found\n", english->english));
+}
+
+
+static struct alert_button *add_button(RSCTREE *tree, int buttonnum, const char *name)
+{
+	struct alert_button *button;
+	
+	for (button = alert_buttons; button; button = button->next)
+		if (strcmp(name, button->english) == 0)
+			return button;
+	button = g_new(struct alert_button, 1);
+	strcpy(button->treename, tree->rt_name);
+	strcpy(button->english, name);
+	button->translation[0] = '\0';
+	button->buttonnum = buttonnum;
+	button->next = alert_buttons;
+	alert_buttons = button;
+	return button;
+}
+
+
+static const char *fm_strbrk(RSCTREE *tree, int is_button, int is_translation, _WORD maxnum, _WORD maxlen, _WORD maxtoslen, const char *alert, _WORD *pnum, _WORD *plen, struct alert_button **buttons)
 {
 	int i, len;
 	char *p;
 	char buf[MAX_LINELEN + 1];
-
+	const char *which = is_button ? "button" : "line";
+	const char *type = is_translation ? "translation" : "definition";
+	
 	*plen = 0;
 
 	if (*alert == '[')					/* ignore a leading [ */
 		alert++;
 
-	for (i = 0; i < maxnum; i++, alert++)
+	for (i = 0; ; )
 	{
 		p = buf;
 		for (len = 0; ; )
 		{
 			if (endsubstring(*alert))
+			{
 				break;
+			}
 			if (len == maxtoslen)
 			{
 				KINFO(("Warning: alert %s #%d in %s of %s exceeds TOS standard length %d\n", which, i, type, tree->rt_name, maxtoslen));
@@ -509,12 +576,37 @@ static const char *fm_strbrk(RSCTREE *tree, const char *which, const char *type,
 		if (len > *plen)				/* track max substring length */
 			*plen = len;
 
+		if (is_button)
+		{
+			g_strchomp(buf);
+			g_strchug(buf);
+			if (is_button && i < maxnum)
+			{
+				struct alert_button *button;
+				
+				if (is_translation)
+				{
+					if (buttons[i])
+						add_button_translation(tree, i, buttons[i], buf);
+				} else
+				{
+					button = add_button(tree, i, buf);
+					if (i < maxnum)
+						buttons[i] = button;
+				}
+			}
+		}
+
+		i++;
 		if (endstring(*alert))			/* end of all substrings */
+		{
 			break;
+		}
+		alert++;
 	}
-	if (i >= maxnum)					/* too many substrings */
+	if (i > maxnum)					/* too many substrings */
 	{
-		KINFO(("Warning: %s of %s has more than %d substrings\n", type, tree->rt_name, maxlen));
+		KINFO(("Warning: %s of %s has more than %d substrings\n", type, tree->rt_name, maxnum));
 	}
 
 	for (;;)							/* eat any remaining characters */
@@ -524,7 +616,11 @@ static const char *fm_strbrk(RSCTREE *tree, const char *which, const char *type,
 		alert++;
 	}
 
-	*pnum = i < maxnum ? (i + 1) : maxnum;	/* count of substrings found */
+	if (is_button && is_translation && *pnum != i)
+	{
+		KINFO(("Warning: %s of %s has %d instead of %d buttons\n", type, tree->rt_name, i, *pnum));
+	}
+	*pnum = i;	/* count of substrings found */
 
 	if (*alert)							/* if not at null byte, */
 		alert++;						/* point to next one    */
@@ -533,48 +629,54 @@ static const char *fm_strbrk(RSCTREE *tree, const char *which, const char *type,
 }
 
 
-static void fm_parse(RSCTREE *tree, const char *alert, const char *type)
+static void fm_parse(RSCTREE *tree, const char *alert, int is_translation, struct alert_button **buttons, _WORD *numbut)
 {
 	_WORD nummsg;
 	_WORD mlenmsg;
-	_WORD numbut;
 	_WORD mlenbut;
+	const char *type = is_translation ? "translation" : "definition";
 
 	if (alert[1] < '0' || alert[1] > '3')
 	{
 		KINFO(("Warning: invalid icon number 0x%02x in %s of %s\n", (unsigned char)alert[1], type, tree->rt_name));
 	}
 
-	alert = fm_strbrk(tree, "line", type, MAX_LINENUM, MAX_LINELEN, TOS_MAX_LINELEN, alert + 3, &nummsg, &mlenmsg);
-	fm_strbrk(tree, "button", type, MAX_BUTNUM, MAX_BUTLEN, TOS_MAX_BUTLEN, alert, &numbut, &mlenbut);
+	alert = fm_strbrk(tree, FALSE, is_translation, MAX_LINENUM, MAX_LINELEN, TOS_MAX_LINELEN, alert + 3, &nummsg, &mlenmsg, NULL);
+	fm_strbrk(tree, TRUE, is_translation, MAX_BUTNUM, MAX_BUTLEN, TOS_MAX_BUTLEN, alert, numbut, &mlenbut, buttons);
 }
 
 
 static _BOOL draw_alert(RSCTREE *tree)
 {
 	const char *str;
+	const char *translation;
 	_WORD err;
 	_WORD wo[57];
 	GRECT gr;
-	
+	struct alert_button *buttons[MAX_BUTNUM];
+	int i;
+	_WORD numbut;
+
 	str = tree->rt_objects.alert.al_str;
 	if (str == NULL)
 		return FALSE;
-	fm_parse(tree, str, "definition");
-	str = nls_dgettext(&tree->rt_file->rsc_nls_domain, str);
-	if (str != tree->rt_objects.alert.al_str)
-		fm_parse(tree, str, "translation");
+	translation = nls_dgettext(&tree->rt_file->rsc_nls_domain, str);
 
 	/*
 	 * parse the alert string, so we can print warnings if needed.
 	 */
-	
+	for (i = 0; i < MAX_BUTNUM; i++)
+		buttons[i] = NULL;
+	fm_parse(tree, str, FALSE, buttons, &numbut);
+	if (str != translation)
+		fm_parse(tree, translation, TRUE, buttons, &numbut);
+
 	clear_screen(tree->rt_name);
 	/*
 	 * call our special version that only displays the dialog,
 	 * and does not restore the screen background.
 	 */
-	form_alert_ex(1, str, 1 | (tree->rt_file->rsc_emutos != EMUTOS_NONE ? 2 : 0));
+	form_alert_ex(1, translation, 1 | (tree->rt_file->rsc_emutos != EMUTOS_NONE ? 2 : 0));
 	/*
 	 * get clipping rect
 	 */
@@ -704,6 +806,12 @@ static _BOOL draw_all_trees(RSCFILE *file)
 	if (pnglist_file)
 	{
 		fprintf(pnglist_file, "?>\n");
+	}
+	while (alert_buttons != NULL)
+	{
+		struct alert_button *alert = alert_buttons;
+		alert_buttons = alert->next;
+		free(alert);
 	}
 	return ret;
 }
