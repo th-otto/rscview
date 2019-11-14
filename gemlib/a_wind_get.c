@@ -310,8 +310,8 @@
 
 short wind_get (short WindowHandle, short What, short *W1, short *W2, short *W3, short *W4)
 {
-	static short const aes_control_color[AES_CTRLMAX]={104,3,5,0,0};
-	static short const aes_control_info[AES_CTRLMAX]={104,4,5,0,0};
+	static short const aes_control_color[AES_CTRLMAX] = { 104,3,5,0,0 };
+	static short const aes_control_info[AES_CTRLMAX] = { 104,2+N_PTRINTS,5,0,0 };
 	AES_PARAMS(104,2,5,0,0);
 
 	if (sizeof(char *) > 4)
@@ -327,6 +327,7 @@ short wind_get (short WindowHandle, short What, short *W1, short *W2, short *W3,
 		case WF_TOOLBAR:
 		case WF_USER_POINTER:
 		case WF_WIND_ATTACH:
+		case WF_M_WINDLIST:
 			KINFO(("wind_get() with OBJECT ptr not supported on this machine, use wind_get_ptr() instead\n"));
 			return 0;
 		}
@@ -339,30 +340,74 @@ short wind_get (short WindowHandle, short What, short *W1, short *W2, short *W3,
 	   of a bug in N.AES that does not set these values, and only returns 0 */
 	aes_intout[3] = aes_intout[4] = 0;
 
-	switch (What) {
-		case WF_DCOLOR:
-		case WF_COLOR:
-			aes_intin[2] = *W1;
-			aes_params.control = aes_control_color;
-			break;
-		case WF_INFO:
-		case WF_NAME:
-			aes_intin_ptr(2, short *) = W1;
-			aes_params.control = aes_control_info;
-			break;
+	switch (What)
+	{
+	case WF_DCOLOR:
+	case WF_COLOR:
+		aes_intin[2] = *W1;
+		aes_params.control = aes_control_color;
+		break;
+	case WF_INFO:
+	case WF_NAME:
+		aes_intin_ptr(2, short *) = W1;
+		aes_params.control = aes_control_info;
+		break;
 	}
 
 	AES_TRAP(aes_params);
 	
-	if (What == WF_SCREEN || What == WF_NEWDESK || What == WF_TOOLBAR || What == WF_USER_POINTER || What == WF_WIND_ATTACH)
+	switch (What)
 	{
-		void **p = (void **)W1;
-		*p = aes_intout_ptr(1, void *);
-		if (W2 && What == WF_NEWDESK)
+	/*
+	 * functions that return a pointer
+	 */
+	case WF_SCREEN:
+#if CHECK_NULLPTR
+		if (W1)
+#endif
+		{
+			void **p = (void **)W1;
+			*p = aes_intout_ptr(1, void *);
+		}
+#if CHECK_NULLPTR
+		if (W2)
+#endif
+		{
+			int32_t *p = (int32_t *)W2;
+			*p = aes_intout_long(N_PTRINTS + 1);
+		}
+		break;
+	case WF_NEWDESK:
+#if CHECK_NULLPTR
+		if (W2)
+#endif
 			*W2 = aes_intout[N_PTRINTS + 1];
-	} else if (What == WF_INFO || What == WF_NAME) {
+#if CHECK_NULLPTR
+		if (W1)
+#endif
+		{
+			void **p = (void **)W1;
+			*p = aes_intout_ptr(1, void *);
+		}
+		break;
+	case WF_TOOLBAR:
+	case WF_MENU:
+	case WF_USER_POINTER:
+	case WF_WIND_ATTACH:
+	case WF_M_WINDLIST:
+#if CHECK_NULLPTR
+		if (W1)
+#endif
+		{
+			void **p = (void **)W1;
+			*p = aes_intout_ptr(1, void *);
+		}
+		break;
+	case WF_INFO:
+	case WF_NAME:
 		/* special case where W1 shall not be overwritten */
-	} else {
+		break;
+	default:
 #if CHECK_NULLPTR
 		if (W1)	*W1 = aes_intout[1];
 		if (W2)	*W2 = aes_intout[2];
@@ -375,6 +420,7 @@ short wind_get (short WindowHandle, short What, short *W1, short *W2, short *W3,
 		*W3 = *(ptr ++);									/* aes_intout[3] */
 		*W4 = *(ptr);										/* aes_intout[4] */
 #endif
+		break;
 	}
 
 	return aes_intout[0];
