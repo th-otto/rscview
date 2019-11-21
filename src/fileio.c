@@ -371,7 +371,7 @@ const char *flags_name(char *sbuf, _UWORD flags, enum emutos rsctype)
 
 const char *state_name(char *sbuf, _UWORD state)
 {
-	char sname[12];
+	char sname[20];
 
 	if (state == OS_NORMAL)
 		return s_normal;

@@ -229,6 +229,9 @@ typedef struct {
 #define RF_STATIC           0x00000040l
 #define RF_ROMABLE          0x00000080l
 #define RF_IMAGEWORDS       0x00000100l
+#define RF_OLD_MULTILANG    0x00000200l
+#define RF_JSON             0x00000400l
+#define RF_EXPORT           0x00000800l
 
 #define RF_EXTOB_NONE		0x00000000l
 #define RF_EXTOB_ORCS		0x01000000l
@@ -266,17 +269,17 @@ typedef struct {
 } NAMEINFO;
 
 
-/* File FILEIO.C */
+/* File fileio.c */
 
 _BOOL export_strings(RSCFILE *file, const char *filename);
 _BOOL import_strings(RSCFILE *file, const char *filename);
 
 
-/* File MOBJ.C */
+/* File mobj.c */
 
 enum fix_code { UF_FROM_DESKTOP, UF_TO_DESKTOP, UF_TO_WINDOW };
 
-/* bgh.c */
+/* File bgh.c */
 
 BGHINFO *bgh_new(_WORD type, _WORD idx);
 BGHINFO *bgh_dup(BGHINFO *old);
@@ -286,7 +289,7 @@ _WORD bgh_count(BGHINFO *bgh);
 BGHENTRY *bgh_idx(BGHINFO *bgh, _WORD idx);
 
 
-/* *_FIO.C */
+/* File *_fio.c */
 
 enum check_code { CHECK_ABORT, CHECK_OK, CHECK_APPEND };
 extern rsc_options op_rsc_opts;
