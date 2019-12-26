@@ -35,8 +35,8 @@ $languages = array(
 	'sr'    => array('en' => 'Serbian',   'html' => 'sr-RS', 'charset' => 'atarist', 'flag' => 'rs.gif', 'native' => '&#x0441;&#x0440;&#x043f;&#x0441;&#x043a;&#x0438; &#x0458;&#x0435;&#x0437;&#x0438;&#x043a;'),
 	'sr_ME' => array('en' => 'Montenegrin', 'html' => 'sr-ME', 'charset' => 'atarist', 'flag' => 'me.gif', 'native' => '&#x0446;&#x0440;&#x043d;&#x043e;&#x0433;&#x043e;&#x0440;&#x0441;&#x043a;&#x0438;'),
 	'mk'    => array('en' => 'Macedonian','html' => 'mk-MK', 'charset' => 'atarist', 'flag' => 'mk.gif', 'native' => '&#x043c;&#x0430;&#x043a;&#x0435;&#x0434;&#x043e;&#x043d;&#x0441;&#x043a;&#x0438; &#x0458;&#x0430;&#x0437;&#x0438;&#x043a;'),
-	'el'    => array('en' => 'Greek',     'html' => 'el-GR', 'charset' => 'atarist', 'flag' => 'gr.gif', 'native' => '&#917;&#955;&#955;&#951;&#957;&#953;&#954;&#940;'),
-	'gr'    => array('en' => 'Greek',     'html' => 'el-GR', 'charset' => 'atarist', 'flag' => 'gr.gif', 'native' => '&#917;&#955;&#955;&#951;&#957;&#953;&#954;&#940;'), /* deprecated; for compatibility */
+	'el'    => array('en' => 'Greek',     'html' => 'el-GR', 'charset' => 'CP737',   'flag' => 'gr.gif', 'native' => '&#917;&#955;&#955;&#951;&#957;&#953;&#954;&#940;'),
+	'gr'    => array('en' => 'Greek',     'html' => 'el-GR', 'charset' => 'CP737',   'flag' => 'gr.gif', 'native' => '&#917;&#955;&#955;&#951;&#957;&#953;&#954;&#940;'), /* deprecated; for compatibility */
 	'lv'    => array('en' => 'Latvian',   'html' => 'lv-LV', 'charset' => 'atarist', 'flag' => 'lv.gif', 'native' => 'Latvie&#x0161;u'),
 	'he'    => array('en' => 'Hebrew',    'html' => 'he-IL', 'charset' => 'atarist', 'flag' => 'il.gif', 'native' => '&#x05e2;&#x05b4;&#x05d1;&#x05e8;&#x05b4;&#x05d9;&#x05ea;'),
 	'af'    => array('en' => 'Afrikaans', 'html' => 'af-ZA', 'charset' => 'atarist', 'flag' => 'za.gif', 'native' => 'Afrikaans'),

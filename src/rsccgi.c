@@ -1057,11 +1057,10 @@ int main(void)
 				filename = NULL;
 				result = cgiFormFileFind(first, "file", &filename, NULL, &data, &len);
 			} while (result == cgiFormSuccess && exit_status == EXIT_SUCCESS);
+			hyp_utf8_fprintf(opts->errorfile, "\n");
 			
 			if (exit_status == EXIT_SUCCESS)
 			{
-				hyp_utf8_fprintf(opts->errorfile, "\n");
-				
 				if (rsc_filename == NULL)
 				{
 					html_out_header(NULL, opts, body, _("No resource file specified"), -1, TRUE);
