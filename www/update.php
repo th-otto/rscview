@@ -115,7 +115,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST')
 		}
 		if ($charset == '')
 		{
-			$charset = 'atarist';
+			if ($lang == 'pl')
+			{
+				$charset = 'latin2';
+			} else
+			{
+				$charset = 'atarist';
+			}
 			echo "warning: unknown language $lang, using $charset as character set\n";
 		}
 		fprintf($out, "$lang $charset\n");

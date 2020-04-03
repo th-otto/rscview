@@ -1501,9 +1501,11 @@ void po_init(const char *po_dir, gboolean mustexist, gboolean use_defaults)
 			parse_linguas_item(d, g_strdup("fr atarist"), FALSE);
 			parse_linguas_item(d, g_strdup("fi atarist"), FALSE);
 			parse_linguas_item(d, g_strdup("it atarist"), FALSE);
+			parse_linguas_item(d, g_strdup("nl atarist"), FALSE);
 			parse_linguas_item(d, g_strdup("nn atarist"), FALSE);
 			parse_linguas_item(d, g_strdup("sv atarist"), FALSE);
 			parse_linguas_item(d, g_strdup("cs latin2"), FALSE);
+			parse_linguas_item(d, g_strdup("pl latin2"), FALSE);
 			parse_linguas_item(d, g_strdup("es latin9"), FALSE);
 			parse_linguas_item(d, g_strdup("ru russian-atarist"), FALSE);
 			parse_linguas_item(d, g_strdup("gr cp737"), FALSE); /* deprecated */
