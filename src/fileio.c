@@ -59,6 +59,7 @@ static _BOOL fopen_mode;
 
 /*
  *  no-translate prefixes
+ *  Should be kept in sync with https://github.com/emutos/emutos/blob/master/tools/erd.c#L521
  */
 typedef struct {
 	enum emutos emutos;
@@ -71,6 +72,7 @@ static NOTRANS_ENTRY const notrans[] = {
 #define str(x) (int)sizeof(x) - 1, x
     { EMUTOS_DESK, 0, str("- EmuTOS -") },
     { EMUTOS_DESK, 0, str("http://") },
+    { EMUTOS_DESK, 0, str("https://") },
     { EMUTOS_DESK, 0, str("640 x ") },
     { EMUTOS_DESK, 0, str("640x") },
     { EMUTOS_DESK, 0, str("320 x ") },
