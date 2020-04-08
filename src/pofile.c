@@ -1611,13 +1611,21 @@ static oh *po_load(nls_domain *domain, const char *po_dir, _BOOL report_translat
 				converter(e->msgstr);
 			} else
 			{
+				if (report_translations)
+				{
+					char *utf8;
+					int from = po_get_charset_id(from_charset);
+
+					/* only po-files encoded in latin1 get recoded */
+					if (from != CHARSET_L1)
+						from = CHARSET_ST;
+					utf8 = nls_conv_to_utf8(from, e->msgid.key, (size_t)-1, FALSE);
+					KINFO((_("%s.po: untranslated: '%s'\n"), domain->lang, utf8));
+					g_free(utf8);
+				}
 				numuntransl++;
 				/* if there is no translation, we must recode the original string */
 				converter(e->msgid.key);
-				if (report_translations)
-				{
-					KINFO((_("%s.po: untranslated: '%s'\n"), domain->lang, e->msgid.key));
-				}
 			}
 		}
 	}
