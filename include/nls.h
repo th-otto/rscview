@@ -63,7 +63,11 @@ extern nls_domain nls_default_domain;
 typedef unsigned short nls_wchar_t;
 #define UTF8_CHARMAX 6
 
-char *nls_conv_to_utf8(int charset, const void *src, size_t len, int quote_nl);
+extern int quote_html;
+
+#define QUOTE_NL   0x0001
+#define QUOTE_HTML 0x0002
+char *nls_conv_to_utf8(int charset, const void *src, size_t len, int quote_flags);
 void latin1_to_atarist(char *s);
 
 #endif /* NLS_H */

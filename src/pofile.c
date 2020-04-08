@@ -1265,8 +1265,8 @@ static gboolean parse_po_file(nls_domain *domain, const char *fname, oh *o, gboo
 				if ((e->msgid.key[lp - 1] == '\n' && e->msgstr[ln - 1] != '\n') ||
 					(e->msgid.key[lp - 1] != '\n' && e->msgstr[ln - 1] == '\n'))
 				{
-					char *from = nls_conv_to_utf8(CHARSET_ST, e->msgid.key, lp, TRUE);
-					char *utf8 = nls_conv_to_utf8(domain->fontset, e->msgstr, ln, TRUE);
+					char *from = nls_conv_to_utf8(CHARSET_ST, e->msgid.key, lp, quote_html | QUOTE_NL);
+					char *utf8 = nls_conv_to_utf8(domain->fontset, e->msgstr, ln, quote_html | QUOTE_NL);
 					warn(_("entries do not both end with '\\n' in translation of '%s' to '%s'"),
 						from, utf8);
 					g_free(utf8);
@@ -1619,7 +1619,7 @@ static oh *po_load(nls_domain *domain, const char *po_dir, _BOOL report_translat
 					/* only po-files encoded in latin1 get recoded */
 					if (from != CHARSET_L1)
 						from = CHARSET_ST;
-					utf8 = nls_conv_to_utf8(from, e->msgid.key, (size_t)-1, FALSE);
+					utf8 = nls_conv_to_utf8(from, e->msgid.key, (size_t)-1, quote_html);
 					KINFO((_("%s.po: untranslated: '%s'\n"), domain->lang, utf8));
 					g_free(utf8);
 				}

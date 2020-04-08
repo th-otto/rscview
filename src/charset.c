@@ -95,6 +95,8 @@ static struct {
 	{ 0x0000, '?' }
 };
 
+int quote_html;
+
 /*** ---------------------------------------------------------------------- ***/
 
 static const nls_wchar_t *get_cset(int charset)
@@ -124,7 +126,7 @@ static const nls_wchar_t *get_cset(int charset)
 
 /*** ---------------------------------------------------------------------- ***/
 
-char *nls_conv_to_utf8(int charset, const void *src, size_t len, int quote_nl)
+char *nls_conv_to_utf8(int charset, const void *src, size_t len, int quote_flags)
 {
 	char *dst;
 	const nls_wchar_t *cset;
@@ -148,10 +150,45 @@ char *nls_conv_to_utf8(int charset, const void *src, size_t len, int quote_nl)
 			for (i = 0; i < len; i++)
 			{
 				unsigned char c = *ptr++;
-				if (quote_nl && c == '\n')
+				if ((quote_flags & QUOTE_NL) && c == '\n')
 				{
 					*p++ = '\\';
 					*p++ = 'n';
+				} else if ((quote_flags & QUOTE_HTML) && c == '<')
+				{
+					*p++ = '&';
+					*p++ = 'l';
+					*p++ = 't';
+					*p++ = ';';
+				} else if ((quote_flags & QUOTE_HTML) && c == '>')
+				{
+					*p++ = '&';
+					*p++ = 'g';
+					*p++ = 't';
+					*p++ = ';';
+				} else if ((quote_flags & QUOTE_HTML) && c == '&')
+				{
+					*p++ = '&';
+					*p++ = 'a';
+					*p++ = 'm';
+					*p++ = 'p';
+					*p++ = ';';
+				} else if ((quote_flags & QUOTE_HTML) && c == '\'')
+				{
+					*p++ = '&';
+					*p++ = 'a';
+					*p++ = 'p';
+					*p++ = 'o';
+					*p++ = 's';
+					*p++ = ';';
+				} else if ((quote_flags & QUOTE_HTML) && c == '"')
+				{
+					*p++ = '&';
+					*p++ = 'q';
+					*p++ = 'u';
+					*p++ = 'o';
+					*p++ = 't';
+					*p++ = ';';
 				} else
 				{
 					wc = cset[c];
@@ -188,7 +225,7 @@ void latin1_to_atarist(char *s)
 			newc = replacements[i].ascii;
 			if (!warned)
 			{
-				char *utf8 = nls_conv_to_utf8(CHARSET_L1, s, STR0TERM, FALSE);
+				char *utf8 = nls_conv_to_utf8(CHARSET_L1, s, STR0TERM, quote_html);
 				errout("warning: untranslatable character $%02x in %s, using '%c' instead\n", c, utf8, newc);
 				g_free(utf8);
 				warned = 1;

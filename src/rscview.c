@@ -502,8 +502,8 @@ static void add_button_translation(RSCTREE *tree, int buttonnum, struct alert_bu
 			{
 				if (strcmp(translation, button->translation) != 0)
 				{
-					char *str1 = nls_conv_to_utf8(tree->rt_file->rsc_nls_domain.fontset, translation, STR0TERM, FALSE); 
-					char *str2 = nls_conv_to_utf8(tree->rt_file->rsc_nls_domain.fontset, button->translation, STR0TERM, FALSE); 
+					char *str1 = nls_conv_to_utf8(tree->rt_file->rsc_nls_domain.fontset, translation, STR0TERM, quote_html);
+					char *str2 = nls_conv_to_utf8(tree->rt_file->rsc_nls_domain.fontset, button->translation, STR0TERM, quote_html);
 					KINFO(("Warning: translation %s in %s was translated to %s in %s\n", str1, tree->rt_name, str2, button->treename));
 					g_free(str2);
 					g_free(str1);
@@ -834,6 +834,7 @@ enum rscview_opt {
 	OPT_OPTERROR = '?',
 	
 	OPT_CREATE_HTML = 256,
+	OPT_QUOTE_HTML,
 	OPT_HTML_DIR,
 	OPT_IMAGEMAP,
 	OPT_TIMESTAMPS,
@@ -851,6 +852,7 @@ static struct option const long_options[] = {
 	{ "charset", required_argument, NULL, OPT_CHARSET },
 	{ "create-html", required_argument, NULL, OPT_CREATE_HTML },
 	{ "create-pnglist", required_argument, NULL, OPT_CREATE_PNGLIST },
+	{ "quote-html", no_argument, NULL, OPT_QUOTE_HTML },
 	{ "imagemap", no_argument, NULL, OPT_IMAGEMAP },
 	{ "html-dir", required_argument, NULL, OPT_HTML_DIR },
 	{ "timestamps", no_argument, NULL, OPT_TIMESTAMPS },
@@ -933,6 +935,10 @@ int main(int argc, char **argv)
 		
 		case OPT_CREATE_HTML:
 			htmlout_name = optarg;
+			break;
+		
+		case OPT_QUOTE_HTML:
+			quote_html |= QUOTE_HTML;
 			break;
 		
 		case OPT_CREATE_PNGLIST:

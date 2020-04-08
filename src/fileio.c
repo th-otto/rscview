@@ -2218,7 +2218,7 @@ static void xlate_file(RSCFILE *file, _BOOL trim_strings, _BOOL report_translati
 						numuntransl++;
 						if (report_translations)
 						{
-							char *from = nls_conv_to_utf8(CHARSET_ST, *p, STR0TERM, FALSE);
+							char *from = nls_conv_to_utf8(CHARSET_ST, *p, STR0TERM, quote_html);
 							KINFO((_("%s: untranslated: '%s'\n"), file->rsc_rsxname, from));
 							g_free(from);
 						}
@@ -2244,8 +2244,8 @@ static void xlate_file(RSCFILE *file, _BOOL trim_strings, _BOOL report_translati
 					{
 						const char *name = ob_name_or_index(file, tree, j);
 						const char *overlapname = ob_name_or_index(file, tree, overlap);
-						char *from = nls_conv_to_utf8(CHARSET_ST, *p, STR0TERM, FALSE);
-						char *utf8 = nls_conv_to_utf8(domain->fontset, newstr, STR0TERM, FALSE);
+						char *from = nls_conv_to_utf8(CHARSET_ST, *p, STR0TERM, quote_html);
+						char *utf8 = nls_conv_to_utf8(domain->fontset, newstr, STR0TERM, quote_html);
 						switch (reason)
 						{
 						case 0:
@@ -2271,8 +2271,8 @@ static void xlate_file(RSCFILE *file, _BOOL trim_strings, _BOOL report_translati
 					if (underscore_length(*p) != underscore_length(newstr))
 					{
 						const char *name = ob_name_or_index(file, tree, j);
-						char *from = nls_conv_to_utf8(CHARSET_ST, *p, STR0TERM, FALSE);
-						char *utf8 = nls_conv_to_utf8(domain->fontset, newstr, STR0TERM, FALSE);
+						char *from = nls_conv_to_utf8(CHARSET_ST, *p, STR0TERM, quote_html);
+						char *utf8 = nls_conv_to_utf8(domain->fontset, newstr, STR0TERM, quote_html);
 						KINFO(("tree %s, object %s: underscores appear invalid for translation of '%s' to '%s'\n",
 							tree->rt_name, name, from, utf8));
 						g_free(utf8);
@@ -2303,7 +2303,7 @@ static void xlate_file(RSCFILE *file, _BOOL trim_strings, _BOOL report_translati
 				numuntransl++;
 				if (report_translations)
 				{
-					char *utf8 = nls_conv_to_utf8(domain->fontset, str, STR0TERM, FALSE);
+					char *utf8 = nls_conv_to_utf8(domain->fontset, str, STR0TERM, quote_html);
 					KINFO((_("%s: untranslated: '%s'\n"), file->rsc_rsxname, utf8));
 					g_free(utf8);
 				}
@@ -2547,7 +2547,7 @@ static void adjust_menu(RSCFILE *file, _WORD treeindex, _WORD wchar, _WORD hchar
 					if (separator_width != 0 && l > separator_width && file->rsc_emutos != EMUTOS_DESK)
 					{
 						const char *name = ob_name_or_index(file, tree, k);
-						char *utf8 = nls_conv_to_utf8(file->rsc_nls_domain.fontset, str, STR0TERM, FALSE);
+						char *utf8 = nls_conv_to_utf8(file->rsc_nls_domain.fontset, str, STR0TERM, quote_html);
 						KINFO(("tree %s, object %s: translation '%s' exceeds max menu width of %d\n",
 							tree->rt_name, name, utf8, separator_width));
 						g_free(utf8);
