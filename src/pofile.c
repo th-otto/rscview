@@ -1506,7 +1506,8 @@ void po_init(const char *po_dir, gboolean mustexist, gboolean use_defaults)
 			parse_linguas_item(d, g_strdup("sv atarist"), FALSE);
 			parse_linguas_item(d, g_strdup("cs latin2"), FALSE);
 			parse_linguas_item(d, g_strdup("pl latin2"), FALSE);
-			parse_linguas_item(d, g_strdup("es latin9"), FALSE);
+			parse_linguas_item(d, g_strdup("hu latin2"), FALSE);
+			parse_linguas_item(d, g_strdup("es atarist"), FALSE); /* was latin9 formerly */
 			parse_linguas_item(d, g_strdup("ru russian-atarist"), FALSE);
 			parse_linguas_item(d, g_strdup("gr cp737"), FALSE); /* deprecated */
 			parse_linguas_item(d, g_strdup("el cp737"), FALSE);
