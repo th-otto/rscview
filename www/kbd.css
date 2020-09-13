@@ -1,0 +1,75 @@
+﻿.keyboard { margin-top: 0px; margin-bottom: 0px }
+.keyboard-bg {
+  position: inherit;
+  border: solid 1px #ddd;
+  border-radius: 6px;
+  padding: 9px;
+  box-sizing: content-box;
+  min-width: 56px;
+  min-height: 56px;
+  width: 1256px;
+  height: 351px;
+  background-color: #eeeeee;
+  margin: auto;
+}
+.keyboard-bg div, .keyboard-bg label { position: absolute; border-color: #000; box-sizing: border-box; background-clip: padding-box }
+
+.kl_topleft { vertical-align: top; text-align: left }
+.kl_topright { vertical-align: top; text-align: right }
+.kl_bottomleft { vertical-align: bottom; text-align: left }
+.kl_bottomright { vertical-align: bottom; text-align: right }
+.kl_center { vertical-align: middle; text-align: center }
+
+.kl.ts1 { font-size: 8px;  line-height: 1em }
+.kl.ts2 { font-size: 10px; line-height: 1em }
+.kl.ts3 { font-size: 13px; line-height: 1em }
+.kl.ts4 { font-size: 14px; line-height: 1em }
+.kl.ts5 { font-size: 16px; line-height: 1em }
+.kl.ts6 { font-size: 18px; line-height: 1em }
+.kl.ts7 { font-size: 20px; line-height: 1em }
+.kl.ts8 { font-size: 22px; line-height: 1em }
+.kl.ts9 { font-size: 24px; line-height: 1em }
+
+.skew {
+  transform: skewX(160deg);
+  left: 20px;
+}
+.kb {
+  border-radius: 5px;
+  border: 1px solid black;
+  background-color: #cccccc;
+  width: 54px;
+  height: 54px;
+  display: inline-block;
+}
+.kt {
+  border-radius: 3px;
+  border: 1px solid rgba(0, 0, 0, 0.1) !important;
+  background-color: #ffffff;
+  width: 42px;
+  height: 42px;
+  display: inline-block;
+  position: absolute;
+  left: 5px;
+  top: 2px;
+}
+.kls {
+  font-family:Arial, Helvetica, sans-serif;
+  padding: 3px;
+  display: inline-block;
+}
+.kl {
+  width: 36px;
+  height: 36px;
+  color: #000000;
+}
+.kl > div { display: table-cell; position: static !important; width: 36px; height: 36px; max-width: 36px; }
+	
+.kr1 { margin-top: 3px; }
+.kr2 { margin-top: 84px; }
+.kr3 { margin-top: 138px; }
+.kr4 { margin-top: 192px; }
+.kr5 { margin-top: 246px; }
+.kr6 { margin-top: 300px; }
+
+span.dead { padding: 0 4px; border: 1px solid rgba(1, 129, 129, 0.49); border-radius: 3px; background-color: rgba(66, 204, 204, 0.32) }

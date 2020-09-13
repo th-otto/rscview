@@ -1,8 +1,10 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <title>Atari Keyboard Layouts</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="kbd.css" rel="stylesheet">
 
 <style type="text/css">
 .rect {
@@ -19,18 +21,6 @@
 	stroke-dashoffset:0.0000000;
 	stroke-opacity:1.0000000
 }
-.keylabel {
-	fill: red;
-	font-size: 9pt;
-}
-.keylabelsmall {
-	fill: red;
-	font-size: 8pt;
-}
-.scanlabel {
-	fill: black;
-	font-size: 9pt;
-}
 title {
 	margin-top: 0;
 	margin-bottom: 0;
@@ -40,9 +30,11 @@ title {
 </head>
 <body>
 
+<div style="width: 1276px; margin: auto;">
+
 <h1>US layout</h1>
 <?php
-passthru("./mkhtml usa-pl.src -");
+passthru("./mkhtml usa.src -");
 ?>
 
 <h1>German layout</h1>
@@ -50,6 +42,7 @@ passthru("./mkhtml usa-pl.src -");
 passthru("./mkhtml german.src -");
 ?>
 
+<!--
 <h1>UK layout</h1>
 <?php
 passthru("./mkhtml british.src -");
@@ -79,6 +72,9 @@ passthru("./mkhtml czech_iso.src -");
 <?php
 passthru("./mkhtml hungarian.src -");
 ?>
+-->
+
+</div>
 
 </body>
 </html>

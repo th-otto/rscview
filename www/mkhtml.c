@@ -261,10 +261,10 @@ static unsigned char const atari_toupper[][256] = {
 static unsigned short const atari_to_unicode[][256] = {
 	{
 	/* 0: atarist encoding */
-	/* 00 */	0x0000, 0x21e7, 0x21e9, 0x21e8, 0x21e6, 0x2610, 0x2611, 0x2612,
-	/* 08 */	0x2713, 0x0009, 0x237e, 0x266a, 0x240c, 0x240d, 0x240e, 0x240f,
-	/* 10 */	0x24ea, 0x2460, 0x2461, 0x2462, 0x2463, 0x2464, 0x2465, 0x2466,
-	/* 18 */	0x2467, 0x2468, 0x018f, 0x241b, 0x241c, 0x241d, 0x241e, 0x241f,
+	/* 00 */	0x0000, 0x0001, 0x0002, 0x0003, 0x0004, 0x0005, 0x0006, 0x0007,
+	/* 08 */	0x0008, 0x0009, 0x000a, 0x000b, 0x000c, 0x000d, 0x000e, 0x000f,
+	/* 10 */	0x0010, 0x0011, 0x0012, 0x0013, 0x0014, 0x0015, 0x0016, 0x0017,
+	/* 18 */	0x0018, 0x0019, 0x001a, 0x001b, 0x001c, 0x001d, 0x001e, 0x001f,
 	/* 20 */	0x0020, 0x0021, 0x0022, 0x0023, 0x0024, 0x0025, 0x0026, 0x0027,
 	/* 28 */	0x0028, 0x0029, 0x002a, 0x002b, 0x002c, 0x002d, 0x002e, 0x002f,
 	/* 30 */	0x0030, 0x0031, 0x0032, 0x0033, 0x0034, 0x0035, 0x0036, 0x0037,
@@ -276,7 +276,7 @@ static unsigned short const atari_to_unicode[][256] = {
 	/* 60 */	0x0060, 0x0061, 0x0062, 0x0063, 0x0064, 0x0065, 0x0066, 0x0067,
 	/* 68 */	0x0068, 0x0069, 0x006a, 0x006b, 0x006c, 0x006d, 0x006e, 0x006f,
 	/* 70 */	0x0070, 0x0071, 0x0072, 0x0073, 0x0074, 0x0075, 0x0076, 0x0077,
-	/* 78 */	0x0078, 0x0079, 0x007a, 0x007b, 0x007c, 0x007d, 0x007e, 0x2206,
+	/* 78 */	0x0078, 0x0079, 0x007a, 0x007b, 0x007c, 0x007d, 0x007e, 0x007f,
 	/* 80 */	0x00c7, 0x00fc, 0x00e9, 0x00e2, 0x00e4, 0x00e0, 0x00e5, 0x00e7,
 	/* 88 */	0x00ea, 0x00eb, 0x00e8, 0x00ef, 0x00ee, 0x00ec, 0x00c4, 0x00c5,
 	/* 90 */	0x00c9, 0x00e6, 0x00c6, 0x00f4, 0x00f6, 0x00f2, 0x00fb, 0x00f9,
@@ -333,119 +333,595 @@ static unsigned short const atari_to_unicode[][256] = {
 
 static struct {
 	unsigned char scancode;
-	int w;
-	int h;
 	int x;
-	int xkey;
-	int xscan;
-	int y;
+	int w;
 	const char *keylabel;
-} const svgtable[] = {
-	{ 0x01, 37, 40,  10,  12,  15,  60, NULL },
-	{ 0x02, 37, 40,  47,  49,  52,  60, NULL },
-	{ 0x03, 37, 40,  84,  86,  89,  60, NULL },
-	{ 0x04, 37, 40, 121, 123, 126,  60, NULL },
-	{ 0x05, 37, 40, 158, 160, 163,  60, NULL },
-	{ 0x06, 37, 40, 195, 197, 200,  60, NULL },
-	{ 0x07, 37, 40, 232, 234, 237,  60, NULL },
-	{ 0x08, 37, 40, 269, 271, 274,  60, NULL },
-	{ 0x09, 37, 40, 306, 308, 311,  60, NULL },
-	{ 0x0a, 37, 40, 343, 345, 348,  60, NULL },
-	{ 0x0b, 37, 40, 380, 382, 385,  60, NULL },
-	{ 0x0c, 37, 40, 417, 419, 422,  60, NULL },
-	{ 0x0d, 37, 40, 454, 456, 459,  60, NULL },
-	{ 0x29, 37, 40, 491, 493, 496,  60, NULL },
-	{ 0x0e, 58, 40, 528, 530, 533,  60, NULL },
-	{ 0x00,  0,  0,   0,   0,   0,   0, NULL },
+} const layout_table[] = {
+	{ 0x3b,    0,  81, "F1" },
+	{ 0x3c,   81,  81, "F2" },
+	{ 0x3d,  162,  81, "F3" },
+	{ 0x3d,  243,  81, "F4" },
+	{ 0x3d,  324,  81, "F5" },
+	{ 0x3d,  405,  81, "F6" },
+	{ 0x3d,  486,  81, "F7" },
+	{ 0x3d,  567,  81, "F8" },
+	{ 0x3d,  648,  81, "F9" },
+	{ 0x3d,  729,  81, "F10" },
+	{ 0x00,    0,   0, NULL },
 
-	{ 0x0f, 55, 40,  10,  12,  24, 100, NULL },
-	{ 0x10, 37, 40,  65,  67,  70, 100, NULL },
-	{ 0x11, 37, 40, 102, 104, 107, 100, NULL },
-	{ 0x12, 37, 40, 139, 141, 144, 100, NULL },
-	{ 0x13, 37, 40, 176, 178, 181, 100, NULL },
-	{ 0x14, 37, 40, 213, 215, 218, 100, NULL },
-	{ 0x15, 37, 40, 250, 252, 255, 100, NULL },
-	{ 0x16, 37, 40, 287, 289, 292, 100, NULL },
-	{ 0x17, 37, 40, 324, 326, 329, 100, NULL },
-	{ 0x18, 37, 40, 361, 363, 366, 100, NULL },
-	{ 0x19, 37, 40, 398, 400, 403, 100, NULL },
-	{ 0x1a, 37, 40, 435, 437, 440, 100, NULL },
-	{ 0x1b, 37, 40, 472, 474, 477, 100, NULL },
-	{ 0x1c,  0,  0, 509, 493, 514, 100, "Return" },
-	{ 0x53, 40, 40, 546, 548, 551, 100, "Delete" },
-	{ 0x00,  0,  0,   0,   0,   0,   0, NULL },
+	{ 0x01,    0,   0, "Esc" },
+	{ 0x02,   54,   0, NULL },
+	{ 0x03,  108,   0, NULL },
+	{ 0x04,  162,   0, NULL },
+	{ 0x05,  216,   0, NULL },
+	{ 0x06,  270,   0, NULL },
+	{ 0x07,  324,   0, NULL },
+	{ 0x08,  378,   0, NULL },
+	{ 0x09,  432,   0, NULL },
+	{ 0x0a,  486,   0, NULL },
+	{ 0x0b,  540,   0, NULL },
+	{ 0x0c,  594,   0, NULL },
+	{ 0x0d,  648,   0, NULL },
+	{ 0x29,  702,   0, NULL },
+	{ 0x0e,  756,  81, "Backspace" },
 
-	{ 0x1d, 74, 40,  10,  12,  34, 140, "Control" },
-	{ 0x1e, 37, 40,  84,  86,  89, 140, NULL },
-	{ 0x1f, 37, 40, 121, 123, 126, 140, NULL },
-	{ 0x20, 37, 40, 158, 160, 163, 140, NULL },
-	{ 0x21, 37, 40, 195, 197, 200, 140, NULL },
-	{ 0x22, 37, 40, 232, 234, 237, 140, NULL },
-	{ 0x23, 37, 40, 269, 271, 274, 140, NULL },
-	{ 0x24, 37, 40, 306, 308, 311, 140, NULL },
-	{ 0x25, 37, 40, 343, 345, 348, 140, NULL },
-	{ 0x26, 37, 40, 380, 382, 385, 140, NULL },
-	{ 0x27, 37, 40, 417, 419, 422, 140, NULL },
-	{ 0x28, 37, 40, 454, 456, 459, 140, NULL },
-	{ 0x2b, 40, 40, 546, 548, 551, 140, NULL },
-	{ 0x00,  0,  0,   0,   0,   0,   0, NULL },
+	{ 0x62,  857,  81, "Help" },
+	{ 0x61,  938,  81, "Undo" },
+
+	{ 0x63, 1039,   0, NULL },
+	{ 0x64, 1093,   0, NULL },
+	{ 0x65, 1147,   0, NULL },
+	{ 0x66, 1201,   0, NULL },
+
+	{ 0x00,    0,   0, NULL },
+
+	{ 0x0f,    0,  81, "Tab" },
+	{ 0x10,   81,   0, NULL },
+	{ 0x11,  135,   0, NULL },
+	{ 0x12,  189,   0, NULL },
+	{ 0x13,  243,   0, NULL },
+	{ 0x14,  297,   0, NULL },
+	{ 0x15,  351,   0, NULL },
+	{ 0x16,  405,   0, NULL },
+	{ 0x17,  459,   0, NULL },
+	{ 0x18,  513,   0, NULL },
+	{ 0x19,  567,   0, NULL },
+	{ 0x1a,  621,   0, NULL },
+	{ 0x1b,  675,   0, NULL },
+	{ 0x1c,  729,   0, "Return" },
+	{ 0x53,  783,   0, "Delete" },
+
+	{ 0x52,  857,   0, "Insert" },
+	{ 0x48,  911,   0, "&#x2191;" }, /* Cursor up */
+	{ 0x47,  965,   0, "Clr<br />Home" },
+
+	{ 0x67, 1039,   0, NULL },
+	{ 0x68, 1093,   0, NULL },
+	{ 0x69, 1147,   0, NULL },
+	{ 0x4a, 1202,   0, NULL },
+
+	{ 0x00,    0,   0, NULL },
+
+	{ 0x1d,    0, 108, "Control" },
+	{ 0x1e,  108,   0, NULL },
+	{ 0x1f,  162,   0, NULL },
+	{ 0x20,  216,   0, NULL },
+	{ 0x21,  270,   0, NULL },
+	{ 0x22,  324,   0, NULL },
+	{ 0x23,  378,   0, NULL },
+	{ 0x24,  432,   0, NULL },
+	{ 0x25,  486,   0, NULL },
+	{ 0x26,  540,   0, NULL },
+	{ 0x27,  594,   0, NULL },
+	{ 0x28,  648,   0, NULL },
+	{ 0x2b,  783,   0, NULL },
 	
-	{ 0x2a, 45, 40,  10,  12,  15, 180, "Shift" },
-	{ 0x60, 37, 40,  55,  57,  60, 180, NULL },
-	{ 0x2c, 37, 40,  92,  94,  97, 180, NULL },
-	{ 0x2d, 37, 40, 129, 131, 134, 180, NULL },
-	{ 0x2e, 37, 40, 166, 168, 171, 180, NULL },
-	{ 0x2f, 37, 40, 203, 205, 208, 180, NULL },
-	{ 0x30, 37, 40, 240, 242, 245, 180, NULL },
-	{ 0x31, 37, 40, 277, 279, 282, 180, NULL },
-	{ 0x32, 37, 40, 314, 316, 319, 180, NULL },
-	{ 0x33, 37, 40, 351, 353, 356, 180, NULL },
-	{ 0x34, 37, 40, 388, 390, 393, 180, NULL },
-	{ 0x35, 37, 40, 425, 427, 430, 180, NULL },
-	{ 0x36, 74, 40, 462, 464, 485, 180, "Shift" }, /* x001d0 */
-	{ 0x00,  0,  0,   0,   0,   0,   0, NULL },
+	{ 0x4b,  857,   0, "&#x2190;" }, /* Cursor left */
+	{ 0x50,  911,   0, "&#x2193;" }, /* Cursor down */
+	{ 0x4d,  965,   0, "&#x2192;" }, /* Cursor right */
 
-	{ 0x38, 55, 40,  55,  57,  69, 220, "Alternate" },
-	{ 0x39,333, 40, 110, 112, 124, 220, "Space" },
-	{ 0x3a, 55, 40, 443, 445, 457, 220, "CapsLock" },
-	{ 0x00,  0,  0,   0,   0,   0,   0, NULL },
+	{ 0x6a, 1039,   0, NULL },
+	{ 0x6b, 1093,   0, NULL },
+	{ 0x6c, 1147,   0, NULL },
+	{ 0x4e, 1202,   0, NULL },
 
-	{ 0x62, 55, 40, 606, 608, 621,  60, "Help" },
-	{ 0x61, 56, 40, 661, 663, 675,  60, "Undo" },
-	{ 0x52, 37, 40, 606, 608, 611, 100, "Insert" },
-	{ 0x48, 37, 40, 643, 645, 648, 100, "&#x2191;" }, /* Cursor up */
-	{ 0x47, 37, 40, 680, 682, 685, 100, "Clr" },
-	{ 0x4b, 37, 40, 606, 608, 611, 140, "&#x2190;" }, /* Cursor left */
-	{ 0x50, 37, 40, 643, 645, 648, 140, "&#x2193;" }, /* Cursor down */
-	{ 0x4d, 37, 40, 680, 682, 685, 140, "&#x2192;" }, /* Cursor right */
-	{ 0x00,  0,  0,   0,   0,   0,   0, NULL },
+	{ 0x00,    0,   0, NULL },
 
-	{ 0x63, 37, 40, 737, 739, 742,  60, NULL },
-	{ 0x64, 37, 40, 774, 776, 779,  60, NULL },
-	{ 0x65, 37, 40, 811, 813, 816,  60, NULL },
-	{ 0x66, 37, 40, 848, 850, 853,  60, NULL },
-	{ 0x67, 37, 40, 737, 739, 742, 100, NULL },
-	{ 0x68, 37, 40, 774, 776, 779, 100, NULL },
-	{ 0x69, 37, 40, 811, 813, 816, 100, NULL },
-	{ 0x4a, 37, 40, 848, 850, 853, 100, NULL },
-	{ 0x6a, 37, 40, 737, 739, 742, 140, NULL },
-	{ 0x6b, 37, 40, 774, 776, 779, 140, NULL },
-	{ 0x6c, 37, 40, 811, 813, 816, 140, NULL },
-	{ 0x4e, 37, 40, 848, 850, 853, 140, NULL },
-	{ 0x6d, 37, 40, 737, 739, 742, 180, NULL },
-	{ 0x6e, 37, 40, 774, 776, 779, 180, NULL },
-	{ 0x6f, 37, 40, 811, 813, 816, 180, NULL },
-	{ 0x72, 37, 80, 848, 850, 853, 180, "Enter" },
-	{ 0x70, 74, 40, 737, 739, 742, 220, NULL },
-	{ 0x71, 37, 40, 811, 813, 816, 220, NULL },
+	{ 0x2a,    0,  66, "Shift" },
+	{ 0x60,   66,   0, NULL },
+	{ 0x2c,  120,   0, NULL },
+	{ 0x2d,  174,   0, NULL },
+	{ 0x2e,  218,   0, NULL },
+	{ 0x2f,  272,   0, NULL },
+	{ 0x30,  326,   0, NULL },
+	{ 0x31,  380,   0, NULL },
+	{ 0x32,  434,   0, NULL },
+	{ 0x33,  488,   0, NULL },
+	{ 0x34,  542,   0, NULL },
+	{ 0x35,  596,   0, NULL },
+	{ 0x36,  650, 108, "Shift" },
+
+	{ 0x6d, 1039,   0, NULL },
+	{ 0x6e, 1093,   0, NULL },
+	{ 0x6f, 1147,   0, NULL },
+	{ 0x72, 1202,   0, "Enter" },
+
+	{ 0x00,    0,   0, NULL },
+
+	{ 0x38,   81,  81, "Alternate" },
+	{ 0x39,  162, 460, "Space" },
+	{ 0x3a,  622,  81, "CapsLock" },
+
+	{ 0x70, 1039, 108, NULL },
+	{ 0x71, 1147,   0, NULL },
+
+	{ 0x00,    0,   0, NULL },
 };
 
-#define KEY_LABEL_YOFFSET1  11
-#define KEY_LABEL_YOFFSET2  36
-#define KEY_LABEL_XOFFSET   20
-#define SCAN_LABEL_OFFSET   25
-
 #define ARRAY_SIZE(x) (sizeof(x) / sizeof(x[0]))
+
+static struct {
+	unsigned short code;
+	const char *name;
+} const unicode_table[] = {
+	{ 0x0001, "START OF HEADING" },
+	{ 0x0002, "START OF TEXT" },
+	{ 0x0003, "END OF TEXT" },
+	{ 0x0004, "END OF TRANSMISSION" },
+	{ 0x0005, "ENQUIRY" },
+	{ 0x0006, "ACKNOWLEDGE" },
+	{ 0x0007, "BELL" },
+	{ 0x0008, "BACKSPACE" },
+	{ 0x0009, "CHARACTER TABULATION" },
+	{ 0x000a, "LINE FEED (LF)" },
+	{ 0x000b, "LINE TABULATION" },
+	{ 0x000c, "FORM FEED (FF)" },
+	{ 0x000d, "CARRIAGE RETURN (CR)" },
+	{ 0x000e, "SHIFT OUT" },
+	{ 0x000f, "SHIFT IN" },
+	{ 0x0010, "DATA LINK ESCAPE" },
+	{ 0x0011, "DEVICE CONTROL ONE" },
+	{ 0x0012, "DEVICE CONTROL TWO" },
+	{ 0x0013, "DEVICE CONTROL THREE" },
+	{ 0x0014, "DEVICE CONTROL FOUR" },
+	{ 0x0015, "NEGATIVE ACKNOWLEDGE" },
+	{ 0x0016, "SYNCHRONOUS IDLE" },
+	{ 0x0017, "END OF TRANSMISSION BLOCK" },
+	{ 0x0018, "CANCEL" },
+	{ 0x0019, "END OF MEDIUM" },
+	{ 0x001a, "SUBSTITUTE" },
+	{ 0x001b, "ESCAPE" },
+	{ 0x001c, "INFORMATION SEPARATOR FOUR" },
+	{ 0x001d, "INFORMATION SEPARATOR THREE" },
+	{ 0x001e, "INFORMATION SEPARATOR TWO" },
+	{ 0x001f, "INFORMATION SEPARATOR ONE" },
+	{ 0x0020, "SPACE" },
+	{ 0x0021, "EXCLAMATION MARK" },
+	{ 0x0022, "QUOTATION MARK" },
+	{ 0x0023, "NUMBER SIGN" },
+	{ 0x0024, "DOLLAR SIGN" },
+	{ 0x0025, "PERCENT SIGN" },
+	{ 0x0026, "AMPERSAND" },
+	{ 0x0027, "APOSTROPHE" },
+	{ 0x0028, "LEFT PARENTHESIS" },
+	{ 0x0029, "RIGHT PARENTHESIS" },
+	{ 0x002a, "ASTERISK" },
+	{ 0x002b, "PLUS SIGN" },
+	{ 0x002c, "COMMA" },
+	{ 0x002d, "HYPHEN-MINUS" },
+	{ 0x002e, "FULL STOP" },
+	{ 0x002f, "SOLIDUS" },
+	{ 0x0030, "DIGIT ZERO" },
+	{ 0x0031, "DIGIT ONE" },
+	{ 0x0032, "DIGIT TWO" },
+	{ 0x0033, "DIGIT THREE" },
+	{ 0x0034, "DIGIT FOUR" },
+	{ 0x0035, "DIGIT FIVE" },
+	{ 0x0036, "DIGIT SIX" },
+	{ 0x0037, "DIGIT SEVEN" },
+	{ 0x0038, "DIGIT EIGHT" },
+	{ 0x0039, "DIGIT NINE" },
+	{ 0x003a, "COLON" },
+	{ 0x003b, "SEMICOLON" },
+	{ 0x003c, "LESS-THAN SIGN" },
+	{ 0x003d, "EQUALS SIGN" },
+	{ 0x003e, "GREATER-THAN SIGN" },
+	{ 0x003f, "QUESTION MARK" },
+	{ 0x0040, "COMMERCIAL AT" },
+	{ 0x0041, "LATIN CAPITAL LETTER A" },
+	{ 0x0042, "LATIN CAPITAL LETTER B" },
+	{ 0x0043, "LATIN CAPITAL LETTER C" },
+	{ 0x0044, "LATIN CAPITAL LETTER D" },
+	{ 0x0045, "LATIN CAPITAL LETTER E" },
+	{ 0x0046, "LATIN CAPITAL LETTER F" },
+	{ 0x0047, "LATIN CAPITAL LETTER G" },
+	{ 0x0048, "LATIN CAPITAL LETTER H" },
+	{ 0x0049, "LATIN CAPITAL LETTER I" },
+	{ 0x004a, "LATIN CAPITAL LETTER J" },
+	{ 0x004b, "LATIN CAPITAL LETTER K" },
+	{ 0x004c, "LATIN CAPITAL LETTER L" },
+	{ 0x004d, "LATIN CAPITAL LETTER M" },
+	{ 0x004e, "LATIN CAPITAL LETTER N" },
+	{ 0x004f, "LATIN CAPITAL LETTER O" },
+	{ 0x0050, "LATIN CAPITAL LETTER P" },
+	{ 0x0051, "LATIN CAPITAL LETTER Q" },
+	{ 0x0052, "LATIN CAPITAL LETTER R" },
+	{ 0x0053, "LATIN CAPITAL LETTER S" },
+	{ 0x0054, "LATIN CAPITAL LETTER T" },
+	{ 0x0055, "LATIN CAPITAL LETTER U" },
+	{ 0x0056, "LATIN CAPITAL LETTER V" },
+	{ 0x0057, "LATIN CAPITAL LETTER W" },
+	{ 0x0058, "LATIN CAPITAL LETTER X" },
+	{ 0x0059, "LATIN CAPITAL LETTER Y" },
+	{ 0x005a, "LATIN CAPITAL LETTER Z" },
+	{ 0x005b, "LEFT SQUARE BRACKET" },
+	{ 0x005c, "REVERSE SOLIDUS" },
+	{ 0x005d, "RIGHT SQUARE BRACKET" },
+	{ 0x005e, "CIRCUMFLEX ACCENT" },
+	{ 0x005f, "LOW LINE" },
+	{ 0x0060, "GRAVE ACCENT" },
+	{ 0x0061, "LATIN SMALL LETTER A" },
+	{ 0x0062, "LATIN SMALL LETTER B" },
+	{ 0x0063, "LATIN SMALL LETTER C" },
+	{ 0x0064, "LATIN SMALL LETTER D" },
+	{ 0x0065, "LATIN SMALL LETTER E" },
+	{ 0x0066, "LATIN SMALL LETTER F" },
+	{ 0x0067, "LATIN SMALL LETTER G" },
+	{ 0x0068, "LATIN SMALL LETTER H" },
+	{ 0x0069, "LATIN SMALL LETTER I" },
+	{ 0x006a, "LATIN SMALL LETTER J" },
+	{ 0x006b, "LATIN SMALL LETTER K" },
+	{ 0x006c, "LATIN SMALL LETTER L" },
+	{ 0x006d, "LATIN SMALL LETTER M" },
+	{ 0x006e, "LATIN SMALL LETTER N" },
+	{ 0x006f, "LATIN SMALL LETTER O" },
+	{ 0x0070, "LATIN SMALL LETTER P" },
+	{ 0x0071, "LATIN SMALL LETTER Q" },
+	{ 0x0072, "LATIN SMALL LETTER R" },
+	{ 0x0073, "LATIN SMALL LETTER S" },
+	{ 0x0074, "LATIN SMALL LETTER T" },
+	{ 0x0075, "LATIN SMALL LETTER U" },
+	{ 0x0076, "LATIN SMALL LETTER V" },
+	{ 0x0077, "LATIN SMALL LETTER W" },
+	{ 0x0078, "LATIN SMALL LETTER X" },
+	{ 0x0079, "LATIN SMALL LETTER Y" },
+	{ 0x007a, "LATIN SMALL LETTER Z" },
+	{ 0x007b, "LEFT CURLY BRACKET" },
+	{ 0x007c, "VERTICAL LINE" },
+	{ 0x007d, "RIGHT CURLY BRACKET" },
+	{ 0x007e, "TILDE" },
+	{ 0x007f, "DELETE" },
+	{ 0x0081, "<undefined>" },
+	{ 0x0083, "<undefined>" },
+	{ 0x0088, "<undefined>" },
+	{ 0x0090, "<undefined>" },
+	{ 0x0098, "<undefined>" },
+	{ 0x00a0, "NO-BREAK SPACE" },
+	{ 0x00a1, "INVERTED EXCLAMATION MARK" },
+	{ 0x00a2, "CENT SIGN" },
+	{ 0x00a3, "POUND SIGN" },
+	{ 0x00a4, "CURRENCY SIGN" },
+	{ 0x00a5, "YEN SIGN" },
+	{ 0x00a6, "BROKEN BAR" },
+	{ 0x00a7, "SECTION SIGN" },
+	{ 0x00a8, "DIAERESIS" },
+	{ 0x00a9, "COPYRIGHT SIGN" },
+	{ 0x00aa, "FEMININE ORDINAL INDICATOR" },
+	{ 0x00ab, "LEFT-POINTING DOUBLE ANGLE QUOTATION MARK" },
+	{ 0x00ac, "NOT SIGN" },
+	{ 0x00ad, "SOFT HYPHEN" },
+	{ 0x00ae, "REGISTERED SIGN" },
+	{ 0x00af, "MACRON" },
+	{ 0x00b0, "DEGREE SIGN" },
+	{ 0x00b1, "PLUS-MINUS SIGN" },
+	{ 0x00b2, "SUPERSCRIPT TWO" },
+	{ 0x00b3, "SUPERSCRIPT THREE" },
+	{ 0x00b4, "ACUTE ACCENT" },
+	{ 0x00b5, "MICRO SIGN" },
+	{ 0x00b6, "PILCROW SIGN" },
+	{ 0x00b7, "MIDDLE DOT" },
+	{ 0x00b8, "CEDILLA" },
+	{ 0x00b9, "SUPERSCRIPT ONE" },
+	{ 0x00ba, "MASCULINE ORDINAL INDICATOR" },
+	{ 0x00bb, "RIGHT-POINTING DOUBLE ANGLE QUOTATION MARK" },
+	{ 0x00bc, "VULGAR FRACTION ONE QUARTER" },
+	{ 0x00bd, "VULGAR FRACTION ONE HALF" },
+	{ 0x00be, "VULGAR FRACTION THREE QUARTERS" },
+	{ 0x00bf, "INVERTED QUESTION MARK" },
+	{ 0x00c0, "LATIN CAPITAL LETTER A WITH GRAVE" },
+	{ 0x00c1, "LATIN CAPITAL LETTER A WITH ACUTE" },
+	{ 0x00c2, "LATIN CAPITAL LETTER A WITH CIRCUMFLEX" },
+	{ 0x00c3, "LATIN CAPITAL LETTER A WITH TILDE" },
+	{ 0x00c4, "LATIN CAPITAL LETTER A WITH DIAERESIS" },
+	{ 0x00c5, "LATIN CAPITAL LETTER A WITH RING ABOVE" },
+	{ 0x00c6, "LATIN CAPITAL LETTER AE" },
+	{ 0x00c7, "LATIN CAPITAL LETTER C WITH CEDILLA" },
+	{ 0x00c8, "LATIN CAPITAL LETTER E WITH GRAVE" },
+	{ 0x00c9, "LATIN CAPITAL LETTER E WITH ACUTE" },
+	{ 0x00ca, "LATIN CAPITAL LETTER E WITH CIRCUMFLEX" },
+	{ 0x00cb, "LATIN CAPITAL LETTER E WITH DIAERESIS" },
+	{ 0x00cc, "LATIN CAPITAL LETTER I WITH GRAVE" },
+	{ 0x00cd, "LATIN CAPITAL LETTER I WITH ACUTE" },
+	{ 0x00ce, "LATIN CAPITAL LETTER I WITH CIRCUMFLEX" },
+	{ 0x00cf, "LATIN CAPITAL LETTER I WITH DIAERESIS" },
+	{ 0x00d0, "LATIN CAPITAL LETTER ETH" },
+	{ 0x00d1, "LATIN CAPITAL LETTER N WITH TILDE" },
+	{ 0x00d2, "LATIN CAPITAL LETTER O WITH GRAVE" },
+	{ 0x00d3, "LATIN CAPITAL LETTER O WITH ACUTE" },
+	{ 0x00d4, "LATIN CAPITAL LETTER O WITH CIRCUMFLEX" },
+	{ 0x00d5, "LATIN CAPITAL LETTER O WITH TILDE" },
+	{ 0x00d6, "LATIN CAPITAL LETTER O WITH DIAERESIS" },
+	{ 0x00d7, "MULTIPLICATION SIGN" },
+	{ 0x00d8, "LATIN CAPITAL LETTER O WITH STROKE" },
+	{ 0x00d9, "LATIN CAPITAL LETTER U WITH GRAVE" },
+	{ 0x00da, "LATIN CAPITAL LETTER U WITH ACUTE" },
+	{ 0x00db, "LATIN CAPITAL LETTER U WITH CIRCUMFLEX" },
+	{ 0x00dc, "LATIN CAPITAL LETTER U WITH DIAERESIS" },
+	{ 0x00dd, "LATIN CAPITAL LETTER Y WITH ACUTE" },
+	{ 0x00de, "LATIN CAPITAL LETTER THORN" },
+	{ 0x00df, "LATIN SMALL LETTER SHARP S" },
+	{ 0x00e0, "LATIN SMALL LETTER A WITH GRAVE" },
+	{ 0x00e1, "LATIN SMALL LETTER A WITH ACUTE" },
+	{ 0x00e2, "LATIN SMALL LETTER A WITH CIRCUMFLEX" },
+	{ 0x00e3, "LATIN SMALL LETTER A WITH TILDE" },
+	{ 0x00e4, "LATIN SMALL LETTER A WITH DIAERESIS" },
+	{ 0x00e5, "LATIN SMALL LETTER A WITH RING ABOVE" },
+	{ 0x00e6, "LATIN SMALL LETTER AE" },
+	{ 0x00e7, "LATIN SMALL LETTER C WITH CEDILLA" },
+	{ 0x00e8, "LATIN SMALL LETTER E WITH GRAVE" },
+	{ 0x00e9, "LATIN SMALL LETTER E WITH ACUTE" },
+	{ 0x00ea, "LATIN SMALL LETTER E WITH CIRCUMFLEX" },
+	{ 0x00eb, "LATIN SMALL LETTER E WITH DIAERESIS" },
+	{ 0x00ec, "LATIN SMALL LETTER I WITH GRAVE" },
+	{ 0x00ed, "LATIN SMALL LETTER I WITH ACUTE" },
+	{ 0x00ee, "LATIN SMALL LETTER I WITH CIRCUMFLEX" },
+	{ 0x00ef, "LATIN SMALL LETTER I WITH DIAERESIS" },
+	{ 0x00f0, "LATIN SMALL LETTER ETH" },
+	{ 0x00f1, "LATIN SMALL LETTER N WITH TILDE" },
+	{ 0x00f2, "LATIN SMALL LETTER O WITH GRAVE" },
+	{ 0x00f3, "LATIN SMALL LETTER O WITH ACUTE" },
+	{ 0x00f4, "LATIN SMALL LETTER O WITH CIRCUMFLEX" },
+	{ 0x00f5, "LATIN SMALL LETTER O WITH TILDE" },
+	{ 0x00f6, "LATIN SMALL LETTER O WITH DIAERESIS" },
+	{ 0x00f7, "DIVISION SIGN" },
+	{ 0x00f8, "LATIN SMALL LETTER O WITH STROKE" },
+	{ 0x00f9, "LATIN SMALL LETTER U WITH GRAVE" },
+	{ 0x00fa, "LATIN SMALL LETTER U WITH ACUTE" },
+	{ 0x00fb, "LATIN SMALL LETTER U WITH CIRCUMFLEX" },
+	{ 0x00fc, "LATIN SMALL LETTER U WITH DIAERESIS" },
+	{ 0x00fd, "LATIN SMALL LETTER Y WITH ACUTE" },
+	{ 0x00fe, "LATIN SMALL LETTER THORN" },
+	{ 0x00ff, "LATIN SMALL LETTER Y WITH DIAERESIS" },
+	{ 0x0102, "LATIN CAPITAL LETTER A WITH BREVE" },
+	{ 0x0103, "LATIN SMALL LETTER A WITH BREVE" },
+	{ 0x0104, "LATIN CAPITAL LETTER A WITH OGONEK" },
+	{ 0x0105, "LATIN SMALL LETTER A WITH OGONEK" },
+	{ 0x0106, "LATIN CAPITAL LETTER C WITH ACUTE" },
+	{ 0x0107, "LATIN SMALL LETTER C WITH ACUTE" },
+	{ 0x010c, "LATIN CAPITAL LETTER C WITH CARON" },
+	{ 0x010d, "LATIN SMALL LETTER C WITH CARON" },
+	{ 0x010e, "LATIN CAPITAL LETTER D WITH CARON" },
+	{ 0x010f, "LATIN SMALL LETTER D WITH CARON" },
+	{ 0x0110, "LATIN CAPITAL LETTER D WITH STROKE" },
+	{ 0x0111, "LATIN SMALL LETTER D WITH STROKE" },
+	{ 0x0118, "LATIN CAPITAL LETTER E WITH OGONEK" },
+	{ 0x0119, "LATIN SMALL LETTER E WITH OGONEK" },
+	{ 0x011a, "LATIN CAPITAL LETTER E WITH CARON" },
+	{ 0x011b, "LATIN SMALL LETTER E WITH CARON" },
+	{ 0x0131, "LATIN SMALL LETTER DOTLESS I" },
+	{ 0x0132, "LATIN CAPITAL LIGATURE IJ" },
+	{ 0x0133, "LATIN SMALL LIGATURE IJ" },
+	{ 0x0139, "LATIN CAPITAL LETTER L WITH ACUTE" },
+	{ 0x013a, "LATIN SMALL LETTER L WITH ACUTE" },
+	{ 0x013d, "LATIN CAPITAL LETTER L WITH CARON" },
+	{ 0x013e, "LATIN SMALL LETTER L WITH CARON" },
+	{ 0x0141, "LATIN CAPITAL LETTER L WITH STROKE" },
+	{ 0x0142, "LATIN SMALL LETTER L WITH STROKE" },
+	{ 0x0143, "LATIN CAPITAL LETTER N WITH ACUTE" },
+	{ 0x0144, "LATIN SMALL LETTER N WITH ACUTE" },
+	{ 0x0147, "LATIN CAPITAL LETTER N WITH CARON" },
+	{ 0x0148, "LATIN SMALL LETTER N WITH CARON" },
+	{ 0x0150, "LATIN CAPITAL LETTER O WITH DOUBLE ACUTE" },
+	{ 0x0151, "LATIN SMALL LETTER O WITH DOUBLE ACUTE" },
+	{ 0x0152, "LATIN CAPITAL LIGATURE OE" },
+	{ 0x0153, "LATIN SMALL LIGATURE OE" },
+	{ 0x0154, "LATIN CAPITAL LETTER R WITH ACUTE" },
+	{ 0x0155, "LATIN SMALL LETTER R WITH ACUTE" },
+	{ 0x0158, "LATIN CAPITAL LETTER R WITH CARON" },
+	{ 0x0159, "LATIN SMALL LETTER R WITH CARON" },
+	{ 0x015a, "LATIN CAPITAL LETTER S WITH ACUTE" },
+	{ 0x015b, "LATIN SMALL LETTER S WITH ACUTE" },
+	{ 0x015e, "LATIN CAPITAL LETTER S WITH CEDILLA" },
+	{ 0x015f, "LATIN SMALL LETTER S WITH CEDILLA" },
+	{ 0x0160, "LATIN CAPITAL LETTER S WITH CARON" },
+	{ 0x0161, "LATIN SMALL LETTER S WITH CARON" },
+	{ 0x0162, "LATIN CAPITAL LETTER T WITH CEDILLA" },
+	{ 0x0163, "LATIN SMALL LETTER T WITH CEDILLA" },
+	{ 0x0164, "LATIN CAPITAL LETTER T WITH CARON" },
+	{ 0x0165, "LATIN SMALL LETTER T WITH CARON" },
+	{ 0x016e, "LATIN CAPITAL LETTER U WITH RING ABOVE" },
+	{ 0x016f, "LATIN SMALL LETTER U WITH RING ABOVE" },
+	{ 0x0170, "LATIN CAPITAL LETTER U WITH DOUBLE ACUTE" },
+	{ 0x0171, "LATIN SMALL LETTER U WITH DOUBLE ACUTE" },
+	{ 0x0179, "LATIN CAPITAL LETTER Z WITH ACUTE" },
+	{ 0x017a, "LATIN SMALL LETTER Z WITH ACUTE" },
+	{ 0x017b, "LATIN CAPITAL LETTER Z WITH DOT ABOVE" },
+	{ 0x017c, "LATIN SMALL LETTER Z WITH DOT ABOVE" },
+	{ 0x017d, "LATIN CAPITAL LETTER Z WITH CARON" },
+	{ 0x017e, "LATIN SMALL LETTER Z WITH CARON" },
+	{ 0x018f, "LATIN CAPITAL LETTER SCHWA" },
+	{ 0x0192, "LATIN SMALL LETTER F WITH HOOK" },
+	{ 0x02c7, "CARON" },
+	{ 0x02d8, "BREVE" },
+	{ 0x02d9, "DOT ABOVE" },
+	{ 0x02db, "OGONEK" },
+	{ 0x02dd, "DOUBLE ACUTE ACCENT" },
+	{ 0x0391, "GREEK CAPITAL LETTER ALPHA" },
+	{ 0x0392, "GREEK CAPITAL LETTER BETA" },
+	{ 0x0393, "GREEK CAPITAL LETTER GAMMA" },
+	{ 0x0394, "GREEK CAPITAL LETTER DELTA" },
+	{ 0x0395, "GREEK CAPITAL LETTER EPSILON" },
+	{ 0x0396, "GREEK CAPITAL LETTER ZETA" },
+	{ 0x0397, "GREEK CAPITAL LETTER ETA" },
+	{ 0x0398, "GREEK CAPITAL LETTER THETA" },
+	{ 0x0399, "GREEK CAPITAL LETTER IOTA" },
+	{ 0x039a, "GREEK CAPITAL LETTER KAPPA" },
+	{ 0x039b, "GREEK CAPITAL LETTER LAMDA" },
+	{ 0x039c, "GREEK CAPITAL LETTER MU" },
+	{ 0x039d, "GREEK CAPITAL LETTER NU" },
+	{ 0x039e, "GREEK CAPITAL LETTER XI" },
+	{ 0x039f, "GREEK CAPITAL LETTER OMICRON" },
+	{ 0x03a0, "GREEK CAPITAL LETTER PI" },
+	{ 0x03a1, "GREEK CAPITAL LETTER RHO" },
+	{ 0x03a3, "GREEK CAPITAL LETTER SIGMA" },
+	{ 0x03a4, "GREEK CAPITAL LETTER TAU" },
+	{ 0x03a5, "GREEK CAPITAL LETTER UPSILON" },
+	{ 0x03a6, "GREEK CAPITAL LETTER PHI" },
+	{ 0x03a7, "GREEK CAPITAL LETTER CHI" },
+	{ 0x03a8, "GREEK CAPITAL LETTER PSI" },
+	{ 0x03a9, "GREEK CAPITAL LETTER OMEGA" },
+	{ 0x03aa, "GREEK CAPITAL LETTER IOTA WITH DIALYTIKA" },
+	{ 0x03ab, "GREEK CAPITAL LETTER UPSILON WITH DIALYTIKA" },
+	{ 0x03ac, "GREEK SMALL LETTER ALPHA WITH TONOS" },
+	{ 0x03ad, "GREEK SMALL LETTER EPSILON WITH TONOS" },
+	{ 0x03ae, "GREEK SMALL LETTER ETA WITH TONOS" },
+	{ 0x03af, "GREEK SMALL LETTER IOTA WITH TONOS" },
+	{ 0x03b0, "GREEK SMALL LETTER UPSILON WITH DIALYTIKA AND TONOS" },
+	{ 0x03b1, "GREEK SMALL LETTER ALPHA" },
+	{ 0x03b2, "GREEK SMALL LETTER BETA" },
+	{ 0x03b3, "GREEK SMALL LETTER GAMMA" },
+	{ 0x03b4, "GREEK SMALL LETTER DELTA" },
+	{ 0x03b5, "GREEK SMALL LETTER EPSILON" },
+	{ 0x03b6, "GREEK SMALL LETTER ZETA" },
+	{ 0x03b7, "GREEK SMALL LETTER ETA" },
+	{ 0x03b8, "GREEK SMALL LETTER THETA" },
+	{ 0x03b9, "GREEK SMALL LETTER IOTA" },
+	{ 0x03ba, "GREEK SMALL LETTER KAPPA" },
+	{ 0x03bb, "GREEK SMALL LETTER LAMDA" },
+	{ 0x03bc, "GREEK SMALL LETTER MU" },
+	{ 0x03bd, "GREEK SMALL LETTER NU" },
+	{ 0x03be, "GREEK SMALL LETTER XI" },
+	{ 0x03bf, "GREEK SMALL LETTER OMICRON" },
+	{ 0x03c0, "GREEK SMALL LETTER PI" },
+	{ 0x03c1, "GREEK SMALL LETTER RHO" },
+	{ 0x03c2, "GREEK SMALL LETTER FINAL SIGMA" },
+	{ 0x03c3, "GREEK SMALL LETTER SIGMA" },
+	{ 0x03c4, "GREEK SMALL LETTER TAU" },
+	{ 0x03c5, "GREEK SMALL LETTER UPSILON" },
+	{ 0x03c6, "GREEK SMALL LETTER PHI" },
+	{ 0x03c7, "GREEK SMALL LETTER CHI" },
+	{ 0x03c8, "GREEK SMALL LETTER PSI" },
+	{ 0x03c9, "GREEK SMALL LETTER OMEGA" },
+	{ 0x03ca, "GREEK SMALL LETTER IOTA WITH DIALYTIKA" },
+	{ 0x03cb, "GREEK SMALL LETTER UPSILON WITH DIALYTIKA" },
+	{ 0x03cc, "GREEK SMALL LETTER OMICRON WITH TONOS" },
+	{ 0x03cd, "GREEK SMALL LETTER UPSILON WITH TONOS" },
+	{ 0x03ce, "GREEK SMALL LETTER OMEGA WITH TONOS" },
+	{ 0x05d0, "HEBREW LETTER ALEF" },
+	{ 0x05d1, "HEBREW LETTER BET" },
+	{ 0x05d2, "HEBREW LETTER GIMEL" },
+	{ 0x05d3, "HEBREW LETTER DALET" },
+	{ 0x05d4, "HEBREW LETTER HE" },
+	{ 0x05d5, "HEBREW LETTER VAV" },
+	{ 0x05d6, "HEBREW LETTER ZAYIN" },
+	{ 0x05d7, "HEBREW LETTER HET" },
+	{ 0x05d8, "HEBREW LETTER TET" },
+	{ 0x05d9, "HEBREW LETTER YOD" },
+	{ 0x05da, "HEBREW LETTER FINAL KAF" },
+	{ 0x05db, "HEBREW LETTER KAF" },
+	{ 0x05dc, "HEBREW LETTER LAMED" },
+	{ 0x05dd, "HEBREW LETTER FINAL MEM" },
+	{ 0x05de, "HEBREW LETTER MEM" },
+	{ 0x05df, "HEBREW LETTER FINAL NUN" },
+	{ 0x05e0, "HEBREW LETTER NUN" },
+	{ 0x05e1, "HEBREW LETTER SAMEKH" },
+	{ 0x05e2, "HEBREW LETTER AYIN" },
+	{ 0x05e3, "HEBREW LETTER FINAL PE" },
+	{ 0x05e4, "HEBREW LETTER PE" },
+	{ 0x05e5, "HEBREW LETTER FINAL TSADI" },
+	{ 0x05e6, "HEBREW LETTER TSADI" },
+	{ 0x05e7, "HEBREW LETTER QOF" },
+	{ 0x05e8, "HEBREW LETTER RESH" },
+	{ 0x05e9, "HEBREW LETTER SHIN" },
+	{ 0x05ea, "HEBREW LETTER TAV" },
+	{ 0x2013, "EN DASH" },
+	{ 0x2014, "EM DASH" },
+	{ 0x2018, "LEFT SINGLE QUOTATION MARK" },
+	{ 0x2019, "RIGHT SINGLE QUOTATION MARK" },
+	{ 0x201a, "SINGLE LOW-9 QUOTATION MARK" },
+	{ 0x201c, "LEFT DOUBLE QUOTATION MARK" },
+	{ 0x201d, "RIGHT DOUBLE QUOTATION MARK" },
+	{ 0x201e, "DOUBLE LOW-9 QUOTATION MARK" },
+	{ 0x2020, "DAGGER" },
+	{ 0x2021, "DOUBLE DAGGER" },
+	{ 0x2022, "BULLET" },
+	{ 0x2026, "HORIZONTAL ELLIPSIS" },
+	{ 0x2030, "PER MILLE SIGN" },
+	{ 0x2039, "SINGLE LEFT-POINTING ANGLE QUOTATION MARK" },
+	{ 0x203a, "SINGLE RIGHT-POINTING ANGLE QUOTATION MARK" },
+	{ 0x207f, "SUPERSCRIPT LATIN SMALL LETTER N" },
+	{ 0x20ac, "EURO SIGN" },
+	{ 0x2122, "TRADE MARK SIGN" },
+	{ 0x21e6, "LEFTWARDS WHITE ARROW" },
+	{ 0x21e7, "UPWARDS WHITE ARROW" },
+	{ 0x21e8, "RIGHTWARDS WHITE ARROW" },
+	{ 0x21e9, "DOWNWARDS WHITE ARROW" },
+	{ 0x2206, "INCREMENT" },
+	{ 0x2208, "ELEMENT OF" },
+	{ 0x2219, "BULLET OPERATOR" },
+	{ 0x221a, "SQUARE ROOT" },
+	{ 0x221e, "INFINITY" },
+	{ 0x2227, "LOGICAL AND" },
+	{ 0x2229, "INTERSECTION" },
+	{ 0x222e, "CONTOUR INTEGRAL" },
+	{ 0x2248, "ALMOST EQUAL TO" },
+	{ 0x2261, "IDENTICAL TO" },
+	{ 0x2264, "LESS-THAN OR EQUAL TO" },
+	{ 0x2265, "GREATER-THAN OR EQUAL TO" },
+	{ 0x2310, "REVERSED NOT SIGN" },
+	{ 0x2320, "TOP HALF INTEGRAL" },
+	{ 0x2321, "BOTTOM HALF INTEGRAL" },
+	{ 0x237e, "BELL SYMBOL" },
+};
+
+static struct {
+	unsigned short code;
+	unsigned short display_code;
+} const unicode_display[] = {
+	{ 0x0000, 0x2400 },
+	{ 0x0001, 0x2401 },
+	{ 0x0002, 0x2402 },
+	{ 0x0003, 0x2403 },
+	{ 0x0004, 0x2404 },
+	{ 0x0005, 0x2405 },
+	{ 0x0006, 0x2406 },
+	{ 0x0007, 0x2407 },
+	{ 0x0008, 0x2408 },
+	{ 0x0009, 0x2409 },
+	{ 0x000a, 0x240a },
+	{ 0x000b, 0x240b },
+	{ 0x000c, 0x240c },
+	{ 0x000d, 0x240d },
+	{ 0x000e, 0x240e },
+	{ 0x000f, 0x240f },
+	{ 0x0010, 0x2410 },
+	{ 0x0011, 0x2411 },
+	{ 0x0012, 0x2412 },
+	{ 0x0013, 0x2413 },
+	{ 0x0014, 0x2414 },
+	{ 0x0015, 0x2415 },
+	{ 0x0016, 0x2416 },
+	{ 0x0017, 0x2417 },
+	{ 0x0018, 0x2418 },
+	{ 0x0019, 0x2419 },
+	{ 0x001a, 0x241a },
+	{ 0x001b, 0x241b },
+	{ 0x001c, 0x241c },
+	{ 0x001d, 0x241d },
+	{ 0x001e, 0x241e },
+	{ 0x001f, 0x241f },
+	{ 0x007f, 0x2421 },
+};
 
 static const char *get_keylabel(unsigned char c)
 {
@@ -477,159 +953,143 @@ static const char *get_keylabel(unsigned char c)
 }
 
 
+static void gen_tooltip(FILE *out, const char *prefix, unsigned char code)
+{
+	unsigned short unicode = atari_to_unicode[codeset][code];
+	
+	fprintf(out, "%s", prefix);
+	fprintf(out, "0x%02x U+%04x ", code, unicode);
+	fprintf(out, "<br />\n");
+}
+
+
 static void write_html_src(FILE *out)
 {
 	unsigned int i;
-
+	int row = 0;
+	int start_row = 1;
+	
 #define INT_SPACE(n) ((n) < 10 ? 2 : (n) < 100 ? 1 : 0), ""
 
 fputs("\
-<svg\n\
-   xmlns:svg=\"http://www.w3.org/2000/svg\"\n\
-   xmlns=\"http://www.w3.org/2000/svg\"\n\
-   xmlns:xlink=\"http://www.w3.org/1999/xlink\"\n\
-   width=\"900\"\n\
-   height=\"270\">\n\
-  <g>\n\
-    <path class=\"rect\" d=\"M 20,10 L 75,10 L 65,40 L 10,40 L 20,10\"/>\n\
-    <text class=\"keylabel\" x=\"55\" y=\"22\">F1</text>\n\
-    <text class=\"scanlabel\" x=\"28\" y=\"30\">0x3b</text>\n\
-    <path class=\"rect\" d=\"M 75,10 L 130,10 L 120,40 L 65,40 L 75,10\"/>\n\
-    <text class=\"keylabel\" x=\"110\" y=\"22\">F2</text>\n\
-    <text class=\"scanlabel\" x=\"83\" y=\"30\">0x3c</text>\n\
-    <path class=\"rect\" d=\"M 130,10 L 185,10 L 175,40 L 120,40 L 130,10\"/>\n\
-    <text class=\"keylabel\" x=\"165\" y=\"22\">F3</text>\n\
-    <text class=\"scanlabel\" x=\"138\" y=\"30\">0x3d</text>\n\
-    <path class=\"rect\" d=\"M 185,10 L 240,10 L 230,40 L 175,40 L 185,10\"/>\n\
-    <text class=\"keylabel\" x=\"220\" y=\"22\">F4</text>\n\
-    <text class=\"scanlabel\" x=\"193\" y=\"30\">0x3e</text>\n\
-    <path class=\"rect\" d=\"M 240,10 L 295,10 L 285,40 L 230,40 L 240,10\"/>\n\
-    <text class=\"keylabel\" x=\"275\" y=\"22\">F5</text>\n\
-    <text class=\"scanlabel\" x=\"248\" y=\"30\">0x3f</text>\n\
-    <path class=\"rect\" d=\"M 295,10 L 350,10 L 340,40 L 285,40 L 295,10\"/>\n\
-    <text class=\"keylabel\" x=\"330\" y=\"22\">F6</text>\n\
-    <text class=\"scanlabel\" x=\"303\" y=\"30\">0x40</text>\n\
-    <path class=\"rect\" d=\"M 350,10 L 405,10 L 395,40 L 340,40 L 350,10\"/>\n\
-    <text class=\"keylabel\" x=\"385\" y=\"22\">F7</text>\n\
-    <text class=\"scanlabel\" x=\"358\" y=\"30\">0x41</text>\n\
-    <path class=\"rect\" d=\"M 405,10 L 460,10 L 450,40 L 395,40 L 405,10\"/>\n\
-    <text class=\"keylabel\" x=\"440\" y=\"22\">F8</text>\n\
-    <text class=\"scanlabel\" x=\"413\" y=\"30\">0x42</text>\n\
-    <path class=\"rect\" d=\"M 460,10 L 515,10 L 505,40 L 450,40 L 460,10\"/>\n\
-    <text class=\"keylabel\" x=\"495\" y=\"22\">F9</text>\n\
-    <text class=\"scanlabel\" x=\"468\" y=\"30\">0x43</text>\n\
-    <path class=\"rect\" d=\"M 515,10 L 570,10 L 560,40 L 505,40 L 515,10\"/>\n\
-    <text class=\"keylabel\" x=\"545\" y=\"22\">F10</text>\n\
-    <text class=\"scanlabel\" x=\"523\" y=\"30\">0x44</text>\n\
+<div class=\"keyboard\">\n\
+<div class=\"keyboard-bg\">\n\
 \n\
 ", out);
 
-	for (i = 0; i < ARRAY_SIZE(svgtable); i++)
+	for (i = 0; i < ARRAY_SIZE(layout_table); i++)
 	{
 		const char *keylabel;
-		unsigned char scancode = svgtable[i].scancode;
-		int ykey = svgtable[i].y + KEY_LABEL_YOFFSET1;
-		int wkey = svgtable[i].w;
+		const char *keyclass;
+		unsigned char scancode = layout_table[i].scancode;
+		int w;
+		
+		if (start_row)
+		{
+			++row;
+			fprintf(out, "<div class=\"kr%d\">\n", row);
+			start_row = 0;
+		}
 		
 		if (scancode == 0)
 		{
-			fprintf(out, "\n");
+			fprintf(out, "</div>\n\n");
+			start_row = 1;
 			continue;
 		}
 		/*
 		 * skip unmapped keys, but keep keys like Shift/Control etc.
 		 */
-		if (keytab[TAB_UNSHIFT][scancode] == 0 && svgtable[i].keylabel == NULL)
+		if (keytab[TAB_UNSHIFT][scancode] == 0 && layout_table[i].keylabel == NULL)
 			continue;
 		
-		keylabel = svgtable[i].keylabel;
+		w = layout_table[i].w;
+		if (w == 0)
+			w = 54;
+		keyclass = "kl_center";
+		keylabel = layout_table[i].keylabel;
 		if (keylabel == NULL)
-			keylabel = get_keylabel(keytab[TAB_SHIFT][scancode]);
+		{
+			keylabel = get_keylabel(keytab[TAB_UNSHIFT][scancode]);
+			keyclass = "kl_bottomleft";
+		}
 		/*
 		 * if the key right to the left Shift does not exist, make
 		 * the shift key larger
 		 */
 		if (scancode == 0x2a && keytab[TAB_UNSHIFT][0x60] == 0)
-			wkey += 37;
-		
-		fprintf(out, "    <g><title>Hello</title>\n");
+			w += 54;
+
+#if 0
+		fprintf(out, "    <g><title>\n");
+		gen_tooltip(out, "", keytab[TAB_UNSHIFT][scancode]);
+		if (keytab[TAB_SHIFT][scancode] != 0 && keytab[TAB_SHIFT][scancode] != keytab[TAB_UNSHIFT][scancode])
+			gen_tooltip(out, "Shift: ", keytab[TAB_SHIFT][scancode]);
+		if (keytab[TAB_ALT][scancode] != 0)
+			gen_tooltip(out, "Alt: ", keytab[TAB_SHIFT][scancode]);
+		if (keytab[TAB_SHALT][scancode] != 0)
+			gen_tooltip(out, "AltShift: ", keytab[TAB_SHIFT][scancode]);
+		fprintf(out, "    </title>\n");
+#endif
+			
+		fprintf(out, "<div class=\"key%s\">\n", scancode >= 0x3b && scancode <= 0x3d ? " skew" : "");
+
 		if (scancode == 0x1c)
 		{
 			/* return key is special */
-			fprintf(out, "    <path class=\"rect\" d=\"M %d,%d L %d,%d L %d,%d L %d,%d L %d,%d L %d,%d L %d,%d\"/>\n",
-				svgtable[i].x, svgtable[i].y,
-				svgtable[i].x + 37, svgtable[i].y,
-				svgtable[i].x + 37, svgtable[i].y + 80,
-				svgtable[i].x - 18, svgtable[i].y + 80,
-				svgtable[i].x - 18, svgtable[i].y + 40,
-				svgtable[i].x, svgtable[i].y + 40,
-				svgtable[i].x, svgtable[i].y);
-				ykey += 40;
+			fprintf(out, "  <div class=\"kb\" style=\"left: 729px; width:54px; height:108px\"></div>\n");
+			fprintf(out, "  <div class=\"kb\" style=\"left: 702px; width:81px; margin-top: 54px\"></div>\n");
+			fprintf(out, "  <div class=\"kb\" style=\"left: 730px; width:52px; height:100px; margin-top: 1px; margin->right: 2px; border-style: none;\"></div>\n");
+			fprintf(out, "  <div class=\"kt\" style=\"left: 735px; width:42px; height:96px; border-style: none !important; margin-top: 1px;\"></div>\n");
+			fprintf(out, "  <div class=\"kt\" style=\"left: 708px; width:69px; height:42px; border-style: none !important; margin-top: 55px;\"></div>\n");
+			fprintf(out, "      <div class=\"kls\" style=\"left: 708px;\">\n");
+			fprintf(out, "        <div class=\"kl ts4\" style=\"width:%dpx; margin-top: 55px;\">\n", w);
+			fprintf(out, "          <div class=\"%s\">%s</div>\n", keyclass, keylabel);
+			fprintf(out, "        </div>\n");
+			fprintf(out, "      </div>\n");
 		} else
 		{
-			fprintf(out, "    <rect class=\"rect\" width=\"%d\" height=\"%d\" x=\"%d\"%-*s y=\"%d\"></rect>\n",
-				wkey,
-				svgtable[i].h,
-				svgtable[i].x,
-				INT_SPACE(svgtable[i].x),
-				svgtable[i].y);
+			fprintf(out, "  <div class=\"kb\" style=\"left: %dpx; width:%dpx;%s\">\n", layout_table[i].x, w, scancode == 0x72 ? " height:108px;" : "");
+			fprintf(out, "    <div class=\"kt\" style=\"width:\%dpx;%s\">\n", w - 12, scancode == 0x72 ? " height:96px;" : "");
+			fprintf(out, "      <div class=\"kls\">\n");
+			fprintf(out, "        <div class=\"kl %s\" style=\"width:%dpx\">\n", scancode == 0x0e ? "ts3" : "ts4", w);
+			fprintf(out, "          <div class=\"%s\">%s</div>\n", keyclass, keylabel);
+			fprintf(out, "        </div>\n");
+			if (layout_table[i].keylabel == NULL)
+			{
+				if (keytab[TAB_SHIFT][scancode] != 0 &&
+					keytab[TAB_SHIFT][scancode] != keytab[TAB_UNSHIFT][scancode])
+				{
+					keylabel = get_keylabel(keytab[TAB_SHIFT][scancode]);
+					fprintf(out, "        <div class=\"kl ts4\" style=\"width:%dpx\">\n", w);
+					fprintf(out, "          <div class=\"kl_top_left\">%s</div>\n", keylabel);
+					fprintf(out, "        </div>\n");
+				}
+				if (keytab[TAB_SHALT][scancode] != 0 && keytab[TAB_ALT][scancode] != keytab[TAB_SHALT][scancode])
+				{
+					keylabel = get_keylabel(keytab[TAB_SHALT][scancode]);
+					fprintf(out, "        <div class=\"kl ts4\" style=\"width:%dpx\">\n", w);
+					fprintf(out, "          <div class=\"kl_topright\">%s</div>\n", keylabel);
+					fprintf(out, "        </div>\n");
+				}
+				if (keytab[TAB_ALT][scancode] != 0)
+				{
+					keylabel = get_keylabel(keytab[TAB_ALT][scancode]);
+					fprintf(out, "        <div class=\"kl ts4\" style=\"width:%dpx\">\n", w);
+					fprintf(out, "          <div class=\"kl_bottomright\">%s</div>\n", keylabel);
+					fprintf(out, "        </div>\n");
+				}
+			}
+			fprintf(out, "      </div>\n");
+			fprintf(out, "    </div>\n");
+			fprintf(out, "  </div>\n");
 		}
-		fprintf(out, "    <text class=\"");
-		if (scancode == 0x0e) /* make text for "Backspace" a bit smaller */
-			fprintf(out, "keylabelsmall\"");
-		else
-			fprintf(out, "keylabel\"     ");
-		fprintf(out, "                            x=\"%d\"%-*s y=\"%d\">%s</text>\n",
-			svgtable[i].xkey,
-			INT_SPACE(svgtable[i].xkey),
-			ykey,
-			keylabel);
-		if (scancode == 0x47)
-		{
-			/* ClrHome needs a 2nd text */
-			fprintf(out, "    <text class=\"keylabel\"     ");
-			fprintf(out, "                            x=\"%d\"%-*s y=\"%d\">%s</text>\n",
-				svgtable[i].xkey,
-				INT_SPACE(svgtable[i].xkey),
-				ykey + 25,
-				"Home");
-		}
-		if (keytab[TAB_SHIFT][scancode] != 0 &&
-			keytab[TAB_UNSHIFT][scancode] != 0 &&
-			keytab[TAB_SHIFT][scancode] != atari_toupper[codeset][keytab[TAB_UNSHIFT][scancode]])
-		{
-			keylabel = get_keylabel(keytab[TAB_UNSHIFT][scancode]);
-			fprintf(out, "    <text class=\"keylabel\"                                 x=\"%d\"%-*s y=\"%d\">%s</text>\n",
-				svgtable[i].xkey,
-				INT_SPACE(svgtable[i].xkey),
-				svgtable[i].y + KEY_LABEL_YOFFSET2,
-				keylabel);
-		}
-		if (keytab[TAB_SHALT][scancode] != 0 && keytab[TAB_ALT][scancode] != keytab[TAB_SHALT][scancode])
-		{
-			keylabel = get_keylabel(keytab[TAB_SHALT][scancode]);
-			fprintf(out, "    <text class=\"keylabel\"                                 x=\"%d\"%-*s y=\"%d\">%s</text>\n",
-				svgtable[i].xkey + KEY_LABEL_XOFFSET,
-				INT_SPACE(svgtable[i].xkey + KEY_LABEL_XOFFSET),
-				svgtable[i].y + KEY_LABEL_YOFFSET1,
-				keylabel);
-		}
-		if (keytab[TAB_ALT][scancode] != 0)
-		{
-			keylabel = get_keylabel(keytab[TAB_ALT][scancode]);
-			fprintf(out, "    <text class=\"keylabel\"                                 x=\"%d\"%-*s y=\"%d\">%s</text>\n",
-				svgtable[i].xkey + KEY_LABEL_XOFFSET,
-				INT_SPACE(svgtable[i].xkey + KEY_LABEL_XOFFSET),
-				svgtable[i].y + KEY_LABEL_YOFFSET2,
-				keylabel);
-		}
-		fprintf(out, "    <text class=\"scanlabel\"                                x=\"%d\"%-*s y=\"%d\">0x%02x</text>\n",
-			svgtable[i].xscan,
-			INT_SPACE(svgtable[i].xscan),
-			svgtable[i].y + SCAN_LABEL_OFFSET,
-			scancode);
-		fprintf(out, "    </g>\n");
+
+		fprintf(out, "</div>\n");
 	}
+
+	fprintf(out, "</div>\n");
+	fprintf(out, "</div>\n");
 }
 
 
@@ -657,8 +1117,8 @@ int main(int argc, char **argv)
 	int tab, newtab;
 	int loop;
 	const char *filename;
-	int is_mint = 0;
-	int mint_expected = 0;
+	int is_mint;
+	int mint_expected;
 	int deadkeys_format;
 
 	/*
@@ -725,10 +1185,14 @@ int main(int argc, char **argv)
 
 	for (tab = 0; tab < N_KEYTBL; tab++)
 		copyfrom[tab] = -1;
+	for (tab = 0; tab <= N_KEYTBL; tab++)
+		tabsize[tab] = 0;
 	lineno = 0;
 	tab = -1;
 	w = 0;
-	
+	is_mint = 0;
+	mint_expected = 0;
+
 	for (;;)
 	{
 		lineno++;
@@ -917,6 +1381,18 @@ int main(int argc, char **argv)
 					fprintf(stderr, "%s:%ld: error: too many magics: %s\n", filename, lineno, line);
 					r = 1;
 					goto error;
+				}
+				if (is_mint == 1)
+				{
+					/* check the AKP code */
+					switch ((unsigned int) num)
+					{
+					case 15: /* Czech */
+					case 16: /* Hungarian */
+					case 17: /* Polish */
+						codeset = 1;
+						break;
+					}
 				}
 				is_mint++;
 				if (is_mint == mint_expected)
@@ -1149,6 +1625,11 @@ error:
 
 	if (r && outname && out != stdout)
 		unlink(outname);
+
+	(void) unicode_display;
+	(void) unicode_table;
+	(void) gen_tooltip;
+	(void) atari_toupper;
 
 	return r;
 }
