@@ -343,13 +343,13 @@ static struct {
 	{ 0x3b,    0,  81, "F1" },
 	{ 0x3c,   81,  81, "F2" },
 	{ 0x3d,  162,  81, "F3" },
-	{ 0x3d,  243,  81, "F4" },
-	{ 0x3d,  324,  81, "F5" },
-	{ 0x3d,  405,  81, "F6" },
-	{ 0x3d,  486,  81, "F7" },
-	{ 0x3d,  567,  81, "F8" },
-	{ 0x3d,  648,  81, "F9" },
-	{ 0x3d,  729,  81, "F10" },
+	{ 0x3e,  243,  81, "F4" },
+	{ 0x3f,  324,  81, "F5" },
+	{ 0x40,  405,  81, "F6" },
+	{ 0x41,  486,  81, "F7" },
+	{ 0x42,  567,  81, "F8" },
+	{ 0x43,  648,  81, "F9" },
+	{ 0x44,  729,  81, "F10" },
 	{ 0x00,    0,   0, NULL },
 
 	{ 0x01,    0,   0, "Esc" },
@@ -1099,7 +1099,7 @@ fputs("\
 
 		deadkey = is_deadkey(keytab[TAB_UNSHIFT][scancode], deadkeys_format);
 
-		fprintf(out, "<div class=\"key%s\">\n", scancode >= 0x3b && scancode <= 0x3d ? " skew" : "");
+		fprintf(out, "<div class=\"key%s\">\n", scancode >= 0x3b && scancode <= 0x44 ? " skew" : "");
 
 		if (scancode == 0x1c)
 		{
