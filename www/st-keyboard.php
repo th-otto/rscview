@@ -6,7 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link href="kbd.css" rel="stylesheet">
 
-<style type="text/css">
+<style>
 .rect {
 	opacity:0.71428573;
 	fill:none;
@@ -42,25 +42,54 @@ passthru("./mkhtml usa.src -");
 passthru("./mkhtml german.src -");
 ?>
 
-<!--
-<h1>UK layout</h1>
-<?php
-passthru("./mkhtml british.src -");
-?>
-
 <h1>French layout</h1>
 <?php
 passthru("./mkhtml french.src -");
 ?>
 
-<h1>Swedish/Finnish layout</h1>
+<h1>UK layout</h1>
 <?php
-passthru("./mkhtml swedish.src -");
+passthru("./mkhtml british.src -");
+?>
+
+<h1>Spanish layout</h1>
+<?php
+passthru("./mkhtml spanish.src -");
 ?>
 
 <h1>Italian layout</h1>
 <?php
 passthru("./mkhtml italian.src -");
+?>
+
+<h1>Swedish layout</h1>
+<?php
+passthru("./mkhtml swedish.src -");
+?>
+
+<h1>Swiss (french) layout</h1>
+<?php
+passthru("./mkhtml swiss_french.src -");
+?>
+
+<h1>Swiss (german) layout</h1>
+<?php
+passthru("./mkhtml swiss_german.src -");
+?>
+
+<h1>Finnish layout</h1>
+<?php
+passthru("./mkhtml finnish.src -");
+?>
+
+<h1>Norwegian layout</h1>
+<?php
+passthru("./mkhtml norwegian.src -");
+?>
+
+<h1>Dutch layout</h1>
+<?php
+passthru("./mkhtml dutch.src -");
 ?>
 
 <h1>Czech layout</h1>
@@ -72,7 +101,14 @@ passthru("./mkhtml czech_iso.src -");
 <?php
 passthru("./mkhtml hungarian.src -");
 ?>
--->
+
+<div style="text-align:center">
+<p>
+<a href="https://validator.w3.org/check?uri=referer"><img
+        src="../images/valid-xhtml11.png" height="31" width="88"
+        alt="Valid XHTML 1.1!" /></a>
+</p>
+</div>
 
 </div>
 

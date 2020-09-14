@@ -184,6 +184,8 @@ static int mktbl_getdelim(char **lineptr, size_t *n, FILE *stream)
 	return 0;
 }
 
+
+#if 0 /* currently unused */
 static unsigned char const atari_toupper[][256] = {
 	{
 	/* 0: atarist encoding */
@@ -257,6 +259,7 @@ static unsigned char const atari_toupper[][256] = {
 	0xd8, 0xd9, 0xda, 0xdb, 0xdc, 0xdd, 0xde, 0xff	/* 0xf8-0xff */
 	}
 };
+#endif
 
 static unsigned short const atari_to_unicode[][256] = {
 	{
@@ -431,15 +434,15 @@ static struct {
 	{ 0x60,   66,   0, NULL },
 	{ 0x2c,  120,   0, NULL },
 	{ 0x2d,  174,   0, NULL },
-	{ 0x2e,  218,   0, NULL },
-	{ 0x2f,  272,   0, NULL },
-	{ 0x30,  326,   0, NULL },
-	{ 0x31,  380,   0, NULL },
-	{ 0x32,  434,   0, NULL },
-	{ 0x33,  488,   0, NULL },
-	{ 0x34,  542,   0, NULL },
-	{ 0x35,  596,   0, NULL },
-	{ 0x36,  650, 108, "Shift" },
+	{ 0x2e,  228,   0, NULL },
+	{ 0x2f,  282,   0, NULL },
+	{ 0x30,  336,   0, NULL },
+	{ 0x31,  390,   0, NULL },
+	{ 0x32,  444,   0, NULL },
+	{ 0x33,  498,   0, NULL },
+	{ 0x34,  552,   0, NULL },
+	{ 0x35,  606,   0, NULL },
+	{ 0x36,  660, 108, "Shift" },
 
 	{ 0x6d, 1039,   0, NULL },
 	{ 0x6e, 1093,   0, NULL },
@@ -953,17 +956,90 @@ static const char *get_keylabel(unsigned char c)
 }
 
 
-static void gen_tooltip(FILE *out, const char *prefix, unsigned char code)
+static int gen_tooltip(FILE *out, const char *prefix, unsigned char code, int prev)
 {
 	unsigned short unicode = atari_to_unicode[codeset][code];
+	unsigned int i;
+	unsigned short display_code;
 	
-	fprintf(out, "%s", prefix);
-	fprintf(out, "0x%02x U+%04x ", code, unicode);
-	fprintf(out, "<br />\n");
+	if (prev)
+		fprintf(out, "&#x0a;");
+	display_code = unicode;
+	for (i = 0; i < ARRAY_SIZE(unicode_display); i++)
+		if (unicode_display[i].code == unicode)
+		{
+			display_code = unicode_display[i].display_code;
+			break;
+		}
+	fprintf(out, "%s&#x%04x; 0x%02X U+%04x ", prefix, display_code, code, unicode);
+	for (i = 0; i < ARRAY_SIZE(unicode_table); i++)
+	{
+		if (unicode == unicode_table[i].code)
+		{
+			fputs(unicode_table[i].name, out);
+			break;
+		}
+	}
+	if (i >= ARRAY_SIZE(unicode_table))
+		fputs("<unknown>", out);
+	return 1;
 }
 
 
-static void write_html_src(FILE *out)
+static void gen_tooltips(FILE *out, unsigned char scancode)
+{
+	if (keytab[TAB_UNSHIFT][scancode] != 0)
+	{
+		int prev;
+
+		fprintf(out, " title=\"");
+		prev = 0;
+		prev = gen_tooltip(out, "", keytab[TAB_UNSHIFT][scancode], prev);
+		if (keytab[TAB_SHIFT][scancode] != 0)
+			prev = gen_tooltip(out, "Shift: ", keytab[TAB_SHIFT][scancode], prev );
+		if (keytab[TAB_ALT][scancode] != 0)
+			prev = gen_tooltip(out, "Alt: ", keytab[TAB_ALT][scancode], prev);
+		if (keytab[TAB_SHALT][scancode] != 0)
+			prev = gen_tooltip(out, "AltShift: ", keytab[TAB_SHALT][scancode], prev);
+		fprintf(out, "\"");
+	}
+}
+
+
+static int is_deadkey(unsigned char c, int deadkeys_format)
+{
+	int i;
+	unsigned char deadchars[256 + 1];
+	int n_deadchars;
+
+	switch (deadkeys_format)
+	{
+	case FORMAT_MINT:
+		n_deadchars = 0;
+		deadchars[0] = 0;
+		for (i = 0; i < tabsize[TAB_DEADKEYS] && deadkeys[i] != 0; i += 3)
+		{
+			if (strchr((char *) deadchars, deadkeys[i]) == NULL)
+			{
+				deadchars[n_deadchars++] = deadkeys[i];
+				deadchars[n_deadchars] = 0;
+			}
+		}
+		for (i = 0; i < n_deadchars; i++)
+			if (c == deadchars[i])
+				return i;
+		break;
+	case FORMAT_MAGIC:
+		for (i = 0; i < tabsize[TAB_DEADKEYS] && deadkeys[i] != 0; i++)
+			if (c == deadkeys[i])
+				return i;
+		break;
+	}
+	return -1;
+}
+
+
+static void write_html_src(FILE *out, int deadkeys_format)
 {
 	unsigned int i;
 	int row = 0;
@@ -983,7 +1059,8 @@ fputs("\
 		const char *keyclass;
 		unsigned char scancode = layout_table[i].scancode;
 		int w;
-		
+		int deadkey;
+
 		if (start_row)
 		{
 			++row;
@@ -1020,18 +1097,8 @@ fputs("\
 		if (scancode == 0x2a && keytab[TAB_UNSHIFT][0x60] == 0)
 			w += 54;
 
-#if 0
-		fprintf(out, "    <g><title>\n");
-		gen_tooltip(out, "", keytab[TAB_UNSHIFT][scancode]);
-		if (keytab[TAB_SHIFT][scancode] != 0 && keytab[TAB_SHIFT][scancode] != keytab[TAB_UNSHIFT][scancode])
-			gen_tooltip(out, "Shift: ", keytab[TAB_SHIFT][scancode]);
-		if (keytab[TAB_ALT][scancode] != 0)
-			gen_tooltip(out, "Alt: ", keytab[TAB_SHIFT][scancode]);
-		if (keytab[TAB_SHALT][scancode] != 0)
-			gen_tooltip(out, "AltShift: ", keytab[TAB_SHIFT][scancode]);
-		fprintf(out, "    </title>\n");
-#endif
-			
+		deadkey = is_deadkey(keytab[TAB_UNSHIFT][scancode], deadkeys_format);
+
 		fprintf(out, "<div class=\"key%s\">\n", scancode >= 0x3b && scancode <= 0x3d ? " skew" : "");
 
 		if (scancode == 0x1c)
@@ -1039,21 +1106,29 @@ fputs("\
 			/* return key is special */
 			fprintf(out, "  <div class=\"kb\" style=\"left: 729px; width:54px; height:108px\"></div>\n");
 			fprintf(out, "  <div class=\"kb\" style=\"left: 702px; width:81px; margin-top: 54px\"></div>\n");
-			fprintf(out, "  <div class=\"kb\" style=\"left: 730px; width:52px; height:100px; margin-top: 1px; margin->right: 2px; border-style: none;\"></div>\n");
+			fprintf(out, "  <div class=\"kb\" style=\"left: 730px; width:52px; height:100px; margin-top: 1px; margin-right: 2px; border-style: none;\"></div>\n");
 			fprintf(out, "  <div class=\"kt\" style=\"left: 735px; width:42px; height:96px; border-style: none !important; margin-top: 1px;\"></div>\n");
-			fprintf(out, "  <div class=\"kt\" style=\"left: 708px; width:69px; height:42px; border-style: none !important; margin-top: 55px;\"></div>\n");
-			fprintf(out, "      <div class=\"kls\" style=\"left: 708px;\">\n");
+			fprintf(out, "  <div class=\"kt\" style=\"left: 708px; width:69px; height:42px; border-style: none !important; margin-top: 55px;\"");
+			gen_tooltips(out, scancode);
+			fprintf(out, "></div>\n");
+			fprintf(out, "      <div class=\"kls\" style=\"left: 708px; width: 69px; height: 100px\">\n");
 			fprintf(out, "        <div class=\"kl ts4\" style=\"width:%dpx; margin-top: 55px;\">\n", w);
-			fprintf(out, "          <div class=\"%s\">%s</div>\n", keyclass, keylabel);
+			fprintf(out, "          <div class=\"%s\">%s%s%s</div>\n", keyclass, deadkey >= 0 ? "<span class=\"dead\">" : "", keylabel, deadkey >= 0 ? "</span>" : "");
+			fprintf(out, "        </div>\n");
+			fprintf(out, "        <div class=\"kl scancode\">\n");
+			fprintf(out, "          <div title=\"%02X\">%02X</div>\n", scancode, scancode);
 			fprintf(out, "        </div>\n");
 			fprintf(out, "      </div>\n");
 		} else
 		{
-			fprintf(out, "  <div class=\"kb\" style=\"left: %dpx; width:%dpx;%s\">\n", layout_table[i].x, w, scancode == 0x72 ? " height:108px;" : "");
+			fprintf(out, "  <div class=\"kb\" style=\"left: %dpx; width:%dpx;%s\"", layout_table[i].x, w, scancode == 0x72 ? " height:108px;" : "");
+			gen_tooltips(out, scancode);
+			fprintf(out, ">\n");
+			
 			fprintf(out, "    <div class=\"kt\" style=\"width:\%dpx;%s\">\n", w - 12, scancode == 0x72 ? " height:96px;" : "");
-			fprintf(out, "      <div class=\"kls\">\n");
+			fprintf(out, "      <div class=\"kls\" style=\"width:\%dpx;%s\">\n", w - 12, scancode == 0x72 ? " height:96px;" : "");
 			fprintf(out, "        <div class=\"kl %s\" style=\"width:%dpx\">\n", scancode == 0x0e ? "ts3" : "ts4", w);
-			fprintf(out, "          <div class=\"%s\">%s</div>\n", keyclass, keylabel);
+			fprintf(out, "          <div class=\"%s\">%s%s%s</div>\n", keyclass, deadkey >= 0 ? "<span class=\"dead\">" : "", keylabel, deadkey >= 0 ? "</span>" : "");
 			fprintf(out, "        </div>\n");
 			if (layout_table[i].keylabel == NULL)
 			{
@@ -1061,25 +1136,31 @@ fputs("\
 					keytab[TAB_SHIFT][scancode] != keytab[TAB_UNSHIFT][scancode])
 				{
 					keylabel = get_keylabel(keytab[TAB_SHIFT][scancode]);
+					deadkey = is_deadkey(keytab[TAB_SHIFT][scancode], deadkeys_format);
 					fprintf(out, "        <div class=\"kl ts4\" style=\"width:%dpx\">\n", w);
-					fprintf(out, "          <div class=\"kl_top_left\">%s</div>\n", keylabel);
+					fprintf(out, "          <div class=\"kl_top_left\">%s%s%s</div>\n", deadkey >= 0 ? "<span class=\"dead\">" : "", keylabel, deadkey >= 0 ? "</span>" : "");
 					fprintf(out, "        </div>\n");
 				}
 				if (keytab[TAB_SHALT][scancode] != 0 && keytab[TAB_ALT][scancode] != keytab[TAB_SHALT][scancode])
 				{
 					keylabel = get_keylabel(keytab[TAB_SHALT][scancode]);
+					deadkey = is_deadkey(keytab[TAB_SHALT][scancode], deadkeys_format);
 					fprintf(out, "        <div class=\"kl ts4\" style=\"width:%dpx\">\n", w);
-					fprintf(out, "          <div class=\"kl_topright\">%s</div>\n", keylabel);
+					fprintf(out, "          <div class=\"kl_topright\">%s%s%s</div>\n", deadkey >= 0 ? "<span class=\"dead\">" : "", keylabel, deadkey >= 0 ? "</span>" : "");
 					fprintf(out, "        </div>\n");
 				}
 				if (keytab[TAB_ALT][scancode] != 0)
 				{
 					keylabel = get_keylabel(keytab[TAB_ALT][scancode]);
+					deadkey = is_deadkey(keytab[TAB_ALT][scancode], deadkeys_format);
 					fprintf(out, "        <div class=\"kl ts4\" style=\"width:%dpx\">\n", w);
-					fprintf(out, "          <div class=\"kl_bottomright\">%s</div>\n", keylabel);
+					fprintf(out, "          <div class=\"kl_bottomright\">%s%s%s</div>\n", deadkey >= 0 ? "<span class=\"dead\">" : "", keylabel, deadkey >= 0 ? "</span>" : "");
 					fprintf(out, "        </div>\n");
 				}
 			}
+			fprintf(out, "        <div class=\"kl scancode\">\n");
+			fprintf(out, "          <div title=\"%02X\">%02X</div>\n", scancode, scancode);
+			fprintf(out, "        </div>\n");
 			fprintf(out, "      </div>\n");
 			fprintf(out, "    </div>\n");
 			fprintf(out, "  </div>\n");
@@ -1575,7 +1656,6 @@ int main(int argc, char **argv)
 			tabsize[TAB_DEADKEYS]++;
 		}
 	}
-	(void) deadkeys_format;
 
 	if (outname == NULL && infile != stdin)
 	{
@@ -1610,7 +1690,7 @@ int main(int argc, char **argv)
 
 	r = 0;
 
-	write_html_src(out);
+	write_html_src(out, deadkeys_format);
 
 error:
 	if (infile != stdin)
@@ -1625,11 +1705,6 @@ error:
 
 	if (r && outname && out != stdout)
 		unlink(outname);
-
-	(void) unicode_display;
-	(void) unicode_table;
-	(void) gen_tooltip;
-	(void) atari_toupper;
 
 	return r;
 }

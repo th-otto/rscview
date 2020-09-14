@@ -40,7 +40,7 @@
   background-color: #cccccc;
   width: 54px;
   height: 54px;
-  display: inline-block;
+  display: block;
 }
 .kt {
   border-radius: 3px;
@@ -48,7 +48,7 @@
   background-color: #ffffff;
   width: 42px;
   height: 42px;
-  display: inline-block;
+  display: block;
   position: absolute;
   left: 5px;
   top: 2px;
@@ -56,7 +56,9 @@
 .kls {
   font-family:Arial, Helvetica, sans-serif;
   padding: 3px;
-  display: inline-block;
+  width: 42px;
+  height: 42px;
+  display: block;
 }
 .kl {
   width: 36px;
@@ -64,6 +66,23 @@
   color: #000000;
 }
 .kl > div { display: table-cell; position: static !important; width: 36px; height: 36px; max-width: 36px; }
+
+.scancode {
+  top: 100%;
+  margin-top: -1px;
+  font-size: 9px;
+  max-height: 1em !important;
+  white-space: nowrap;
+  overflow: hidden;
+  line-height: 1em;
+  text-align: center;
+  vertical-align: bottom;
+  display: table-cell;
+  position: relative;
+  width: 36px;
+  height: 36px;
+  color: #000000;
+}
 	
 .kr1 { margin-top: 3px; }
 .kr2 { margin-top: 84px; }
