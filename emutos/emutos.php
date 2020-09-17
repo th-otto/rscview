@@ -138,7 +138,7 @@ function compile_emutos()
 			fprintf($fp, " * commit: $commit\n");
 		fprintf($fp, " * target: $target\n");
 		if ($targets[$romversion]['unique'])
-			fprintf($fp, " * country: $country */\n");
+			fprintf($fp, " * country: $country\n");
 		fprintf($fp, " */\n\n");
 		
 		if ($_POST['conf_with_advanced_cpu'] != '')
@@ -169,6 +169,11 @@ function compile_emutos()
 		{
 			echo("make exited with code $exitcode:\n\n");
 			echo(implode("\n", $output));
+			echo("\n\n");
+			echo("# Configuration used:\n");
+			echo("\n\n");
+			echo(file_get_contents("localconf.h"));
+			echo("\n# end config\n\n");
 		} else
 		{
 			$output = array();

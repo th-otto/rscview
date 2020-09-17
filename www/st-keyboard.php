@@ -87,6 +87,11 @@ passthru("./mkhtml finnish.src -");
 passthru("./mkhtml norwegian.src -");
 ?>
 
+<h1>Danish layout</h1>
+<?php
+passthru("./mkhtml dk.inc -");
+?>
+
 <h1>Dutch layout</h1>
 <?php
 passthru("./mkhtml dutch.src -");
@@ -100,6 +105,11 @@ passthru("./mkhtml czech_iso.src -");
 <h1>Hungarian layout</h1>
 <?php
 passthru("./mkhtml hungarian.src -");
+?>
+
+<h1>Polish layout</h1>
+<?php
+passthru("./mkhtml usa-pl.src -");
 ?>
 
 <div style="text-align:center">

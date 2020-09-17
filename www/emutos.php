@@ -103,7 +103,7 @@ foreach ($linguas as $lang)
 <h1>Builtin fonts</h1>
 <hr />
 
-<p>Atari-ST encoding, used for English, German, French, Finnish and Italian.
+<p>Atari-ST encoding, used for English, German, French, Spanish, Finnish and Italian.
 
 <a href="fonts/font8x16_atarist_small.html">Original Size</a>
 <a href="fonts/font8x16_atarist_large.html">Large Size</a></p>
@@ -113,7 +113,7 @@ foreach ($linguas as $lang)
 <a href="fonts/font8x16_latin2_small.html">Original Size</a>
 <a href="fonts/font8x16_latin2_large.html">Large Size</a></p>
 
-<p>Latin9 encoding, used for Spanish.
+<p>Latin9 encoding, formerly used for Spanish.
 
 <a href="fonts/font8x16_latin9_small.html">Original Size</a>
 <a href="fonts/font8x16_latin9_large.html">Large Size</a></p>
