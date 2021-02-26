@@ -128,6 +128,11 @@ foreach ($linguas as $lang)
 <a href="fonts/font8x16_russian_small.html">Original Size</a>
 <a href="fonts/font8x16_russian_large.html">Large Size</a></p>
 
+<p>Latin5 encoding, used for Turkish.
+
+<a href="fonts/font8x16_latin5_small.html">Original Size</a>
+<a href="fonts/font8x16_latin5_large.html">Large Size</a></p>
+
 
 <br />
 <br />

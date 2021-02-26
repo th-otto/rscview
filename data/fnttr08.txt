@@ -1,0 +1,2071 @@
+GDOSFONT
+version 1.0
+font_id 1
+point 8
+name "6x6 Turkish font"
+first_ade 0
+last_ade 255
+top 4
+ascent 4
+half 3
+descent 1
+bottom 1
+max_char_width 5
+max_cell_width 6
+left_offset 0
+right_offset 3
+thicken 1
+ul_size 1
+lighten 0x5555
+skew 0xaaaa
+flags 0x0c
+form_height 6
+char 0x00
+......
+......
+......
+......
+......
+......
+endchar
+char 0x01
+..X...
+.XXX..
+XX.XX.
+..X...
+..X...
+..X...
+endchar
+char 0x02
+..X...
+..X...
+..X...
+XX.XX.
+.XXX..
+..X...
+endchar
+char 0x03
+...X..
+...XX.
+XXX.XX
+...XX.
+...X..
+......
+endchar
+char 0x04
+..X...
+.XX...
+XX.XXX
+.XX...
+..X...
+......
+endchar
+char 0x05
+.XXX..
+X.X.X.
+XX.XX.
+X.X.X.
+.XXX..
+......
+endchar
+char 0x06
+XXXXX.
+XXXX..
+XXX...
+XX..X.
+X..XX.
+......
+endchar
+char 0x07
+XX.XX.
+X.X.X.
+.XXX..
+X.X.X.
+XX.XX.
+......
+endchar
+char 0x08
+....XX
+...XX.
+X.XX..
+XXX...
+.X....
+......
+endchar
+char 0x09
+.XXXX.
+X....X
+X.X..X
+X.XX.X
+X....X
+.XXXX.
+endchar
+char 0x0a
+..XX..
+.XXXX.
+.XXXX.
+XXXXXX
+......
+..XX..
+endchar
+char 0x0b
+...X..
+...XX.
+...X..
+.XXX..
+XXXX..
+.XX...
+endchar
+char 0x0c
+XXX...
+X.....
+XX.XXX
+X..X..
+...XX.
+...X..
+endchar
+char 0x0d
+XXX...
+X.....
+X.XXX.
+XXX.X.
+..XXX.
+..X.XX
+endchar
+char 0x0e
+...X.X
+...X.X
+...X.X
+..XX.X
+.XXX.X
+.XX..X
+endchar
+char 0x0f
+.X....
+.X....
+.X....
+.XX...
+.XXX..
+..XX..
+endchar
+char 0x10
+XXXXX.
+XX..X.
+XX..X.
+XX.XX.
+XX.XX.
+XXXXX.
+endchar
+char 0x11
+.XX...
+..X...
+..X...
+.XXX..
+.XXX..
+.XXX..
+endchar
+char 0x12
+.XXXX.
+....X.
+XXXXX.
+XX....
+XX....
+XXXXX.
+endchar
+char 0x13
+XXXX..
+...X..
+XXXXX.
+...XX.
+...XX.
+XXXXX.
+endchar
+char 0x14
+XX....
+XX....
+XX....
+XX.XX.
+XXXXX.
+...XX.
+endchar
+char 0x15
+XXXX..
+X.....
+XXXXX.
+...XX.
+...XX.
+XXXXX.
+endchar
+char 0x16
+XX....
+XX....
+XXXXX.
+X..XX.
+XX.XX.
+XXXXX.
+endchar
+char 0x17
+XXXXX.
+....X.
+..XXX.
+..XX..
+..XX..
+..XX..
+endchar
+char 0x18
+.XXX..
+.X.X..
+.XXX..
+XX.XX.
+XX.XX.
+XXXXX.
+endchar
+char 0x19
+XXXXX.
+XX.XX.
+XX..X.
+XXXXX.
+...XX.
+...XX.
+endchar
+char 0x1a
+......
+.XXX..
+....X.
+XXXXX.
+.XXX..
+......
+endchar
+char 0x1b
+XXX...
+X.....
+XX.XXX
+X..X..
+XXXX..
+...XXX
+endchar
+char 0x1c
+...XXX
+..XXXX
+.XX...
+.X....
+.XXX..
+.X.XX.
+endchar
+char 0x1d
+XXX...
+XX.X..
+...XX.
+....X.
+.XXXX.
+..X.X.
+endchar
+char 0x1e
+.X...X
+..X.XX
+..X.X.
+...X.X
+XXX.XX
+XX....
+endchar
+char 0x1f
+....X.
+XX.X..
+.X.X..
+X.X...
+XX....
+......
+endchar
+char ' '
+......
+......
+......
+......
+......
+......
+endchar
+char '!'
+..XX..
+..XX..
+..XX..
+..XX..
+......
+..XX..
+endchar
+char '"'
+XX.XX.
+XX.XX.
+X..X..
+......
+......
+......
+endchar
+char '#'
+.X.X..
+XXXXX.
+.X.X..
+XXXXX.
+.X.X..
+......
+endchar
+char '$'
+.XXXX.
+X.X...
+.XXX..
+..X.X.
+XXXX..
+..X...
+endchar
+char '%'
+XX..X.
+XX.X..
+..X...
+.X.XX.
+X..XX.
+......
+endchar
+char '&'
+.XX...
+XX.X..
+.XX...
+XXX.X.
+XX.X..
+.XX.X.
+endchar
+char '\''
+..XX..
+..XX..
+.XX...
+......
+......
+......
+endchar
+char '('
+..XX..
+.XX...
+.XX...
+.XX...
+..XX..
+......
+endchar
+char ')'
+.XX...
+..XX..
+..XX..
+..XX..
+.XX...
+......
+endchar
+char '*'
+.X..X.
+..XX..
+.XXXX.
+..XX..
+.X..X.
+......
+endchar
+char '+'
+..X...
+..X...
+XXXXX.
+..X...
+..X...
+......
+endchar
+char ','
+......
+......
+......
+..XX..
+..XX..
+.XX...
+endchar
+char '-'
+......
+......
+.XXXX.
+......
+......
+......
+endchar
+char '.'
+......
+......
+......
+..XX..
+..XX..
+......
+endchar
+char '/'
+...XX.
+..XX..
+.XX...
+XX....
+X.....
+......
+endchar
+char '0'
+.XXX..
+X..XX.
+X.X.X.
+XX..X.
+.XXX..
+......
+endchar
+char '1'
+...X..
+..XX..
+...X..
+...X..
+...X..
+......
+endchar
+char '2'
+XXXX..
+....X.
+.XXX..
+X.....
+XXXXX.
+......
+endchar
+char '3'
+XXXX..
+....X.
+.XXX..
+....X.
+XXXX..
+......
+endchar
+char '4'
+..XX..
+.X.X..
+X..X..
+XXXXX.
+...X..
+......
+endchar
+char '5'
+XXXX..
+X.....
+XXXX..
+....X.
+XXXX..
+......
+endchar
+char '6'
+.XXX..
+X.....
+XXXX..
+X...X.
+.XXX..
+......
+endchar
+char '7'
+XXXXX.
+....X.
+...X..
+..X...
+..X...
+......
+endchar
+char '8'
+.XXX..
+X...X.
+.XXX..
+X...X.
+.XXX..
+......
+endchar
+char '9'
+.XXX..
+X...X.
+.XXXX.
+....X.
+.XXX..
+......
+endchar
+char ':'
+..XX..
+..XX..
+......
+..XX..
+..XX..
+......
+endchar
+char ';'
+..XX..
+..XX..
+......
+..XX..
+...X..
+..X...
+endchar
+char '<'
+...XX.
+..XX..
+.XX...
+..XX..
+...XX.
+......
+endchar
+char '='
+......
+.XXXX.
+......
+.XXXX.
+......
+......
+endchar
+char '>'
+.XX...
+..XX..
+...XX.
+..XX..
+.XX...
+......
+endchar
+char '?'
+.XXX..
+X..XX.
+..XX..
+..XX..
+......
+..XX..
+endchar
+char '@'
+.XXX..
+X...X.
+X.XXX.
+X.XX..
+X.....
+.XXXX.
+endchar
+char 'A'
+.XXX..
+X...X.
+XXXXX.
+X...X.
+X...X.
+......
+endchar
+char 'B'
+XXXX..
+X...X.
+XXXX..
+X...X.
+XXXX..
+......
+endchar
+char 'C'
+.XXXX.
+X.....
+X.....
+X.....
+.XXXX.
+......
+endchar
+char 'D'
+XXXX..
+X...X.
+X...X.
+X...X.
+XXXX..
+......
+endchar
+char 'E'
+XXXXX.
+X.....
+XXXX..
+X.....
+XXXXX.
+......
+endchar
+char 'F'
+XXXXX.
+X.....
+XXXX..
+X.....
+X.....
+......
+endchar
+char 'G'
+.XXXX.
+X.....
+X..XX.
+X...X.
+.XXXX.
+......
+endchar
+char 'H'
+X...X.
+X...X.
+XXXXX.
+X...X.
+X...X.
+......
+endchar
+char 'I'
+.XXX..
+..X...
+..X...
+..X...
+.XXX..
+......
+endchar
+char 'J'
+....X.
+....X.
+....X.
+X...X.
+.XXX..
+......
+endchar
+char 'K'
+.X..X.
+.X.X..
+.XX...
+.X.X..
+.X..X.
+......
+endchar
+char 'L'
+.X....
+.X....
+.X....
+.X....
+.XXXX.
+......
+endchar
+char 'M'
+X...X.
+XX.XX.
+X.X.X.
+X...X.
+X...X.
+......
+endchar
+char 'N'
+X...X.
+XX..X.
+X.X.X.
+X..XX.
+X...X.
+......
+endchar
+char 'O'
+.XXX..
+X...X.
+X...X.
+X...X.
+.XXX..
+......
+endchar
+char 'P'
+XXXX..
+X...X.
+XXXX..
+X.....
+X.....
+......
+endchar
+char 'Q'
+.XXX..
+X...X.
+X...X.
+X...X.
+.XXX..
+...XX.
+endchar
+char 'R'
+XXXX..
+X...X.
+XXXX..
+X.X...
+X..XX.
+......
+endchar
+char 'S'
+.XXXX.
+X.....
+.XXX..
+....X.
+XXXX..
+......
+endchar
+char 'T'
+XXXXX.
+..X...
+..X...
+..X...
+..X...
+......
+endchar
+char 'U'
+X...X.
+X...X.
+X...X.
+X...X.
+.XXXX.
+......
+endchar
+char 'V'
+X...X.
+X...X.
+X...X.
+.X.X..
+..X...
+......
+endchar
+char 'W'
+X...X.
+X...X.
+X.X.X.
+XX.XX.
+X...X.
+......
+endchar
+char 'X'
+X...X.
+.X.X..
+..X...
+.X.X..
+X...X.
+......
+endchar
+char 'Y'
+X...X.
+X...X.
+.X.X..
+..X...
+..X...
+......
+endchar
+char 'Z'
+XXXXX.
+...X..
+..X...
+.X....
+XXXXX.
+......
+endchar
+char '['
+.XXXX.
+.XX...
+.XX...
+.XX...
+.XXXX.
+......
+endchar
+char '\\'
+XX....
+.XX...
+..XX..
+...XX.
+....X.
+......
+endchar
+char ']'
+.XXXX.
+...XX.
+...XX.
+...XX.
+.XXXX.
+......
+endchar
+char '^'
+..X...
+.XXX..
+XX.XX.
+......
+......
+......
+endchar
+char '_'
+......
+......
+......
+......
+......
+XXXXX.
+endchar
+char '`'
+.XX...
+.XX...
+..XX..
+......
+......
+......
+endchar
+char 'a'
+......
+.XXX..
+....X.
+XXXXX.
+.XXXX.
+......
+endchar
+char 'b'
+X.....
+XXXX..
+X...X.
+X...X.
+XXXX..
+......
+endchar
+char 'c'
+......
+.XXX..
+X.....
+X.....
+.XXX..
+......
+endchar
+char 'd'
+....X.
+.XXXX.
+X...X.
+X...X.
+.XXXX.
+......
+endchar
+char 'e'
+......
+.XXX..
+XXXXX.
+X.....
+.XXX..
+......
+endchar
+char 'f'
+...XX.
+..X...
+.XXXX.
+..X...
+..X...
+......
+endchar
+char 'g'
+......
+.XXXX.
+X...X.
+.XXXX.
+....X.
+XXXX..
+endchar
+char 'h'
+X.....
+X.XX..
+XX..X.
+X...X.
+X...X.
+......
+endchar
+char 'i'
+..X...
+.XX...
+..X...
+..X...
+.XXX..
+......
+endchar
+char 'j'
+...X..
+...X..
+...X..
+...X..
+...X..
+XXX...
+endchar
+char 'k'
+X.....
+X..X..
+XXX...
+X..X..
+X...X.
+......
+endchar
+char 'l'
+.XX...
+..X...
+..X...
+..X...
+.XXX..
+......
+endchar
+char 'm'
+......
+.X.X..
+XXXXX.
+X.X.X.
+X...X.
+......
+endchar
+char 'n'
+......
+XXXX..
+X...X.
+X...X.
+X...X.
+......
+endchar
+char 'o'
+......
+.XXX..
+X...X.
+X...X.
+.XXX..
+......
+endchar
+char 'p'
+......
+XXXX..
+X...X.
+X...X.
+XXXX..
+X.....
+endchar
+char 'q'
+......
+.XXXX.
+X...X.
+X...X.
+.XXXX.
+....X.
+endchar
+char 'r'
+......
+.XXX..
+.X..X.
+.X....
+.X....
+......
+endchar
+char 's'
+......
+..XXX.
+.XX...
+...XX.
+.XXX..
+......
+endchar
+char 't'
+..X...
+.XXX..
+..X...
+..X...
+...X..
+......
+endchar
+char 'u'
+......
+X...X.
+X...X.
+X...X.
+.XXXX.
+......
+endchar
+char 'v'
+......
+X...X.
+X...X.
+.X.X..
+..X...
+......
+endchar
+char 'w'
+......
+X...X.
+X.X.X.
+X.X.X.
+XX.XX.
+......
+endchar
+char 'x'
+......
+.X..X.
+..XX..
+..XX..
+.X..X.
+......
+endchar
+char 'y'
+......
+X...X.
+X...X.
+.XXXX.
+....X.
+XXXX..
+endchar
+char 'z'
+......
+.XXXX.
+...X..
+..X...
+.XXXX.
+......
+endchar
+char '{'
+..XXX.
+..XX..
+.XX...
+..XX..
+..XXX.
+......
+endchar
+char '|'
+..XX..
+..XX..
+..XX..
+..XX..
+..XX..
+..XX..
+endchar
+char '}'
+.XXX..
+..XX..
+...XX.
+..XX..
+.XXX..
+......
+endchar
+char '~'
+.X....
+XXX.X.
+X.XXX.
+...X..
+......
+......
+endchar
+char 0x7f
+......
+..X...
+.XXX..
+XX..X.
+XXXXX.
+......
+endchar
+char 0x80
+..XXX.
+.X....
+XXXXX.
+XXXX..
+.X....
+..XXX.
+endchar
+char 0x81
+......
+......
+..XX..
+..XX..
+......
+......
+endchar
+char 0x82
+......
+......
+......
+..XX..
+..XX..
+.XX...
+endchar
+char 0x83
+...XX.
+..X...
+.XXXX.
+..X...
+..X...
+XX....
+endchar
+char 0x84
+......
+......
+......
+..X.X.
+..X.X.
+.X.X..
+endchar
+char 0x85
+......
+......
+......
+X.X.X.
+X.X.X.
+......
+endchar
+char 0x86
+..X...
+.XXX..
+..X...
+..X...
+..X...
+......
+endchar
+char 0x87
+..X...
+.XXX..
+..X...
+.XXX..
+..X...
+......
+endchar
+char 0x88
+..X...
+.X.X..
+......
+......
+......
+......
+endchar
+char 0x89
+XX..X.
+XX.X..
+..X...
+.X.X.X
+X..X.X
+......
+endchar
+char 0x8a
+.X.X..
+.XXXX.
+X.....
+.XXX..
+....X.
+XXXX..
+endchar
+char 0x8b
+...XX.
+..XX..
+.XX...
+..XX..
+...XX.
+......
+endchar
+char 0x8c
+.XXXX.
+X.XX..
+X.XXX.
+X.XX..
+.XXXX.
+......
+endchar
+char 0x8d
+......
+......
+..XX..
+..XX..
+......
+......
+endchar
+char 0x8e
+......
+......
+..XX..
+..XX..
+......
+......
+endchar
+char 0x8f
+......
+......
+..XX..
+..XX..
+......
+......
+endchar
+char 0x90
+......
+......
+..XX..
+..XX..
+......
+......
+endchar
+char 0x91
+..X...
+..X...
+...X..
+......
+......
+......
+endchar
+char 0x92
+...X..
+...X..
+..X...
+......
+......
+......
+endchar
+char 0x93
+.X.X..
+.X.X..
+..X.X.
+......
+......
+......
+endchar
+char 0x94
+..X.X.
+..X.X.
+.X.X..
+......
+......
+......
+endchar
+char 0x95
+..XX..
+.XXXX.
+..XX..
+......
+......
+......
+endchar
+char 0x96
+......
+......
+.XXXX.
+......
+......
+......
+endchar
+char 0x97
+......
+......
+XXXXXX
+......
+......
+......
+endchar
+char 0x98
+.X....
+X.X.X.
+X.X.X.
+...X..
+......
+......
+endchar
+char 0x99
+XXXX.X
+.X.XXX
+.X.X.X
+......
+......
+......
+endchar
+char 0x9a
+..X.X.
+...X..
+..XXX.
+.XX...
+...XX.
+.XXX..
+endchar
+char 0x9b
+.XX...
+..XX..
+...XX.
+..XX..
+.XX...
+......
+endchar
+char 0x9c
+......
+.XXX..
+X.XXX.
+X.X...
+.XXXX.
+......
+endchar
+char 0x9d
+......
+......
+..XX..
+..XX..
+......
+......
+endchar
+char 0x9e
+......
+......
+..XX..
+..XX..
+......
+......
+endchar
+char 0x9f
+.X.X..
+......
+X...X.
+.XXX..
+..X...
+..X...
+endchar
+char 0xa0
+......
+......
+......
+......
+......
+......
+endchar
+char 0xa1
+..XX..
+......
+..XX..
+..XX..
+..XX..
+..XX..
+endchar
+char 0xa2
+...X..
+..XXX.
+.XX...
+..XXX.
+...X..
+......
+endchar
+char 0xa3
+...XX.
+..X...
+.XXX..
+..X...
+.XXXX.
+......
+endchar
+char 0xa4
+X....X
+.XXXX.
+.X..X.
+.X..X.
+.XXXX.
+X....X
+endchar
+char 0xa5
+X...X.
+XX.XX.
+.XXX..
+..X...
+.XXX..
+..X...
+endchar
+char 0xa6
+..XX..
+..XX..
+......
+..XX..
+..XX..
+..XX..
+endchar
+char 0xa7
+...XX.
+..X...
+.XXX..
+.XXX..
+..X...
+XX....
+endchar
+char 0xa8
+.X.X..
+......
+......
+......
+......
+......
+endchar
+char 0xa9
+.XXXX.
+XX..XX
+X.XX.X
+X.XXXX
+XX...X
+.XXXX.
+endchar
+char 0xaa
+.XXX..
+....X.
+XXXXX.
+.XXXX.
+......
+......
+endchar
+char 0xab
+..XX.X
+.XX.XX
+XX.XX.
+.XX.XX
+..XX.X
+......
+endchar
+char 0xac
+......
+......
+.XXXX.
+....X.
+....X.
+......
+endchar
+char 0xad
+......
+......
+.XXXX.
+......
+......
+......
+endchar
+char 0xae
+.XXXX.
+X...XX
+X.XX.X
+X...XX
+X.X..X
+.XXXX.
+endchar
+char 0xaf
+XXXXX.
+......
+......
+......
+......
+......
+endchar
+char 0xb0
+..XX..
+.X..X.
+..XX..
+......
+......
+......
+endchar
+char 0xb1
+..X...
+XXXXX.
+..X...
+......
+XXXXX.
+......
+endchar
+char 0xb2
+.XXX..
+...XX.
+..XX..
+.XXXX.
+......
+......
+endchar
+char 0xb3
+.XXX..
+..XX..
+...X..
+.XXX..
+......
+......
+endchar
+char 0xb4
+...X..
+..X...
+......
+......
+......
+......
+endchar
+char 0xb5
+......
+.XX.X.
+.XX.X.
+.XX.X.
+.XXXXX
+XX....
+endchar
+char 0xb6
+.XX.X.
+XXX.X.
+XXX.X.
+.XX.X.
+..X.X.
+..X.X.
+endchar
+char 0xb7
+......
+......
+..XX..
+..XX..
+......
+......
+endchar
+char 0xb8
+......
+......
+......
+......
+...X..
+..X...
+endchar
+char 0xb9
+..XX..
+.XXX..
+..XX..
+.XXXX.
+......
+......
+endchar
+char 0xba
+.XXX..
+X...X.
+X...X.
+.XXX..
+......
+......
+endchar
+char 0xbb
+X.XX..
+XX.XX.
+.XX.XX
+XX.XX.
+X.XX..
+......
+endchar
+char 0xbc
+XX....
+XX....
+XX..XX
+...X.X
+..XXXX
+.....X
+endchar
+char 0xbd
+XX....
+XX....
+XX.XX.
+..X.XX
+...XX.
+..XXXX
+endchar
+char 0xbe
+XX....
+.X....
+XX..XX
+...X.X
+..XXXX
+.....X
+endchar
+char 0xbf
+.XX...
+......
+.XX...
+.XX...
+XX..X.
+.XXX..
+endchar
+char 0xc0
+.X....
+..X...
+.XXX..
+X...X.
+XXXXX.
+X...X.
+endchar
+char 0xc1
+...X..
+..X...
+.XXX..
+X...X.
+XXXXX.
+X...X.
+endchar
+char 0xc2
+..X...
+.X.X..
+.XXX..
+X...X.
+XXXXX.
+X...X.
+endchar
+char 0xc3
+.XX.X.
+X.XX..
+.XXX..
+X...X.
+XXXXX.
+X...X.
+endchar
+char 0xc4
+.X.X..
+......
+.XXX..
+X...X.
+XXXXX.
+X...X.
+endchar
+char 0xc5
+..X...
+......
+.XXX..
+X...X.
+XXXXX.
+X...X.
+endchar
+char 0xc6
+.XXXX.
+X.X...
+XXXXX.
+X.X...
+X.XXX.
+......
+endchar
+char 0xc7
+.XXXX.
+X.....
+X.....
+X.....
+.XXXX.
+..X...
+endchar
+char 0xc8
+.X....
+..X...
+XXXXX.
+XXX...
+X.....
+XXXXX.
+endchar
+char 0xc9
+...X..
+XXXXX.
+X.....
+XXXX..
+X.....
+XXXXX.
+endchar
+char 0xca
+..X...
+.X.X..
+XXXXX.
+XXX...
+X.....
+XXXXX.
+endchar
+char 0xcb
+.X..X.
+XXXXX.
+X.....
+XXXX..
+X.....
+XXXXX.
+endchar
+char 0xcc
+.X....
+..X...
+.XXX..
+..X...
+..X...
+.XXX..
+endchar
+char 0xcd
+...X..
+.XXX..
+..X...
+..X...
+..X...
+.XXX..
+endchar
+char 0xce
+..X...
+.XXX..
+..X...
+..X...
+..X...
+.XXX..
+endchar
+char 0xcf
+.X.X..
+......
+.XXX..
+..X...
+..X...
+.XXX..
+endchar
+char 0xd0
+..XX..
+.XXXX.
+X.....
+X..XX.
+X...X.
+.XXXX.
+endchar
+char 0xd1
+.XXXX.
+......
+.X..X.
+.XX.X.
+.X.XX.
+.X..X.
+endchar
+char 0xd2
+.X....
+..X...
+.XXX..
+X...X.
+X...X.
+.XXX..
+endchar
+char 0xd3
+...X..
+.XXX..
+X...X.
+X...X.
+X...X.
+.XXX..
+endchar
+char 0xd4
+..X...
+.X.X..
+.XXX..
+X...X.
+X...X.
+.XXX..
+endchar
+char 0xd5
+.XX.X.
+X.XX..
+.XXX..
+X...X.
+X...X.
+.XXX..
+endchar
+char 0xd6
+.X.X..
+.XXX..
+X...X.
+X...X.
+.XXX..
+......
+endchar
+char 0xd7
+......
+.X..X.
+..XX..
+..XX..
+.X..X.
+......
+endchar
+char 0xd8
+..XX.X
+.X..X.
+.X.XX.
+.XX.X.
+.X..X.
+X.XX..
+endchar
+char 0xd9
+.X....
+..X...
+X...X.
+X...X.
+X...X.
+.XXX..
+endchar
+char 0xda
+...X..
+X.X.X.
+X...X.
+X...X.
+X...X.
+.XXXX.
+endchar
+char 0xdb
+..X...
+.X.X..
+X...X.
+X...X.
+X...X.
+.XXX..
+endchar
+char 0xdc
+.X.X..
+X...X.
+X...X.
+X...X.
+.XXXX.
+......
+endchar
+char 0xdd
+..X...
+.XXX..
+..X...
+..X...
+.XXX..
+......
+endchar
+char 0xde
+.XXXX.
+X.....
+.XXX..
+....X.
+XXXX..
+..X...
+endchar
+char 0xdf
+.XXX..
+XX.XX.
+XXXX..
+XX.XX.
+XXXX..
+XX....
+endchar
+char 0xe0
+.X....
+..X...
+.XXX..
+....X.
+XXXXX.
+.XXXX.
+endchar
+char 0xe1
+...X..
+..X...
+.XXX..
+....X.
+XXXXX.
+.XXXX.
+endchar
+char 0xe2
+..X...
+.X.X..
+.XXX..
+....X.
+XXXXX.
+.XXXX.
+endchar
+char 0xe3
+.XX.X.
+X.XX..
+.XXX..
+....X.
+XXXXX.
+.XXXX.
+endchar
+char 0xe4
+.X.X..
+......
+.XXX..
+....X.
+XXXXX.
+.XXXX.
+endchar
+char 0xe5
+..X...
+......
+.XXX..
+....X.
+XXXXX.
+.XXXX.
+endchar
+char 0xe6
+......
+XXXX..
+..XXX.
+XXX...
+.XXXX.
+......
+endchar
+char 0xe7
+......
+.XXX..
+X.....
+X.....
+.XXX..
+..X...
+endchar
+char 0xe8
+.X....
+..X...
+.XXX..
+XXXXX.
+X.....
+.XXX..
+endchar
+char 0xe9
+...X..
+.XXX..
+XXXXX.
+X.....
+.XXX..
+......
+endchar
+char 0xea
+......
+.XXX..
+XXXXX.
+X.....
+.XXX..
+..X...
+endchar
+char 0xeb
+.X.X..
+......
+.XXX..
+XXXXX.
+X.....
+.XXX..
+endchar
+char 0xec
+.X....
+..X...
+.XX...
+..X...
+..X...
+.XXX..
+endchar
+char 0xed
+...X..
+..X...
+.XX...
+..X...
+..X...
+.XXX..
+endchar
+char 0xee
+..X...
+.X.X..
+..X...
+..X...
+..X...
+.XXX..
+endchar
+char 0xef
+.X.X..
+......
+.XX...
+..X...
+..X...
+.XXX..
+endchar
+char 0xf0
+X....X
+.XXXX.
+X...X.
+.XXXX.
+....X.
+XXXX..
+endchar
+char 0xf1
+XXXX..
+......
+XXXX..
+X...X.
+X...X.
+X...X.
+endchar
+char 0xf2
+.X....
+..X...
+.XXX..
+X...X.
+X...X.
+.XXX..
+endchar
+char 0xf3
+...X..
+..X...
+.XXX..
+X...X.
+X...X.
+.XXX..
+endchar
+char 0xf4
+..X...
+.X.X..
+.XXX..
+X...X.
+X...X.
+.XXX..
+endchar
+char 0xf5
+.XX.X.
+X.XX..
+.XXX..
+X...X.
+X...X.
+.XXX..
+endchar
+char 0xf6
+......
+X...X.
+.XXX..
+X...X.
+.XXX..
+......
+endchar
+char 0xf7
+..X...
+......
+XXXXX.
+......
+..X...
+......
+endchar
+char 0xf8
+....X.
+..XX..
+.X.XX.
+.XX.X.
+..XX..
+.X....
+endchar
+char 0xf9
+.X....
+..X...
+X...X.
+X...X.
+X...X.
+.XXXX.
+endchar
+char 0xfa
+...X..
+..X...
+X...X.
+X...X.
+X...X.
+.XXXX.
+endchar
+char 0xfb
+..X...
+.X.X..
+X...X.
+X...X.
+X...X.
+.XXXX.
+endchar
+char 0xfc
+.X.X..
+......
+X...X.
+X...X.
+X...X.
+.XXXX.
+endchar
+char 0xfd
+......
+.XX...
+..X...
+..X...
+.XXX..
+......
+endchar
+char 0xfe
+......
+..XXX.
+.XX...
+...XX.
+.XXX..
+..X...
+endchar
+char 0xff
+.X.X..
+......
+X...X.
+.XXXX.
+....X.
+XXXX..
+endchar
+endfont

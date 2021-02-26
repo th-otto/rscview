@@ -269,8 +269,8 @@ static _WORD write_png(RSCTREE *tree, _WORD x, _WORD y, _WORD w, _WORD h, _BOOL 
 	}
 	if (htmlout_file)
 	{
-		fprintf(htmlout_file, "<p>%s:<br /><img src=\"%s/%s\" alt=\"%s\"",
-			tree->rt_name,
+		fprintf(htmlout_file, "<p id=\"%s\">%s:<br /><img src=\"%s/%s\" alt=\"%s\"",
+			tree->rt_name, tree->rt_name,
 			html_dir ? html_dir : ".", p,
 			tree->rt_name);
 		if (write_imagemap)

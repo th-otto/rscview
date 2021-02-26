@@ -10,6 +10,7 @@
 #include "cp_st_l9.h"
 #include "cp_st_gr.h"
 #include "cp_st_ru.h"
+#include "cp_st_l5.h"
 
 #define nls_put_unichar(p, wc) \
 	if (wc < 0x80) \
@@ -111,6 +112,8 @@ static const nls_wchar_t *get_cset(int charset)
 		return atari_latin9_to_unicode;
 	case CHARSET_L2:
 		return atari_latin2_to_unicode;
+	case CHARSET_L5:
+		return atari_latin5_to_unicode;
 	case CHARSET_GR:
 		return atari_greek_to_unicode;
 	case CHARSET_RU:

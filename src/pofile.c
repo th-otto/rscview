@@ -1325,6 +1325,8 @@ static struct charset_alias const charsets[] = {
 	{ "latin9", CHARSET_L9 },
 	{ "russian-atarist", CHARSET_RU },
 	{ "cp737", CHARSET_GR },
+	{ "ISO-8859-9", CHARSET_L5 },
+	{ "latin5", CHARSET_L5 },
 	{ "atarist", CHARSET_ST }
 };
 
@@ -1511,6 +1513,7 @@ void po_init(const char *po_dir, gboolean mustexist, gboolean use_defaults)
 			parse_linguas_item(d, g_strdup("ru russian-atarist"), FALSE);
 			parse_linguas_item(d, g_strdup("gr cp737"), FALSE); /* deprecated */
 			parse_linguas_item(d, g_strdup("el cp737"), FALSE);
+			parse_linguas_item(d, g_strdup("tr latin5"), FALSE);
 		}
 	}
 	languages = d;

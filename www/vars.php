@@ -12,7 +12,7 @@ $languages = array(
 	'sv'    => array('en' => 'Swedish',   'html' => 'sv-SV', 'charset' => 'atarist', 'flag' => 'se.gif', 'native' => 'Svenska'),
 	'de_CH' => array('en' => 'Swiss (German)', 'html' => 'de-CH', 'charset' => 'atarist', 'flag' => 'ch.gif', 'native' => 'Schweizerisch (Deutsch)'),
 	'fr_CH' => array('en' => 'Swiss (French)', 'html' => 'fr-CH', 'charset' => 'atarist', 'flag' => 'ch.gif', 'native' => 'Suisse (Fran\207ais)'),
-	'tr'    => array('en' => 'Turkish',   'html' => 'tr-TR', 'charset' => 'atarist', 'flag' => 'tr.gif', 'native' => 'T&#252;rk&#231;e'),
+	'tr'    => array('en' => 'Turkish',   'html' => 'tr-TR', 'charset' => 'latin5',  'flag' => 'tr.gif', 'native' => 'T&#252;rk&#231;e'),
 	'fi'    => array('en' => 'Finnish',   'html' => 'fi-FI', 'charset' => 'atarist', 'flag' => 'fi.gif', 'native' => 'Suomi'),
 	'nn'    => array('en' => 'Norwegian', 'html' => 'nn-NO', 'charset' => 'atarist', 'flag' => 'no.gif', 'native' => 'Norsk Nynorsk'),
 	'nb'    => array('en' => 'Norwegian', 'html' => 'nb-NO', 'charset' => 'atarist', 'flag' => 'no.gif', 'native' => 'Norsk Bokm&#xe5;l'),

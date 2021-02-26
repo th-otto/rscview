@@ -253,8 +253,8 @@ static _WORD write_png(RSCTREE *tree, rsc_opts *opts, _WORD x, _WORD y, _WORD w,
 	{
 		KINFO(("write_png: %s: %s\n", filename, strerror(err)));
 	}
-	g_string_append_printf(out, "<p>%s:<br /><img src=\"%s/%s\" width=\"%d\" height=\"%d\" style=\"border:0;\" alt=\"%s\"",
-		tree->rt_name,
+	g_string_append_printf(out, "<p id=\"%s\">%s:<br /><img src=\"%s/%s\" width=\"%d\" height=\"%d\" style=\"border:0;\" alt=\"%s\"",
+		tree->rt_name, tree->rt_name,
 		opts->ref_output_dir ? opts->ref_output_dir : ".", namebuf,
 		w, h,
 		tree->rt_name);

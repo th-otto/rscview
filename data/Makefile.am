@@ -21,6 +21,7 @@ BUILT_SOURCES = \
 	fnt_l2_8x16.c fnt_l2_8x8.c fnt_l2_6x8.c \
 	fnt_gr_8x16.c fnt_gr_8x8.c fnt_gr_6x8.c \
 	fnt_ru_8x16.c fnt_ru_8x8.c fnt_ru_6x8.c \
+	fnt_tr_8x16.c fnt_tr_8x8.c fnt_tr_6x8.c \
 	$(empty)
 
 fnt_st_8x16.c: $(srcdir)/system10.fnt fntdump$(EXEEXT)
@@ -68,6 +69,15 @@ fnt_ru_8x8.c: $(srcdir)/fntru09.fnt fntdump$(EXEEXT)
 fnt_ru_6x8.c: $(srcdir)/fntru08.fnt fntdump$(EXEEXT)
 	$(AM_V_GEN)./fntdump$(EXEEXT) -n fnt_ru_6x8 -I 5 $< > $@.$$$$ && mv $@.$$$$ $@ || { $(RM) $@.$$$$; false; }
 
+fnt_tr_8x16.c: $(srcdir)/fnttr10.fnt fntdump$(EXEEXT)
+	$(AM_V_GEN)./fntdump$(EXEEXT) -n fnt_tr_8x16 -I 6 $< > $@.$$$$ && mv $@.$$$$ $@ || { $(RM) $@.$$$$; false; }
+
+fnt_tr_8x8.c: $(srcdir)/fnttr09.fnt fntdump$(EXEEXT)
+	$(AM_V_GEN)./fntdump$(EXEEXT) -n fnt_tr_8x8 -I 6 $< > $@.$$$$ && mv $@.$$$$ $@ || { $(RM) $@.$$$$; false; }
+
+fnt_tr_6x8.c: $(srcdir)/fnttr08.fnt fntdump$(EXEEXT)
+	$(AM_V_GEN)./fntdump$(EXEEXT) -n fnt_tr_6x8 -I 6 $< > $@.$$$$ && mv $@.$$$$ $@ || { $(RM) $@.$$$$; false; }
+
 EXTRA_DIST += \
 	system08.fnt system09.fnt system10.fnt system20.fnt \
 	fntl908.fnt fntl909.fnt fntl910.fnt \
@@ -75,6 +85,7 @@ EXTRA_DIST += \
 	fntgr08.fnt fntgr09.fnt fntgr10.fnt \
 	fntru08.fnt fntru09.fnt fntru10.fnt \
 	fntpl08.fnt fntpl09.fnt fntpl10.fnt \
+	fnttr08.fnt fnttr09.fnt fnttr10.fnt \
 	$(empty)
 
 CLEANFILES += $(BUILT_SOURCES)

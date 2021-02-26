@@ -88,6 +88,9 @@ static pel framebuffer[vdi_w * vdi_h];
 #include "../data/fnt_ru_6x8.c"
 #include "../data/fnt_ru_8x8.c"
 #include "../data/fnt_ru_8x16.c"
+#include "../data/fnt_tr_6x8.c"
+#include "../data/fnt_tr_8x8.c"
+#include "../data/fnt_tr_8x16.c"
 
 static FONT_DESC sysfont[SYSFONTS * NLSFONTSETS];
 static const FONT_HDR *const sysfonthdrs[SYSFONTS * NLSFONTSETS] = {
@@ -96,6 +99,7 @@ static const FONT_HDR *const sysfonthdrs[SYSFONTS * NLSFONTSETS] = {
 	&fnt_l2_6x8, &fnt_l2_8x8, &fnt_l2_8x16,
 	&fnt_gr_6x8, &fnt_gr_8x8, &fnt_gr_8x16,
 	&fnt_ru_6x8, &fnt_ru_8x8, &fnt_ru_8x16,
+	&fnt_tr_6x8, &fnt_tr_8x8, &fnt_tr_8x16,
 };
 
 static int xvdi_debug;

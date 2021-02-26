@@ -118,6 +118,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST')
 			if ($lang == 'pl' || $lang == 'hu')
 			{
 				$charset = 'latin2';
+			} else if ($lang == 'tr')
+			{
+				$charset = 'latin5';
 			} else
 			{
 				$charset = 'atarist';
