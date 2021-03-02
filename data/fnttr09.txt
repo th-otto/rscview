@@ -1744,10 +1744,10 @@ char 0xac
 ........
 ........
 ........
-.XXXXX..
-....XX..
-....XX..
-....XX..
+XXXXXXX.
+.....XX.
+.....XX.
+........
 ........
 endchar
 char 0xad
@@ -1771,8 +1771,8 @@ XX....XX
 .XXXXXX.
 endchar
 char 0xaf
+.XXXXX..
 ........
-XXXXXXX.
 ........
 ........
 ........
@@ -1784,8 +1784,8 @@ char 0xb0
 ........
 ..XXX...
 .XX.XX..
-.XX.XX..
 ..XXX...
+........
 ........
 ........
 ........
@@ -1962,13 +1962,13 @@ char 0xc1
 endchar
 char 0xc2
 ...XX...
-..X..X..
-.X.XX.X.
+.XX..XX.
+...XX...
 ..XXXX..
+.XX..XX.
 .XX..XX.
 .XXXXXX.
 .XX..XX.
-........
 endchar
 char 0xc3
 ..XX.X..
@@ -1992,7 +1992,7 @@ char 0xc4
 endchar
 char 0xc5
 ...XX...
-........
+..X..X..
 ...XX...
 ..XXXX..
 .XX..XX.
@@ -2082,7 +2082,7 @@ char 0xcd
 endchar
 char 0xce
 ...XX...
-..X..X..
+.XX..XX.
 ..XXXX..
 ...XX...
 ...XX...
@@ -2101,7 +2101,7 @@ char 0xcf
 ........
 endchar
 char 0xd0
-..XX.XX.
+.XX...XX
 ..XXXXX.
 .XX.....
 .XX.XXX.
@@ -2142,7 +2142,7 @@ char 0xd3
 endchar
 char 0xd4
 ...XX...
-..X..X..
+.XX..XX.
 ..XXXX..
 .XX..XX.
 .XX..XX.
@@ -2207,7 +2207,7 @@ char 0xda
 .XX..XX.
 .XX..XX.
 .XX..XX.
-..XXXXX.
+..XXXX..
 ........
 endchar
 char 0xdb
@@ -2227,7 +2227,7 @@ char 0xdc
 .XX..XX.
 .XX..XX.
 .XX..XX.
-..XXXXX.
+..XXXX..
 ........
 endchar
 char 0xdd
@@ -2312,11 +2312,11 @@ char 0xe4
 endchar
 char 0xe5
 ...XX...
-...XX...
-........
+..X..X..
 ..XXXX..
 .....XX.
-.XXXXXX.
+..XXXXX.
+.XX..XX.
 ..XXXXX.
 ........
 endchar
@@ -2353,22 +2353,22 @@ endchar
 char 0xe9
 ....XX..
 ...XX...
+........
 ..XXXX..
-.XX..XX.
 .XXXXXX.
 .XX.....
 ..XXXX..
 ........
 endchar
 char 0xea
-........
+...XX...
+.XX..XX.
 ........
 ..XXXX..
 .XXXXXX.
 .XX.....
 ..XXXX..
-...XX...
-....XX..
+........
 endchar
 char 0xeb
 .XX..XX.
