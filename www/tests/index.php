@@ -103,7 +103,7 @@ foreach ($linguas as $lang)
 
 <div style="text-align:center">
 <p>
-<a href="../emutos.php"> <img src="../../images/home1.gif" width="180" height="60" style="border:0" alt="Home" /></a>
+<a href="../emutos.php"> <img src="../../images/home1.png" width="180" height="60" style="border:0" alt="Home" /></a>
 </p>
 </div>
 
