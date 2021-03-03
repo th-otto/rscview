@@ -80,17 +80,25 @@ function gen_images($lang, $dir, $genlist)
 	echo "\n";
 }
 
-function emutos_download($remotefile, $localfile)
+function emutos_download($remotefile, $localfile, $must_exist = true)
 {
 	global $github;
 	echo "getting $remotefile\n";
 	$rsc = file_get_contents($github . $remotefile);
 	if (!$rsc)
 	{
-		echo "downloading $remotefile failed\n";
+		if ($must_exist)
+			echo "<span style=\"color:red\"";
+		echo "downloading $remotefile failed";
+		if ($must_exist)
+			echo "</span>";
+		echo "\n";
 	} else
 	{
-		file_put_contents($localfile, $rsc);
+		if (file_put_contents($localfile, $rsc) === false)
+		{
+			echo "<span style=\"color:red\">error creating $localfile</span>\n";
+		}
 	}
 }
 
@@ -167,7 +175,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST')
 	#
 	if (!isset($_GET['download']) || $_GET['download'] != 0)
 	{
-		emutos_download('po/LINGUAS', 'LINGUAS');
+		emutos_download('po/LINGUAS', 'LINGUAS', false);
 		read_linguas('LINGUAS', 1);
 		
 		emutos_download('desk/desktop.rsc', 'desktop.rsc');
