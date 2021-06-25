@@ -1,9 +1,9 @@
 #!/bin/sh
 
 
-OUT="${PWD}/.travis/out"
-
 eval "$(ssh-agent -s)"
+git config --global user.email "$COMMITER_EMAIL"
+git config --global user.name "$COMMITER_NAME"
 
 git clone --branch builds "${PUBLISH_REPO}" ".travis/publish" && cd ".travis/publish"
 mkdir -p "${PUBLISH_PATH}"

@@ -1,4 +1,4 @@
-name: C/C++ CI
+name: Linux build
 
 on:
   push:
@@ -10,8 +10,23 @@ jobs:
   build:
 
     runs-on: ubuntu-latest
-
     steps:
-    - uses: actions/checkout@v2
-    - name: build
-      run: ./.travis/build.sh "${PWD}/.travis/tmp" "${PWD}/.travis/out"
+      - uses: actions/checkout@v2
+      - name: Install SSH keys
+        env:
+          SSH_ID: ${{ secrets.SSH_ID }}
+        run: ./.travis/install_ssh_id.sh
+      - name: Install packages
+        run: |
+          sudo apt-get update
+          sudo apt-get install gettext
+      - name: Setup environment
+        run: ./.travis/setup_env.sh
+      - name: build
+        run: ./.travis/build.sh
+      - name: deploy
+        if: ${{ github.event_name == 'push' }}
+        env:
+          COMMITER_NAME: ${{ github.event.commits[0].author.name }}
+          COMMITER_EMAIL: ${{ github.event.commits[0].author.email }}
+        run: ./.travis/deploy.sh
