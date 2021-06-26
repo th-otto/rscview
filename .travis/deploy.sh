@@ -8,4 +8,6 @@ git config --global user.name "$COMMITER_NAME"
 git clone --branch builds "${PUBLISH_REPO}" ".travis/publish" && cd ".travis/publish"
 mkdir -p "${PUBLISH_PATH}"
 cp -r "${OUT}"/* "${PUBLISH_PATH}"
-git add "${PUBLISH_PATH}" && git commit -m "${COMMIT_MESSAGE}" && (while true; do git push; [ $? -ne 0 ] || break; git pull --rebase; done)
+git add "${PUBLISH_PATH}"
+git commit -m "${COMMIT_MESSAGE}"
+git push

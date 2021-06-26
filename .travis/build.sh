@@ -1,7 +1,5 @@
 #!/bin/sh
 
-env
-
 ./autogen.sh --enable-warnings
 make || exit 1
 make DESTDIR="$TMP" install || exit 1
@@ -25,12 +23,12 @@ esac
 cd "${TMP}"
 tar cvfj "${OUT}/${PROJECT}-${ATAG}-linux.tar.bz2" .
 tar cvfJ "${OUT}/${PROJECT}-${ATAG}-linux.tar.xz" .
-ln -s "${PROJECT}-${ATAG}-linux.tar.xz" "${OUT}/latest"
+cp "${OUT}/${PROJECT}-${ATAG}-linux.tar.xz" "${OUT}/latest-snapshot.tar.xz"
 )
 
 if $isrelease; then
 	make dist
 	mv "${PROJECT}-${VERSION}.tar.xz" "$OUT"
-	ln -s "${PROJECT}-${VERSION}.tar.xz" "${OUT}/latest-release"
+	cp "${OUT}/${PROJECT}-${VERSION}.tar.xz" "${OUT}/latest-release.tar.xz"
 fi
 ls -l "${OUT}"
