@@ -23,19 +23,41 @@ echo "<title>EmuTOS $which resources - $lang</title>\n";
 echo "<h1>EmuTOS $which resources - $lang</h1>\n";
 ?>
 <hr />
+<?php
+if (isset($_GET['aes3d']) && $_GET['aes3d'] != 0)
+{
+	echo '<a href="' . $_SERVER['PHP_SELF'] . '?aes3d=0">Normal version</a>';
+} else
+{
+	echo '<a href="' . $_SERVER['PHP_SELF'] . '?aes3d=1">Version with 3D-effects</a>';
+}
+?>
+<hr />
 
 <?php
 include('vars.php');
 read_linguas('tmp/LINGUAS');
 $files = array();
-include('en/aes/pnglist.php');
+if (isset($_GET['aes3d']) && $_GET['aes3d'] != 0)
+{
+	include('en/aes/pnglist_3d.php');
+} else
+{
+	include('en/aes/pnglist.php');
+}
 $en_files = $files;
 $all_files = array();
 foreach ($linguas as $lang)
 {
 	$lang = $lang['lang'];
 	$files = array();
-	include($lang . '/aes/pnglist.php');
+	if (isset($_GET['aes3d']) && $_GET['aes3d'] != 0)
+	{
+		include($lang . '/aes/pnglist_3d.php');
+	} else
+	{
+		include($lang . '/aes/pnglist.php');
+	}
 	$all_files[$lang] = $files;
 }
 if (isset($_GET['type']) && $_GET['type'] == 'list')

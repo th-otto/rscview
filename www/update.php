@@ -51,11 +51,14 @@ function gen_images($lang, $dir, $genlist)
 	global $top;
 	
 	echo "generating images for $lang\n";
-	$cmd = "$top/rscview --lang $lang --podir . --timestamps --quote-html --create-html pngout.php --report-po --report-rsc";
+	$cmd = "$top/rscview --lang $lang --podir . --timestamps --quote-html";
 	if ($genlist)
 		$cmd .= " --create-pnglist pnglist.php";
-	$cmd .= " --html-dir . --imagemap desktop.rsc 2>&1";
-	system($cmd);
+	$cmd .= " --report-po --report-rsc --html-dir . --imagemap desktop.rsc";
+	system($cmd . " --create-html pngout.php 2>&1");
+	if ($genlist)
+		$cmd .= " --create-pnglist pnglist_3d.php";
+	system($cmd . " --3d --create-html pngout_3d.php 2>&1");
 	$trans = $languages[$lang];
 	$stat = stat($dir);
 	if (!$stat)
@@ -64,19 +67,18 @@ function gen_images($lang, $dir, $genlist)
 		mkdir($dir);
 		mkdir("$dir/aes");
 	}
-	system("rm -f $dir/*.png; mv *.png pngout.php $dir 2>&1");
-	if ($genlist)
-		system("mv pnglist.php $dir 2>&1");
+	system("rm -f $dir/*.png; mv *.png pngout*.php pnglist*.php $dir 2>&1");
 	
-	$cmd = "$top/rscview --lang $lang --podir . --timestamps --quote-html --create-html pngout.php --report-rsc";
+	$cmd = "$top/rscview --lang $lang --podir . --timestamps --quote-html --create-html pngout.php";
 	if ($genlist)
 		$cmd .= " --create-pnglist pnglist.php";
-	$cmd .= " --html-dir aes --imagemap gem.rsc 2>&1";
-	system($cmd);
-	$dir .= "/aes";
-	system("rm -f $dir/*.png; mv *.png pngout.php $dir 2>&1");
+	$cmd .= " --html-dir aes --imagemap gem.rsc";
+	system($cmd . " --report-rsc --create-html pngout.php 2>&1");
 	if ($genlist)
-		system("mv pnglist.php $dir 2>&1");
+		$cmd .= " --create-pnglist pnglist_3d.php";
+	system($cmd . " --3d --create-html pngout_3d.php 2>&1");
+	$dir .= "/aes";
+	system("rm -f $dir/*.png; mv *.png pngout*.php pnglist*.php $dir 2>&1");
 	echo "\n";
 }
 

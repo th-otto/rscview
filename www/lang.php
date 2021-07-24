@@ -20,10 +20,28 @@ echo "<title>EmuTOS $which resources - $lang</title>\n";
 echo "<h1>EmuTOS $which resources - $lang</h1>\n";
 ?>
 <hr />
-
 <?php
+$with_aes3d = $which != "Icons" && $which != "Mouse Cursor";
+if ($with_aes3d)
+{
+	if (isset($_GET['aes3d']) && $_GET['aes3d'] != 0)
+	{
+		echo '<a href="' . $_SERVER['PHP_SELF'] . '?aes3d=0">Normal version</a>';
+	} else
+	{
+		echo '<a href="' . $_SERVER['PHP_SELF'] . '?aes3d=1">Version with 3D-effects</a>';
+	}
+	echo "<hr />\n";
+}
+
 include('vars.php');
-include($pngdir . '/pngout.php');
+if ($with_aes3d && isset($_GET['aes3d']) && $_GET['aes3d'] != 0)
+{
+	include($pngdir . '/pngout_3d.php');
+} else
+{
+	include($pngdir . '/pngout.php');
+}
 ?>
 
 <p></p>
