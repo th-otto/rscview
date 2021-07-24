@@ -25,9 +25,12 @@
 #define NAME_OFFSET F1NAME
 #define NM_DRIVES (FSLSTDRV-FS1STDRV+1)
 #define DRIVE_OFFSET FS1STDRV
+#define DRIVE_ROWS   9              /* (3 columns of buttons for the standard 26 drives) */
 #define LPATH	128
 
 #define LEN_FSNAME (LEN_ZFNAME+1)	/* includes leading flag byte & trailing nul */
+#define LEN_FSPATH  (LEN_ZPATH+4)   /* at least 3 bytes longer than max path */
+#define LEN_FSWORK  (3*LEN_FSPATH)  /* total workarea length in fs_input() */
 
 typedef struct fstruct
 {
@@ -63,15 +66,6 @@ typedef struct pathstruct
 } PATHSTRUCT;
 
 static PATHSTRUCT *pxpath;
-
-
-#if (AESVERSION >= 0x330)
-static void FXWait(void);
-static void FXSelect(OBJECT *tree, _WORD obj);
-static void FXDeselect(OBJECT *tree, _WORD obj);
-#endif
-
-
 
 
 /*
@@ -290,6 +284,7 @@ static _WORD r_dir(char *path, char *select, uint32_t *count)
 	char *addr;
 	_WORD status;
 	char filename[16];
+	_BOOL three_d = FALSE;
 
 	set_mouse_to_hourglass();
 
@@ -310,24 +305,27 @@ static _WORD r_dir(char *path, char *select, uint32_t *count)
 	fs_topptr = 0;						/* reset top pointer */
 
 	h = tree[FSVSLID].ob_height;
-#if AES3D
-	h += ADJ3DPIX << 1;
-#endif
+	if (gl_aes3d && (tree[FSVELEV].ob_flags & OF_FL3DIND))
+		three_d = TRUE;
+	if (three_d)
+		h += ADJ3DSTD << 1;
 	if (*count > NM_NAMES)
 	{
 		h = (h * NM_NAMES) / *count;
 	}
 
-#if AES3D
-	if (!h)								/* min size */
+	if (three_d)
 	{
-		h = 1;
-	} else
-	{
-		if (h > (ADJ3DPIX << 1))
-			h -= (ADJ3DPIX << 1);
+		if (!h)								/* min size */
+		{
+			h = 1;
+		} else
+		{
+			if (h > (ADJ3DSTD << 1))
+				h -= (ADJ3DSTD << 1);
+		}
 	}
-#endif
+
 	tree[FSVELEV].ob_y = 0;			/* move it to the top     */
 	tree[FSVELEV].ob_height = (_UWORD) h;	/* height of the elevator */
 	r_sfiles(0);						/* show form the top      */
@@ -712,7 +710,7 @@ void fs_start(void)
 	tree[FSVSLID].ob_width = gl_wbox;
 	tree[FSVELEV].ob_width = gl_wbox;
 
-#if AES3D
+	if (gl_aes3d && (tree[FSVELEV].ob_flags & OF_FL3DIND))
 	{
 		_WORD x, y, i, j, w;
 		OBJECT *obj;
@@ -725,14 +723,14 @@ void fs_start(void)
 		{
 			obj[j].ob_x = x;
 			obj[j].ob_y = y;
-			obj[j + 9].ob_x = obj[j].ob_width + (ADJ3DPIX << 1) + x + 1;
+			obj[j + 9].ob_x = obj[j].ob_width + (ADJ3DSTD << 1) + x + 1;
 			obj[j + 9].ob_y = y;
 			if (j + 18 <= FSLSTDRV)
 			{
-				obj[j + 18].ob_x = obj[j + 9].ob_width + (ADJ3DPIX << 1) + x + 1;
+				obj[j + 18].ob_x = obj[j + 9].ob_width + (ADJ3DSTD << 1) + x + 1;
 				obj[j + 18].ob_y = y;
 			}
-			y += obj[j].ob_height + (ADJ3DPIX << 1) + 1;
+			y += obj[j].ob_height + (ADJ3DSTD << 1) + 1;
 		}
 	
 		/* fix up the remaining of the file selector */
@@ -740,35 +738,35 @@ void fs_start(void)
 		obj[FUPAROW].ob_height -= 1;
 		obj[FDNAROW].ob_height -= 1;
 		ob_offset(tree, FS1STDRV, &x, &y);
-		y -= obj[FSDRIVE].ob_height + 2 + ADJ3DPIX;
-		obj[FSDRIVE].ob_y = y;
+		y -= obj[FSDRVTXT].ob_height + 2 + ADJ3DSTD;
+		obj[FSDRVTXT].ob_y = y;
 	
 		ob_offset(tree, FCLSBOX, &x, &y);
 	
-		obj[FILEBOX].ob_x = x - ADJ3DPIX - 1;
-		obj[FTITLE].ob_x = x + obj[FCLSBOX].ob_width + ADJ3DPIX;	/* adjust FTITLE */
-		obj[FTITLE].ob_y = y - ADJ3DPIX;
-		obj[FTITLE].ob_height = obj[FCLSBOX].ob_height + (ADJ3DPIX << 1);
-		y = y + obj[FCLSBOX].ob_height + ADJ3DPIX;
+		obj[FILEBOX].ob_x = x - ADJ3DSTD - 1;
+		obj[FTITLE].ob_x = x + obj[FCLSBOX].ob_width + ADJ3DSTD;	/* adjust FTITLE */
+		obj[FTITLE].ob_y = y - ADJ3DSTD;
+		obj[FTITLE].ob_height = obj[FCLSBOX].ob_height + (ADJ3DSTD << 1);
+		y = y + obj[FCLSBOX].ob_height + ADJ3DSTD;
 		obj[FILEBOX].ob_y = obj[SCRLBAR].ob_y = y;
-		obj[FUPAROW].ob_y = ADJ3DPIX;
-		y = obj[FUPAROW].ob_height + (ADJ3DPIX << 1);
+		obj[FUPAROW].ob_y = ADJ3DSTD;
+		y = obj[FUPAROW].ob_height + (ADJ3DSTD << 1);
 		obj[FSVELEV].ob_height = obj[FSVSLID].ob_height;
-		y += ADJ3DPIX;
+		y += ADJ3DSTD;
 		obj[FSVSLID].ob_y = obj[FSVELEV].ob_y = y;
-		y += obj[FSVSLID].ob_height + (ADJ3DPIX << 1);
+		y += obj[FSVSLID].ob_height + (ADJ3DSTD << 1);
 		obj[FDNAROW].ob_y = y;
-		y += obj[FDNAROW].ob_height + ADJ3DPIX;
+		y += obj[FDNAROW].ob_height + ADJ3DSTD;
 		obj[FILEBOX].ob_height = obj[SCRLBAR].ob_height = y;
-		w = obj[FCLSBOX].ob_width + obj[FTITLE].ob_width + (ADJ3DPIX << 2);
-		w -= obj[FUPAROW].ob_width + (ADJ3DPIX << 1);
+		w = obj[FCLSBOX].ob_width + obj[FTITLE].ob_width + (ADJ3DSTD << 2);
+		w -= obj[FUPAROW].ob_width + (ADJ3DSTD << 1);
 		obj[FILEBOX].ob_width = w;
 		obj[SCRLBAR].ob_x = obj[FILEBOX].ob_x + w;
 	
 		ob_offset(tree, FILEBOX, &x, &y);
-		y = obj[FILEBOX].ob_height + y + 6 + ADJ3DPIX;
+		y = obj[FILEBOX].ob_height + y + 6 + ADJ3DSTD;
 		obj[FSOK].ob_y = obj[FSCANCEL].ob_y = y;
-		y += obj[FSOK].ob_height + ADJ3DPIX + 6;
+		y += obj[FSOK].ob_height + ADJ3DSTD + 6;
 		obj[0].ob_height = y;
 	
 		if (gl_ws.ws_ncolors <= G_LWHITE)
@@ -781,45 +779,5 @@ void fs_start(void)
 			for (i = FS1STDRV; i <= FSLSTDRV; i++)
 				OBSPEC_SET_INTERIORCOL(obj[i].ob_spec, G_WHITE);
 		}
-#endif
 	}
 }
-
-
-#if (AESVERSION >= 0x330)
-
-static VOID FXWait(void)
-{
-	do
-	{
-		dsptch();
-	} while (gl_button);
-}
-
-
-static void FXSelect(OBJECT *tree, _WORD obj)
-{
-	GRECT rect;
-	_WORD dummy;
-
-	tree[obj].ob_state |= OS_SELECTED;
-	rect = *(GRECT *) & tree[(obj)].ob_x;
-	ob_gclip(tree, obj, &dummy, &dummy, &rect.g_x, &rect.g_y, &rect.g_w, &rect.g_h);
-	gsx_sclip(&rect);
-	ob_draw(tree, obj, MAX_DEPTH);		/* draw the box     */
-}
-
-
-static void FXDeselect(OBJECT *tree, _WORD obj)
-{
-	GRECT rect;
-	_WORD dummy;
-
-	tree[obj].ob_state &= ~OS_SELECTED;
-	rect = *(GRECT *) & tree[(obj)].ob_x;
-	ob_gclip(tree, obj, &dummy, &dummy, &rect.g_x, &rect.g_y, &rect.g_w, &rect.g_h);
-	gsx_sclip(&rect);
-	ob_draw(tree, obj, MAX_DEPTH);		/* draw the box     */
-}
-
-#endif

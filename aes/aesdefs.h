@@ -1,4 +1,4 @@
-#define AESVERSION 0x320
+#define AESVERSION 0x330
 
 #define NUM_ACCS 1			/* for atari in rom		*/
 #define MAX_ACCS 6			/* maximum number of desk accessory   */
@@ -19,10 +19,6 @@
 
 #ifndef MULTILANG_SUPPORT
 #define MULTILANG_SUPPORT (OS_COUNTRY == OS_CONF_MULTILANG)
-#endif
-
-#ifndef AES3D
-#define AES3D (AESVERSION >= 0x330)
 #endif
 
 #ifndef COLORICON_SUPPORT

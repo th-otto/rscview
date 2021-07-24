@@ -393,10 +393,7 @@ static _WORD crysbind(AESPB *pb)
 	case OBJC_SYSVAR:
 		aestrace("objc_sysvar()");
 		AES_PARAMS(48,4,3,0,0);
-		if (gl_aes3d)
-			ret = ob_sysvar(OB_MODE, OB_WHICH, OB_I1, OB_I2, &OB_O1, &OB_O2);
-		else
-			ret = FALSE;
+		ret = ob_sysvar(OB_MODE, OB_WHICH, OB_I1, OB_I2, &OB_O1, &OB_O2);
 		break;
 
 	case OBJC_XFIND:

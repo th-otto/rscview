@@ -115,6 +115,10 @@ _WORD ob_sysvar(_UWORD mode, _UWORD which, _WORD inval1, _WORD inval2, _WORD *ou
 				gl_actbutcol = inval1;	/* set activator button color */
 			else
 				gl_alrtcol = inval1;	/* set alert background color */
+			/*
+			 * rscview hack: activate global flag
+			 */
+			gl_aes3d = gl_indbutcol != G_WHITE || gl_actbutcol != G_WHITE || gl_alrtcol != G_WHITE;
 			break;
 
 		default:
@@ -144,8 +148,8 @@ _WORD ob_sysvar(_UWORD mode, _UWORD which, _WORD inval1, _WORD inval2, _WORD *ou
 			*outval1 = gl_alrtcol;
 			break;
 		case AD3DVALUE:
-			*outval1 = ADJ3DPIX;		/* horizontal */
-			*outval2 = ADJ3DPIX;		/* vertical */
+			*outval1 = ADJ3DSTD;		/* horizontal */
+			*outval2 = ADJ3DSTD;		/* vertical */
 			break;
 		default:
 			ret = FALSE;				/* error */
@@ -306,25 +310,32 @@ static void draw_hi(GRECT *prect, _WORD state, _WORD clip, _WORD th, _WORD icol)
 
 /*
  * Routine to XOR color in any resolution as if there is only 16 colors.
- * FROM THE VDI MANUAL: Section 6 (Raster Operations) Table 6-2
- * Pixel VDI #  Default color
- * ----- -----  -------------
- * 0000	    0	white
- * 0001	    2	red
- * 0010	    3	green
- * 0011	    6	yellow
- * 0100	    4	blue
- * 0101	    7	magenta
- * 0110	    5	cyan
- * 0111	    8	low white
- * 1000	    9	grey
- * 1001	    10	light red
- * 1010	    11	light green
- * 1011	    14	light yellow
- * 1100	    12	light blue
- * 1101	    15	light magenta
- * 1110	    13  light cyan
- * 1111	    1	black
+ *
+ *  4-colour table:
+ *  Pixel value  VDI pen#   Colour       Pixel XOR    Complementary colour
+ *       00         0       white            11       black
+ *       01         2       red              10       green
+ *       10         3       green            01       red
+ *       11         1       black            00       white
+ *
+ *  16-colour table:
+ *  Pixel value  VDI pen#   Colour       Pixel XOR    Complementary colour
+ *      0000        0       white           1111      black
+ *      0001        2       red             1110      light cyan
+ *      0010        3       green           1101      light magenta
+ *      0011        6       yellow          1100      light blue
+ *      0100        4       blue            1011      light yellow
+ *      0101        7       magenta         1010      light green
+ *      0110        5       cyan            1001      light red
+ *      0111        8       low white       1000      grey
+ *      1000        9       grey            0111      low white
+ *      1001       10       light red       0110      cyan
+ *      1010       11       light green     0101      magenta
+ *      1011       14       light yellow    0100      blue
+ *      1100       12       light blue      0011      yellow
+ *      1101       15       light magenta   0010      green
+ *      1110       13       light cyan      0001      red
+ *      1111        1       black           0000      white
  */
 
 
@@ -359,7 +370,7 @@ static _WORD xor16(_WORD col)
  *
  * (used by just_draw() and ob_change())
  */
-static _BOOL xor_ok(_WORD type, _WORD flags, OBSPEC spec)
+static _BOOL xor_is_ok(_WORD type, _WORD flags, OBSPEC spec)
 {
 	_UWORD i;
 	_WORD tcol, icol, dummy;
@@ -391,7 +402,7 @@ static _BOOL xor_ok(_WORD type, _WORD flags, OBSPEC spec)
 	}
 	gr_crack(i, &dummy, &tcol, &dummy, &icol, &dummy);
 
-	return tcol < G_RED && icol < G_RED;
+	return tcol <= G_BLACK && icol <= G_BLACK;
 }
 
 
@@ -436,7 +447,7 @@ static void just_draw(OBJECT *tree, _WORD obj, _WORD sx, _WORD sy)
 	if (gl_aes3d && (flags & OF_FL3DIND))
 	{
 		three_d = TRUE;					/* object is 3D */
-		tmpx = ADJ3DPIX;
+		tmpx = ADJ3DSTD;
 		pt->g_x -= tmpx;				/* expand object to accomodate */
 		pt->g_y -= tmpx;				/*  hi-lights for 3D */
 		pt->g_w += (tmpx << 1);
@@ -455,7 +466,7 @@ static void just_draw(OBJECT *tree, _WORD obj, _WORD sx, _WORD sy)
 	{
 		/* For non-3d objects, force color change if XOR is not ok. */
 		three_d = FALSE;
-		chcol = !xor_ok(obtype, flags, spec);
+		chcol = !xor_is_ok(obtype, flags, spec);
 		mvtxt = FALSE; /* quiet compiler */
 	}
 
@@ -828,7 +839,7 @@ static void just_draw(OBJECT *tree, _WORD obj, _WORD sx, _WORD sy)
 
 		if (state & OS_DISABLED)
 		{
-			if (gl_aes3d && (flags & (OF_FL3DIND | OF_FL3DBAK)) == OF_FL3DBAK)
+			if (gl_aes3d && (flags & (OF_FL3DIND | OF_FL3DBAK)) == OF_FL3DBAK && gl_alrtcol < gl_ws.ws_ncolors)
 				vsf_color(gl_handle, gl_alrtcol);
 			else
 				vsf_color(gl_handle, G_WHITE);
@@ -846,10 +857,7 @@ static void just_draw(OBJECT *tree, _WORD obj, _WORD sx, _WORD sy)
 
 	if (three_d)
 	{
-		if (state & OS_SELECTED)
-			draw_hi(&c, OS_SELECTED, FALSE, thick, icol);
-		else
-			draw_hi(&c, OS_NORMAL, FALSE, thick, icol);
+		draw_hi(&c, state, FALSE, thick, icol);
 	}
 }
 
@@ -1166,7 +1174,7 @@ _BOOL ob_change(OBJECT *tree, _WORD obj, _WORD new_state, _WORD redraw)
 			 * the image must be redrawn by just_draw().  If they're selected,
 			 * just_draw() does the XOR box before redrawing the image.
 			 */
-			_BOOL xok = xor_ok(obtype, flags, spec);
+			_BOOL xok = xor_is_ok(obtype, flags, spec);
 
 			if (!gl_aes3d || xok || (obtype == G_IMAGE && !(new_state & OS_SELECTED)))
 			{
@@ -1297,7 +1305,7 @@ void ob_gclip(OBJECT *tree, _WORD obj, _WORD *pxoff, _WORD *pyoff, _WORD *pxcl, 
 	*pyoff = r.g_y = y;
 
 	/* Get gr_inside() offset */
-	off3d = (flags & OF_FL3DIND) ? ADJ3DPIX : 0;
+	off3d = (flags & OF_FL3DIND) ? ADJ3DSTD : 0;
 
 	if (state & OS_OUTLINED)
 		offset = -ADJOUTLPIX - off3d;

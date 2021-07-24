@@ -51,6 +51,7 @@ static const char *html_dir;
 static FILE *htmlout_file;
 static FILE *pnglist_file;
 static _BOOL gen_imagemap;
+static _BOOL aes_3d = FALSE;
 
 /*****************************************************************************/
 /* ------------------------------------------------------------------------- */
@@ -61,6 +62,7 @@ static void open_screen(void)
 	int i;
 	_WORD pxy[8];
 	_WORD workin[11];
+	_WORD dummy;
 
 	vdi_handle = phys_handle;
 	for (i = 0; i < 10; i++)
@@ -80,6 +82,22 @@ static void open_screen(void)
 	vr_recfl(vdi_handle, pxy);
 
 	vsf_color(vdi_handle, G_WHITE);
+	
+	if (aes_3d)
+	{
+		objc_sysvar(SV_SET, LK3DIND, FALSE, TRUE, &dummy, &dummy);
+		objc_sysvar(SV_SET, LK3DACT, TRUE, FALSE, &dummy, &dummy);
+		objc_sysvar(SV_SET, INDBUTCOL, G_LWHITE, 0, &dummy, &dummy);
+		objc_sysvar(SV_SET, ACTBUTCOL, G_LWHITE, 0, &dummy, &dummy);
+		objc_sysvar(SV_SET, BACKGRCOL, G_LWHITE, 0, &dummy, &dummy);
+	} else
+	{
+		objc_sysvar(SV_SET, LK3DIND, FALSE, FALSE, &dummy, &dummy);
+		objc_sysvar(SV_SET, LK3DACT, FALSE, FALSE, &dummy, &dummy);
+		objc_sysvar(SV_SET, INDBUTCOL, G_WHITE, 0, &dummy, &dummy);
+		objc_sysvar(SV_SET, ACTBUTCOL, G_WHITE, 0, &dummy, &dummy);
+		objc_sysvar(SV_SET, BACKGRCOL, G_WHITE, 0, &dummy, &dummy);
+	}
 }
 
 /* ------------------------------------------------------------------------- */
@@ -242,6 +260,8 @@ static _WORD write_png(RSCTREE *tree, _WORD x, _WORD y, _WORD w, _WORD h, _BOOL 
 		strcpy(basename, tree->rt_name);
 	}
 	str_lwr(basename);
+	if (aes_3d)
+		strcat(basename, "_3d");
 	p = filename;
 	if (pngdir)
 	{
@@ -820,6 +840,274 @@ static _BOOL draw_all_trees(RSCFILE *file)
 /* ------------------------------------------------------------------------- */
 /*****************************************************************************/
 
+#define ADJ3DSTD    2   /* standard pixel adjustment for 3D objects */
+
+static RSCTREE *tree_find(RSCFILE *file, const char *name)
+{
+	RSCTREE *tree;
+
+	FOR_ALL_RSC(file, tree)
+	{
+		switch (tree->rt_type)
+		{
+		case RT_DIALOG:
+		case RT_FREE:
+		case RT_UNKNOWN:
+		case RT_MENU:
+			if (strcmp(tree->rt_name, name) == 0)
+				return tree;
+			break;
+		}
+	}
+	errout(_("%s: tree not found: %s\n"), program_name, name);
+	return NULL;
+}
+
+/*** ---------------------------------------------------------------------- ***/
+
+static RSCTREE *str_find(RSCFILE *file, const char *name)
+{
+	RSCTREE *tree;
+
+	FOR_ALL_RSC(file, tree)
+	{
+		switch (tree->rt_type)
+		{
+		case RT_FRSTR:
+			if (strcmp(tree->rt_name, name) == 0)
+				return tree;
+			break;
+		}
+	}
+	errout(_("%s: string not found: %s\n"), program_name, name);
+	return NULL;
+}
+
+/*** ---------------------------------------------------------------------- ***/
+
+static OBJECT *obj_with_name(RSCFILE *file, RSCTREE *tree, const char *name)
+{
+	const char *p;
+	_WORD ob;
+	
+	if (file == NULL || tree == NULL)
+		return NULL;
+	p = tree->rt_obnames;
+	for (ob = 0; ob < tree->rt_nobs; ob++, p += MAXNAMELEN + 1)
+		if (strcmp(p, name) == 0)
+			return tree->rt_objects.dial.di_tree + ob;
+	errout(_("%s: object not found: %s\n"), program_name, name);
+	return NULL;
+}
+
+/*** ---------------------------------------------------------------------- ***/
+
+/*
+ * Fix the file-selector dialog from EmuTOS,
+ * for displaying 3D-objects.
+ * Should be synced with fs_start() in emutos/aes/gemfslib.c
+ */
+static void fix_emutos_aes(RSCFILE *file)
+{
+	RSCTREE *tree;
+	OBJECT *obj;
+	OBJECT *filearea = NULL;
+	TEDINFO *ted;
+	_WORD i, row;
+	OBJECT *root;
+
+	tree = tree_find(file, "FSELECTR");
+	if (tree == NULL)
+		return;
+	root = tree->rt_objects.dial.di_tree;
+
+	obj = obj_with_name(file, tree, "FSTITLE");
+	if (obj != NULL && obj->ob_type == G_STRING)
+	{
+		RSCTREE *str;
+		_WORD len;
+
+		str = str_find(file, "ITEMSLCT");
+		if (str != NULL)
+		{
+			obj->ob_spec.free_string = str->rt_objects.str.fr_str;
+			len = strlen(obj->ob_spec.free_string) * gl_wchar;
+			if (len > root->ob_width)
+				len = root->ob_width;
+			obj->ob_x = (root->ob_width - len) / 2;
+		}
+	}
+
+	if (!aes_3d)
+		return;
+
+	/*
+	 * adjust the positions and/or dimensions of all the objects within
+	 * FILEAREA (the IBOX that contains the closer, title, scroll bar,
+	 * and filenames), plus FILEAREA itself
+	 *
+	 * at the same time, we set any 3D object bits required
+	 */
+	obj = obj_with_name(file, tree, "FCLSBOX");
+	if (obj != NULL)
+	{
+		obj->ob_flags |= FL3DACT;
+		obj->ob_x += ADJ3DSTD;
+		obj->ob_y += ADJ3DSTD;
+	}
+	
+	obj = obj_with_name(file, tree, "FTITLE");
+	if (obj != NULL)
+	{
+		obj->ob_flags |= FL3DBAK;
+		obj->ob_x += 2 * ADJ3DSTD - 1;
+		obj->ob_height += 2 * ADJ3DSTD;
+		/* use pattern 4, just like TOS4 */
+		ted = obj->ob_spec.tedinfo;
+		ted->te_color = (ted->te_color & 0xff8f) | (IP_4PATT<<4);
+	}
+
+	obj = obj_with_name(file, tree, "FILEBOX");
+	if (obj != NULL)
+	{
+		obj->ob_y += 3 * ADJ3DSTD - 1;
+		obj->ob_width += ADJ3DSTD;
+	}
+
+	obj = obj_with_name(file, tree, "SCRLBAR");
+	if (obj != NULL)
+	{
+		obj->ob_x += 2 * ADJ3DSTD - 1;
+		obj->ob_y += 3 * ADJ3DSTD - 1;
+	}
+
+	obj = obj_with_name(file, tree, "FUPAROW");
+	if (obj != NULL)
+	{
+		obj->ob_flags |= FL3DACT;
+		obj->ob_x += ADJ3DSTD;
+		obj->ob_y += ADJ3DSTD;
+		obj->ob_width -= 2 * ADJ3DSTD;
+	}
+	
+	obj = obj_with_name(file, tree, "FSVSLID");
+	if (obj != NULL)
+	{
+		obj->ob_y += 3 * ADJ3DSTD;
+		obj->ob_height -= 6 * ADJ3DSTD;
+		/* use pattern 4, just like TOS4 */
+		obj->ob_spec.index = (obj->ob_spec.index & 0xffffff8fL) | (IP_4PATT<<4);
+	}
+
+	obj = obj_with_name(file, tree, "FSVELEV");
+	if (obj != NULL)
+	{
+		/* we only adjust x/w of FSVELEV here, because y/h are set dynamically */
+		obj->ob_flags |= FL3DACT;
+		obj->ob_x += ADJ3DSTD;
+		obj->ob_width -= 2 * ADJ3DSTD;
+		/* obj->ob_height -= 2 * ADJ3DSTD; */
+	}
+
+	obj = obj_with_name(file, tree, "FDNAROW");
+	if (obj != NULL)
+	{
+		obj->ob_flags |= FL3DACT;
+		obj->ob_x += ADJ3DSTD;
+		obj->ob_y -= ADJ3DSTD;
+		obj->ob_width -= 2 * ADJ3DSTD;
+	}
+
+	obj = obj_with_name(file, tree, "FILEAREA");
+	if (obj != NULL)
+	{
+		filearea = obj;
+		obj->ob_y -= 6;		/* squeeze things together vertically */
+		obj->ob_width += 2 * ADJ3DSTD - 1;
+		obj->ob_height += 3 * ADJ3DSTD - 1;
+	}
+
+	/*
+	 * adjust the position of all the drive-letter boxes, plus FSDRIVES
+	 * (the IBOX that includes them)
+	 *
+	 * at the same time we mark them as 3D indicators
+	 */
+	obj = obj_with_name(file, tree, "FS1STDRV");
+	if (obj != NULL)
+	{
+		_WORD first_y = obj->ob_y;
+		_ULONG drivebits = 0x105; /* just some arbitrary value for display purposes */
+
+		for (i = 0, row = 0; obj->ob_type == G_BOXCHAR; i++, obj++, row++)
+		{
+			if (obj->ob_y == first_y)
+				row = 0;
+			obj->ob_flags |= FL3DACT;
+			obj->ob_x += 2 * ADJ3DSTD;
+			obj->ob_y += 2 * ADJ3DSTD + row * (3 * ADJ3DSTD - 1);
+			if (!(drivebits & 1))
+				obj->ob_state |= OS_DISABLED;
+			if (i == 2)
+				obj->ob_state |= OS_SELECTED;
+			drivebits >>= 1;
+		}
+	}
+
+#if 0
+	/* FSDRIVES is an IBOX and invisible; no need to adjust it */
+	obj = obj_with_name(file, tree, "FSDRIVES");
+	if (obj != NULL)
+	{
+		obj->ob_height += 2 * ADJ3DSTD + DRIVE_ROWS * (3 * ADJ3DSTD - 1);
+		obj->ob_width += 4 * ADJ3DSTD;
+	}
+#endif
+
+	/*
+	 * finally, handle the remaining objects that have ROOT as a parent, plus ROOT
+	 *
+	 * FSOK/FSCANCEL must move left to avoid interfering with FSDRIVES in lower resolutions
+	 */
+	obj = obj_with_name(file, tree, "FSDIRECT");
+	if (obj != NULL)
+		obj->ob_flags |= FL3DBAK;
+	obj = obj_with_name(file, tree, "FSSELECT");
+	if (obj != NULL)
+		obj->ob_flags |= FL3DBAK;
+	obj = obj_with_name(file, tree, "FSDRVTXT");
+	if (obj != NULL)
+		obj->ob_flags |= FL3DBAK;
+
+	obj = obj_with_name(file, tree, "FSOK");
+	if (obj != NULL)
+	{
+		obj->ob_flags |= FL3DACT;
+		if (filearea != NULL)
+			obj->ob_x = filearea->ob_x;
+		obj->ob_y += ADJ3DSTD;
+	}
+
+	obj = obj_with_name(file, tree, "FSCANCEL");
+	if (obj != NULL)
+	{
+		obj->ob_flags |= FL3DACT;
+		if (filearea != NULL)
+			obj->ob_x = filearea->ob_x + filearea->ob_width - obj->ob_width;
+		obj->ob_y += ADJ3DSTD;
+	}
+	
+	obj = root;
+	obj->ob_flags |= FL3DBAK;
+    obj->ob_height += 2 * ADJ3DSTD;
+}
+
+#undef ADJ3DSTD
+
+/*****************************************************************************/
+/* ------------------------------------------------------------------------- */
+/*****************************************************************************/
+
 enum rscview_opt {
 	OPT_VERBOSE = 'v',
 	OPT_XML = 'X',
@@ -827,6 +1115,7 @@ enum rscview_opt {
 	OPT_PODIR = 'p',
 	OPT_PNGDIR = 'P',
 	OPT_CHARSET = 'c',
+	OPT_3D = '3',
 	OPT_VERSION = 'V',
 	OPT_HELP = 'h',
 	
@@ -858,6 +1147,7 @@ static struct option const long_options[] = {
 	{ "timestamps", no_argument, NULL, OPT_TIMESTAMPS },
 	{ "report-po", no_argument, NULL, OPT_REPORT_PO },
 	{ "report-rsc", no_argument, NULL, OPT_REPORT_RSC },
+	{ "3d", no_argument, NULL, OPT_3D },
 	{ "version", no_argument, NULL, OPT_VERSION },
 	{ "help", no_argument, NULL, OPT_HELP },
 	{ NULL, no_argument, NULL, 0 }
@@ -870,14 +1160,20 @@ static void usage(FILE *fp)
 	fprintf(fp, _("%s - Create png files from GEM resource files\n"), program_name);
 	fprintf(fp, _("Usage: %s [<options>] <file...>\n"), program_name);
 	fprintf(fp, _("Options:\n"));
-	fprintf(fp, _("   -v, --verbose        emit some progress messages\n"));
-	fprintf(fp, _("   -l, --lang <lang>    read <lang>.po for translation\n")); 
-	fprintf(fp, _("   -p, --podir <dir>    lookup po-files in <dir>\n"));
-	fprintf(fp, _("   -c, --charset <name> use <charset> for display, overriding entry from po-file\n"));
-	fprintf(fp, _("   -P, --pngdir <dir>   write output files to <dir>\n"));
-	fprintf(fp, _("   -T, --timestamps     use timestamps in filenames\n"));
-	fprintf(fp, _("       --version        print version and exit\n"));
-	fprintf(fp, _("       --help           print this help and exit\n"));
+	fprintf(fp, _("   -v, --verbose               emit some progress messages\n"));
+	fprintf(fp, _("   -l, --lang <lang>           read <lang>.po for translation\n")); 
+	fprintf(fp, _("   -p, --podir <dir>           lookup po-files in <dir>\n"));
+	fprintf(fp, _("   -c, --charset <name>        use <charset> for display, overriding entry from po-file\n"));
+	fprintf(fp, _("   -P, --pngdir <dir>          write output files to <dir>\n"));
+	fprintf(fp, _("   -T, --timestamps            use timestamps in filenames\n"));
+	fprintf(fp, _("   -3, --3d                    use AES 3D flags\n"));
+	fprintf(fp, _("       --create-html <file>    create HTML file with references to images\n"));
+	fprintf(fp, _("       --imagemap              create an imagemap for use in HTML\n"));
+	fprintf(fp, _("       --create-pnglist <file> create PHP scriptlet for written images\n"));
+	fprintf(fp, _("       --report-po             report inconsistencies in PO files\n"));
+	fprintf(fp, _("       --report-rsc            report inconsistencies in RSC files\n"));
+	fprintf(fp, _("       --version               print version and exit\n"));
+	fprintf(fp, _("       --help                  print this help and exit\n"));
 }
 
 /* ------------------------------------------------------------------------- */
@@ -909,7 +1205,7 @@ int main(int argc, char **argv)
 	const char *charset = NULL;
 	_UWORD load_flags = XRSC_SAFETY_CHECKS;
 	
-	while ((c = getopt_long_only(argc, argv, "c:l:p:P:TvXhV", long_options, NULL)) != EOF)
+	while ((c = getopt_long_only(argc, argv, "c:l:p:P:TvX3hV", long_options, NULL)) != EOF)
 	{
 		switch ((enum rscview_opt) c)
 		{
@@ -969,6 +1265,10 @@ int main(int argc, char **argv)
 			load_flags |= XRSC_REPORT_RSC;
 			break;
 		
+		case OPT_3D:
+			aes_3d = TRUE;
+			break;
+		
 		case OPT_VERSION:
 			print_version();
 			return EXIT_SUCCESS;
@@ -1018,7 +1318,7 @@ int main(int argc, char **argv)
 	appl_init();
 	
 	menu_register(-1, program_name);
-	phys_handle = graf_handle(&gl_wchar, &gl_hchar, &gl_wbox, &gl_hbox);
+	phys_handle =graf_handle(&gl_wchar, &gl_hchar, &gl_wbox, &gl_hbox);
 	wind_get(DESK, WF_WORKXYWH, &desk.g_x, &desk.g_y, &desk.g_w, &desk.g_h);
 
 	while (optind < argc)
@@ -1027,6 +1327,10 @@ int main(int argc, char **argv)
 		file = load_all(filename, gl_wchar, gl_hchar, lang, load_flags, po_dir);
 		if (file != NULL)
 		{
+			if (file->rsc_emutos == EMUTOS_AES)
+			{
+				fix_emutos_aes(file);
+			}
 			if (charset)
 			{
 				int cset = po_get_charset_id(charset);

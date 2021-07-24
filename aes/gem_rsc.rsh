@@ -1,11 +1,17 @@
 /*
  * GEM resource C output of gem
  *
- * created by ORCS 2.16
+ * created by ORCS 2.18
  */
 
 #if !defined(__GNUC__) || !defined(__mc68000__)
 #include <portab.h>
+#endif
+
+#ifndef __STDC__
+# ifdef __PUREC__
+#  define __STDC__ 1
+# endif
 #endif
 
 #ifdef OS_WINDOWS
@@ -19,7 +25,7 @@
 #  endif
 #else
 #  ifdef __TURBOC__
-#    include <portaes.h>
+#    include <aes.h>
 #    define CP (_WORD *)
 #  endif
 #endif
@@ -176,7 +182,11 @@
 #  ifdef WORD
 #    define _WORD WORD
 #  else
-#    define _WORD short
+#    ifdef __PUREC__
+#      define _WORD int
+#    else
+#      define _WORD short
+#    endif
 #  endif
 #endif
 
@@ -266,10 +276,10 @@
 extern _BOOL W_Cicon_Setpalette(_WORD *_palette);
 #endif
 #ifndef hrelease_objs
-extern _VOID hrelease_objs(OBJECT *_ob, _WORD _num_objs);
+extern void hrelease_objs(OBJECT *_ob, _WORD _num_objs);
 #endif
 #ifndef hfix_objs
-extern _VOID *hfix_objs(RSHDR *_hdr, OBJECT *_ob, _WORD _num_objs);
+extern void *hfix_objs(RSHDR *_hdr, OBJECT *_ob, _WORD _num_objs);
 #endif
 #endif
 
@@ -303,12 +313,12 @@ extern _VOID *hfix_objs(RSHDR *_hdr, OBJECT *_ob, _WORD _num_objs);
 #undef NUM_OBS
 #undef NUM_TREE
 #undef NUM_UD
-#define NUM_STRINGS 79
+#define NUM_STRINGS 77
 #define NUM_BB		14
 #define NUM_IB		0
 #define NUM_CIB     0
 #define NUM_CIC     0
-#define NUM_TI		14
+#define NUM_TI		13
 #define NUM_FRSTR	25
 #define NUM_FRIMG	14
 #define NUM_OBS     66
@@ -323,87 +333,85 @@ extern _VOID *hfix_objs(RSHDR *_hdr, OBJECT *_ob, _WORD _num_objs);
 
 static TEDINFO rs_tedinfo[NUM_TI];
 static OBJECT rs_object[NUM_OBS];
-static char gem_rsc_string_space[172];
+static char gem_rsc_string_space[171];
 
 static char const gem_rsc_string_0[] = "_";
 static char const gem_rsc_string_1[] = N_("Directory:");
 #define gem_rsc_string_2 &gem_rsc_string_space[0]
 static char const gem_rsc_string_3[] = "______________________________________";
 static char const gem_rsc_string_4[] = "P";
-#define gem_rsc_string_5 &gem_rsc_string_space[39]
-static char const gem_rsc_string_6[] = N_("Drive:");
-static char const gem_rsc_string_7[] = "";
-#define gem_rsc_string_8 &gem_rsc_string_space[40]
-static char const gem_rsc_string_9[] = N_("Selection: ________.___");
-static char const gem_rsc_string_10[] = "f";
+static char const gem_rsc_string_5[] = N_("Drive:");
+#define gem_rsc_string_6 &gem_rsc_string_space[39]
+static char const gem_rsc_string_7[] = N_("Selection: ________.___");
+static char const gem_rsc_string_8[] = "f";
+static char const gem_rsc_string_9[] = "";
+static char const gem_rsc_string_10[] = "";
 static char const gem_rsc_string_11[] = "";
-static char const gem_rsc_string_12[] = "";
-static char const gem_rsc_string_13[] = "";
-#define gem_rsc_string_14 &gem_rsc_string_space[52]
-static char const gem_rsc_string_15[] = "_ ________.___ ";
-static char const gem_rsc_string_16[] = "xF";
-#define gem_rsc_string_17 &gem_rsc_string_space[65]
-static char const gem_rsc_string_18[] = "_ ________.___ ";
-static char const gem_rsc_string_19[] = "xF";
-#define gem_rsc_string_20 &gem_rsc_string_space[78]
-static char const gem_rsc_string_21[] = "_ ________.___ ";
-static char const gem_rsc_string_22[] = "xF";
-#define gem_rsc_string_23 &gem_rsc_string_space[91]
-static char const gem_rsc_string_24[] = "_ ________.___ ";
-static char const gem_rsc_string_25[] = "xF";
-#define gem_rsc_string_26 &gem_rsc_string_space[104]
-static char const gem_rsc_string_27[] = "_ ________.___ ";
-static char const gem_rsc_string_28[] = "xF";
-#define gem_rsc_string_29 &gem_rsc_string_space[117]
-static char const gem_rsc_string_30[] = "_ ________.___ ";
-static char const gem_rsc_string_31[] = "xF";
-#define gem_rsc_string_32 &gem_rsc_string_space[130]
-static char const gem_rsc_string_33[] = "_ ________.___ ";
-static char const gem_rsc_string_34[] = "xF";
-#define gem_rsc_string_35 &gem_rsc_string_space[143]
-static char const gem_rsc_string_36[] = "_ ________.___ ";
-static char const gem_rsc_string_37[] = "xF";
-#define gem_rsc_string_38 &gem_rsc_string_space[156]
-static char const gem_rsc_string_39[] = "_ ________.___ ";
-static char const gem_rsc_string_40[] = "xF";
-static char const gem_rsc_string_41[] = N_("OK");
-static char const gem_rsc_string_42[] = N_("Cancel");
+#define gem_rsc_string_12 &gem_rsc_string_space[51]
+static char const gem_rsc_string_13[] = "_ ________.___ ";
+static char const gem_rsc_string_14[] = "xF";
+#define gem_rsc_string_15 &gem_rsc_string_space[64]
+static char const gem_rsc_string_16[] = "_ ________.___ ";
+static char const gem_rsc_string_17[] = "xF";
+#define gem_rsc_string_18 &gem_rsc_string_space[77]
+static char const gem_rsc_string_19[] = "_ ________.___ ";
+static char const gem_rsc_string_20[] = "xF";
+#define gem_rsc_string_21 &gem_rsc_string_space[90]
+static char const gem_rsc_string_22[] = "_ ________.___ ";
+static char const gem_rsc_string_23[] = "xF";
+#define gem_rsc_string_24 &gem_rsc_string_space[103]
+static char const gem_rsc_string_25[] = "_ ________.___ ";
+static char const gem_rsc_string_26[] = "xF";
+#define gem_rsc_string_27 &gem_rsc_string_space[116]
+static char const gem_rsc_string_28[] = "_ ________.___ ";
+static char const gem_rsc_string_29[] = "xF";
+#define gem_rsc_string_30 &gem_rsc_string_space[129]
+static char const gem_rsc_string_31[] = "_ ________.___ ";
+static char const gem_rsc_string_32[] = "xF";
+#define gem_rsc_string_33 &gem_rsc_string_space[142]
+static char const gem_rsc_string_34[] = "_ ________.___ ";
+static char const gem_rsc_string_35[] = "xF";
+#define gem_rsc_string_36 &gem_rsc_string_space[155]
+static char const gem_rsc_string_37[] = "_ ________.___ ";
+static char const gem_rsc_string_38[] = "xF";
+static char const gem_rsc_string_39[] = N_("OK");
+static char const gem_rsc_string_40[] = N_("Cancel");
+static char const gem_rsc_string_41[] = "";
+static char const gem_rsc_string_42[] = "";
 static char const gem_rsc_string_43[] = "";
 static char const gem_rsc_string_44[] = "";
 static char const gem_rsc_string_45[] = "";
 static char const gem_rsc_string_46[] = "";
 static char const gem_rsc_string_47[] = "";
 static char const gem_rsc_string_48[] = "";
-static char const gem_rsc_string_49[] = "";
+static char const gem_rsc_string_49[] = "X";
 static char const gem_rsc_string_50[] = "";
-static char const gem_rsc_string_51[] = "X";
-static char const gem_rsc_string_52[] = "";
-static char const gem_rsc_string_53[] = "";
-static char const gem_rsc_string_54[] = N_("[1][The disk in drive %c: is|physically write-protected.][Cancel|Retry]");
-static char const gem_rsc_string_55[] = N_("[2][Drive %c: is not responding.|Please check the disk drive,|or insert a disk.][Cancel|Retry]");
-static char const gem_rsc_string_56[] = N_("[1][Data on the disk in drive %c:|may be damaged.][Cancel|Retry]");
-static char const gem_rsc_string_57[] = N_("[2][This application cannot read|data on the disk in drive %c:.][Cancel|Retry]");
-static char const gem_rsc_string_58[] = N_("[1][Your output device is not|receiving data.][Cancel|Retry]");
-static char const gem_rsc_string_59[] = N_("[3][An error has occurred in GEM.|Please contact the EmuTOS|Development Team.][Cancel]");
-static char const gem_rsc_string_60[] = N_("[2][This application cannot|find the folder or file|you just tried to access.][  OK  ]");
-static char const gem_rsc_string_61[] = N_("[1][This application does not|have room to open another|document.  To make room,|close any document that|you do not need.][  OK  ]");
-static char const gem_rsc_string_62[] = N_("[1][An item with this name|already exists in the|directory, or this item|is set to Read Only status.][  OK  ]");
-static char const gem_rsc_string_63[] = N_("[1][The drive you specified|does not exist.][ Cancel ]");
-static char const gem_rsc_string_64[] = N_("[1][There is not enough memory|in your computer for the|application you just tried|to run.][  OK  ]");
-static char const gem_rsc_string_65[] = N_("[3][TOS error #%u.][Cancel]");
-static char const gem_rsc_string_66[] = N_("[3][Unsupported AES function #%d.][Cancel]");
-static char const gem_rsc_string_67[] = N_("[3][Please insert disk %c|into drive A:.][  OK  ]");
-static char const gem_rsc_string_68[] = N_("ITEM SELECTOR");
-static char const gem_rsc_string_69[] = "0..9";
-static char const gem_rsc_string_70[] = N_("A..Z \200\216\217\220\222\231\232\245\265\266\267\270\236\302..\334");
-static char const gem_rsc_string_71[] = N_("0..9A..Z \200\216\217\220\222\231\232\245\265\266\267\270\236\302..\334");
-static char const gem_rsc_string_72[] = N_("0..9a..zA..Z\200..\377\\?*:._");
-static char const gem_rsc_string_73[] = N_("0..9a..zA..Z\200..\377\\:_");
-static char const gem_rsc_string_74[] = N_("a..z0..9A..Z\200..\377:?*_");
-static char const gem_rsc_string_75[] = N_("a..z0..9A..Z\200..\377_");
-static char const gem_rsc_string_76[] = N_("a..zA..Z \200..\377");
-static char const gem_rsc_string_77[] = N_("0..9a..zA..Z \200..\377");
-static char const gem_rsc_string_78[] = N_("[1][The system does not have |enough memory for this|directory.][  OK  ]");
+static char const gem_rsc_string_51[] = "";
+static char const gem_rsc_string_52[] = N_("[1][The disk in drive %c: is|physically write-protected.][Cancel|Retry]");
+static char const gem_rsc_string_53[] = N_("[2][Drive %c: is not responding.|Please check the disk drive,|or insert a disk.][Cancel|Retry]");
+static char const gem_rsc_string_54[] = N_("[1][Data on the disk in drive %c:|may be damaged.][Cancel|Retry]");
+static char const gem_rsc_string_55[] = N_("[2][This application cannot read|data on the disk in drive %c:.][Cancel|Retry]");
+static char const gem_rsc_string_56[] = N_("[1][Your output device is not|receiving data.][Cancel|Retry]");
+static char const gem_rsc_string_57[] = N_("[3][An error has occurred in GEM.|Please contact the EmuTOS|Development Team.][Cancel]");
+static char const gem_rsc_string_58[] = N_("[2][This application cannot|find the folder or file|you just tried to access.][  OK  ]");
+static char const gem_rsc_string_59[] = N_("[1][This application does not|have room to open another|document.  To make room,|close any document that|you do not need.][  OK  ]");
+static char const gem_rsc_string_60[] = N_("[1][An item with this name|already exists in the|directory, or this item|is set to Read Only status.][  OK  ]");
+static char const gem_rsc_string_61[] = N_("[1][The drive you specified|does not exist.][ Cancel ]");
+static char const gem_rsc_string_62[] = N_("[1][There is not enough memory|in your computer for the|application you just tried|to run.][  OK  ]");
+static char const gem_rsc_string_63[] = N_("[3][TOS error #%u.][Cancel]");
+static char const gem_rsc_string_64[] = N_("[3][Unsupported AES function #%d.][Cancel]");
+static char const gem_rsc_string_65[] = N_("[3][Please insert disk %c|into drive A:.][  OK  ]");
+static char const gem_rsc_string_66[] = N_("ITEM SELECTOR");
+static char const gem_rsc_string_67[] = "0..9";
+static char const gem_rsc_string_68[] = N_("A..Z \200\216\217\220\222\231\232\245\265\266\267\270\236\302..\334");
+static char const gem_rsc_string_69[] = N_("0..9A..Z \200\216\217\220\222\231\232\245\265\266\267\270\236\302..\334");
+static char const gem_rsc_string_70[] = N_("0..9a..zA..Z\200..\377\\?*:._");
+static char const gem_rsc_string_71[] = N_("0..9a..zA..Z\200..\377\\:_");
+static char const gem_rsc_string_72[] = N_("a..z0..9A..Z\200..\377:?*_");
+static char const gem_rsc_string_73[] = N_("a..z0..9A..Z\200..\377_");
+static char const gem_rsc_string_74[] = N_("a..zA..Z \200..\377");
+static char const gem_rsc_string_75[] = N_("0..9a..zA..Z \200..\377");
+static char const gem_rsc_string_76[] = N_("[1][The system does not have |enough memory for this|directory.][  OK  ]");
 
 
 /* data of NOTEBB */
@@ -538,6 +546,8 @@ static _UBYTE const gem_rsc_IMAGE13[] = {
 
 
 const char *const rs_fstr[] = {
+	gem_rsc_string_52,
+	gem_rsc_string_53,
 	gem_rsc_string_54,
 	gem_rsc_string_55,
 	gem_rsc_string_56,
@@ -560,9 +570,7 @@ const char *const rs_fstr[] = {
 	gem_rsc_string_73,
 	gem_rsc_string_74,
 	gem_rsc_string_75,
-	gem_rsc_string_76,
-	gem_rsc_string_77,
-	gem_rsc_string_78
+	gem_rsc_string_76
 };
 
 
@@ -604,19 +612,18 @@ static const BITBLK *const rs_frimg[NUM_FRIMG] = {
 
 static TEDINFO const rs_tedinfo_rom[NUM_TI] = {
 	{ (char*)gem_rsc_string_2, (char*)gem_rsc_string_3, (char*)gem_rsc_string_4, IBM, 1, TE_LEFT, 0x1100, 0x0, 0, 39,39 }, /* FSDIRECT */
-	{ (char*)gem_rsc_string_5, (char*)gem_rsc_string_6, (char*)gem_rsc_string_7, IBM, 6, TE_CNTR, 0x1180, 0x0, -1, 1,7 }, /* FSDRIVE */
-	{ (char*)gem_rsc_string_8, (char*)gem_rsc_string_9, (char*)gem_rsc_string_10, IBM, 1, TE_LEFT, 0x1100, 0x0, 0, 12,24 }, /* FSSELECT */
-	{ (char*)gem_rsc_string_11, (char*)gem_rsc_string_12, (char*)gem_rsc_string_13, IBM, 6, TE_CNTR, 0x11A1, 0x0, -1, 1,1 }, /* FTITLE */
-	{ (char*)gem_rsc_string_14, (char*)gem_rsc_string_15, (char*)gem_rsc_string_16, IBM, 1, TE_LEFT, 0x1100, 0x0, 0, 13,16 }, /* F1NAME */
-	{ (char*)gem_rsc_string_17, (char*)gem_rsc_string_18, (char*)gem_rsc_string_19, IBM, 1, TE_LEFT, 0x1100, 0x0, 0, 13,16 }, /* F2NAME */
-	{ (char*)gem_rsc_string_20, (char*)gem_rsc_string_21, (char*)gem_rsc_string_22, IBM, 1, TE_LEFT, 0x1100, 0x0, 0, 13,16 }, /* F3NAME */
-	{ (char*)gem_rsc_string_23, (char*)gem_rsc_string_24, (char*)gem_rsc_string_25, IBM, 1, TE_LEFT, 0x1100, 0x0, 0, 13,16 }, /* F4NAME */
-	{ (char*)gem_rsc_string_26, (char*)gem_rsc_string_27, (char*)gem_rsc_string_28, IBM, 1, TE_LEFT, 0x1100, 0x0, 0, 13,16 }, /* F5NAME */
-	{ (char*)gem_rsc_string_29, (char*)gem_rsc_string_30, (char*)gem_rsc_string_31, IBM, 1, TE_LEFT, 0x1100, 0x0, 0, 13,16 }, /* F6NAME */
-	{ (char*)gem_rsc_string_32, (char*)gem_rsc_string_33, (char*)gem_rsc_string_34, IBM, 1, TE_LEFT, 0x1100, 0x0, 0, 13,16 }, /* F7NAME */
-	{ (char*)gem_rsc_string_35, (char*)gem_rsc_string_36, (char*)gem_rsc_string_37, IBM, 1, TE_LEFT, 0x1100, 0x0, 0, 13,16 }, /* F8NAME */
-	{ (char*)gem_rsc_string_38, (char*)gem_rsc_string_39, (char*)gem_rsc_string_40, IBM, 1, TE_LEFT, 0x1100, 0x0, 0, 13,16 }, /* F9NAME */
-	{ (char*)gem_rsc_string_51, (char*)gem_rsc_string_52, (char*)gem_rsc_string_53, IBM, 1, TE_CNTR, 0x1100, 0x0, 1, 2,1 } /* APPTITLE */
+	{ (char*)gem_rsc_string_6, (char*)gem_rsc_string_7, (char*)gem_rsc_string_8, IBM, 1, TE_LEFT, 0x1100, 0x0, 0, 12,24 }, /* FSSELECT */
+	{ (char*)gem_rsc_string_9, (char*)gem_rsc_string_10, (char*)gem_rsc_string_11, IBM, 6, TE_CNTR, 0x11A1, 0x0, -1, 1,1 }, /* FTITLE */
+	{ (char*)gem_rsc_string_12, (char*)gem_rsc_string_13, (char*)gem_rsc_string_14, IBM, 1, TE_LEFT, 0x1100, 0x0, 0, 13,16 }, /* F1NAME */
+	{ (char*)gem_rsc_string_15, (char*)gem_rsc_string_16, (char*)gem_rsc_string_17, IBM, 1, TE_LEFT, 0x1100, 0x0, 0, 13,16 }, /* F2NAME */
+	{ (char*)gem_rsc_string_18, (char*)gem_rsc_string_19, (char*)gem_rsc_string_20, IBM, 1, TE_LEFT, 0x1100, 0x0, 0, 13,16 }, /* F3NAME */
+	{ (char*)gem_rsc_string_21, (char*)gem_rsc_string_22, (char*)gem_rsc_string_23, IBM, 1, TE_LEFT, 0x1100, 0x0, 0, 13,16 }, /* F4NAME */
+	{ (char*)gem_rsc_string_24, (char*)gem_rsc_string_25, (char*)gem_rsc_string_26, IBM, 1, TE_LEFT, 0x1100, 0x0, 0, 13,16 }, /* F5NAME */
+	{ (char*)gem_rsc_string_27, (char*)gem_rsc_string_28, (char*)gem_rsc_string_29, IBM, 1, TE_LEFT, 0x1100, 0x0, 0, 13,16 }, /* F6NAME */
+	{ (char*)gem_rsc_string_30, (char*)gem_rsc_string_31, (char*)gem_rsc_string_32, IBM, 1, TE_LEFT, 0x1100, 0x0, 0, 13,16 }, /* F7NAME */
+	{ (char*)gem_rsc_string_33, (char*)gem_rsc_string_34, (char*)gem_rsc_string_35, IBM, 1, TE_LEFT, 0x1100, 0x0, 0, 13,16 }, /* F8NAME */
+	{ (char*)gem_rsc_string_36, (char*)gem_rsc_string_37, (char*)gem_rsc_string_38, IBM, 1, TE_LEFT, 0x1100, 0x0, 0, 13,16 }, /* F9NAME */
+	{ (char*)gem_rsc_string_49, (char*)gem_rsc_string_50, (char*)gem_rsc_string_51, IBM, 1, TE_CNTR, 0x1100, 0x0, 1, 2,1 } /* APPTITLE */
 };
 
 
@@ -627,8 +634,8 @@ static OBJECT const rs_object_rom[NUM_OBS] = {
 	{ 2, -1, -1, G_STRING, OF_NONE, OS_NORMAL, C_UNION(gem_rsc_string_0), 1,2048, 1,1 }, /* FSTITLE */
 	{ 3, -1, -1, G_STRING, OF_NONE, OS_NORMAL, C_UNION(gem_rsc_string_1), 1,2, 10,1 },
 	{ 4, -1, -1, G_FBOXTEXT, OF_EDITABLE, OS_NORMAL, C_UNION(&rs_tedinfo[0]), 1,1027, 38,1 }, /* FSDIRECT */
-	{ 5, -1, -1, G_FTEXT, OF_NONE, OS_NORMAL, C_UNION(&rs_tedinfo[1]), 27,5, 11,1 }, /* FSDRIVE */
-	{ 6, -1, -1, G_FBOXTEXT, OF_EDITABLE, OS_NORMAL, C_UNION(&rs_tedinfo[2]), 1,5, 24,1 }, /* FSSELECT */
+	{ 5, -1, -1, G_STRING, OF_NONE, OS_NORMAL, C_UNION(gem_rsc_string_5), 27,5, 11,1 }, /* FSDRVTXT */
+	{ 6, -1, -1, G_FBOXTEXT, OF_EDITABLE, OS_NORMAL, C_UNION(&rs_tedinfo[1]), 1,5, 24,1 }, /* FSSELECT */
 	{ 33, 7, 32, G_IBOX, OF_NONE, OS_NORMAL, C_UNION(0x1100L), 27,6, 11,9 }, /* FSDRIVES */
 	{ 8, -1, -1, G_BOXCHAR, OF_TOUCHEXIT, OS_NORMAL, C_UNION(0x41FF1100L), 0,0, 3,1 }, /* FS1STDRV */
 	{ 9, -1, -1, G_BOXCHAR, OF_TOUCHEXIT, OS_NORMAL, C_UNION(0x42FF1100L), 0,1, 3,1 },
@@ -656,45 +663,45 @@ static OBJECT const rs_object_rom[NUM_OBS] = {
 	{ 31, -1, -1, G_BOXCHAR, OF_TOUCHEXIT, OS_NORMAL, C_UNION(0x58FF1100L), 8,5, 3,1 },
 	{ 32, -1, -1, G_BOXCHAR, OF_TOUCHEXIT, OS_NORMAL, C_UNION(0x59FF1100L), 8,6, 3,1 },
 	{ 6, -1, -1, G_BOXCHAR, OF_TOUCHEXIT, OS_NORMAL, C_UNION(0x5AFF1100L), 8,7, 3,1 }, /* FSLSTDRV */
-	{ 51, 34, 41, G_IBOX, OF_NONE, OS_NORMAL, C_UNION(0x1100L), 3,7, 22,12 },
+	{ 51, 34, 41, G_IBOX, OF_NONE, OS_NORMAL, C_UNION(0x1100L), 3,7, 22,12 }, /* FILEAREA */
 	{ 35, -1, -1, G_BOXCHAR, OF_TOUCHEXIT, OS_NORMAL, C_UNION(0x5FF1101L), 0,0, 2,1 }, /* FCLSBOX */
-	{ 36, -1, -1, G_BOXTEXT, OF_TOUCHEXIT, OS_NORMAL, C_UNION(&rs_tedinfo[3]), 2,0, 20,1 }, /* FTITLE */
+	{ 36, -1, -1, G_BOXTEXT, OF_TOUCHEXIT, OS_NORMAL, C_UNION(&rs_tedinfo[2]), 2,0, 20,1 }, /* FTITLE */
 	{ 41, 37, 39, G_BOX, OF_TOUCHEXIT, OS_NORMAL, C_UNION(0x11100L), 19,1, 3,11 }, /* SCRLBAR */
 	{ 38, -1, -1, G_BOXCHAR, OF_TOUCHEXIT, OS_NORMAL, C_UNION(0x1FF1100L), 0,0, 3,2 }, /* FUPAROW */
 	{ 39, -1, -1, G_BOXCHAR, OF_TOUCHEXIT, OS_NORMAL, C_UNION(0x2FF1100L), 0,9, 3,2 }, /* FDNAROW */
 	{ 36, 40, 40, G_BOX, OF_TOUCHEXIT, OS_NORMAL, C_UNION(0xFF1111L), 0,2, 3,7 }, /* FSVSLID */
 	{ 39, -1, -1, G_BOX, OF_TOUCHEXIT, OS_NORMAL, C_UNION(0x11101L), 0,0, 3,1 }, /* FSVELEV */
 	{ 33, 42, 50, G_BOX, OF_TOUCHEXIT, OS_NORMAL, C_UNION(0xFF1100L), 0,1, 19,11 }, /* FILEBOX */
-	{ 43, -1, -1, G_FBOXTEXT, OF_TOUCHEXIT, OS_NORMAL, C_UNION(&rs_tedinfo[4]), 2,1, 15,1 }, /* F1NAME */
-	{ 44, -1, -1, G_FBOXTEXT, OF_TOUCHEXIT, OS_NORMAL, C_UNION(&rs_tedinfo[5]), 2,2, 15,1 }, /* F2NAME */
-	{ 45, -1, -1, G_FBOXTEXT, OF_TOUCHEXIT, OS_NORMAL, C_UNION(&rs_tedinfo[6]), 2,3, 15,1 }, /* F3NAME */
-	{ 46, -1, -1, G_FBOXTEXT, OF_TOUCHEXIT, OS_NORMAL, C_UNION(&rs_tedinfo[7]), 2,4, 15,1 }, /* F4NAME */
-	{ 47, -1, -1, G_FBOXTEXT, OF_TOUCHEXIT, OS_NORMAL, C_UNION(&rs_tedinfo[8]), 2,5, 15,1 }, /* F5NAME */
-	{ 48, -1, -1, G_FBOXTEXT, OF_TOUCHEXIT, OS_NORMAL, C_UNION(&rs_tedinfo[9]), 2,6, 15,1 }, /* F6NAME */
-	{ 49, -1, -1, G_FBOXTEXT, OF_TOUCHEXIT, OS_NORMAL, C_UNION(&rs_tedinfo[10]), 2,7, 15,1 }, /* F7NAME */
-	{ 50, -1, -1, G_FBOXTEXT, OF_TOUCHEXIT, OS_NORMAL, C_UNION(&rs_tedinfo[11]), 2,8, 15,1 }, /* F8NAME */
-	{ 41, -1, -1, G_FBOXTEXT, OF_TOUCHEXIT, OS_NORMAL, C_UNION(&rs_tedinfo[12]), 2,9, 15,1 }, /* F9NAME */
-	{ 52, -1, -1, G_BUTTON, 0x7, OS_NORMAL, C_UNION(gem_rsc_string_41), 28,16, 8,1 }, /* FSOK */
-	{ 0, -1, -1, G_BUTTON, 0x25, OS_NORMAL, C_UNION(gem_rsc_string_42), 28,18, 8,1 }, /* FSCANCEL */
+	{ 43, -1, -1, G_FBOXTEXT, OF_TOUCHEXIT, OS_NORMAL, C_UNION(&rs_tedinfo[3]), 2,1, 15,1 }, /* F1NAME */
+	{ 44, -1, -1, G_FBOXTEXT, OF_TOUCHEXIT, OS_NORMAL, C_UNION(&rs_tedinfo[4]), 2,2, 15,1 }, /* F2NAME */
+	{ 45, -1, -1, G_FBOXTEXT, OF_TOUCHEXIT, OS_NORMAL, C_UNION(&rs_tedinfo[5]), 2,3, 15,1 }, /* F3NAME */
+	{ 46, -1, -1, G_FBOXTEXT, OF_TOUCHEXIT, OS_NORMAL, C_UNION(&rs_tedinfo[6]), 2,4, 15,1 }, /* F4NAME */
+	{ 47, -1, -1, G_FBOXTEXT, OF_TOUCHEXIT, OS_NORMAL, C_UNION(&rs_tedinfo[7]), 2,5, 15,1 }, /* F5NAME */
+	{ 48, -1, -1, G_FBOXTEXT, OF_TOUCHEXIT, OS_NORMAL, C_UNION(&rs_tedinfo[8]), 2,6, 15,1 }, /* F6NAME */
+	{ 49, -1, -1, G_FBOXTEXT, OF_TOUCHEXIT, OS_NORMAL, C_UNION(&rs_tedinfo[9]), 2,7, 15,1 }, /* F7NAME */
+	{ 50, -1, -1, G_FBOXTEXT, OF_TOUCHEXIT, OS_NORMAL, C_UNION(&rs_tedinfo[10]), 2,8, 15,1 }, /* F8NAME */
+	{ 41, -1, -1, G_FBOXTEXT, OF_TOUCHEXIT, OS_NORMAL, C_UNION(&rs_tedinfo[11]), 2,9, 15,1 }, /* F9NAME */
+	{ 52, -1, -1, G_BUTTON, 0x7, OS_NORMAL, C_UNION(gem_rsc_string_39), 28,16, 8,1 }, /* FSOK */
+	{ 0, -1, -1, G_BUTTON, 0x25, OS_NORMAL, C_UNION(gem_rsc_string_40), 28,18, 8,1 }, /* FSCANCEL */
 
 /* DIALERT */
 
 	{ -1, 1, 9, G_BOX, OF_NONE, OS_SHADOWED, C_UNION(0x21100L), 0,0, 80,9 },
 	{ 2, -1, -1, G_BOX, OF_NONE, OS_NORMAL, C_UNION(0xFF1100L), 3,1, 4,4 }, /* ALICON */
-	{ 3, -1, -1, G_STRING, OF_NONE, OS_NORMAL, C_UNION(gem_rsc_string_43), 9,1, 40,1 }, /* MSGOFF */
-	{ 4, -1, -1, G_STRING, OF_NONE, OS_NORMAL, C_UNION(gem_rsc_string_44), 9,2, 50,1 },
-	{ 5, -1, -1, G_STRING, OF_NONE, OS_NORMAL, C_UNION(gem_rsc_string_45), 9,3, 50,1 },
-	{ 6, -1, -1, G_STRING, OF_NONE, OS_NORMAL, C_UNION(gem_rsc_string_46), 9,4, 50,1 },
-	{ 7, -1, -1, G_STRING, OF_NONE, OS_NORMAL, C_UNION(gem_rsc_string_47), 9,5, 50,1 },
-	{ 8, -1, -1, G_BUTTON, 0x7, OS_NORMAL, C_UNION(gem_rsc_string_48), 9,7, 16,1 }, /* BUTOFF */
-	{ 9, -1, -1, G_BUTTON, 0x7, OS_NORMAL, C_UNION(gem_rsc_string_49), 26,7, 16,1 },
-	{ 0, -1, -1, G_BUTTON, 0x27, OS_NORMAL, C_UNION(gem_rsc_string_50), 43,7, 16,1 },
+	{ 3, -1, -1, G_STRING, OF_NONE, OS_NORMAL, C_UNION(gem_rsc_string_41), 9,1, 40,1 }, /* MSGOFF */
+	{ 4, -1, -1, G_STRING, OF_NONE, OS_NORMAL, C_UNION(gem_rsc_string_42), 9,2, 50,1 },
+	{ 5, -1, -1, G_STRING, OF_NONE, OS_NORMAL, C_UNION(gem_rsc_string_43), 9,3, 50,1 },
+	{ 6, -1, -1, G_STRING, OF_NONE, OS_NORMAL, C_UNION(gem_rsc_string_44), 9,4, 50,1 },
+	{ 7, -1, -1, G_STRING, OF_NONE, OS_NORMAL, C_UNION(gem_rsc_string_45), 9,5, 50,1 },
+	{ 8, -1, -1, G_BUTTON, 0x7, OS_NORMAL, C_UNION(gem_rsc_string_46), 9,7, 16,1 }, /* BUTOFF */
+	{ 9, -1, -1, G_BUTTON, 0x7, OS_NORMAL, C_UNION(gem_rsc_string_47), 26,7, 16,1 },
+	{ 0, -1, -1, G_BUTTON, 0x27, OS_NORMAL, C_UNION(gem_rsc_string_48), 43,7, 16,1 },
 
 /* DESKTOP */
 
 	{ -1, 1, 2, G_BOX, OF_NONE, OS_NORMAL, C_UNION(0x1143L), 0,0, 80,25 },
 	{ 2, -1, -1, G_BOX, OF_NONE, OS_NORMAL, C_UNION(0xFF1100L), 0,0, 80,513 },
-	{ 0, -1, -1, G_TEXT, OF_LASTOB, OS_NORMAL, C_UNION(&rs_tedinfo[13]), 0,0, 80,769 } /* APPTITLE */
+	{ 0, -1, -1, G_TEXT, OF_LASTOB, OS_NORMAL, C_UNION(&rs_tedinfo[12]), 0,0, 80,769 } /* APPTITLE */
 };
 
 
@@ -898,7 +905,8 @@ _WORD gem_rsc_free()
 #endif /* RSC_NAMED_FUNCTIONS */
 
 #else /* !RSC_STATIC_FILE */
-_WORD rs_numstrings = 79;
+#if 0
+_WORD rs_numstrings = 77;
 _WORD rs_numfrstr = 25;
 
 _WORD rs_nuser = 0;
@@ -907,11 +915,12 @@ _WORD rs_numbb = 14;
 _WORD rs_numfrimg = 14;
 _WORD rs_numib = 0;
 _WORD rs_numcib = 0;
-_WORD rs_numti = 14;
+_WORD rs_numti = 13;
 _WORD rs_numobs = 66;
 _WORD rs_numtree = 3;
 
 char rs_name[] = "gem.rsc";
 
 _WORD _rsc_format = 2; /* RSC_FORM_SOURCE2 */
+#endif
 #endif /* RSC_STATIC_FILE */

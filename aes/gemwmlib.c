@@ -108,7 +108,7 @@ static int32_t const gl_waspec[NUM_ELEM] =
 	0x04011101L,	/* W_LFARROW	*/
 	0x03011101L,	/* W_RTARROW	*/
 	0x00011111L,	/* W_HSLIDE 	*/
-	0x00011101L 	/* W_HELEV		*/
+	0x00011101L, 	/* W_HELEV		*/
 #if AESVERSION >= 0x330
 	0x00011101L 	/* W_MENUBAR	*/
 #endif
@@ -563,6 +563,13 @@ void w_bldactive(_WORD w_handle)
 			/* comment out following line to enable pattern in window title */
 			gl_aname.te_color = (istop && !issub) ? WTS_FG : WTN_FG;
 #endif
+		}
+		if (gl_aes3d && (kind & NAME))
+		{
+			W_ACTIVE[W_NAME].ob_flags = FL3DACT;
+		} else
+		{
+			W_ACTIVE[W_NAME].ob_flags = FL3DNONE;
 		}
 		pt->g_x = 0;
 		pt->g_y += (gl_hbox - 1);

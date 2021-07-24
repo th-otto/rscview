@@ -51,7 +51,7 @@ function gen_images($lang, $dir, $genlist)
 	global $top;
 	
 	echo "generating images for $lang\n";
-	$cmd = "LD_LIBRARY_PATH=$top $top/rscview --lang $lang --podir . --timestamps --quote-html --create-html pngout.php --report-po --report-rsc";
+	$cmd = "$top/rscview --lang $lang --podir . --timestamps --quote-html --create-html pngout.php --report-po --report-rsc";
 	if ($genlist)
 		$cmd .= " --create-pnglist pnglist.php";
 	$cmd .= " --html-dir . --imagemap desktop.rsc 2>&1";
@@ -68,7 +68,7 @@ function gen_images($lang, $dir, $genlist)
 	if ($genlist)
 		system("mv pnglist.php $dir 2>&1");
 	
-	$cmd = "LD_LIBRARY_PATH=$top $top/rscview --lang $lang --podir . --timestamps --quote-html --create-html pngout.php --report-rsc";
+	$cmd = "$top/rscview --lang $lang --podir . --timestamps --quote-html --create-html pngout.php --report-rsc";
 	if ($genlist)
 		$cmd .= " --create-pnglist pnglist.php";
 	$cmd .= " --html-dir aes --imagemap gem.rsc 2>&1";
@@ -214,7 +214,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST')
 	#
 	# create images for icons
 	#
-	system("LD_LIBRARY_PATH=$top $top/rscview --quote-html --create-html pngout.php --html-dir . --imagemap icon.rsc 2>&1");
+	system("$top/rscview --quote-html --create-html pngout.php --html-dir . --imagemap icon.rsc 2>&1");
 	$dir = '../icons';
 	$stat = stat($dir);
 	if (!$stat)
@@ -226,7 +226,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST')
 	#
 	# create images for cursors
 	#
-	system("LD_LIBRARY_PATH=$top $top/rscview --quote-html --create-html pngout.php --html-dir . --imagemap mform.rsc 2>&1");
+	system("$top/rscview --quote-html --create-html pngout.php --html-dir . --imagemap mform.rsc 2>&1");
 	$dir = '../cursors';
 	$stat = stat($dir);
 	if (!$stat)

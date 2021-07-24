@@ -342,6 +342,10 @@ _WORD fm_alert(_WORD defbut, const char *palstr, _UWORD flags)
 	{
 		if (emutos_like)
 		{
+			/*
+			 * FIXME: in case they ever change,
+			 * we should take the images from gem.rsc instead
+			 */
 			switch (inm)
 			{
 			case 1:

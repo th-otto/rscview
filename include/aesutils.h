@@ -94,6 +94,38 @@ static INLINE _WORD mul_div(_WORD m1, _WORD m2, _WORD d1)
 #endif
 }
 
+/*
+ *  WORD mul_div_round(WORD mult1,WORD mult2,WORD divisor)
+ *
+ *  multiplies two WORDs together and divides by a WORD, returning a WORD.
+ *  the result is rounded away from zero if the remainder is greater than
+ *  or equal to half the divisor.
+ *
+ *  if you do not need rounding, use mul_div() instead!
+ */
+static INLINE _WORD mul_div_round(_WORD m1, _WORD m2, _WORD d1)
+{
+	_LONG inc = 1;
+	_LONG l = (_LONG) m1 * m2;
+	_WORD rem;
+
+	if (l < 0)
+		inc = -inc;
+	rem = l % d1;
+	l /= d1;
+	if (d1 < 0)
+	{
+		inc = -inc;
+		d1 = -d1;
+	}
+	if (rem < 0)
+		rem = -rem;
+	rem <<= 1;
+	if (rem >= d1)
+		l += inc;
+	return l;
+}
+
 EXTERN_C_END
 
 #endif /* __AESUTILS_H__ */

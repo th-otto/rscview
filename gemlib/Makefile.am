@@ -32,6 +32,7 @@ libgem_a_SOURCES = \
 	a_objc_draw_grect.c \
 	a_objc_offset.c \
 	a_objc_find.c \
+	a_objc_sysvar.c \
 	\
 	a_wind_get.c \
 	a_wind_set.c \

@@ -436,13 +436,13 @@ _WORD gr_slidebox(OBJECT *tree, _WORD parent, _WORD obj, _WORD isvert)
 	if (cflags)							/* if the child is 3D, then check       */
 	{
 		if (!pflags)					/* if parent is not 3D, then the child is   */
-		{								/* ADJ3DPIX off, we need to adjust it       */
-			pt->g_x -= ADJ3DPIX;
-			pt->g_y -= ADJ3DPIX;
+		{								/* ADJ3DSTD off, we need to adjust it       */
+			pt->g_x -= ADJ3DSTD;
+			pt->g_y -= ADJ3DSTD;
 			setxy = 1;
 		}
-		pt->g_w += (ADJ3DPIX << 1);
-		pt->g_h += (ADJ3DPIX << 1);
+		pt->g_w += (ADJ3DSTD << 1);
+		pt->g_h += (ADJ3DSTD << 1);
 	}
 
 	gr_dragbox(pt->g_w, pt->g_h, pt->g_x + pc->g_x, pt->g_y + pc->g_y, pc, &pt->g_x, &pt->g_y);
@@ -460,7 +460,7 @@ _WORD gr_slidebox(OBJECT *tree, _WORD parent, _WORD obj, _WORD isvert)
 	if (setxy)
 	{
 		if (divnd)
-			divnd += ADJ3DPIX;
+			divnd += ADJ3DSTD;
 	}
 
 	if (divis)
