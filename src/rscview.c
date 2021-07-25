@@ -493,6 +493,7 @@ static _BOOL draw_string(RSCTREE *tree)
 
 #define endstring(a)	( ((a)==']') || ((a)=='\0') )
 #define endsubstring(a) ( ((a)=='|') || ((a)==']') || ((a)=='\0') )
+#define isduplicate(a,b) ( (a!='\0') && ((a)==(b)) )
 
 struct button_translation {
 	char treename[MAXNAMELEN + 1];
@@ -577,7 +578,13 @@ static const char *fm_strbrk(RSCTREE *tree, int is_button, int is_translation, _
 		{
 			if (endsubstring(*alert))
 			{
-				break;
+                if (isduplicate(*alert, *(alert+1)))
+                {
+                    alert++;        /* || or ]] found: skip a character */
+                } else
+                {
+					break;
+				}
 			}
 			if (len == maxtoslen)
 			{

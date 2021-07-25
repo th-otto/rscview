@@ -32,6 +32,9 @@ static int emutos_like = FALSE;
 /*
  *	Routine to break a string into smaller strings.  Breaks occur
  *	whenever an | or a ] is encountered.
+ *  Exception: An || or ]] does not break the string, but gives
+ *  a literal | or ]. This matches the (undocumented) behavior
+ *  of Atari TOS and PC GEM.
  *
  *	Input:	start		starting object
  *			maxnum		maximum number of substrings
@@ -43,6 +46,7 @@ static int emutos_like = FALSE;
  */
 #define endstring(a)	( ((a)==']') || ((a)=='\0') )
 #define endsubstring(a) ( ((a)=='|') || ((a)==']') || ((a)=='\0') )
+#define isduplicate(a,b) ( (a!='\0') && ((a)==(b)) )
 
 static const char *fm_strbrk(OBJECT *start, _WORD maxnum, _WORD maxlen, const char *alert, _WORD *pnum, _WORD *plen)
 {
@@ -61,7 +65,15 @@ static const char *fm_strbrk(OBJECT *start, _WORD maxnum, _WORD maxlen, const ch
 		for (j = 0; j < maxlen; j++)
 		{
 			if (endsubstring(*alert))
-				break;
+			{
+                if (isduplicate(*alert, *(alert+1)))
+                {
+                    alert++;        /* || or ]] found: skip a character */
+                } else
+                {
+                    break;
+                }
+            }
 			*p++ = *alert++;
 		}
 		*p = '\0';
@@ -70,12 +82,12 @@ static const char *fm_strbrk(OBJECT *start, _WORD maxnum, _WORD maxlen, const ch
 		if (len > *plen)				/* track max substring length */
 			*plen = len;
 
-		if (!endsubstring(*alert))		/* substring was too long */
+		if (!endsubstring(*alert) || isduplicate(*alert, *(alert+1)))		/* substring was too long */
 		{
 			KDEBUG(("form_alert(): substring > %d bytes long\n", maxlen));
 			for (;;)					/* eat rest of substring */
 			{
-				if (endsubstring(*alert))
+				if (endsubstring(*alert) && !isduplicate(*alert, *(alert+1)))
 					break;
 				alert++;
 			}
