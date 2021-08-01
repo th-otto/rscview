@@ -107,6 +107,48 @@ Set CONF_WITH_ST_MMU to 1 to enable support for ST MMU
 </td>
 </tr>
 
+<tr><td colspan="3"><hr /></td></tr>
+<tr><td>TT MMU:</td>
+<td>
+<select <?php setting('conf_with_tt_mmu', array('' => 'default', 'off' => 'disable', 'on' => 'enable')); ?>
+</td>
+<td>
+Set CONF_WITH_TT_MMU to 1 to enable support for TT MMU
+</td>
+</tr>
+
+<tr><td colspan="3"><hr /></td></tr>
+<tr><td>BLITTER:</td>
+<td>
+<select <?php setting('conf_with_blitter', array('' => 'default', 'off' => 'disable', 'on' => 'enable')); ?>
+</td>
+<td>
+Set CONF_WITH_BLITTER to 1 to enable blitter support
+</td>
+</tr>
+
+<tr><td colspan="3"><hr /></td></tr>
+<tr><td>MONSTER:</td>
+<td>
+<select <?php setting('conf_with_monster', array('' => 'default', 'off' => 'disable', 'on' => 'enable')); ?>
+</td>
+<td>
+Define CONF_WITH_MONSTER to enable detection and usage of ST/STE
+MonSTer expansion card
+</td>
+</tr>
+
+<tr><td colspan="3"><hr /></td></tr>
+<tr><td>MAGNUM:</td>
+<td>
+<select <?php setting('conf_with_magnum', array('' => 'default', 'off' => 'disable', 'on' => 'enable')); ?>
+</td>
+<td>
+Define CONF_WITH_MAGNUM to enable detection and usage of Magnum
+RAM expansion card
+</td>
+</tr>
+
 <tr><td>&nbsp;</td><td></td><td></td></tr>
 
 <tr><td colspan="3"><hr /></td></tr>
@@ -170,6 +212,28 @@ in the high-order byte, and the major version number in the low-order
 byte.<br />
 This does not have a well-defined purpose, although it could be checked
 by programs to determine presence or absence of certain GEMDOS functions.
+</td>
+</tr>
+
+<tr><td>&nbsp;</td><td></td><td></td></tr>
+
+<tr><td colspan="3"><hr /></td></tr>
+<tr>
+<td colspan="3">
+Emulator section:
+</td>
+<td></td>
+</tr>
+
+<tr><td colspan="3"><hr /></td></tr>
+<tr><td>Use STOP instruction:</td>
+<td>
+<select <?php setting('use_stop_insn', array('' => 'default', 'off' => 'disable', 'on' => 'enable')); ?>
+</td>
+<td>
+Set this to 1 if your emulator is capable of emulating properly the
+STOP opcode (used to reduce host CPU burden during loops).  Set to
+zero for all emulators which do not properly support the STOP opcode.
 </td>
 </tr>
 

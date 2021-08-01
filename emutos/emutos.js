@@ -6,7 +6,7 @@ function changeVersion()
 function changeRomVersion()
 {
 	var version = document.getElementById('romversion').value;
-	var disabled = (version == '@192' || version == '@256' || version == 'prg' || version == 'flop' || version == 'pak3') ? '' : 'disabled';
+	var disabled = (version == '@192' || version == '@256' || version == '@512' || version == 'prg' || version == 'flop' || version == 'pak3') ? '' : 'disabled';
 	document.getElementById('country').disabled = disabled;
 }
 

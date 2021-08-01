@@ -147,6 +147,14 @@ function compile_emutos()
 			fprintf($fp, "#define CONF_WITH_APOLLO_68080 %s\n", onoff($_POST['conf_with_apollo_68080']));
 		if ($_POST['conf_with_st_mmu'] != '')
 			fprintf($fp, "#define CONF_WITH_ST_MMU %s\n", onoff($_POST['conf_with_st_mmu']));
+		if ($_POST['conf_with_tt_mmu'] != '')
+			fprintf($fp, "#define CONF_WITH_TT_MMU %s\n", onoff($_POST['conf_with_tt_mmu']));
+		if ($_POST['conf_with_blitter'] != '')
+			fprintf($fp, "#define CONF_WITH_BLITTER %s\n", onoff($_POST['conf_with_blitter']));
+		if ($_POST['conf_with_monster'] != '')
+			fprintf($fp, "#define CONF_WITH_MONSTER %s\n", onoff($_POST['conf_with_monster']));
+		if ($_POST['conf_with_magnum'] != '')
+			fprintf($fp, "#define CONF_WITH_MAGNUM %s\n", onoff($_POST['conf_with_magnum']));
 		
 		if ($_POST['initinfo_duration'] != '')
 			fprintf($fp, "#define INITINFO_DURATION %d\n", $_POST['initinfo_duration']);
@@ -154,6 +162,9 @@ function compile_emutos()
 			fprintf($fp, "#define TOS_VERSION %s\n", $_POST['tos_version']);
 		if ($_POST['gemdos_version'] != '')
 			fprintf($fp, "#define GEMDOS_VERSION %s\n", $_POST['gemdos_version']);
+
+		if ($_POST['use_stop_insn'] != '')
+			fprintf($fp, "#define USE_STOP_INSN_TO_FREE_HOST_CPU %s\n", onoff($_POST['use_stop_insn']));
 
 		fclose($fp);
 		

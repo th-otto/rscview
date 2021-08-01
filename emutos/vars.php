@@ -12,6 +12,9 @@ $github_releases = $github . '/archive/';
  */
 $versions = array(
 	'snapshot' => array('name' => 'Current snapshot', 'archive' => 'master'),
+	'1.1.1'    => array('name' => 'Release 1.1.1',    'archive' => 'VERSION_1_1_1'),
+	'1.1'      => array('name' => 'Release 1.1',      'archive' => 'VERSION_1_1'),
+	'1.0.1'    => array('name' => 'Release 1.0.1',    'archive' => 'VERSION_1_0_1'),
 	'1.0.0'    => array('name' => 'Release 1.0',      'archive' => 'VERSION_1_0'),
 	'0.9.12'   => array('name' => 'Release 0.9.12',   'archive' => 'VERSION_0_9_12'),
 	'0.9.11'   => array('name' => 'Release 0.9.11',   'archive' => 'VERSION_0_9_11'),
@@ -46,12 +49,14 @@ $countries = array(
 	'gr' => array('name' => 'Greek'),
 	'ru' => array('name' => 'Russian'),
 	'hu' => array('name' => 'Hungarian'),
+	'tr' => array('name' => 'Turkish'),
 );
 
 $targets = array(
 	'@192'             => array('filename' => 'etos192@UNIQUE@.img',     'zip' => 'etos-192@UNIQUE@',  'unique' => 1, 'name' => '192k ROM image'),
 	'@256'             => array('filename' => 'etos256@UNIQUE@.img',     'zip' => 'etos-256@UNIQUE@',  'unique' => 1, 'name' => '256k ROM image'),
-	'@512'             => array('filename' => 'etos512.img',             'zip' => 'etos-512',          'unique' => 0, 'name' => '512k ROM image'),
+	'@512'             => array('filename' => 'etos512@UNIQUE@.img',     'zip' => 'etos-512@UNIQUE@',  'unique' => 1, 'name' => '512k ROM image'),
+	'@1024'            => array('filename' => 'etos1024k.img',           'zip' => 'etos-1024',         'unique' => 0, 'name' => '1024k ROM image, with all languages'),
 	'aranym'           => array('filename' => 'emutos-aranym.img',       'zip' => 'etos-aranym',       'unique' => 0, 'name' => '512k ROM image, suitable for ARAnyM'),
 	'firebee'          => array('filename' => 'emutosfb.s19',            'zip' => 'etos-fb',           'unique' => 0, 'name' => 'SREC file, to be flashed on the FireBee'),
 	'firebee-prg'      => array('filename' => 'emutos.prg',              'zip' => 'etos-fb-prg',       'unique' => 0, 'name' => 'RAM tos for the FireBee'),
