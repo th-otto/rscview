@@ -1109,6 +1109,41 @@ static void fix_emutos_aes(RSCFILE *file)
     obj->ob_height += 2 * ADJ3DSTD;
 }
 
+
+/*
+ * Fix the dialogs from EmuTOS,
+ * for displaying 3D-objects.
+ * Should be synced with adjust_3d_objects() in emutos/desk/deskmain.c
+ */
+static void fix_emutos_desk(RSCFILE *file)
+{
+	RSCTREE *tree;
+	OBJECT *obj;
+	OBJECT *root;
+
+	tree = tree_find(file, "ADDESKCF");
+	if (tree == NULL)
+		return;
+	root = tree->rt_objects.dial.di_tree;
+
+	if (!aes_3d)
+		return;
+
+	obj = obj_with_name(file, tree, "DCFUNNXT");
+	if (obj != NULL)
+	{
+		obj->ob_flags |= FL3DACT;
+		obj->ob_y += 3 * ADJ3DSTD;
+	}
+
+	obj = obj_with_name(file, tree, "DCMNUNXT");
+	if (obj != NULL)
+	{
+		obj->ob_flags |= FL3DACT;
+		obj->ob_y += 3 * ADJ3DSTD;
+	}
+}
+
 #undef ADJ3DSTD
 
 /*****************************************************************************/
@@ -1337,6 +1372,10 @@ int main(int argc, char **argv)
 			if (file->rsc_emutos == EMUTOS_AES)
 			{
 				fix_emutos_aes(file);
+			}
+			if (file->rsc_emutos == EMUTOS_DESK)
+			{
+				fix_emutos_desk(file);
 			}
 			if (charset)
 			{
