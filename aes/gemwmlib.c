@@ -566,10 +566,10 @@ void w_bldactive(_WORD w_handle)
 		}
 		if (gl_aes3d && (kind & NAME))
 		{
-			W_ACTIVE[W_NAME].ob_flags = FL3DACT;
+			W_ACTIVE[W_NAME].ob_flags = OF_FL3DACT;
 		} else
 		{
-			W_ACTIVE[W_NAME].ob_flags = FL3DNONE;
+			W_ACTIVE[W_NAME].ob_flags = OF_FL3DNONE;
 		}
 		pt->g_x = 0;
 		pt->g_y += (gl_hbox - 1);

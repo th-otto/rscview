@@ -958,7 +958,7 @@ static void fix_emutos_aes(RSCFILE *file)
 	obj = obj_with_name(file, tree, "FCLSBOX");
 	if (obj != NULL)
 	{
-		obj->ob_flags |= FL3DACT;
+		obj->ob_flags |= OF_FL3DACT;
 		obj->ob_x += ADJ3DSTD;
 		obj->ob_y += ADJ3DSTD;
 	}
@@ -966,7 +966,7 @@ static void fix_emutos_aes(RSCFILE *file)
 	obj = obj_with_name(file, tree, "FTITLE");
 	if (obj != NULL)
 	{
-		obj->ob_flags |= FL3DBAK;
+		obj->ob_flags |= OF_FL3DBAK;
 		obj->ob_x += 2 * ADJ3DSTD - 1;
 		obj->ob_height += 2 * ADJ3DSTD;
 		/* use pattern 4, just like TOS4 */
@@ -991,7 +991,7 @@ static void fix_emutos_aes(RSCFILE *file)
 	obj = obj_with_name(file, tree, "FUPAROW");
 	if (obj != NULL)
 	{
-		obj->ob_flags |= FL3DACT;
+		obj->ob_flags |= OF_FL3DACT;
 		obj->ob_x += ADJ3DSTD;
 		obj->ob_y += ADJ3DSTD;
 		obj->ob_width -= 2 * ADJ3DSTD;
@@ -1010,7 +1010,7 @@ static void fix_emutos_aes(RSCFILE *file)
 	if (obj != NULL)
 	{
 		/* we only adjust x/w of FSVELEV here, because y/h are set dynamically */
-		obj->ob_flags |= FL3DACT;
+		obj->ob_flags |= OF_FL3DACT;
 		obj->ob_x += ADJ3DSTD;
 		obj->ob_width -= 2 * ADJ3DSTD;
 		/* obj->ob_height -= 2 * ADJ3DSTD; */
@@ -1019,7 +1019,7 @@ static void fix_emutos_aes(RSCFILE *file)
 	obj = obj_with_name(file, tree, "FDNAROW");
 	if (obj != NULL)
 	{
-		obj->ob_flags |= FL3DACT;
+		obj->ob_flags |= OF_FL3DACT;
 		obj->ob_x += ADJ3DSTD;
 		obj->ob_y -= ADJ3DSTD;
 		obj->ob_width -= 2 * ADJ3DSTD;
@@ -1050,7 +1050,7 @@ static void fix_emutos_aes(RSCFILE *file)
 		{
 			if (obj->ob_y == first_y)
 				row = 0;
-			obj->ob_flags |= FL3DACT;
+			obj->ob_flags |= OF_FL3DIND;
 			obj->ob_x += 2 * ADJ3DSTD;
 			obj->ob_y += 2 * ADJ3DSTD + row * (3 * ADJ3DSTD - 1);
 			if (!(drivebits & 1))
@@ -1078,18 +1078,18 @@ static void fix_emutos_aes(RSCFILE *file)
 	 */
 	obj = obj_with_name(file, tree, "FSDIRECT");
 	if (obj != NULL)
-		obj->ob_flags |= FL3DBAK;
+		obj->ob_flags |= OF_FL3DBAK;
 	obj = obj_with_name(file, tree, "FSSELECT");
 	if (obj != NULL)
-		obj->ob_flags |= FL3DBAK;
+		obj->ob_flags |= OF_FL3DBAK;
 	obj = obj_with_name(file, tree, "FSDRVTXT");
 	if (obj != NULL)
-		obj->ob_flags |= FL3DBAK;
+		obj->ob_flags |= OF_FL3DBAK;
 
 	obj = obj_with_name(file, tree, "FSOK");
 	if (obj != NULL)
 	{
-		obj->ob_flags |= FL3DACT;
+		obj->ob_flags |= OF_FL3DACT;
 		if (filearea != NULL)
 			obj->ob_x = filearea->ob_x;
 		obj->ob_y += ADJ3DSTD;
@@ -1098,14 +1098,14 @@ static void fix_emutos_aes(RSCFILE *file)
 	obj = obj_with_name(file, tree, "FSCANCEL");
 	if (obj != NULL)
 	{
-		obj->ob_flags |= FL3DACT;
+		obj->ob_flags |= OF_FL3DACT;
 		if (filearea != NULL)
 			obj->ob_x = filearea->ob_x + filearea->ob_width - obj->ob_width;
 		obj->ob_y += ADJ3DSTD;
 	}
 	
 	obj = root;
-	obj->ob_flags |= FL3DBAK;
+	obj->ob_flags |= OF_FL3DBAK;
     obj->ob_height += 2 * ADJ3DSTD;
 }
 
@@ -1129,18 +1129,32 @@ static void fix_emutos_desk(RSCFILE *file)
 	if (!aes_3d)
 		return;
 
+	obj = obj_with_name(file, tree, "DCFUNPRV");
+	if (obj != NULL)
+	{
+		obj->ob_flags |= OF_FL3DACT;
+		obj->ob_y -= 2 * ADJ3DSTD;
+	}
+
 	obj = obj_with_name(file, tree, "DCFUNNXT");
 	if (obj != NULL)
 	{
-		obj->ob_flags |= FL3DACT;
-		obj->ob_y += 3 * ADJ3DSTD;
+		obj->ob_flags |= OF_FL3DACT;
+		obj->ob_y += ADJ3DSTD;
+	}
+
+	obj = obj_with_name(file, tree, "DCMNUPRV");
+	if (obj != NULL)
+	{
+		obj->ob_flags |= OF_FL3DACT;
+		obj->ob_y -= 2 * ADJ3DSTD;
 	}
 
 	obj = obj_with_name(file, tree, "DCMNUNXT");
 	if (obj != NULL)
 	{
-		obj->ob_flags |= FL3DACT;
-		obj->ob_y += 3 * ADJ3DSTD;
+		obj->ob_flags |= OF_FL3DACT;
+		obj->ob_y += ADJ3DSTD;
 	}
 }
 
