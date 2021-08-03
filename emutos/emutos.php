@@ -158,10 +158,20 @@ function compile_emutos()
 		
 		if ($_POST['initinfo_duration'] != '')
 			fprintf($fp, "#define INITINFO_DURATION %d\n", $_POST['initinfo_duration']);
+		if ($_POST['conf_with_colour_icons'] != '')
+			fprintf($fp, "#define CONF_WITH_COLOUR_ICONS %s\n", onoff($_POST['conf_with_colour_icons']));
+		if ($_POST['conf_with_graf_mouse_extension'] != '')
+			fprintf($fp, "#define CONF_WITH_GRAF_MOUSE_EXTENSION %s\n", onoff($_POST['conf_with_graf_mouse_extension']));
+		if ($_POST['conf_with_window_colours'] != '')
+			fprintf($fp, "#define CONF_WITH_WINDOW_COLOURS %s\n", onoff($_POST['conf_with_window_colours']));
+		if ($_POST['conf_with_3d_objects'] != '')
+			fprintf($fp, "#define CONF_WITH_3D_OBJECTS %s\n", onoff($_POST['conf_with_3d_objects']));
 		if ($_POST['tos_version'] != '')
 			fprintf($fp, "#define TOS_VERSION %s\n", $_POST['tos_version']);
 		if ($_POST['gemdos_version'] != '')
 			fprintf($fp, "#define GEMDOS_VERSION %s\n", $_POST['gemdos_version']);
+		if ($_POST['aes_version'] != '')
+			fprintf($fp, "#define AES_VERSION %s\n", $_POST['aes_version']);
 
 		if ($_POST['use_stop_insn'] != '')
 			fprintf($fp, "#define USE_STOP_INSN_TO_FREE_HOST_CPU %s\n", onoff($_POST['use_stop_insn']));

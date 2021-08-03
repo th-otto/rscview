@@ -150,6 +150,8 @@ RAM expansion card
 </tr>
 
 <tr><td>&nbsp;</td><td></td><td></td></tr>
+<tr><td>&nbsp;</td><td></td><td></td></tr>
+<tr><td>&nbsp;</td><td></td><td></td></tr>
 
 <tr><td colspan="3"><hr /></td></tr>
 <tr>
@@ -174,6 +176,51 @@ increase the welcome screen duration.<br />
 You can use the INITINFO_DURATION define to specifiy the welcome screen
 duration, in seconds. If it is set to 0, the welcome screen will never
  be displayed.
+</td>
+</tr>
+
+<tr><td colspan="3"><hr /></td></tr>
+<tr><td>Color icons:</td>
+<td>
+<select <?php setting('conf_with_colour_icons', array('' => 'default', 'off' => 'disable', 'on' => 'enable')); ?>
+</td>
+<td>
+Set CONF_WITH_COLOUR_ICONS to 1 to enable support for colour icons,
+as in Atari TOS 4
+</td>
+</tr>
+
+<tr><td colspan="3"><hr /></td></tr>
+<tr><td>graf_mouse:</td>
+<td>
+<select <?php setting('conf_with_graf_mouse_extension', array('' => 'default', 'off' => 'disable', 'on' => 'enable')); ?>
+</td>
+<td>
+Set CONF_WITH_GRAF_MOUSE_EXTENSION to 1 to include AES support for
+graf_mouse() modes M_SAVE, M_RESTORE, M_PREVIOUS.
+</td>
+</tr>
+
+<tr><td colspan="3"><hr /></td></tr>
+<tr><td>Window colors:</td>
+<td>
+<select <?php setting('conf_with_window_colours', array('' => 'default', 'off' => 'disable', 'on' => 'enable')); ?>
+</td>
+<td>
+Set CONF_WITH_WINDOW_COLOURS to 1 to include AES support for managing
+window element colours.  Management is via modes WF_COLOR/WF_DCOLOR
+in wind_get()/wind_set().
+</td>
+</tr>
+
+<tr><td colspan="3"><hr /></td></tr>
+<tr><td>3D Objects:</td>
+<td>
+<select <?php setting('conf_with_3d_objects', array('' => 'default', 'off' => 'disable', 'on' => 'enable')); ?>
+</td>
+<td>
+Set CONF_WITH_3D_OBJECTS to 1 to enable support for 3D objects,
+as in Atari TOS 4
 </td>
 </tr>
 
@@ -215,6 +262,29 @@ by programs to determine presence or absence of certain GEMDOS functions.
 </td>
 </tr>
 
+<tr><td colspan="3"><hr /></td></tr>
+<tr><td>AES version:</td>
+<td>
+<select <?php setting('aes_version',
+	array('' => 'default',
+	      '0x0120' => 'AES 1.20, used by TOS v1.02',
+	      '0x0140' => 'AES 1.40, used by TOS v1.04 & v1.62',
+	      '0x0320' => 'AES 3.20, used by TOS v2.06 & v3.06',
+	      '0x0330' => 'AES 3.30, indicates the availability of wind_set(WF_COLOR/WF_DCOLOR)',
+	      '0x0340' => 'AES 3.40, used by TOS v4.04')); ?>
+</td>
+<td>
+Define the AES version here. If unset, the value depends on features that are set
+within the software section.<br />
+Do not change this arbitrarily, as each value implies the presence or
+absence of certain AES functions ... but note that we currently define
+AES 3.30/3.40 even though we do not (yet) support certain menu_xxx()
+functions that were introduced in AES 3.30.
+</td>
+</tr>
+
+<tr><td>&nbsp;</td><td></td><td></td></tr>
+<tr><td>&nbsp;</td><td></td><td></td></tr>
 <tr><td>&nbsp;</td><td></td><td></td></tr>
 
 <tr><td colspan="3"><hr /></td></tr>
