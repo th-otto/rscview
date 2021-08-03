@@ -7,29 +7,35 @@ ini_set("track_errors", 1);
 $github = 'https://github.com/emutos/emutos';
 $github_releases = $github . '/archive/';
 
-/*
- * maybe there is some way to build this automatically, looking at the tags?
- */
-$versions = array(
-	'snapshot' => array('name' => 'Current snapshot', 'archive' => 'master'),
-	'1.1.1'    => array('name' => 'Release 1.1.1',    'archive' => 'VERSION_1_1_1'),
-	'1.1'      => array('name' => 'Release 1.1',      'archive' => 'VERSION_1_1'),
-	'1.0.1'    => array('name' => 'Release 1.0.1',    'archive' => 'VERSION_1_0_1'),
-	'1.0.0'    => array('name' => 'Release 1.0',      'archive' => 'VERSION_1_0'),
-	'0.9.12'   => array('name' => 'Release 0.9.12',   'archive' => 'VERSION_0_9_12'),
-	'0.9.11'   => array('name' => 'Release 0.9.11',   'archive' => 'VERSION_0_9_11'),
-	'0.9.10'   => array('name' => 'Release 0.9.10',   'archive' => 'VERSION_0_9_10'),
-	'0.9.9.1'  => array('name' => 'Release 0.9.9.1',  'archive' => 'VERSION_0_9_9_1'),
-	'0.9.8'    => array('name' => 'Release 0.9.8',    'archive' => 'VERSION_0_9_8'),
-	'0.9.7'    => array('name' => 'Release 0.9.7',    'archive' => 'VERSION_0_9_7'),
-	'0.9.6'    => array('name' => 'Release 0.9.6',    'archive' => 'VERSION_0_9_6'),
-	'0.9.5'    => array('name' => 'Release 0.9.5',    'archive' => 'VERSION_0_9_5'),
-	'0.9.4'    => array('name' => 'Release 0.9.4',    'archive' => 'VERSION_0_9_4'),
-	'0.9.3'    => array('name' => 'Release 0.9.3',    'archive' => 'VERSION_0_9_3'),
-	'0.9.2'    => array('name' => 'Release 0.9.2',    'archive' => 'VERSION_0_9_2'),
-	'0.9.1'    => array('name' => 'Release 0.9.1',    'archive' => 'VERSION_0_9_1'),
-	'0.9.0'    => array('name' => 'Release 0.9.0',    'archive' => 'VERSION_0_9_0'),
-);
+if (file_exists("versions.php"))
+{
+	/*
+	 * versions.php is recreated if someone does a snapshot build
+	 */
+	include("versions.php");
+} else
+{
+	$versions = array(
+		'snapshot' => array('name' => 'Current snapshot', 'archive' => 'master'),
+		'1.1.1'    => array('name' => 'Release 1.1.1',    'archive' => 'VERSION_1_1_1'),
+		'1.1'      => array('name' => 'Release 1.1',      'archive' => 'VERSION_1_1'),
+		'1.0.1'    => array('name' => 'Release 1.0.1',    'archive' => 'VERSION_1_0_1'),
+		'1.0.0'    => array('name' => 'Release 1.0',      'archive' => 'VERSION_1_0'),
+		'0.9.12'   => array('name' => 'Release 0.9.12',   'archive' => 'VERSION_0_9_12'),
+		'0.9.11'   => array('name' => 'Release 0.9.11',   'archive' => 'VERSION_0_9_11'),
+		'0.9.10'   => array('name' => 'Release 0.9.10',   'archive' => 'VERSION_0_9_10'),
+		'0.9.9.1'  => array('name' => 'Release 0.9.9.1',  'archive' => 'VERSION_0_9_9_1'),
+		'0.9.8'    => array('name' => 'Release 0.9.8',    'archive' => 'VERSION_0_9_8'),
+		'0.9.7'    => array('name' => 'Release 0.9.7',    'archive' => 'VERSION_0_9_7'),
+		'0.9.6'    => array('name' => 'Release 0.9.6',    'archive' => 'VERSION_0_9_6'),
+		'0.9.5'    => array('name' => 'Release 0.9.5',    'archive' => 'VERSION_0_9_5'),
+		'0.9.4'    => array('name' => 'Release 0.9.4',    'archive' => 'VERSION_0_9_4'),
+		'0.9.3'    => array('name' => 'Release 0.9.3',    'archive' => 'VERSION_0_9_3'),
+		'0.9.2'    => array('name' => 'Release 0.9.2',    'archive' => 'VERSION_0_9_2'),
+		'0.9.1'    => array('name' => 'Release 0.9.1',    'archive' => 'VERSION_0_9_1'),
+		'0.9.0'    => array('name' => 'Release 0.9.0',    'archive' => 'VERSION_0_9_0'),
+	);
+}
 
 $countries = array(
 	'us' => array('name' => 'English (US)'),

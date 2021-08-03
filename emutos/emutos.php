@@ -322,6 +322,23 @@ function fetch_source()
 	if ($emutosversion == 'snapshot')
 	{
 		$commit = exec("git rev-list --abbrev-commit --max-count=1 HEAD");
+		/*
+		 * while we are at it, recreate the versions.php
+		 */
+		$tags = array();
+		exec("git tag -l 'VERSION_*' | sort -t '_' -V -k 2,5 -r", $tags);
+		$fp = fopen("$topdir/versions.php", "w");
+		fprintf($fp, "<" . "?php\n");
+		fprintf($fp, "\$versions = array(\n");
+		fprintf($fp, "\t'snapshot' => array('name' => 'Current snapshot', 'archive' => 'master'),\n");
+		foreach ($tags as $version)
+		{
+			$dotted = str_replace("_", ".", str_replace("VERSION_", "", $version));
+			fprintf($fp, "\t'%s' => array('name' => 'Release %s', 'archive' => '%s'),\n", $dotted, $dotted, $version);
+		}
+		fprintf($fp, ");\n");
+		fprintf($fp, "?" . ">\n");
+		fclose($fp);
 	} else
 	{
 		$commit = '';
