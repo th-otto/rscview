@@ -158,6 +158,8 @@ function compile_emutos()
 		
 		if ($_POST['initinfo_duration'] != '')
 			fprintf($fp, "#define INITINFO_DURATION %d\n", $_POST['initinfo_duration']);
+		if ($_POST['conf_with_memory_test'] != '')
+			fprintf($fp, "#define CONF_WITH_MEMORY_TEST %d\n", $_POST['conf_with_memory_test']);
 		if ($_POST['conf_with_colour_icons'] != '')
 			fprintf($fp, "#define CONF_WITH_COLOUR_ICONS %s\n", onoff($_POST['conf_with_colour_icons']));
 		if ($_POST['conf_with_graf_mouse_extension'] != '')

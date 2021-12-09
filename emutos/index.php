@@ -180,6 +180,16 @@ duration, in seconds. If it is set to 0, the welcome screen will never
 </tr>
 
 <tr><td colspan="3"><hr /></td></tr>
+<tr><td>Memory test:</td>
+<td>
+<select <?php setting('conf_with_memory_test', array('' => 'default', 'off' => 'disable', 'on' => 'enable')); ?>
+</td>
+<td>
+set CONF_WITH_MEMORY_TEST to 1 to do a memory test during a cold boot
+</td>
+</tr>
+
+<tr><td colspan="3"><hr /></td></tr>
 <tr><td>Color icons:</td>
 <td>
 <select <?php setting('conf_with_colour_icons', array('' => 'default', 'off' => 'disable', 'on' => 'enable')); ?>
