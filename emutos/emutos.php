@@ -128,7 +128,7 @@ function compile_emutos()
 	$fp = fopen('localconf.h', 'w');
 	if (!is_resource($fp))
 	{
-		error_log("$php_errormsg");
+		error_log(trim((error_get_last())['message']));
 	} else
 	{
 		$target = str_replace("@", "", $romversion);
