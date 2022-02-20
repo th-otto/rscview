@@ -7,6 +7,19 @@ ini_set("track_errors", 1);
 $github = 'https://github.com/emutos/emutos';
 $github_releases = $github . '/archive/';
 
+if (count($_GET) > 0)
+{
+	/* if any config value is set in command line,
+	   reset all but version & country in session settings.
+	   Needed to get a reliable state when providing a ling
+	   */
+	foreach ($_SESSION['settings'] as $key => $value)
+	{
+		if ($key != 'emutosversion' && $key != 'romversion' && $key != 'country')
+			unset($_SESSION['settings'][$key]);
+	}
+}
+
 if (file_exists("versions.php"))
 {
 	/*
@@ -109,6 +122,8 @@ function names($a)
 function setting(string $name, $select = null)
 {
 	$setting = "id=\"" . $name . "\" name=\"" . $name . "\"";
+	if (isset($_GET[$name]))
+		$_SESSION['settings'][$name] = $_GET[$name];
 	if (!isset($_SESSION['settings'][$name]))
 		$_SESSION['settings'][$name] = '';
 	if ($select)
@@ -127,6 +142,11 @@ function setting(string $name, $select = null)
 		$setting .= " value=\"" . $_SESSION['settings'][$name] . "\"";
 	}
 	echo $setting;
+}
+
+function bool_setting()
+{
+	return array('' => 'default', 'off' => 'disable', 'on' => 'enable');
 }
 
 ?>

@@ -80,7 +80,7 @@ Hardware support section:
 <tr><td colspan="3"><hr /></td></tr>
 <tr><td>Advanced CPU:</td>
 <td>
-<select <?php setting('conf_with_advanced_cpu', array('' => 'default', 'off' => 'disable', 'on' => 'enable')); ?>
+<select <?php setting('conf_with_advanced_cpu', bool_setting()); ?>
 </td>
 <td>
 Set CONF_WITH_ADVANCED_CPU to 1 to enable support for 68010-68060
@@ -90,7 +90,7 @@ Set CONF_WITH_ADVANCED_CPU to 1 to enable support for 68010-68060
 <tr><td colspan="3"><hr /></td></tr>
 <tr><td>Apollo:</td>
 <td>
-<select <?php setting('conf_with_apollo_68080', array('' => 'default', 'off' => 'disable', 'on' => 'enable')); ?>
+<select <?php setting('conf_with_apollo_68080', bool_setting()); ?>
 </td>
 <td>
 Set CONF_WITH_APOLLO_68080 to 1 to enable support for Apollo 68080 CPU
@@ -100,7 +100,7 @@ Set CONF_WITH_APOLLO_68080 to 1 to enable support for Apollo 68080 CPU
 <tr><td colspan="3"><hr /></td></tr>
 <tr><td>ST MMU:</td>
 <td>
-<select <?php setting('conf_with_st_mmu', array('' => 'default', 'off' => 'disable', 'on' => 'enable')); ?>
+<select <?php setting('conf_with_st_mmu', bool_setting()); ?>
 </td>
 <td>
 Set CONF_WITH_ST_MMU to 1 to enable support for ST MMU
@@ -110,7 +110,7 @@ Set CONF_WITH_ST_MMU to 1 to enable support for ST MMU
 <tr><td colspan="3"><hr /></td></tr>
 <tr><td>TT MMU:</td>
 <td>
-<select <?php setting('conf_with_tt_mmu', array('' => 'default', 'off' => 'disable', 'on' => 'enable')); ?>
+<select <?php setting('conf_with_tt_mmu', bool_setting()); ?>
 </td>
 <td>
 Set CONF_WITH_TT_MMU to 1 to enable support for TT MMU
@@ -120,7 +120,7 @@ Set CONF_WITH_TT_MMU to 1 to enable support for TT MMU
 <tr><td colspan="3"><hr /></td></tr>
 <tr><td>BLITTER:</td>
 <td>
-<select <?php setting('conf_with_blitter', array('' => 'default', 'off' => 'disable', 'on' => 'enable')); ?>
+<select <?php setting('conf_with_blitter', bool_setting()); ?>
 </td>
 <td>
 Set CONF_WITH_BLITTER to 1 to enable blitter support
@@ -130,7 +130,7 @@ Set CONF_WITH_BLITTER to 1 to enable blitter support
 <tr><td colspan="3"><hr /></td></tr>
 <tr><td>MONSTER:</td>
 <td>
-<select <?php setting('conf_with_monster', array('' => 'default', 'off' => 'disable', 'on' => 'enable')); ?>
+<select <?php setting('conf_with_monster', bool_setting()); ?>
 </td>
 <td>
 Define CONF_WITH_MONSTER to enable detection and usage of ST/STE
@@ -141,7 +141,7 @@ MonSTer expansion card
 <tr><td colspan="3"><hr /></td></tr>
 <tr><td>MAGNUM:</td>
 <td>
-<select <?php setting('conf_with_magnum', array('' => 'default', 'off' => 'disable', 'on' => 'enable')); ?>
+<select <?php setting('conf_with_magnum', bool_setting()); ?>
 </td>
 <td>
 Define CONF_WITH_MAGNUM to enable detection and usage of Magnum
@@ -182,7 +182,7 @@ duration, in seconds. If it is set to 0, the welcome screen will never
 <tr><td colspan="3"><hr /></td></tr>
 <tr><td>Memory test:</td>
 <td>
-<select <?php setting('conf_with_memory_test', array('' => 'default', 'off' => 'disable', 'on' => 'enable')); ?>
+<select <?php setting('conf_with_memory_test', bool_setting()); ?>
 </td>
 <td>
 set CONF_WITH_MEMORY_TEST to 1 to do a memory test during a cold boot
@@ -192,7 +192,7 @@ set CONF_WITH_MEMORY_TEST to 1 to do a memory test during a cold boot
 <tr><td colspan="3"><hr /></td></tr>
 <tr><td>Color icons:</td>
 <td>
-<select <?php setting('conf_with_colour_icons', array('' => 'default', 'off' => 'disable', 'on' => 'enable')); ?>
+<select <?php setting('conf_with_colour_icons', bool_setting()); ?>
 </td>
 <td>
 Set CONF_WITH_COLOUR_ICONS to 1 to enable support for colour icons,
@@ -203,7 +203,7 @@ as in Atari TOS 4
 <tr><td colspan="3"><hr /></td></tr>
 <tr><td>graf_mouse:</td>
 <td>
-<select <?php setting('conf_with_graf_mouse_extension', array('' => 'default', 'off' => 'disable', 'on' => 'enable')); ?>
+<select <?php setting('conf_with_graf_mouse_extension', bool_setting()); ?>
 </td>
 <td>
 Set CONF_WITH_GRAF_MOUSE_EXTENSION to 1 to include AES support for
@@ -214,7 +214,7 @@ graf_mouse() modes M_SAVE, M_RESTORE, M_PREVIOUS.
 <tr><td colspan="3"><hr /></td></tr>
 <tr><td>Window colors:</td>
 <td>
-<select <?php setting('conf_with_window_colours', array('' => 'default', 'off' => 'disable', 'on' => 'enable')); ?>
+<select <?php setting('conf_with_window_colours', bool_setting()); ?>
 </td>
 <td>
 Set CONF_WITH_WINDOW_COLOURS to 1 to include AES support for managing
@@ -226,7 +226,7 @@ in wind_get()/wind_set().
 <tr><td colspan="3"><hr /></td></tr>
 <tr><td>3D Objects:</td>
 <td>
-<select <?php setting('conf_with_3d_objects', array('' => 'default', 'off' => 'disable', 'on' => 'enable')); ?>
+<select <?php setting('conf_with_3d_objects', bool_setting()); ?>
 </td>
 <td>
 Set CONF_WITH_3D_OBJECTS to 1 to enable support for 3D objects,
@@ -308,7 +308,7 @@ Emulator section:
 <tr><td colspan="3"><hr /></td></tr>
 <tr><td>Use STOP instruction:</td>
 <td>
-<select <?php setting('use_stop_insn', array('' => 'default', 'off' => 'disable', 'on' => 'enable')); ?>
+<select <?php setting('use_stop_insn', bool_setting()); ?>
 </td>
 <td>
 Set this to 1 if your emulator is capable of emulating properly the
