@@ -666,13 +666,8 @@ static _BOOL Form_Al_is_Str_Ok(const char *str)
 
 /*** ---------------------------------------------------------------------- ***/
 
-static _BOOL uses_oldlang(RSCFILE *file)
+static _BOOL uses_oldlang(const char *str)
 {
-	const char *str;
-	
-	if (file->header.rsh_nstring == 0)
-		return FALSE;
-	str = file->rs_frstr[0];
 	if (str != NULL && strchr(str, RSC_LANG_DELIM) != NULL)
 		return TRUE;
 	
@@ -689,10 +684,45 @@ static _BOOL rsc_load_trees(RSCFILE *file)
 	char name[MAXNAMELEN+1];
 	const char *prefix;
 	
-	if (uses_oldlang(file))
+	for (i = 0; i < file->header.rsh_nobs && !file->rsc_use_oldlang; i++)
 	{
-		file->rsc_use_oldlang = TRUE;
+		OBJECT *ob = &file->rs_object[i];
+		_WORD type = ob->ob_type & OBTYPEMASK;
+		switch (type)
+		{
+		case G_STRING:
+		case G_TITLE:
+		case G_BUTTON:
+		case G_SHORTCUT:
+			if (uses_oldlang(ob->ob_spec.free_string))
+				file->rsc_use_oldlang = TRUE;
+			break;
+		case G_TEXT:
+		case G_BOXTEXT:
+			if (uses_oldlang(ob->ob_spec.tedinfo->te_ptext))
+				file->rsc_use_oldlang = TRUE;
+			break;
+		case G_FTEXT:
+		case G_FBOXTEXT:
+			if (uses_oldlang(ob->ob_spec.tedinfo->te_ptmplt))
+				file->rsc_use_oldlang = TRUE;
+			break;
+		case G_ICON:
+		case G_CICON:
+			if (uses_oldlang(ob->ob_spec.iconblk->ib_ptext))
+				file->rsc_use_oldlang = TRUE;
+			break;
+		}
+	}
 
+	for (i = 0; i < file->header.rsh_nstring && !file->rsc_use_oldlang; i++)
+	{
+		if (uses_oldlang(file->rs_frstr[i]))
+			file->rsc_use_oldlang = TRUE;
+	}
+	
+	if (file->rsc_use_oldlang)
+	{
 		for (i = 0; i < file->header.rsh_nobs; i++)
 		{
 			OBJECT *ob = &file->rs_object[i];
