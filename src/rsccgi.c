@@ -4,6 +4,10 @@
 #include <errno.h>
 #include <ctype.h>
 #include <sys/stat.h>
+#if defined(__CYGWIN__) && !defined(_WIN32)
+/* workaround bug in cygwin curl header */
+#define SOCKET int
+#endif
 #include <curl/curl.h>
 #include <sys/time.h>
 #include <utime.h>
