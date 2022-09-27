@@ -802,6 +802,7 @@ static int vdi_vs_drawrect(VWK *v, VDIPB *pb)
 	_WORD *intin = PV_INTIN(pb);
 	_WORD *ptsout = PV_PTSOUT(pb);
 
+	V("vs_drawrect[%d]: %d", v->handle, V_INTIN(pb, 0));
 	if (V_INTIN(pb, 0) != 0)
 	{
 		v->drawrect.x = 32767;
@@ -815,7 +816,6 @@ static int vdi_vs_drawrect(VWK *v, VDIPB *pb)
 		PTSOUTY(0) = v->drawrect.y;
 		PTSOUTX(1) = v->drawrect.x + v->drawrect.width - 1;
 		PTSOUTY(1) = v->drawrect.y + v->drawrect.height - 1;
-		v->drawingrect = FALSE;
 	}
 	V_NINTOUT(pb, 0);
 	V_NPTSOUT(pb, 2);

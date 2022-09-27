@@ -293,7 +293,7 @@ static void start_drawrect(void)
 	pxy[1] = desk.g_y;
 	pxy[2] = desk.g_x + desk.g_w - 1;
 	pxy[3] = desk.g_y + desk.g_h - 1;
-	vs_drawrect(vdi_handle, 1, pxy);
+	vs_drawrect(phys_handle, 1, pxy);
 }
 
 /* ------------------------------------------------------------------------- */
@@ -302,7 +302,7 @@ static void end_drawrect(GRECT *gr)
 {
 	_WORD pxy[4];
 
-	vs_drawrect(vdi_handle, 0, pxy);
+	vs_drawrect(phys_handle, 0, pxy);
 	gr->g_x = pxy[0];
 	gr->g_y = pxy[1];
 	gr->g_w = pxy[2] - pxy[0] + 1;

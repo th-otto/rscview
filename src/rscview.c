@@ -236,8 +236,6 @@ static _WORD write_png(RSCTREE *tree, _WORD x, _WORD y, _WORD w, _WORD h, _BOOL 
 	_WORD err;
 	char *p;
 	
-	if (verbose)
-		printf("%s %ld %s: %dx%d\n", rtype_name(tree->rt_type), tree->rt_number, tree->rt_name, w, h);
 	pxy[0] = x;
 	pxy[1] = y;
 	pxy[2] = x + w - 1;
@@ -282,6 +280,8 @@ static _WORD write_png(RSCTREE *tree, _WORD x, _WORD y, _WORD w, _WORD h, _BOOL 
 		sprintf(p, "%03ld_%s_%s.png", tree->rt_number, tree->rt_file->rsc_nls_domain.lang, basename);
 	else
 		sprintf(p, "%03ld_%s.png", tree->rt_number, basename);
+	if (verbose)
+		printf("%s %ld %s: %dx%d -> %s\n", rtype_name(tree->rt_type), tree->rt_number, tree->rt_name, w, h, filename);
 	err = v_write_png(vdi_handle, filename);
 	if (err != 0)
 	{
@@ -314,6 +314,38 @@ static _WORD write_png(RSCTREE *tree, _WORD x, _WORD y, _WORD w, _WORD h, _BOOL 
 /* ------------------------------------------------------------------------- */
 /*****************************************************************************/
 
+/*
+ * track which areas are modified by calls to objc_draw().
+ * form_center does not take into account rectangles drawn
+ * around the ROOT object, and there is no other way
+ * to obtain the outer dimensions of what is drawn
+ */
+static void start_drawrect(void)
+{
+	_WORD pxy[4];
+
+	pxy[0] = desk.g_x;
+	pxy[1] = desk.g_y;
+	pxy[2] = desk.g_x + desk.g_w - 1;
+	pxy[3] = desk.g_y + desk.g_h - 1;
+	vs_drawrect(phys_handle, 1, pxy);
+}
+
+/* ------------------------------------------------------------------------- */
+
+static void end_drawrect(GRECT *gr)
+{
+	_WORD pxy[4];
+
+	vs_drawrect(phys_handle, 0, pxy);
+	gr->g_x = pxy[0];
+	gr->g_y = pxy[1];
+	gr->g_w = pxy[2] - pxy[0] + 1;
+	gr->g_h = pxy[3] - pxy[1] + 1;
+}
+
+/* ------------------------------------------------------------------------- */
+
 static _BOOL draw_dialog(RSCTREE *tree)
 {
 	OBJECT *ob;
@@ -330,8 +362,10 @@ static _BOOL draw_dialog(RSCTREE *tree)
 	
 	clear_screen(tree->rt_name);
 	
-	objc_draw_grect(ob, ROOT, MAX_DEPTH, &gr);
-	
+	start_drawrect();
+	objc_draw_grect(ob, ROOT, MAX_DEPTH, &desk);
+	end_drawrect(&gr);
+
 	err = write_png(tree, gr.g_x, gr.g_y, gr.g_w, gr.g_h, gen_imagemap);
 
 	form_dial_grect(FMD_FINISH, &gr, &gr);
@@ -1372,7 +1406,7 @@ int main(int argc, char **argv)
 	appl_init();
 	
 	menu_register(-1, program_name);
-	phys_handle =graf_handle(&gl_wchar, &gl_hchar, &gl_wbox, &gl_hbox);
+	phys_handle = graf_handle(&gl_wchar, &gl_hchar, &gl_wbox, &gl_hbox);
 	wind_get(DESK, WF_WORKXYWH, &desk.g_x, &desk.g_y, &desk.g_w, &desk.g_h);
 
 	while (optind < argc)
