@@ -1,9 +1,9 @@
 AC_PREREQ(2.59)
-m4_define(RSCVIEW_MAJOR_VERSION, 1)
-m4_define(RSCVIEW_MINOR_VERSION, 05)
-m4_define(RELEASE_YEAR, 2018)
-m4_define(RSCVIEW_DATE, 25.07.RELEASE_YEAR)
-m4_define(RSCVIEW_VERSION, RSCVIEW_MAJOR_VERSION.RSCVIEW_MINOR_VERSION)
+m4_define(rscview_major_version, 1)
+m4_define(rscview_minor_version, 05)
+m4_define(release_year, 2018)
+m4_define(rscview_date, 25.07.RELEASE_YEAR)
+m4_define(rscview_version, rscview_major_version.rscview_minor_version)
 
 AC_INIT([rscview], [RSCVIEW_VERSION], [http://www.tho-otto.de/bugs/],,[http://www.tho-otto.de/])
 AC_CONFIG_SRCDIR(src/rscview.c)
@@ -18,11 +18,11 @@ AC_CANONICAL_HOST
 AC_CONFIG_HEADERS([config.h])
 
 AH_TEMPLATE([[RSCVIEW_VERSION]], [Define release version.])
-AC_DEFINE_UNQUOTED([[[RSCVIEW_VERSION]]], "[RSCVIEW_VERSION]")
+AC_DEFINE_UNQUOTED([[RSCVIEW_VERSION]], "[rscview_version]")
 AH_TEMPLATE([[RELEASE_YEAR]], [Define release year.])
-AC_DEFINE_UNQUOTED([[[RELEASE_YEAR]]], "[RELEASE_YEAR]")
+AC_DEFINE_UNQUOTED([[RELEASE_YEAR]], "[release_year]")
 AH_TEMPLATE([[RSCVIEW_DATE]], [Define release date.])
-AC_DEFINE_UNQUOTED([[[RSCVIEW_DATE]]], "[RSCVIEW_DATE]")
+AC_DEFINE_UNQUOTED([[RSCVIEW_DATE]], "[rscview_date]")
 
 AM_INIT_AUTOMAKE
 
@@ -625,11 +625,11 @@ zlib/Makefile
 src/Makefile
 ])
 
-[RSCVIEW_MAJOR_VERSION]=RSCVIEW_MAJOR_VERSION
-[RSCVIEW_MINOR_VERSION]=RSCVIEW_MINOR_VERSION
-[RSCVIEW_VERSION]=RSCVIEW_VERSION
-[RSCVIEW_DATE]=RSCVIEW_DATE
-[RELEASE_YEAR]=RELEASE_YEAR
+[RSCVIEW_MAJOR_VERSION]=rscview_major_version
+[RSCVIEW_MINOR_VERSION]=rscview_minor_version
+[RSCVIEW_VERSION]=rscview_version
+[RSCVIEW_DATE]=rscview_date
+[RELEASE_YEAR]=release_year
 AC_SUBST([RSCVIEW_MAJOR_VERSION])
 AC_SUBST([RSCVIEW_MINOR_VERSION])
 AC_SUBST([RSCVIEW_VERSION])
