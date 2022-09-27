@@ -1119,12 +1119,10 @@ static void fix_emutos_desk(RSCFILE *file)
 {
 	RSCTREE *tree;
 	OBJECT *obj;
-	OBJECT *root;
 
 	tree = tree_find(file, "ADDESKCF");
 	if (tree == NULL)
 		return;
-	root = tree->rt_objects.dial.di_tree;
 
 	if (!aes_3d)
 		return;

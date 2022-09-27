@@ -612,6 +612,8 @@ struct _vwk
 	int wrmode;
 	int clipping;
 	vdi_rectangle clipr;
+	int drawingrect;
+	vdi_rectangle drawrect;
 	int input_mode[5];
 	
 	int line_color;

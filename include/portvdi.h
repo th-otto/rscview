@@ -1217,6 +1217,7 @@ _WORD		vst_fg_color		(_WORD handle, int32_t color_space, COLOR_ENTRY *fg_color);
  */
 _WORD v_write_png(_WORD handle, const char *filename);
 _WORD v_hardcopy_ex(_WORD handle, _WORD *pxyarray, int32_t px_format, int32_t rowstride, void *buffer);
+void vs_drawrect(_WORD handle, _WORD reset_flag, _WORD *pxyarray);
 
 
 /*

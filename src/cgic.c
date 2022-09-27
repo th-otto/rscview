@@ -143,7 +143,7 @@ static cgiUnescapeResultType cgiUnescapeChars(char **sp, const char *cp, int len
 	int dstPos = 0;
 
 	s = g_new(char, len + 1);
-	if (!s)
+	if (s == NULL)
 	{
 		return cgiUnescapeMemory;
 	}
@@ -242,7 +242,7 @@ static cgiParseResultType cgiParseFormInput(const char *data, int length)
 		}
 		/* OK, we have a new pair, add it to the list. */
 		n = g_new(cgiFormEntry, 1);
-		if (!n)
+		if (n == NULL)
 		{
 			g_free(attr);
 			g_free(value);
@@ -254,7 +254,7 @@ static cgiParseResultType cgiParseFormInput(const char *data, int length)
 		n->contentType = NULL;
 		n->fileName = NULL;
 		n->next = 0;
-		if (!l)
+		if (l == NULL)
 		{
 			cgiFormEntryFirst = n;
 		} else
@@ -277,12 +277,12 @@ static cgiParseResultType cgiParsePostFormInput(void)
 	char *input;
 	cgiParseResultType result;
 
-	if (!cgiContentLength)
+	if (cgiContentLength == 0)
 	{
 		return cgiParseSuccess;
 	}
 	input = g_new(char, cgiContentLength);
-	if (!input)
+	if (input == NULL)
 	{
 		return cgiParseMemory;
 	}
@@ -401,7 +401,7 @@ static void mpPutBack(mpStreamPtr mpp, char *data, int len)
 			char *sold = string; \
 			string##Space *= 2; \
 			string = g_renew(char, string, string##Space); \
-			if (!string) { \
+			if (string == NULL) { \
 				string = sold; \
 				goto outOfMemory; \
 			} \
@@ -572,7 +572,7 @@ static cgiParseResultType afterNextBoundary(mpStreamPtr mpp, char **outP, int *b
 	if (outP)
 	{
 		out = g_new(char, outSpace);
-		if (!out)
+		if (out == NULL)
 		{
 			goto outOfMemory;
 		}
@@ -646,7 +646,7 @@ static cgiParseResultType afterNextBoundary(mpStreamPtr mpp, char **outP, int *b
 
 		out[outLen] = '\0';
 		out = g_renew(char, out, outLen + 1);
-		if (!out)
+		if (out == NULL)
 		{
 			/* Surprising if it happens; and not fatal! We were
 			   just trying to give some space back. We can
@@ -792,7 +792,7 @@ static cgiParseResultType cgiParsePostMultipartInput(void)
 	mpStreamPtr mpp = &mp;
 
 	memset(&mp, 0, sizeof(mp));
-	if (!cgiContentLength)
+	if (cgiContentLength == 0)
 	{
 		return cgiParseSuccess;
 	}
@@ -878,12 +878,12 @@ static cgiParseResultType cgiParsePostMultipartInput(void)
 		}
 		/* OK, we have a new pair, add it to the list. */
 		n = g_new0(cgiFormEntry, 1);
-		if (!n)
+		if (n == NULL)
 		{
 			goto outOfMemory;
 		}
 		n->attr = g_strdup(fname);
-		if (!n->attr)
+		if (n->attr == NULL)
 		{
 			goto outOfMemory;
 		}
@@ -893,8 +893,8 @@ static cgiParseResultType cgiParsePostMultipartInput(void)
 			out = 0;
 		}
 		n->valueLength = bodyLength;
-		n->next = 0;
-		if (!l)
+		n->next = NULL;
+		if (l == NULL)
 		{
 			cgiFormEntryFirst = n;
 		} else
@@ -902,12 +902,12 @@ static cgiParseResultType cgiParsePostMultipartInput(void)
 			l->next = n;
 		}
 		n->fileName = g_strdup(ffileName);
-		if (!n->fileName)
+		if (n->fileName == NULL)
 		{
 			goto outOfMemory;
 		}
 		n->contentType = g_strdup(fcontentType);
-		if (!n->contentType)
+		if (n->contentType == NULL)
 		{
 			goto outOfMemory;
 		}
@@ -993,7 +993,7 @@ static cgiFormResultType cgiFormEntryString(cgiFormEntry *e, char *result, int m
 	if (truncated)
 	{
 		return cgiFormTruncated;
-	} else if (!len)
+	} else if (len == 0)
 	{
 		return cgiFormEmpty;
 	} else
@@ -1078,7 +1078,7 @@ cgiFormResultType cgiFormFileSize(const char *name, int *sizeP)
 	if (sizeP)
 		*sizeP = 0;
 	e = cgiFormEntryFindFirst(name);
-	if (!e)
+	if (e == NULL)
 		return cgiFormNotFound;
 	if (sizeP)
 		*sizeP = e->valueLength;
@@ -1133,20 +1133,20 @@ cgiFormResultType cgiFormStringMultiple(const char *name, char ***result)
 	   function is not commonly used. The select menu and
 	   radio box functions are faster. */
 	e = cgiFormEntryFindFirst(name);
-	if (e != 0)
+	if (e != NULL)
 	{
 		do
 		{
 			total++;
-		} while ((e = cgiFormEntryFindNext()) != 0);
+		} while ((e = cgiFormEntryFindNext()) != NULL);
 	}
 	*result = 0;
 	/* Now go get the entries */
 	e = cgiFormEntryFindFirst(name);
-	if (e)
+	if (e != NULL)
 	{
 		stringArray = g_new0(char *, total + 1);
-		if (!stringArray)
+		if (stringArray == NULL)
 		{
 			return cgiFormMemory;
 		}
@@ -1156,7 +1156,7 @@ cgiFormResultType cgiFormStringMultiple(const char *name, char ***result)
 			int max = (int) (strlen(e->value) + 1);
 
 			stringArray[i] = g_new(char, max);
-			if (stringArray[i] == 0)
+			if (stringArray[i] == NULL)
 			{
 				/* Memory problems */
 				cgiStringArrayFree(stringArray);
@@ -1166,7 +1166,7 @@ cgiFormResultType cgiFormStringMultiple(const char *name, char ***result)
 			strcpy(stringArray[i], e->value);
 			cgiFormEntryString(e, stringArray[i], max);
 			i++;
-		} while ((e = cgiFormEntryFindNext()) != 0);
+		} while ((e = cgiFormEntryFindNext()) != NULL);
 		*result = stringArray;
 		return cgiFormSuccess;
 	} else
@@ -1182,12 +1182,12 @@ cgiFormResultType cgiFormStringSpaceNeeded(const char *name, int *result)
 	cgiFormEntry *e;
 
 	e = cgiFormEntryFindFirst(name);
-	if (!e)
+	if (e == NULL)
 	{
 		*result = 1;
 		return cgiFormNotFound;
 	}
-	*result = ((int) strlen(e->value)) + 1;
+	*result = (int) strlen(e->value) + 1;
 	return cgiFormSuccess;
 }
 
@@ -1209,18 +1209,18 @@ cgiFormResultType cgiFormInteger(const char *name, int *result, int defaultV)
 	int ch;
 
 	e = cgiFormEntryFindFirst(name);
-	if (!e)
+	if (e == NULL)
 	{
 		*result = defaultV;
 		return cgiFormNotFound;
 	}
-	if (!strlen(e->value))
+	if (strlen(e->value) == 0)
 	{
 		*result = defaultV;
 		return cgiFormEmpty;
 	}
 	ch = cgiFirstNonspaceChar(e->value);
-	if (!(g_ascii_isdigit(ch)) && (ch != '-') && (ch != '+'))
+	if (!g_ascii_isdigit(ch) && ch != '-' && ch != '+')
 	{
 		*result = defaultV;
 		return cgiFormBadType;
@@ -1262,18 +1262,18 @@ cgiFormResultType cgiFormDouble(const char *name, double *result, double default
 	int ch;
 
 	e = cgiFormEntryFindFirst(name);
-	if (!e)
+	if (e == NULL)
 	{
 		*result = defaultV;
 		return cgiFormNotFound;
 	}
-	if (!strlen(e->value))
+	if (strlen(e->value) == 0)
 	{
 		*result = defaultV;
 		return cgiFormEmpty;
 	}
 	ch = cgiFirstNonspaceChar(e->value);
-	if (!(g_ascii_isdigit(ch)) && (ch != '.') && (ch != '-') && (ch != '+'))
+	if (!g_ascii_isdigit(ch) && ch != '.' && ch != '-' && ch != '+')
 	{
 		*result = defaultV;
 		return cgiFormBadType;
@@ -1315,7 +1315,7 @@ cgiFormResultType cgiFormSelectSingle(const char *name, char **choicesText, int 
 	int i;
 
 	e = cgiFormEntryFindFirst(name);
-	if (!e)
+	if (e == NULL)
 	{
 		*result = defaultV;
 		return cgiFormNotFound;
@@ -1346,7 +1346,7 @@ cgiFormResultType cgiFormSelectMultiple(const char *name, char **choicesText, in
 		result[i] = 0;
 	}
 	e = cgiFormEntryFindFirst(name);
-	if (!e)
+	if (e == NULL)
 	{
 		*invalid = invalidE;
 		return cgiFormNotFound;
@@ -1365,11 +1365,11 @@ cgiFormResultType cgiFormSelectMultiple(const char *name, char **choicesText, in
 				break;
 			}
 		}
-		if (!(hit))
+		if (!hit)
 		{
 			invalidE++;
 		}
-	} while ((e = cgiFormEntryFindNext()) != 0);
+	} while ((e = cgiFormEntryFindNext()) != NULL);
 
 	*invalid = invalidE;
 
@@ -1389,7 +1389,7 @@ cgiFormResultType cgiFormCheckboxSingle(const char *name)
 	cgiFormEntry *e;
 
 	e = cgiFormEntryFindFirst(name);
-	if (!e)
+	if (e == NULL)
 	{
 		return cgiFormNotFound;
 	}
@@ -1438,10 +1438,10 @@ cgiFormResultType cgiCookieString(const char *name, char *value, int space)
 			p++;
 			n++;
 		}
-		if ((!*n) && (*p == '='))
+		if (*n == '\0' && *p == '=')
 		{
 			p++;
-			while ((*p != ';') && (*p != '\0') && (space > 1))
+			while (*p != ';' && *p != '\0' && space > 1)
 			{
 				*value = *p;
 				value++;
@@ -1454,7 +1454,7 @@ cgiFormResultType cgiCookieString(const char *name, char *value, int space)
 			}
 			/* Correct parens: 2.02. Thanks to
 			   Mathieu Villeneuve-Belair. */
-			if (!(((*p) == ';') || ((*p) == '\0')))
+			if (!((*p) == ';' || (*p) == '\0'))
 			{
 				return cgiFormTruncated;
 			} else
@@ -1472,7 +1472,7 @@ cgiFormResultType cgiCookieString(const char *name, char *value, int space)
 				}
 				p++;
 			}
-			if (!*p)
+			if (*p == '\0')
 			{
 				/* 2.01: default to empty */
 				if (space)
@@ -1603,7 +1603,7 @@ cgiFormResultType cgiCookies(char ***result)
 		p++;
 	}
 	stringArray = g_new0(char *, total + 1);
-	if (!stringArray)
+	if (stringArray == NULL)
 	{
 		*result = 0;
 		return cgiFormMemory;
@@ -1617,14 +1617,14 @@ cgiFormResultType cgiCookies(char ***result)
 			p++;
 		}
 		n = p;
-		while (*p && (*p != '='))
+		while (*p != '\0' && *p != '=')
 		{
 			p++;
 		}
 		if (p != n)
 		{
 			stringArray[i] = g_new(char, (p - n) + 1);
-			if (!stringArray[i])
+			if (stringArray[i] == NULL)
 			{
 				cgiStringArrayFree(stringArray);
 				*result = 0;
@@ -1634,11 +1634,11 @@ cgiFormResultType cgiCookies(char ***result)
 			stringArray[i][p - n] = '\0';
 			i++;
 		}
-		while (*p && (*p != ';'))
+		while (*p != '\0' && *p != ';')
 		{
 			p++;
 		}
-		if (!*p)
+		if (*p == '\0')
 		{
 			break;
 		}
@@ -1668,7 +1668,7 @@ cgiFormResultType cgiFormEntries(char ***result)
 		pe = cgiFormEntryFirst;
 		while (pe != e)
 		{
-			if (!strcmp(e->attr, pe->attr))
+			if (strcmp(e->attr, pe->attr) == 0)
 			{
 				goto skipSecondValue;
 			}
@@ -1679,7 +1679,7 @@ cgiFormResultType cgiFormEntries(char ***result)
 		e = e->next;
 	}
 	stringArray = g_new0(char *, total + 1);
-	if (!stringArray)
+	if (stringArray == NULL)
 	{
 		*result = 0;
 		return cgiFormMemory;
@@ -1694,7 +1694,7 @@ cgiFormResultType cgiFormEntries(char ***result)
 		pe = cgiFormEntryFirst;
 		while (pe != e)
 		{
-			if (!strcmp(e->attr, pe->attr))
+			if (strcmp(e->attr, pe->attr) == 0)
 			{
 				goto skipSecondValue2;
 			}
@@ -1900,7 +1900,7 @@ int cgiInit(GString *out)
 
 				cgiMultipartBoundary = sat + strlen("boundary=");
 				s = cgiMultipartBoundary;
-				while ((*s) && (!g_ascii_isspace(*s)))
+				while (*s != '\0' && !g_ascii_isspace(*s))
 				{
 					s++;
 				}

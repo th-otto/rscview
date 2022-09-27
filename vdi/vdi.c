@@ -226,6 +226,17 @@ static void vdi_put_pixel(VWK *v, int x, int y, pel color)
 		if (y < v->clipr.y || y >= v->clipr.y + v->clipr.height)
 			return;
 	}
+	if (v->drawingrect)
+	{
+		if (x < v->drawrect.x)
+			v->drawrect.x = x;
+		if (x >= v->drawrect.x + v->drawrect.width)
+			v->drawrect.width = x - v->drawrect.x + 1;
+		if (y < v->drawrect.y)
+			v->drawrect.y = y;
+		if (y >= v->drawrect.y + v->drawrect.height)
+			v->drawrect.height = y - v->drawrect.y + 1;
+	}
 	pixel(x, y) = color;
 }
 
@@ -780,6 +791,34 @@ static int vdi_vs_clip(VWK *v, VDIPB *pb)
 	}
 	V_NINTOUT(pb, 0);
 	V_NPTSOUT(pb, 0);
+	return VDI_DONE;
+}
+
+/******************************************************************************/
+
+static int vdi_vs_drawrect(VWK *v, VDIPB *pb)
+{
+	_WORD *control = PV_CONTROL(pb);
+	_WORD *intin = PV_INTIN(pb);
+	_WORD *ptsout = PV_PTSOUT(pb);
+
+	if (V_INTIN(pb, 0) != 0)
+	{
+		v->drawrect.x = 32767;
+		v->drawrect.y = 32767;
+		v->drawrect.width = 0;
+		v->drawrect.height = 0;
+		v->drawingrect = TRUE;
+	} else
+	{
+		PTSOUTX(0) = v->drawrect.x;
+		PTSOUTY(0) = v->drawrect.y;
+		PTSOUTX(1) = v->drawrect.x + v->drawrect.width - 1;
+		PTSOUTY(1) = v->drawrect.y + v->drawrect.height - 1;
+		v->drawingrect = FALSE;
+	}
+	V_NINTOUT(pb, 0);
+	V_NPTSOUT(pb, 2);
 	return VDI_DONE;
 }
 
@@ -6296,6 +6335,11 @@ static VWK *init_vwk(VDIPB *pb, int h, int phys_wk, int width, int height, int p
 	v->clipr.y = 0;
 	v->clipr.width = width;
 	v->clipr.height = height;
+	v->drawingrect = FALSE;
+	v->drawrect.x = 0;
+	v->drawrect.y = 0;
+	v->drawrect.width = 0;
+	v->drawrect.height = 0;
 	v->input_mode[0] = MODE_UNDEFINED;
 	v->input_mode[DEV_LOCATOR] = MODE_REQUEST;
 	v->input_mode[DEV_VALUATOR] = MODE_REQUEST;
@@ -7779,6 +7823,7 @@ static gboolean vdi_call(VDIPB *pb)
 			case OPCODE(38, 0): vdi_done = vdi_vqt_attributes(v, pb); break;
 			case OPCODE(39, 0): vdi_done = vdi_vst_alignment(v, pb); break;
 			case OPCODE(96, 1): vdi_done = vdi_v_write_png(v, pb); break;
+			case OPCODE(96, 2): vdi_done = vdi_vs_drawrect(v, pb); break;
 			case OPCODE(100, 0): vdi_done = vdi_v_opnvwk(pb); break;
 			case OPCODE(100, 1): vdi_done = vdi_v_opnbm(pb); break;
 			case OPCODE(100, 2): vdi_done = vdi_v_resize_bm(v, pb); break;

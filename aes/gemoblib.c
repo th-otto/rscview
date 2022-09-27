@@ -817,9 +817,9 @@ static void just_draw(OBJECT *tree, _WORD obj, _WORD sx, _WORD sy)
 		if ((state & OS_SHADOWED) && th)
 		{
 			vsf_color(gl_handle, bcol);
-			/* draw the vertical line */
-			bb_fill(MD_REPLACE, FIS_SOLID, IP_HOLLOW, pt->g_x, pt->g_y + pt->g_h + th, pt->g_w + th, 2 * th);
 			/* draw the horizontal line */
+			bb_fill(MD_REPLACE, FIS_SOLID, IP_HOLLOW, pt->g_x, pt->g_y + pt->g_h + th, pt->g_w + th, 2 * th);
+			/* draw the vertical line */
 			bb_fill(MD_REPLACE, FIS_SOLID, IP_HOLLOW, pt->g_x + pt->g_w + th, pt->g_y, 2 * th, pt->g_h + (3 * th));
 		}
 

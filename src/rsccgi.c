@@ -48,6 +48,7 @@ static GRECT desk;
 static _WORD phys_handle;						/* physical workstation handle */
 static _WORD vdi_handle;						/* virtual screen handle */
 static WS ws;
+static _WORD xworkout[57];
 
 /*
  * program options
@@ -78,6 +79,7 @@ static void open_screen(void)
 		workin[i] = 1;
 	workin[10] = 2;
 	v_opnvwk(workin, &vdi_handle, &ws.ws_xres);
+	vq_extnd(vdi_handle, 1, xworkout);
 	vsf_interior(vdi_handle, FIS_SOLID);
 	vsf_perimeter(vdi_handle, FALSE);
 	vswr_mode(vdi_handle, MD_REPLACE);
@@ -187,6 +189,8 @@ static void generate_imagemap(RSCTREE *tree, rsc_opts *opts, GString *out)
 		x = x - dx;
 		y = y - dy;
 		g_string_append_printf(out, "&#10;type = %s", type_name(type));
+		if ((obj[j].ob_type & ~OBTYPEMASK) != 0)
+			g_string_append_printf(out, "&#10;exttype = %d", (obj[j].ob_type >> 8) & 0xff);
 		g_string_append_printf(out, "&#10;x = %d", x / gl_wchar);
 		if (x % gl_wchar != 0)
 			g_string_append_printf(out, " + %d", x % gl_wchar);
@@ -277,23 +281,51 @@ static _WORD write_png(RSCTREE *tree, rsc_opts *opts, _WORD x, _WORD y, _WORD w,
 /* ------------------------------------------------------------------------- */
 /*****************************************************************************/
 
+static void start_drawrect(void)
+{
+	_WORD pxy[4];
+
+	pxy[0] = desk.g_x;
+	pxy[1] = desk.g_y;
+	pxy[2] = desk.g_x + desk.g_w - 1;
+	pxy[3] = desk.g_y + desk.g_h - 1;
+	vs_drawrect(vdi_handle, 1, pxy);
+}
+
+/* ------------------------------------------------------------------------- */
+
+static void end_drawrect(GRECT *gr)
+{
+	_WORD pxy[4];
+
+	vs_drawrect(vdi_handle, 0, pxy);
+	gr->g_x = pxy[0];
+	gr->g_y = pxy[1];
+	gr->g_w = pxy[2] - pxy[0] + 1;
+	gr->g_h = pxy[3] - pxy[1] + 1;
+}
+
+/* ------------------------------------------------------------------------- */
+
 static _BOOL draw_dialog(RSCTREE *tree, rsc_opts *opts, GString *out)
 {
 	OBJECT *ob;
 	GRECT gr;
 	_WORD err;
-	
+
 	ob = tree->rt_objects.dial.di_tree;
 	if (ob == NULL)
 		return FALSE;
 	form_center_grect(ob, &gr);
-	
+
 	wind_update(BEG_UPDATE);
 	form_dial_grect(FMD_START, &gr, &gr);
 	
 	clear_screen(tree->rt_name);
 	
-	objc_draw_grect(ob, ROOT, MAX_DEPTH, &gr);
+	start_drawrect();
+	objc_draw_grect(ob, ROOT, MAX_DEPTH, &desk);
+	end_drawrect(&gr);
 	
 	err = write_png(tree, opts, gr.g_x, gr.g_y, gr.g_w, gr.g_h, out, opts->gen_imagemap);
 
@@ -487,6 +519,78 @@ static _BOOL draw_alert(RSCTREE *tree, rsc_opts *opts, GString *out)
 
 /* ------------------------------------------------------------------------- */
 
+static _BOOL draw_image(RSCTREE *tree, rsc_opts *opts, GString *out)
+{
+	_WORD err;
+	BITBLK *bit;
+	_WORD *data;
+	_WORD width;
+	_WORD height;
+	GRECT gr;
+	_WORD pxy[8];
+	_WORD colors[2];
+	MFDB src, dst;
+
+	bit = tree->rt_objects.bit;
+	data = bit->bi_pdata;
+	width = bit->bi_wb * 8;
+	height = bit->bi_hl;
+	if (is_mouseform(bit))
+	{
+		data += 5;
+		height -= 5;
+	}
+
+	clear_screen(tree->rt_name);
+
+	gr.g_x = (desk.g_w - width) / 2 + desk.g_x;
+	gr.g_y = (desk.g_h - height) / 2 + desk.g_y;
+	gr.g_w = width;
+	gr.g_h = height;
+
+	pxy[0] = gr.g_x;
+	pxy[1] = gr.g_y;
+	pxy[2] = gr.g_x + gr.g_w - 1;
+	pxy[3] = gr.g_y + gr.g_h - 1;
+	vs_clip(vdi_handle, 1, pxy);
+	vswr_mode(vdi_handle, MD_REPLACE);
+	vsf_color(vdi_handle, G_WHITE);
+	vr_recfl(vdi_handle, pxy);
+
+	pxy[0] = 0;
+	pxy[1] = 0;
+	pxy[2] = gr.g_w - 1;
+	pxy[3] = gr.g_h - 1;
+	pxy[4] = gr.g_x;
+	pxy[5] = gr.g_y;
+	pxy[6] = gr.g_x + gr.g_w - 1;
+	pxy[7] = gr.g_y + gr.g_h - 1;
+
+	src.fd_w = width;
+	src.fd_h = height;
+	src.fd_nplanes = 1;
+	src.fd_wdwidth = (src.fd_w + 15) >> 4;
+	src.fd_stand = FALSE;
+	src.fd_addr = data;
+
+	dst.fd_w = ws.ws_xres + 1;
+	dst.fd_h = ws.ws_yres + 1;
+	dst.fd_nplanes = xworkout[4];
+	dst.fd_wdwidth = (dst.fd_w + 15) >> 4;
+	dst.fd_stand = FALSE;
+	dst.fd_addr = 0;
+
+	colors[0] = G_BLACK;
+	colors[1] = G_WHITE;
+	vrt_cpyfm(vdi_handle, MD_TRANS, pxy, &src, &dst, colors);
+
+	err = write_png(tree, opts, gr.g_x, gr.g_y, gr.g_w, gr.g_h, out, FALSE);
+
+	return err == 0;
+}
+
+/* ------------------------------------------------------------------------- */
+
 static _BOOL draw_tree(RSCTREE *tree, rsc_opts *opts, GString *out)
 {
 	_BOOL ret = TRUE;
@@ -511,6 +615,7 @@ static _BOOL draw_tree(RSCTREE *tree, rsc_opts *opts, GString *out)
 		break;
 	case RT_FRIMG:
 	case RT_MOUSE:
+		ret &= draw_image(tree, opts, out);
 		break;
 	case RT_BUBBLEMORE:
 	case RT_BUBBLEUSER:
@@ -545,7 +650,7 @@ static gboolean display_tree(const char *filename, rsc_opts *opts, GString *out,
 	
 	po_init(opts->po_dir, FALSE, FALSE);
 	appl_init();
-	
+
 	menu_register(-1, program_name);
 	phys_handle = graf_handle(&gl_wchar, &gl_hchar, &gl_wbox, &gl_hbox);
 	wind_get(DESK, WF_WORKXYWH, &desk.g_x, &desk.g_y, &desk.g_w, &desk.g_h);
@@ -564,30 +669,145 @@ static gboolean display_tree(const char *filename, rsc_opts *opts, GString *out,
 			if (cset >= 0)
 				file->rsc_nls_domain.fontset = cset;
 		}
-	
+
 		open_screen();
 		vst_font(vdi_handle, file->rsc_nls_domain.fontset);
 		vst_font(phys_handle, file->rsc_nls_domain.fontset);
-		
+
 		html_out_header(file, opts, out, rsc_basename(filename), treeindex, FALSE);
-	
+
 		if (treeindex >= 0)
 			retval = draw_tree(rsc_tree_index(file, treeindex, RT_ANY), opts, out);
 		else
 			retval = draw_all_trees(file, opts, out);
-		
+
 		vst_font(phys_handle, 1);
 		close_screen();
-	
+
 		html_out_trailer(file, opts, out, treeindex, FALSE);
-	
+
 		rsc_file_delete(file, FALSE);
 		xrsrc_free(file);
 	}
-		
+
 	appl_exit();
 	po_exit();
-		
+
+	return retval;
+}
+
+/* ------------------------------------------------------------------------- */
+
+static gboolean display_file(const char *filename, rsc_opts *opts, GString *out)
+{
+	RSCTREE *tree;
+	RSCFILE *file;
+	gboolean retval = FALSE;
+	_UWORD load_flags = XRSC_SAFETY_CHECKS;
+	unsigned int treeindex;
+
+	po_init(opts->po_dir, FALSE, FALSE);
+	appl_init();
+
+	menu_register(-1, program_name);
+	phys_handle = graf_handle(&gl_wchar, &gl_hchar, &gl_wbox, &gl_hbox);
+	
+	file = load_all(filename, gl_wchar, gl_hchar, opts->lang, load_flags, opts->po_dir);
+	if (file == NULL)
+	{
+		html_out_header(NULL, opts, out, _("404 Not Found"), -1, TRUE);
+		g_string_append_printf(out, "%s: %s\n", rsc_basename(filename), strerror(errno));
+		html_out_trailer(NULL, opts, out, -1, TRUE);
+	} else
+	{
+		if (opts->charset)
+		{
+			int cset = po_get_charset_id(opts->charset);
+			if (cset >= 0)
+				file->rsc_nls_domain.fontset = cset;
+		}
+
+		open_screen();
+		vst_font(vdi_handle, file->rsc_nls_domain.fontset);
+		vst_font(phys_handle, file->rsc_nls_domain.fontset);
+
+		html_out_header(file, opts, out, rsc_basename(filename), -1, FALSE);
+
+		retval = TRUE;
+		g_string_append(out, "<table>\n");
+		treeindex = 0;
+		FOR_ALL_RSC(file, tree)
+		{
+			char *fname;
+			char *quoted;
+			char *name_quoted;
+			const char *image;
+			
+			g_string_append(out, "<tr><td>");
+			switch (tree->rt_type)
+			{
+			case RT_DIALOG:
+				image = "dialog";
+				break;
+			case RT_FREE:
+				image = "free";
+				break;
+			case RT_UNKNOWN:
+				image = "unknown";
+				break;
+			case RT_MENU:
+				image = "menue";
+				break;
+			case RT_FRSTR:
+				image = "string";
+				break;
+			case RT_ALERT:
+				image = "alert";
+				break;
+			case RT_FRIMG:
+				image = "image";
+				break;
+			case RT_MOUSE:
+				image = "mouse";
+				break;
+			case RT_BUBBLEMORE:
+			case RT_BUBBLEUSER:
+			default:
+				image = NULL;
+				break;
+			}
+			if (image)
+				g_string_append_printf(out, "<img src=\"images/%s.png\">", image);
+			g_string_append(out, "</td>\n");
+
+			g_string_append(out, "<td>");
+			fname = g_strdup_printf("%s?url=%s&index=%u%s", cgi_scriptname, html_referer_url, treeindex, opts->cgi_cached ? "&cached=1" : "");
+			quoted = html_quote_name(fname, QUOTE_UNICODE|QUOTE_NOLTR);
+			name_quoted = html_quote_name(tree->rt_name, QUOTE_UNICODE);
+			g_string_append_printf(out, "<a href=\"%s\">%s</a>",
+				quoted,
+				name_quoted);
+			g_free(name_quoted);
+			g_free(quoted);
+			g_free(fname);
+			g_string_append(out, "</td></tr>\n");
+			
+			treeindex++;
+		}
+		g_string_append(out, "</table>\n");
+
+		vst_font(phys_handle, 1);
+		close_screen();
+
+		html_out_trailer(file, opts, out, -1, FALSE);
+
+		rsc_file_delete(file, FALSE);
+		xrsrc_free(file);
+	}
+
+	appl_exit();
+	po_exit();
+
 	return retval;
 }
 
@@ -806,6 +1026,8 @@ int main(void)
 	rsc_opts _opts;
 	rsc_opts *opts = &_opts;
 	_WORD treeindex = -1;
+	_BOOL show_contents = FALSE;
+	gboolean retval = FALSE;
 
 	memset(opts, 0, sizeof(*opts));
 	opts->cgi_cached = FALSE;
@@ -820,8 +1042,10 @@ int main(void)
 	opts->errorfile = fopen("rscview.log", "a");
 	if (opts->errorfile == NULL)
 		opts->errorfile = stderr;
+#if 0
 	else
 		dup2(fileno(opts->errorfile), 2);
+#endif
 	set_errout_handler(stdout_handler, opts->errorfile);
 
 	body = g_string_new(NULL);
@@ -864,7 +1088,12 @@ int main(void)
 		g_free(val);
 	} else
 	{
-		treeindex = 0;
+		treeindex = -1;
+	}
+	if ((val = cgiFormString("contents")) != NULL)
+	{
+		show_contents = TRUE;
+		g_free(val);
 	}
 	
 	if (g_ascii_strcasecmp(cgiRequestMethod, "GET") == 0)
@@ -926,10 +1155,12 @@ int main(void)
 		}
 		if (filename && exit_status == EXIT_SUCCESS)
 		{
-			if (display_tree(filename, opts, body, treeindex) == FALSE)
-			{
+			if (show_contents)
+				retval = display_file(filename, opts, body);
+			else
+				retval = display_tree(filename, opts, body, treeindex);
+			if (retval == FALSE)
 				exit_status = EXIT_FAILURE;
-			}
 			g_free(filename);
 		}
 		g_free(scheme);
@@ -1069,10 +1300,12 @@ int main(void)
 					exit_status = EXIT_FAILURE;
 				} else
 				{
-					if (display_tree(rsc_filename, opts, body, treeindex) == FALSE)
-					{
+					if (show_contents)
+						retval = display_file(rsc_filename, opts, body);
+					else
+						retval = display_tree(rsc_filename, opts, body, treeindex);
+					if (retval == FALSE)
 						exit_status = EXIT_FAILURE;
-					}
 				}
 			}
 			g_free(rsc_filename);

@@ -1033,8 +1033,6 @@ void html_out_nav_toolbar(RSCFILE *file, rsc_opts *opts, GString *out, _WORD tre
 
 	if (opts->for_cgi)
 	{
-		char *str;
-		
 		alt = _("View a new file");
 		disabled = "";
 		g_string_append_printf(out,
@@ -1044,14 +1042,6 @@ void html_out_nav_toolbar(RSCFILE *file, rsc_opts *opts, GString *out, _WORD tre
 			xpos,
 			html_nav_load_href, html_nav_img_style, disabled, html_nav_load_png, alt, alt, html_nav_dimensions, html_closer);
 		xpos += button_w;
-	
-		g_string_append_printf(out, "<li style=\"position:absolute;left:%dpx;\">\n", xpos);
-		str = html_quote_name(html_referer_url, QUOTE_UNICODE|QUOTE_NOLTR);
-		g_string_append_printf(out, "<input type=\"hidden\" name=\"url\" value=\"%s\"%s\n", str, html_closer);
-		g_free(str);
-		g_string_append_printf(out, "<input accesskey=\"s\" type=\"text\" id=\"searchfield\" name=\"q\" size=\"10\" value=\"\"%s\n", html_closer);
-		g_string_append_printf(out, "<script type=\"text/javascript\">document.getElementById('searchfield').placeholder = '%s';</script>\n", _("Search"));
-		g_string_append(out, "</li>\n");
 	}
 	g_string_append(out, "</ul>\n");
 	g_string_append(out, "</fieldset>\n");
@@ -1137,6 +1127,9 @@ void html_out_header(RSCFILE *file, rsc_opts *opts, GString *out, const char *ti
 
 	if (treeindex >= 0)
 	{
+		/*
+		 * emit a navivation bar
+		 */
 		if (treeindex > 0)
 		{
 			str = html_filename_for_tree(file, opts, 0, TRUE);
@@ -1193,21 +1186,18 @@ void html_out_header(RSCFILE *file, rsc_opts *opts, GString *out, const char *ti
 		g_string_append(out, "<p>\n");
 	} else if (treeindex >= 0)
 	{
-#if 0
-		if (opts->hidemenu)
-		{
-			g_string_append_printf(out, "<div class=\"%s\">\n", html_node_style);
-		} else
+		if (treeindex >= 0)
 		{
 			html_out_nav_toolbar(file, opts, out, treeindex);
 			g_string_append_printf(out, "<div class=\"%s\" style=\"position:absolute; top:32px;\">\n", html_node_style);
 		}
+#if 0
 		g_string_append(out, "<pre style=\"margin-top:0;\">");
 #endif
 	} else
 	{
-#if 0
 		g_string_append_printf(out, "<div class=\"%s\">\n", html_pnode_style);
+#if 0
 		g_string_append(out, "<pre>");
 #endif
 	}
@@ -1240,7 +1230,10 @@ void html_out_trailer(RSCFILE *file, rsc_opts *opts, GString *out, _WORD treeind
 	{
 #if 0
 		g_string_append(out, "</pre>\n");
-		g_string_append(out, "</div>\n");
+#endif
+		if (treeindex >= 0)
+			g_string_append(out, "</div>\n");
+#if 0
 		if (file != NULL)
 			g_string_append(out, "</div>\n");
 #endif
