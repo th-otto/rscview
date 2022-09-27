@@ -60,7 +60,7 @@ static void ob_getsp(OBJECT *tree, _WORD obj, TEDINFO *pted)
 void ob_center(OBJECT *tree, GRECT *pt)
 {
 	_WORD xd, yd, wd, hd;
-	_WORD iword, th;
+	_WORD state, type, flags, th;
 	OBSPEC spec;
 	GRECT rec;
 
@@ -84,7 +84,7 @@ void ob_center(OBJECT *tree, GRECT *pt)
 	/* account for shadow */
 	if (tree[ROOT].ob_state & OS_SHADOWED)
 	{
-		ob_sst(tree, ROOT, &spec, &iword, &iword, &iword, &rec, &th);
+		ob_sst(tree, ROOT, &spec, &state, &type, &flags, &rec, &th);
 		th = (th > 0) ? th : -th;
 		th = 2 * th;
 		wd += th;

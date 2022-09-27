@@ -321,7 +321,7 @@ _WORD ob_edit(OBJECT *tree, _WORD obj, _WORD in_char, _WORD *idx, _WORD kind);
 /*
  * gemobjop.c
  */
-char ob_sst(OBJECT *tree, _WORD obj, OBSPEC *pspec, _WORD *pstate, _WORD *ptype, _WORD *pflags, GRECT *pt, _WORD *pth);
+char ob_sst(OBJECT *tree, _WORD obj, OBSPEC *__restrict pspec, _WORD *__restrict pstate, _WORD *__restrict ptype, _WORD *__restrict pflags, GRECT *__restrict pt, _WORD *__restrict pth);
 typedef void (*EVERYOBJ_CALLBACK)(OBJECT *tree, _WORD obj, _WORD sx, _WORD sy);
 void everyobj(OBJECT *tree, _WORD thisobj, _WORD last, EVERYOBJ_CALLBACK routine, _WORD startx, _WORD starty, _WORD maxdep);
 _WORD get_par(OBJECT *tree, _WORD obj);

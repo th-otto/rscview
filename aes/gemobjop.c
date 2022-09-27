@@ -19,14 +19,12 @@ char ob_sst(OBJECT *tree, _WORD obj, OBSPEC *pspec, _WORD *pstate, _WORD *ptype,
 	pt->g_h = tmp->ob_height;			/* set user grect height */
 	*pflags = tmp->ob_flags;			/* set user flags variable */
 	*pspec = tmp->ob_spec;				/* set user spec variable */
+	/* IF indirect then get pointer */
+	if (tmp->ob_flags & OF_INDIRECT)
+		*pspec = *(tmp->ob_spec.indirect);
 	*pstate = tmp->ob_state;			/* set user state variable */
 
 	*ptype = tmp->ob_type & OBTYPEMASK;	/* set user type variable */
-
-	/* IF indirect then get pointer */
-	if (*pflags & OF_INDIRECT)
-		*pspec = *(tmp->ob_spec.indirect);
-
 
 	th = 0;								/* border thickness */
 
@@ -51,9 +49,9 @@ char ob_sst(OBJECT *tree, _WORD obj, OBSPEC *pspec, _WORD *pstate, _WORD *ptype,
 
 	case G_BUTTON:						/* for a button make thicker */
 		th--;
-		if (*pflags & OF_EXIT)			/* one thicker ( - (neg) is thicker) */
+		if (tmp->ob_flags & OF_EXIT)		/* one thicker ( - (neg) is thicker) */
 			th--;
-		if (*pflags & OF_DEFAULT)		/* still one more thick */
+		if (tmp->ob_flags & OF_DEFAULT)		/* still one more thick */
 			th--;
 		break;
 	}
