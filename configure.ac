@@ -5,7 +5,7 @@ m4_define(RELEASE_YEAR, 2018)
 m4_define(RSCVIEW_DATE, 25.07.RELEASE_YEAR)
 m4_define(RSCVIEW_VERSION, RSCVIEW_MAJOR_VERSION.RSCVIEW_MINOR_VERSION)
 
-AC_INIT(rscview, RSCVIEW_VERSION, [http://www.tho-otto.de/bugs/],,[http://www.tho-otto.de/])
+AC_INIT([rscview], [RSCVIEW_VERSION], [http://www.tho-otto.de/bugs/],,[http://www.tho-otto.de/])
 AC_CONFIG_SRCDIR(src/rscview.c)
 
 AUTHOR="Thorsten Otto"
@@ -15,33 +15,16 @@ AC_CONFIG_AUX_DIR([support])
 
 AC_CANONICAL_HOST
 
-AC_CONFIG_HEADER(config.h)
+AC_CONFIG_HEADERS([config.h])
 
 AH_TEMPLATE([[RSCVIEW_VERSION]], [Define release version.])
-AC_DEFINE_UNQUOTED([[RSCVIEW_VERSION]], "[RSCVIEW_VERSION]")
+AC_DEFINE_UNQUOTED([[[RSCVIEW_VERSION]]], "[RSCVIEW_VERSION]")
 AH_TEMPLATE([[RELEASE_YEAR]], [Define release year.])
-AC_DEFINE_UNQUOTED([[RELEASE_YEAR]], "[RELEASE_YEAR]")
+AC_DEFINE_UNQUOTED([[[RELEASE_YEAR]]], "[RELEASE_YEAR]")
 AH_TEMPLATE([[RSCVIEW_DATE]], [Define release date.])
-AC_DEFINE_UNQUOTED([[RSCVIEW_DATE]], "[RSCVIEW_DATE]")
+AC_DEFINE_UNQUOTED([[[RSCVIEW_DATE]]], "[RSCVIEW_DATE]")
 
 AM_INIT_AUTOMAKE
-
-AC_DEFUN([_AX_COMPILE_IFELSE],
-[AC_REQUIRE_SHELL_FN([ac_fn_]_AC_LANG_ABBREV[_try_compile],
-  [AS_FUNCTION_DESCRIBE([ac_fn_]_AC_LANG_ABBREV[_try_compile], [LINENO],
-    [Try to compile conftest.$ac_ext, and return whether this succeeded.])],
-  [$0_BODY])]dnl
-[m4_ifvaln([$1], [AC_LANG_CONFTEST([$1])])]dnl
-[AS_IF([ac_fn_[]_AC_LANG_ABBREV[]_try_compile "$LINENO"], [$2], [$3])
-rm -f core conftest.$ac_objext[]m4_ifval([$1], [ conftest.$ac_ext])[]dnl
-])# _AX_COMPILE_IFELSE
-
-AC_DEFUN([AX_COMPILE_IFELSE],
-[AC_LANG_COMPILER_REQUIRE()dnl
-_AX_COMPILE_IFELSE($@)])
-
-AU_DEFUN([AX_TRY_COMPILE],
-[AX_COMPILE_IFELSE([AC_LANG_PROGRAM([[$1]], [[$2]])], [$3], [$4])])
 
 m4_define([AC_ADD_CFLAG], [
 for flag in $2; do
@@ -50,7 +33,7 @@ case " [$]$1 " in
 *) AC_MSG_CHECKING([whether the compiler understands] $flag)
    saved_$1="[$]$1"
    $1="[$]$1 $flag"
-   AX_TRY_COMPILE(, , result=yes, result=no)
+   AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[]], [[]])], result=yes, result=no)
    if grep "unrecognized command line option" conftest.err >/dev/null 2>&1; then
      result=no
    fi
@@ -113,11 +96,8 @@ AC_DEFUN([AC_PROG_CC_ANSI],
   AC_SUBST(WIN32_WINDOWS_FLAGS)
 
   AC_MSG_CHECKING([whether the compiler works on ANSI C])
-  AC_TRY_RUN([ main(int ac, char **av) { return 0; } ],
-     AC_MSG_RESULT([yes]),
-     AC_MSG_RESULT([no])
-     AC_MSG_ERROR(Couldn't build even a trivial ANSI C program: check CC.),
-     AC_MSG_RESULT([assuming yes]))
+  AC_LINK_IFELSE([AC_LANG_PROGRAM([[]], [[return 0;]])], [AC_MSG_RESULT(yes)],[AC_MSG_RESULT(no)
+     AC_MSG_ERROR(Couldn't build even a trivial ANSI C program: check CC.)])
 
   AC_SUBST(WARN_NO_UNUSED)
 ])
@@ -276,14 +256,14 @@ AH_TEMPLATE([GETTIMEOFDAY_TWO_ARGS],
 AC_DEFUN([AC_GETTIMEOFDAY_ARGS],
  [AC_MSG_CHECKING(how to call gettimeofday)
   AC_CACHE_VAL(ac_cv_gettimeofday_args,
-   [AC_TRY_COMPILE([#include <stdlib.h>
-                    #include <sys/time.h>],
-                   [struct timeval tv; struct timezone tzp;
-                    gettimeofday(&tv, &tzp);],
+   [AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <stdlib.h>
+                    #include <sys/time.h>]],
+                   [[struct timeval tv; struct timezone tzp;
+                    gettimeofday(&tv, &tzp);]])],
                    [ac_gettimeofday_args=2],
-                   [AC_TRY_COMPILE([#include <stdlib.h>
-                                    #include <sys/time.h>],
-                                   [struct timeval tv; gettimeofday(&tv);],
+                   [AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <stdlib.h>
+                                    #include <sys/time.h>]],
+                                   [[struct timeval tv; gettimeofday(&tv);]])],
                                    [ac_gettimeofday_args=1],
                                    [ac_gettimeofday_args=0])])
     ac_cv_gettimeofday_args=$ac_gettimeofday_args])
@@ -328,6 +308,8 @@ echo "#include \"${srcdir}/include/linux/libcwrap.h\"" >> confdefs.h
 AC_PROG_CC_ANSI
 AC_PROG_CXX
 AM_PROG_AS
+AM_PROG_AR
+AC_PROG_RANLIB
 AC_CHECK_TOOL(STRIP, strip, :)
 
 AC_PROG_CC_WARNINGS
@@ -478,7 +460,6 @@ fi
 ###############################################################################
 
 # random libc stuff
-AC_HEADER_STDC
 AC_CHECK_HEADERS([argz.h limits.h locale.h nl_types.h malloc.h string.h strings.h unistd.h process.h sys/param.h endian.h \
         unistd.h string.h memory.h sys/types.h limits.h fcntl.h sys/time.h sys/timeb.h utime.h \
 	sys/param.h sys/statfs.h sys/fstyp.h mnttab.h mntent.h sys/statvfs.h sys/vfs.h byteswap.h \
@@ -487,22 +468,12 @@ AC_CHECK_HEADERS([argz.h limits.h locale.h nl_types.h malloc.h string.h strings.
 AC_TYPE_MODE_T
 AC_TYPE_PID_T
 AC_TYPE_SIZE_T
-AC_TYPE_SIGNAL
-AC_TYPE_SIZE_T
 AC_TYPE_SOCKLEN_T
 AC_C_CHAR_UNSIGNED
 AC_STRUCT_TM
-AC_TYPE_SIGNAL
 AC_CHECK_STIME_ARG
 AC_VA_LIST_NULL
-AH_TEMPLATE([SIGNAL_RETURN], [define to a statement to return from signal handlers])
-if test "$ac_cv_type_signal" = "void"; then
-   AC_DEFINE(SIGNAL_RETURN, [])
-else
-   AC_DEFINE(SIGNAL_RETURN, [return 0])
-fi
 
-AC_HEADER_TIME
 AC_HEADER_SYS_WAIT
 AC_HEADER_DIRENT
 AC_FUNC_CLOSEDIR_VOID
@@ -510,10 +481,10 @@ AC_GETTIMEOFDAY_ARGS
 AC_SYS_LARGEFILE
 AC_HEADER_STAT
 AC_CHECK_FUNCS([select fcntl uname gethostname nice setpriority getcwd getwd putenv sbrk sync \
-     getcwd munmap putenv setenv setlocale strchr strcasecmp strdup __argz_count __argz_stringify __argz_next \
+     munmap putenv setenv setlocale strchr strcasecmp strdup __argz_count __argz_stringify __argz_next \
      sigaction syslog realpath setrlimit lstat mktemp mkstemp mkstemps \
      snprintf vasprintf vsnprintf stpcpy mempcpy strtoul wcsnlen mbrtowc wcrtomb strsignal getrlimit setrlimit \
-     select usleep nap getcwd getwd strstr gettimeofday strerror ftime getmntinfo vfork uname gethostname XExtendedMaxRequestSize])
+     select usleep nap strstr gettimeofday strerror ftime getmntinfo vfork XExtendedMaxRequestSize])
 
 AC_CHECK_X_FUNCS([#undef __STRICT_ANSI__
 #define _GNU_SOURCE
@@ -545,7 +516,7 @@ AC_DEFUN([AC_TRANSLATE_DEFINE], [
 
 AH_TEMPLATE([SPEC_DEBUG], [define to 1 to get debugging code])
 AC_ARG_ENABLE(debug,
-[AC_HELP_STRING(--enable-debug, [Enable debugging [default=disabled]])],
+[AS_HELP_STRING(--enable-debug, [Enable debugging [default=disabled]])],
 enable_debug="$enableval", enable_debug=no)
 if test "$enable_debug" = "yes"; then
   LOCAL_CFLAGS="-g"
@@ -565,7 +536,7 @@ if test "x${GCC}" = "xyes"; then
 fi
 
 AC_ARG_ENABLE(warnings,
-[AC_HELP_STRING(--enable-warnings, [enable compiler warnings])],
+[AS_HELP_STRING(--enable-warnings, [enable compiler warnings])],
 [case $enableval in
 yes | no) ;;
 *)   AC_MSG_ERROR([must be yes or no: --enable-warnings=$enableval]) ;;
@@ -573,7 +544,7 @@ esac
 ], enable_warnings=no)
 
 AC_ARG_ENABLE(fatal-warnings,
-[AC_HELP_STRING(--enable-fatal-warnings, [Turn compiler warnings into errors [default=disabled]])],
+[AS_HELP_STRING(--enable-fatal-warnings, [Turn compiler warnings into errors [default=disabled]])],
 enable_fatal_warnings="$enableval", enable_fatal_warnings=no)
 
 AC_CONFIG_COMMANDS_PRE([
@@ -584,7 +555,7 @@ fi
 ])
 
 AC_ARG_WITH(system_libpng,
-[AC_HELP_STRING(--with-system-libpng, [use systems libpng])],
+[AS_HELP_STRING(--with-system-libpng, [use systems libpng])],
 [case $withval in
 yes | no) ;;
 *)   AC_MSG_ERROR([must be yes or no: --with-system-libpng=$enableval]) ;;
@@ -593,7 +564,7 @@ esac
 AM_CONDITIONAL(WITH_SYSTEM_LIBPNG, test "$with_system_libpng" = yes)
 
 AC_ARG_WITH(system_zlib,
-[AC_HELP_STRING(--with-system-zlib, [use systems zlib])],
+[AS_HELP_STRING(--with-system-zlib, [use systems zlib])],
 [case $withval in
 yes | no) ;;
 *)   AC_MSG_ERROR([must be yes or no: --with-system-zlib=$enableval]) ;;

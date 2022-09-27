@@ -2,27 +2,27 @@ dnl ***************************************************************************
 dnl AC_FILESYS_LIST
 dnl ***************************************************************************
 AH_TEMPLATE([MOUNTED_FREAD], [Define if there is no specific function for reading the list of
-mounted filesystems.  fread will be used to read /etc/mnttab.  [SVR2]])
+mounted filesystems.  fread will be used to read /etc/mnttab.  (SVR2)])
 AH_TEMPLATE([MOUNTED_FREAD_FSTYP], [Define if (like SVR2) there is no specific function for reading the
 list of mounted filesystems, and your system has these header files:
-<sys/fstyp.h> and <sys/statfs.h>.  [SVR3]])
+<sys/fstyp.h> and <sys/statfs.h>.  (SVR3)])
 AH_TEMPLATE([MOUNTED_GETFSSTAT], [Define if there is a function named getfsstat for reading the list
-of mounted filesystems.  [DEC Alpha running OSF/1]])
+of mounted filesystems.  (DEC Alpha running OSF/1)])
 AH_TEMPLATE([MOUNTED_GETMNT], [Define if there is a function named getmnt for reading the list of
-mounted filesystems.  [Ultrix]])
+mounted filesystems.  (Ultrix)])
 AH_TEMPLATE([MOUNTED_GETMNTENT1], [Define if there is a function named getmntent for reading the list
 of mounted filesystems, and that function takes a single argument.
-[4.3BSD, SunOS, HP-UX, Dynix, Irix]])
+(4.3BSD, SunOS, HP-UX, Dynix, Irix)])
 AH_TEMPLATE([MOUNTED_GETMNTENT2], [Define if there is a function named getmntent for reading the list of
-mounted filesystems, and that function takes two arguments.  [SVR4]])
+mounted filesystems, and that function takes two arguments.  (SVR4)])
 AH_TEMPLATE([MOUNTED_GETMNTINFO], [Define if there is a function named getmntinfo for reading the list
-of mounted filesystems.  [4.4BSD]])
+of mounted filesystems.  (4.4BSD)])
 AH_TEMPLATE([MOUNTED_VMOUNT], [Define if there is a function named mntctl that can be used to read
 the list of mounted filesystems, and there is a system header file
-that declares `struct vmount.'  [AIX]])
+that declares `struct vmount.'  (AIX)])
 
 AC_DEFUN([AC_FILESYS_LIST], [
-AC_CHECKING(how to get the list of mounted filesystems)
+AC_MSG_CHECKING(how to get the list of mounted filesystems)
 
 # If the getmntent function is available but not in the standard library,
 # make sure LIBS contains -lsun (on Irix4) or -lseq (on PTX).
@@ -68,14 +68,14 @@ if test "$ac_cv_filesys" = "none"; then
   # DEC Alpha running OSF/1.
   AC_MSG_CHECKING([for getfsstat function])
   AC_CACHE_VAL(fu_cv_sys_mounted_getsstat,
-  [AC_TRY_LINK([
+  [AC_LINK_IFELSE([AC_LANG_PROGRAM([[
 #include <sys/types.h>
 #include <sys/mount.h>
-#include <sys/fs_types.h>],
-  [struct statfs *stats;
-  numsys = getfsstat ((struct statfs *)0, 0L, MNT_WAIT); ],
-    fu_cv_sys_mounted_getsstat=yes,
-    fu_cv_sys_mounted_getsstat=no)])
+#include <sys/fs_types.h>]],
+  [[struct statfs *stats;
+  numsys = getfsstat ((struct statfs *)0, 0L, MNT_WAIT); ]])],
+    [fu_cv_sys_mounted_getsstat=yes],
+    [fu_cv_sys_mounted_getsstat=no])])
   AC_MSG_RESULT($fu_cv_sys_mounted_getsstat)
   if test $fu_cv_sys_mounted_getsstat = yes; then
     ac_cv_filesys=getfsstat
@@ -86,9 +86,9 @@ if test "$ac_cv_filesys" = "none"; then
   # AIX.
   AC_MSG_CHECKING([for mntctl function and struct vmount])
   AC_CACHE_VAL(fu_cv_sys_mounted_vmount,
-  [AC_TRY_CPP([#include <fshelp.h>],
-    fu_cv_sys_mounted_vmount=yes,
-    fu_cv_sys_mounted_vmount=no)])
+  [AC_PREPROC_IFELSE([AC_LANG_SOURCE([[#include <fshelp.h>]])],
+    [fu_cv_sys_mounted_vmount=yes],
+    [fu_cv_sys_mounted_vmount=no])])
   AC_MSG_RESULT($fu_cv_sys_mounted_vmount)
   if test $fu_cv_sys_mounted_vmount = yes; then
     ac_cv_filesys=vmount
@@ -99,12 +99,12 @@ if test "$ac_cv_filesys" = "none"; then
   # SVR3
   AC_MSG_CHECKING([for FIXME existence of three headers])
   AC_CACHE_VAL(fu_cv_sys_mounted_fread_fstyp,
-    [AC_TRY_CPP([
+    [AC_PREPROC_IFELSE([AC_LANG_SOURCE([[
 #include <sys/statfs.h>
 #include <sys/fstyp.h>
-#include <mnttab.h>],
-		fu_cv_sys_mounted_fread_fstyp=yes,
-		fu_cv_sys_mounted_fread_fstyp=no)])
+#include <mnttab.h>]])],
+		[fu_cv_sys_mounted_fread_fstyp=yes],
+		[fu_cv_sys_mounted_fread_fstyp=no])])
   AC_MSG_RESULT($fu_cv_sys_mounted_fread_fstyp)
   if test $fu_cv_sys_mounted_fread_fstyp = yes; then
     ac_cv_filesys=fread_fstype
@@ -137,11 +137,11 @@ if test "$ac_cv_filesys" = "none"; then
   # Ultrix
   AC_MSG_CHECKING([for getmnt function])
   AC_CACHE_VAL(fu_cv_sys_mounted_getmnt,
-    [AC_TRY_CPP([
+    [AC_PREPROC_IFELSE([AC_LANG_SOURCE([[
 #include <sys/fs_types.h>
-#include <sys/mount.h>],
-		fu_cv_sys_mounted_getmnt=yes,
-		fu_cv_sys_mounted_getmnt=no)])
+#include <sys/mount.h>]])],
+		[fu_cv_sys_mounted_getmnt=yes],
+		[fu_cv_sys_mounted_getmnt=no])])
   AC_MSG_RESULT($fu_cv_sys_mounted_getmnt)
   if test $fu_cv_sys_mounted_getmnt = yes; then
     ac_cv_filesys=getmnt
@@ -152,9 +152,9 @@ if test "$ac_cv_filesys" = "none"; then
   # SVR2
   AC_MSG_CHECKING([whether it is possible to resort to fread on /etc/mnttab])
   AC_CACHE_VAL(fu_cv_sys_mounted_fread,
-    [AC_TRY_CPP([#include <mnttab.h>],
-		fu_cv_sys_mounted_fread=yes,
-		fu_cv_sys_mounted_fread=no)])
+    [AC_PREPROC_IFELSE([AC_LANG_SOURCE([[#include <mnttab.h>]])],
+		[fu_cv_sys_mounted_fread=yes],
+		[fu_cv_sys_mounted_fread=no])])
   AC_MSG_RESULT($fu_cv_sys_mounted_fread)
   if test $fu_cv_sys_mounted_fread = yes; then
     ac_cv_filesys=fread

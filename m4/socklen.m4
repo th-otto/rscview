@@ -2,8 +2,7 @@ dnl ***************************************************************************
 dnl AC_CHECK_SYSTYPE(type, default, includes)
 dnl ***************************************************************************
 AC_DEFUN([AC_CHECK_SYSTYPE],
-[AC_REQUIRE([AC_HEADER_STDC])dnl
-AC_MSG_CHECKING(for $1)
+[AC_MSG_CHECKING(for $1)
 AC_CACHE_VAL(ac_cv_type_$1,
 [AC_EGREP_CPP(dnl
 changequote(<<<,>>>)dnl

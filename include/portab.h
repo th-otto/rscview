@@ -731,13 +731,6 @@ typedef long gssize;
 #  define PACKED /**/
 #endif
 
-#ifndef RETSIGTYPE
-#  define RETSIGTYPE void
-#endif
-#ifndef SIGNAL_RETURN
-#  define SIGNAL_RETURN
-#endif
-
 #ifdef __cplusplus
 #  define EXTERN_C_BEG extern "C" {
 #  define EXTERN_C_END }
