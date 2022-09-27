@@ -407,6 +407,21 @@ static _BOOL xor_is_ok(_WORD type, _WORD flags, OBSPEC spec)
 
 
 /*
+ *  Routine to determine if an object's text is all dashes
+ */
+static _BOOL is_dashes(const char *s, _WORD len)
+{
+	while (len--)
+	{
+		if (*s++ != '-')
+			return FALSE;
+	}
+
+	return TRUE;
+}
+
+
+/*
  *	Routine to draw an object from an object tree.
  */
 static void just_draw(OBJECT *tree, _WORD obj, _WORD sx, _WORD sy)
@@ -747,6 +762,9 @@ static void just_draw(OBJECT *tree, _WORD obj, _WORD sx, _WORD sy)
 		len = vdi_str2arrayn(spec.free_string, wtext, MAX_LEN);
 		if (len)
 		{
+			/*
+			 * switch text colour if necessary for selected BUTTON objects
+			 */
 			if (gl_aes3d && (state & OS_SELECTED) && obtype == G_BUTTON && chcol)
 				tcol = G_WHITE;
 			else
@@ -771,7 +789,30 @@ static void just_draw(OBJECT *tree, _WORD obj, _WORD sx, _WORD sy)
 				tmpx = pt->g_x;
 			}
 
-			gsx_tblt(IBM, tmpx, tmpy, wtext, len);
+			/*
+			 * for an apparent menu separator, we replace the traditional
+			 * string of dashes with a drawn line for neatness
+			 */
+			if (obtype == G_STRING && (state & OS_DISABLED) && is_dashes(spec.free_string, len))
+			{
+				gsx_cline(t.g_x, t.g_y + t.g_h / 2, t.g_x + t.g_w - 1, t.g_y + t.g_h / 2);
+			} else
+			{
+				gsx_tblt(IBM, tmpx, tmpy, wtext, len);
+			}
+			/*
+			 * handle underlining for string objects
+			 */
+			if (obtype == G_STRING && (state & OS_WHITEBAK) && ((state & 0xFF00) == 0xFF00))
+			{
+				gsx_attr(FALSE, MD_REPLACE, G_LBLACK);
+				gsx_cline(t.g_x, t.g_y + t.g_h + 2, t.g_x + t.g_w, t.g_y + t.g_h + 2);
+				if (gl_aes3d)
+				{
+					gsx_attr(FALSE, MD_REPLACE, G_WHITE);
+					gsx_cline(t.g_x, t.g_y + t.g_h + 1, t.g_x + t.g_w, t.g_y + t.g_h + 1);
+				}
+			}
 		}
 	}
 
