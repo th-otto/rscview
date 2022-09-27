@@ -376,11 +376,11 @@ static _BOOL xor_is_ok(_WORD type, _WORD flags, OBSPEC spec)
 	_WORD tcol, icol, dummy;
 	
 	if (type == G_STRING || type == G_TITLE || type == G_IBOX)
-		return 1;
+		return TRUE;
 	if (type == G_IMAGE || (flags & OF_FL3DIND))
-		return 0;
+		return FALSE;
 	if (gl_ws.ws_ncolors <= 16)
-		return 1;
+		return TRUE;
 
 	/* Get color word */
 	switch (type)

@@ -114,6 +114,38 @@ static int32_t const gl_waspec[NUM_ELEM] =
 #endif
 };
 
+static const _WORD gl_3dflags[NUM_ELEM] =
+{
+    OF_FL3DNONE,       /* W_BOX        */
+    OF_FL3DNONE,       /* W_TITLE      */
+    OF_FL3DACT,        /* W_CLOSER     */
+    OF_FL3DNONE,       /* W_NAME - may be altered by w_bldactive() */
+    OF_FL3DACT,        /* W_FULLER     */
+    OF_FL3DNONE,       /* W_INFO       */
+    OF_FL3DNONE,       /* W_DATA       */
+    OF_FL3DNONE,       /* W_WORK       */
+    OF_FL3DACT,        /* W_SIZER      */
+    OF_FL3DNONE,       /* W_VBAR       */
+    OF_FL3DACT,        /* W_UPARROW    */
+    OF_FL3DACT,        /* W_DNARROW    */
+    OF_FL3DNONE,       /* W_VSLIDE     */
+    OF_FL3DACT,        /* W_VELEV      */
+    OF_FL3DNONE,       /* W_HBAR       */
+    OF_FL3DACT,        /* W_LFARROW    */
+    OF_FL3DACT,        /* W_RTARROW    */
+    OF_FL3DNONE,       /* W_HSLIDE     */
+    OF_FL3DACT         /* W_HELEV      */
+};
+
+static char const empty_name[] = "";
+
+/*
+ * adjusted width & height of window elements
+ */
+static _WORD adj_wbox;
+static _WORD adj_hbox;
+
+
 static TEDINFO const gl_asamp =
 {
 	NULL, NULL, NULL, IBM, MD_REPLACE, TE_LEFT, SYS_FG, 0x0, 1, 80, 80
@@ -439,7 +471,7 @@ static void w_bldbar(_UWORD kind, _BOOL istop, _WORD w_bar, WINDOW *wp, _WORD x,
 	setcol(w_elev, wp, istop);
 	w_hvassign(isvert, W_DATA, w_bar, x, y, x, y, w, h);
 	x = y = 0;
-	if (istop)
+	if (istop || gl_aes3d)
 	{
 		if (kind & upcmp)
 		{
@@ -448,10 +480,20 @@ static void w_bldbar(_UWORD kind, _BOOL istop, _WORD w_bar, WINDOW *wp, _WORD x,
 			{
 				y += (gl_hbox - 1);
 				h -= (gl_hbox - 1);
+				if (gl_aes3d)
+				{
+			        y += adj_hbox;      /* adjust y for VSLIDE */
+			        h -= adj_hbox;      /* adjust h for VSLIDE */
+				}
 			} else
 			{
 				x += (gl_wbox - 1);
 				w -= (gl_wbox - 1);
+				if (gl_aes3d)
+				{
+			        x += adj_wbox;      /* adjust x for HSLIDE */
+			        w -= adj_wbox;      /* adjust w for HSLIDE */
+			    }
 			}
 		}
 		if (kind & dncmp)
@@ -522,7 +564,7 @@ void w_bldactive(_WORD w_handle)
 	w_nilit(NUM_ELEM, W_ACTIVE);
 
 	/* start adding pieces & adjusting sizes */
-	gl_aname.te_ptext = pw->w_pname;
+	gl_aname.te_ptext = (kind & NAME) ? pw->w_pname : (char *)NO_CONST(empty_name);
 	gl_ainfo.te_ptext = pw->w_pinfo;
 	w_getsize(WS_CURR, w_handle, pt);
 	W_ACTIVE[W_BOX].ob_x = t.g_x;
@@ -535,28 +577,30 @@ void w_bldactive(_WORD w_handle)
 	/* do title area */
 	setcol(W_BOX, pw, istop);
 	pt->g_x = pt->g_y = 0;
-	if (kind & (NAME | CLOSER | FULLER))
+	if (kind & (NAME | CLOSER | FULLER | (gl_aes3d ? MOVER : 0)))
 	{
 		setcol(W_TITLE, pw, istop);
-		w_adjust(W_BOX, W_TITLE, pt->g_x, pt->g_y, pt->g_w, gl_hbox);
+		w_adjust(W_BOX, W_TITLE, pt->g_x, pt->g_y, pt->g_w, gl_aes3d ? adj_hbox : gl_hbox);
 		tempw = pt->g_w;
-		if ((kind & CLOSER) && istop)
+		if ((kind & CLOSER) && (istop || gl_aes3d))
 		{
 			setcol(W_CLOSER, pw, istop);
-			w_adjust(W_TITLE, W_CLOSER, pt->g_x, pt->g_y, gl_wbox, gl_hbox);
-			pt->g_x += gl_wbox;
-			tempw -= gl_wbox;
+			w_adjust(W_TITLE, W_CLOSER, pt->g_x + (gl_aes3d ? ADJ3DSTD : 0), pt->g_y + (gl_aes3d ? ADJ3DSTD : 0), gl_wbox, gl_hbox);
+			pt->g_x += gl_aes3d ? adj_wbox : gl_wbox;
+			tempw -= gl_aes3d ? adj_wbox : gl_wbox;
 		}
-		if ((kind & FULLER) && istop)
+		if ((kind & FULLER) && (istop || gl_aes3d))
 		{
-			tempw -= gl_wbox;
+			tempw -= gl_aes3d ? adj_wbox : gl_wbox;
 			setcol(W_FULLER, pw, istop);
-			w_adjust(W_TITLE, W_FULLER, pt->g_x + tempw, pt->g_y, gl_wbox, gl_hbox);
+			w_adjust(W_TITLE, W_FULLER, pt->g_x + tempw + (gl_aes3d ? ADJ3DSTD : 0), pt->g_y + (gl_aes3d ? ADJ3DSTD : 0), gl_wbox, gl_hbox);
 		}
 		if (kind & NAME)
 		{
 			setcol(W_NAME, pw, istop);
-			w_adjust(W_TITLE, W_NAME, pt->g_x, pt->g_y, tempw, gl_hbox);
+			if (gl_aes3d)
+				tempw -= 2 * ADJ3DSTD;
+			w_adjust(W_TITLE, W_NAME, pt->g_x + (gl_aes3d ? ADJ3DSTD : 0), pt->g_y + (gl_aes3d ? ADJ3DSTD : 0), tempw, gl_hbox);
 #if 0
 			W_ACTIVE[W_NAME].ob_state = istop ? OS_NORMAL : OS_DISABLED;
 
@@ -596,9 +640,9 @@ void w_bldactive(_WORD w_handle)
 	havevbar = kind & (UPARROW | DNARROW | VSLIDE | SIZER);
 	havehbar = kind & (LFARROW | RTARROW | HSLIDE | SIZER);
 	if (havevbar)
-		pt->g_w -= (gl_wbox - 1);
+		pt->g_w -= (gl_wbox - 1) - (gl_aes3d ? ADJ3DSTD : 0);
 	if (havehbar)
-		pt->g_h -= (gl_hbox - 1);
+		pt->g_h -= (gl_hbox - 1) - (gl_aes3d ? ADJ3DSTD : 0);
 
 	pt->g_x += offx;
 	pt->g_y += offy;
@@ -850,6 +894,8 @@ _BOOL wm_start(void)
 	{
 		W_ACTIVE[i].ob_type = gl_watype[i];
 		W_ACTIVE[i].ob_spec.index = gl_waspec[i];
+		if (gl_aes3d)
+			W_ACTIVE[i].ob_flags = gl_3dflags[i];
 	}
 	W_ACTIVE[ROOT].ob_state = OS_SHADOWED;
 
@@ -874,6 +920,22 @@ _BOOL wm_start(void)
 	gl_aname.te_just = TE_CNTR;
 	W_ACTIVE[W_NAME].ob_spec.tedinfo = &gl_aname;
 	W_ACTIVE[W_INFO].ob_spec.tedinfo = &gl_ainfo;
+
+    /* set up box width & height for window building */
+    adj_wbox = gl_wbox + 2 * ADJ3DSTD;
+    adj_hbox = gl_hbox + 2 * ADJ3DSTD;
+
+    /*
+     * the following mimics TOS4 behaviour and ensures that the work area
+     * of a full-screen window is the same as TOS4.  this is necessary to
+     * allow 4 columns of icons in a full-screen window in ST Low.
+     */
+    if (gl_width < 640)
+    {
+        adj_wbox--;
+        if (gl_height >= 400)   /* e.g. 320 x 400 */
+            adj_wbox--;
+    }
 
 	return TRUE;
 }

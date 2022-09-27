@@ -58,6 +58,7 @@ static _WORD xworkout[57];
  * program options
  */
 static _BOOL verbose = FALSE;
+static _BOOL aes_3d = FALSE;
 static char const cgi_cachedir[] = "cache";
 
 struct curl_parms {
@@ -77,6 +78,7 @@ static void open_screen(void)
 	int i;
 	_WORD pxy[8];
 	_WORD workin[11];
+	_WORD dummy;
 
 	vdi_handle = phys_handle;
 	for (i = 0; i < 10; i++)
@@ -96,6 +98,22 @@ static void open_screen(void)
 	vr_recfl(vdi_handle, pxy);
 
 	vsf_color(vdi_handle, G_WHITE);
+	
+	if (aes_3d)
+	{
+		objc_sysvar(SV_SET, LK3DIND, FALSE, TRUE, &dummy, &dummy);
+		objc_sysvar(SV_SET, LK3DACT, TRUE, FALSE, &dummy, &dummy);
+		objc_sysvar(SV_SET, INDBUTCOL, G_LWHITE, 0, &dummy, &dummy);
+		objc_sysvar(SV_SET, ACTBUTCOL, G_LWHITE, 0, &dummy, &dummy);
+		objc_sysvar(SV_SET, BACKGRCOL, G_LWHITE, 0, &dummy, &dummy);
+	} else
+	{
+		objc_sysvar(SV_SET, LK3DIND, FALSE, FALSE, &dummy, &dummy);
+		objc_sysvar(SV_SET, LK3DACT, FALSE, FALSE, &dummy, &dummy);
+		objc_sysvar(SV_SET, INDBUTCOL, G_WHITE, 0, &dummy, &dummy);
+		objc_sysvar(SV_SET, ACTBUTCOL, G_WHITE, 0, &dummy, &dummy);
+		objc_sysvar(SV_SET, BACKGRCOL, G_WHITE, 0, &dummy, &dummy);
+	}
 }
 
 /* ------------------------------------------------------------------------- */
@@ -218,7 +236,7 @@ static void generate_imagemap(RSCTREE *tree, rsc_opts *opts, GString *out)
 
 /* ------------------------------------------------------------------------- */
 
-static _WORD write_png(RSCTREE *tree, rsc_opts *opts, _WORD x, _WORD y, _WORD w, _WORD h, GString *out, _BOOL write_imagemap)
+static _WORD write_image(RSCTREE *tree, rsc_opts *opts, _WORD x, _WORD y, _WORD w, _WORD h, GString *out, _BOOL write_imagemap)
 {
 	_WORD pxy[4];
 	char *basename;
@@ -238,18 +256,21 @@ static _WORD write_png(RSCTREE *tree, rsc_opts *opts, _WORD x, _WORD y, _WORD w,
 		time_t t = time(NULL);
 		struct tm *tp = gmtime(&t);
 		char *tmp = g_ascii_strdown(tree->rt_name, STR0TERM);;
-		basename = g_strdup_printf("%s_%04d%02d%02d%02d%02d%02d",
+		basename = g_strdup_printf("%s_%04d%02d%02d%02d%02d%02d%s",
 			tmp,
 			tp->tm_year + 1900,
 			tp->tm_mon + 1,
 			tp->tm_mday,
 			tp->tm_hour,
 			tp->tm_min,
-			tp->tm_sec);
+			tp->tm_sec,
+			aes_3d ? "_3d" : "");
 		g_free(tmp);
 	} else
 	{
-		basename = g_ascii_strdown(tree->rt_name, STR0TERM);
+		char *tmp = g_ascii_strdown(tree->rt_name, STR0TERM);
+		basename = g_strdup_printf("%s%s", tmp, aes_3d ? "_3d" : "");
+		g_free(tmp);
 	}
 	if (tree->rt_file->rsc_nls_domain.lang)
 		namebuf = g_strdup_printf("%03ld_%s_%s.png", tree->rt_number, tree->rt_file->rsc_nls_domain.lang, basename);
@@ -259,7 +280,7 @@ static _WORD write_png(RSCTREE *tree, rsc_opts *opts, _WORD x, _WORD y, _WORD w,
 	err = v_write_png(vdi_handle, filename);
 	if (err != 0)
 	{
-		KINFO(("write_png: %s: %s\n", filename, strerror(err)));
+		KINFO(("write_image: %s: %s\n", filename, strerror(err)));
 	}
 	g_string_append_printf(out, "<p id=\"%s\">%s:<br /><img src=\"%s/%s\" width=\"%d\" height=\"%d\" style=\"border:0;\" alt=\"%s\"",
 		tree->rt_name, tree->rt_name,
@@ -285,6 +306,12 @@ static _WORD write_png(RSCTREE *tree, rsc_opts *opts, _WORD x, _WORD y, _WORD w,
 /* ------------------------------------------------------------------------- */
 /*****************************************************************************/
 
+/*
+ * track which areas are modified by calls to objc_draw().
+ * form_center does not take into account rectangles drawn
+ * around the ROOT object, and there is no other way
+ * to obtain the outer dimensions of what is drawn
+ */
 static void start_drawrect(void)
 {
 	_WORD pxy[4];
@@ -330,8 +357,8 @@ static _BOOL draw_dialog(RSCTREE *tree, rsc_opts *opts, GString *out)
 	start_drawrect();
 	objc_draw_grect(ob, ROOT, MAX_DEPTH, &desk);
 	end_drawrect(&gr);
-	
-	err = write_png(tree, opts, gr.g_x, gr.g_y, gr.g_w, gr.g_h, out, opts->gen_imagemap);
+
+	err = write_image(tree, opts, gr.g_x, gr.g_y, gr.g_w, gr.g_h, out, opts->gen_imagemap);
 
 	form_dial_grect(FMD_FINISH, &gr, &gr);
 	wind_update(END_UPDATE);
@@ -439,7 +466,7 @@ static _BOOL draw_menu(RSCTREE *tree, rsc_opts *opts, GString *out)
 	ob[ROOT].ob_height = maxy;
 	ob[thebar].ob_width = maxx;
 	ob[themenus].ob_width = maxx;
-	err = write_png(tree, opts, 0, 0, maxx, maxy, out, opts->gen_imagemap);
+	err = write_image(tree, opts, 0, 0, maxx, maxy, out, opts->gen_imagemap);
 
 	menu_bar(ob, FALSE);
 	form_dial_grect(FMD_FINISH, &gr, &gr);
@@ -476,7 +503,7 @@ static _BOOL draw_string(RSCTREE *tree, rsc_opts *opts, GString *out)
 	clear_screen(tree->rt_name);
 	objc_draw_grect(string, ROOT, MAX_DEPTH, &gr);
 
-	err = write_png(tree, opts, gr.g_x, gr.g_y, gr.g_w, gr.g_h, out, FALSE);
+	err = write_image(tree, opts, gr.g_x, gr.g_y, gr.g_w, gr.g_h, out, FALSE);
 	if (string[0].ob_width > desk.g_w)
 		g_string_append_printf(out, _("<p>string width %d exceeds desktop width %d</p>\n"), string[0].ob_width, desk.g_w);
 
@@ -491,7 +518,6 @@ static _BOOL draw_alert(RSCTREE *tree, rsc_opts *opts, GString *out)
 {
 	const char *str;
 	_WORD err;
-	_WORD wo[57];
 	GRECT gr;
 	
 	str = tree->rt_objects.alert.al_str;
@@ -504,17 +530,11 @@ static _BOOL draw_alert(RSCTREE *tree, rsc_opts *opts, GString *out)
 	 * call our special version that only displays the dialog,
 	 * and does not restore the screen background.
 	 */
+	start_drawrect();
 	form_alert_ex(1, str, 1 | (tree->rt_file->rsc_emutos != EMUTOS_NONE ? 2 : 0));
-	/*
-	 * get clipping rect
-	 */
-	vq_extnd(phys_handle, 1, wo);
-	gr.g_x = wo[45];
-	gr.g_y = wo[46];
-	gr.g_w = wo[47] - gr.g_x + 1;
-	gr.g_h = wo[48] - gr.g_y + 1;
+	end_drawrect(&gr);
 	
-	err = write_png(tree, opts, gr.g_x, gr.g_y, gr.g_w, gr.g_h, out, FALSE);
+	err = write_image(tree, opts, gr.g_x, gr.g_y, gr.g_w, gr.g_h, out, FALSE);
 
 	form_dial_grect(FMD_FINISH, &gr, &gr);
 	
@@ -588,7 +608,7 @@ static _BOOL draw_image(RSCTREE *tree, rsc_opts *opts, GString *out)
 	colors[1] = G_WHITE;
 	vrt_cpyfm(vdi_handle, MD_TRANS, pxy, &src, &dst, colors);
 
-	err = write_png(tree, opts, gr.g_x, gr.g_y, gr.g_w, gr.g_h, out, FALSE);
+	err = write_image(tree, opts, gr.g_x, gr.g_y, gr.g_w, gr.g_h, out, FALSE);
 
 	return err == 0;
 }
@@ -1096,7 +1116,12 @@ int main(void)
 	}
 	if ((val = cgiFormString("contents")) != NULL)
 	{
-		show_contents = TRUE;
+		show_contents = (int)strtol(val, NULL, 10);
+		g_free(val);
+	}
+	if ((val = cgiFormString("3d")) != NULL)
+	{
+		aes_3d = (int)strtol(val, NULL, 10);
 		g_free(val);
 	}
 	

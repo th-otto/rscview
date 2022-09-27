@@ -205,6 +205,8 @@ static void generate_imagemap(RSCTREE *tree)
 		x = x - dx;
 		y = y - dy;
 		fprintf(htmlout_file, "&#10;type = %s", type_name(type));
+		if ((obj[j].ob_type & ~OBTYPEMASK) != 0)
+			fprintf(htmlout_file, "&#10;exttype = %d", (obj[j].ob_type >> 8) & 0xff);
 		fprintf(htmlout_file, "&#10;x = %d", x / gl_wchar);
 		if (x % gl_wchar != 0)
 			fprintf(htmlout_file, " + %d", x % gl_wchar);
@@ -228,7 +230,7 @@ static void generate_imagemap(RSCTREE *tree)
 
 /* ------------------------------------------------------------------------- */
 
-static _WORD write_png(RSCTREE *tree, _WORD x, _WORD y, _WORD w, _WORD h, _BOOL write_imagemap)
+static _WORD write_image(RSCTREE *tree, _WORD x, _WORD y, _WORD w, _WORD h, _BOOL write_imagemap)
 {
 	_WORD pxy[4];
 	char basename[PATH_MAX];
@@ -285,7 +287,7 @@ static _WORD write_png(RSCTREE *tree, _WORD x, _WORD y, _WORD w, _WORD h, _BOOL 
 	err = v_write_png(vdi_handle, filename);
 	if (err != 0)
 	{
-		KINFO(("write_png: %s: %s\n", filename, strerror(err)));
+		KINFO(("write_image: %s: %s\n", filename, strerror(err)));
 	}
 	if (htmlout_file)
 	{
@@ -351,7 +353,7 @@ static _BOOL draw_dialog(RSCTREE *tree)
 	OBJECT *ob;
 	GRECT gr;
 	_WORD err;
-	
+
 	ob = tree->rt_objects.dial.di_tree;
 	if (ob == NULL)
 		return FALSE;
@@ -366,7 +368,7 @@ static _BOOL draw_dialog(RSCTREE *tree)
 	objc_draw_grect(ob, ROOT, MAX_DEPTH, &desk);
 	end_drawrect(&gr);
 
-	err = write_png(tree, gr.g_x, gr.g_y, gr.g_w, gr.g_h, gen_imagemap);
+	err = write_image(tree, gr.g_x, gr.g_y, gr.g_w, gr.g_h, gen_imagemap);
 
 	form_dial_grect(FMD_FINISH, &gr, &gr);
 	wind_update(END_UPDATE);
@@ -469,7 +471,7 @@ static _BOOL draw_menu(RSCTREE *tree)
 			maxy = my;
 	} while (menubox != themenus);
 	
-	err = write_png(tree, 0, 0, maxx, maxy, gen_imagemap);
+	err = write_image(tree, 0, 0, maxx, maxy, gen_imagemap);
 
 	menu_bar(ob, FALSE);
 	form_dial_grect(FMD_FINISH, &gr, &gr);
@@ -506,7 +508,7 @@ static _BOOL draw_string(RSCTREE *tree)
 	clear_screen(tree->rt_name);
 	objc_draw_grect(string, ROOT, MAX_DEPTH, &gr);
 
-	err = write_png(tree, gr.g_x, gr.g_y, gr.g_w, gr.g_h, FALSE);
+	err = write_image(tree, gr.g_x, gr.g_y, gr.g_w, gr.g_h, FALSE);
 
 	form_dial_grect(FMD_FINISH, &gr, &gr);
 	
@@ -712,7 +714,6 @@ static _BOOL draw_alert(RSCTREE *tree)
 	const char *str;
 	const char *translation;
 	_WORD err;
-	_WORD wo[57];
 	GRECT gr;
 	struct alert_button *buttons[MAX_BUTNUM];
 	int i;
@@ -737,17 +738,11 @@ static _BOOL draw_alert(RSCTREE *tree)
 	 * call our special version that only displays the dialog,
 	 * and does not restore the screen background.
 	 */
+	start_drawrect();
 	form_alert_ex(1, translation, 1 | (tree->rt_file->rsc_emutos != EMUTOS_NONE ? 2 : 0));
-	/*
-	 * get clipping rect
-	 */
-	vq_extnd(phys_handle, 1, wo);
-	gr.g_x = wo[45];
-	gr.g_y = wo[46];
-	gr.g_w = wo[47] - gr.g_x + 1;
-	gr.g_h = wo[48] - gr.g_y + 1;
+	end_drawrect(&gr);
 	
-	err = write_png(tree, gr.g_x, gr.g_y, gr.g_w, gr.g_h, FALSE);
+	err = write_image(tree, gr.g_x, gr.g_y, gr.g_w, gr.g_h, FALSE);
 
 	form_dial_grect(FMD_FINISH, &gr, &gr);
 	
@@ -767,7 +762,7 @@ static _BOOL draw_image(RSCTREE *tree)
 	_WORD pxy[8];
 	_WORD colors[2];
 	MFDB src, dst;
-	
+
 	bit = tree->rt_objects.bit;
 	data = bit->bi_pdata;
 	width = bit->bi_wb * 8;
@@ -784,7 +779,7 @@ static _BOOL draw_image(RSCTREE *tree)
 	gr.g_y = (desk.g_h - height) / 2 + desk.g_y;
 	gr.g_w = width;
 	gr.g_h = height;
-	
+
 	pxy[0] = gr.g_x;
 	pxy[1] = gr.g_y;
 	pxy[2] = gr.g_x + gr.g_w - 1;
@@ -809,19 +804,19 @@ static _BOOL draw_image(RSCTREE *tree)
 	src.fd_wdwidth = (src.fd_w + 15) >> 4;
 	src.fd_stand = FALSE;
 	src.fd_addr = data;
-	
+
 	dst.fd_w = ws.ws_xres + 1;
 	dst.fd_h = ws.ws_yres + 1;
 	dst.fd_nplanes = xworkout[4];
 	dst.fd_wdwidth = (dst.fd_w + 15) >> 4;
 	dst.fd_stand = FALSE;
 	dst.fd_addr = 0;
-	
+
 	colors[0] = G_BLACK;
 	colors[1] = G_WHITE;
 	vrt_cpyfm(vdi_handle, MD_TRANS, pxy, &src, &dst, colors);
-	
-	err = write_png(tree, gr.g_x, gr.g_y, gr.g_w, gr.g_h, FALSE);
+
+	err = write_image(tree, gr.g_x, gr.g_y, gr.g_w, gr.g_h, FALSE);
 
 	return err == 0;
 }
