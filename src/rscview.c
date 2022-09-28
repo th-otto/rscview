@@ -1216,6 +1216,7 @@ enum rscview_opt {
 	OPT_PNGDIR = 'P',
 	OPT_CHARSET = 'c',
 	OPT_3D = '3',
+	OPT_TIMESTAMPS = 'T',
 	OPT_VERSION = 'V',
 	OPT_HELP = 'h',
 	
@@ -1226,7 +1227,6 @@ enum rscview_opt {
 	OPT_QUOTE_HTML,
 	OPT_HTML_DIR,
 	OPT_IMAGEMAP,
-	OPT_TIMESTAMPS,
 	OPT_CREATE_PNGLIST,
 	OPT_REPORT_PO,
 	OPT_REPORT_RSC,
