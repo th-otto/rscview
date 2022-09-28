@@ -8,6 +8,7 @@
 #include "maptab.h"
 #include "pattern.h"
 #include "writepng.h"
+#include "writebmp.h"
 #include "s_endian.h"
 #include <errno.h>
 
@@ -7023,6 +7024,9 @@ static int vdi_v_write_png(VWK *v, VDIPB *pb)
 	
 	V("v_write_png[%d]: '%s'", v->handle, ascii_text(n, &V_INTIN(pb, 0)));
 
+	V_NINTOUT(pb, 1);
+	V_NPTSOUT(pb, 0);
+
 	for (i = 0; i < n; i++)
 	{
 		filename[i] = intin[i];
@@ -7030,6 +7034,11 @@ static int vdi_v_write_png(VWK *v, VDIPB *pb)
 	filename[i] = 0;
 	
 	info = writepng_new();
+	if (info == NULL)
+	{
+		V_INTOUT(pb, 0) = errno;
+		return VDI_DONE;
+	}
 	info->rowbytes = v->width * sizeof(pel);
 	info->bpp = v->planes;
 	if (v->clipping)
@@ -7068,8 +7077,77 @@ static int vdi_v_write_png(VWK *v, VDIPB *pb)
 	writepng_exit(info);
 	free(filename);
 	V_INTOUT(pb, 0) = rc;
+	return VDI_DONE;
+}
+
+/* -------------------------------------------------------------------------- */
+
+static int vdi_v_write_bmp(VWK *v, VDIPB *pb)
+{
+	_WORD *control = PV_CONTROL(pb);
+	_WORD *intin = PV_INTIN(pb);
+	_WORD *intout = PV_INTOUT(pb);
+	int n = V_NINTIN(pb);
+	char *filename = (char *)malloc(n + 1);
+	int i;
+	writebmp_info *info;
+	int rc;
+	
+	V("v_write_png[%d]: '%s'", v->handle, ascii_text(n, &V_INTIN(pb, 0)));
+
 	V_NINTOUT(pb, 1);
 	V_NPTSOUT(pb, 0);
+
+	for (i = 0; i < n; i++)
+	{
+		filename[i] = intin[i];
+	}
+	filename[i] = 0;
+	
+	info = writebmp_new();
+	if (info == NULL)
+	{
+		V_INTOUT(pb, 0) = errno;
+		return VDI_DONE;
+	}
+	info->rowbytes = v->width * sizeof(pel);
+	info->bpp = v->planes;
+	if (v->clipping)
+	{
+		info->image_data = (unsigned char *)(&framebuffer[v->clipr.y * v->width + v->clipr.x]);
+		info->width = v->clipr.width;
+		info->height = v->clipr.height;
+	} else
+	{
+		info->image_data = (unsigned char *)framebuffer;
+		info->width = v->width;
+		info->height = v->height;
+	}
+	info->outfile = fopen(filename, "wb");
+	if (info->outfile == NULL)
+	{
+		rc = errno;
+	} else
+	{
+		info->num_palette = v->dev_tab.num_colors;
+		for (i = 0; i < v->dev_tab.num_colors; i++)
+		{
+			int c;
+			pel pix;
+			pix = FIX_COLOR(i);
+			c = (*v->req_col)[i][0]; c = c * 255 / 1000;
+			info->palette[pix].red = c;
+			c = (*v->req_col)[i][1]; c = c * 255 / 1000;
+			info->palette[pix].green = c;
+			c = (*v->req_col)[i][2]; c = c * 255 / 1000;
+			info->palette[pix].blue = c;
+		}
+		rc = writebmp_output(info);
+		fclose(info->outfile);
+	}
+	writebmp_exit(info);
+	free(filename);
+	V_INTOUT(pb, 0) = rc;
 	return VDI_DONE;
 }
 
@@ -7824,6 +7902,7 @@ static gboolean vdi_call(VDIPB *pb)
 			case OPCODE(39, 0): vdi_done = vdi_vst_alignment(v, pb); break;
 			case OPCODE(96, 1): vdi_done = vdi_v_write_png(v, pb); break;
 			case OPCODE(96, 2): vdi_done = vdi_vs_drawrect(v, pb); break;
+			case OPCODE(96, 3): vdi_done = vdi_v_write_bmp(v, pb); break;
 			case OPCODE(100, 0): vdi_done = vdi_v_opnvwk(pb); break;
 			case OPCODE(100, 1): vdi_done = vdi_v_opnbm(pb); break;
 			case OPCODE(100, 2): vdi_done = vdi_v_resize_bm(v, pb); break;

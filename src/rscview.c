@@ -52,6 +52,9 @@ static FILE *htmlout_file;
 static FILE *pnglist_file;
 static _BOOL gen_imagemap;
 static _BOOL aes_3d = FALSE;
+#define IMAGE_PNG 0
+#define IMAGE_BMP 1
+static int image_format = IMAGE_PNG;
 
 /*****************************************************************************/
 /* ------------------------------------------------------------------------- */
@@ -278,13 +281,27 @@ static _WORD write_image(RSCTREE *tree, _WORD x, _WORD y, _WORD w, _WORD h, _BOO
 		if (len > 0 && p[-1] != '/')
 			*p++ = '/';
 	}
-	if (tree->rt_file->rsc_nls_domain.lang)
-		sprintf(p, "%03ld_%s_%s.png", tree->rt_number, tree->rt_file->rsc_nls_domain.lang, basename);
-	else
-		sprintf(p, "%03ld_%s.png", tree->rt_number, basename);
+	switch (image_format)
+	{
+	case IMAGE_PNG:
+		if (tree->rt_file->rsc_nls_domain.lang)
+			sprintf(p, "%03ld_%s_%s.png", tree->rt_number, tree->rt_file->rsc_nls_domain.lang, basename);
+		else
+			sprintf(p, "%03ld_%s.png", tree->rt_number, basename);
+		err = v_write_png(vdi_handle, filename);
+		break;
+	case IMAGE_BMP:
+		if (tree->rt_file->rsc_nls_domain.lang)
+			sprintf(p, "%03ld_%s_%s.bmp", tree->rt_number, tree->rt_file->rsc_nls_domain.lang, basename);
+		else
+			sprintf(p, "%03ld_%s.bmp", tree->rt_number, basename);
+		err = v_write_bmp(vdi_handle, filename);
+		break;
+	default:
+		return EINVAL;
+	}
 	if (verbose)
 		printf("%s %ld %s: %dx%d -> %s\n", rtype_name(tree->rt_type), tree->rt_number, tree->rt_name, w, h, filename);
-	err = v_write_png(vdi_handle, filename);
 	if (err != 0)
 	{
 		KINFO(("write_image: %s: %s\n", filename, strerror(err)));
@@ -1212,7 +1229,8 @@ enum rscview_opt {
 	OPT_TIMESTAMPS,
 	OPT_CREATE_PNGLIST,
 	OPT_REPORT_PO,
-	OPT_REPORT_RSC
+	OPT_REPORT_RSC,
+	OPT_IMAGE_FORMAT
 };
 
 static struct option const long_options[] = {
@@ -1231,6 +1249,7 @@ static struct option const long_options[] = {
 	{ "report-po", no_argument, NULL, OPT_REPORT_PO },
 	{ "report-rsc", no_argument, NULL, OPT_REPORT_RSC },
 	{ "3d", no_argument, NULL, OPT_3D },
+	{ "image-format", required_argument, NULL, OPT_IMAGE_FORMAT },
 	{ "version", no_argument, NULL, OPT_VERSION },
 	{ "help", no_argument, NULL, OPT_HELP },
 	{ NULL, no_argument, NULL, 0 }
@@ -1352,6 +1371,20 @@ int main(int argc, char **argv)
 			aes_3d = TRUE;
 			break;
 		
+		case OPT_IMAGE_FORMAT:
+			if (strcmp(optarg, "png") == 0)
+			{
+				image_format = IMAGE_PNG;
+			} else if (strcmp(optarg, "bmp") == 0)
+			{
+				image_format = IMAGE_BMP;
+			} else
+			{
+				usage(stderr);
+				return EXIT_FAILURE;
+			}
+			break;
+
 		case OPT_VERSION:
 			print_version();
 			return EXIT_SUCCESS;

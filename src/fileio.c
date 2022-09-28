@@ -1218,7 +1218,7 @@ static _BOOL rsd_nameinfo_read(NAMEINFO *nameinfo)
 
 static _BOOL rsd_load(RSCFILE *file, const char *filename, _BOOL *def_found)
 {
-	NAMEINFO nameinfo;
+	NAMEINFO nameinfo = { 0, 0, 0, 0, 0, 0, "" };
 	RSCTREE *tree;
 	OBJECT *ob;
 	_WORD i;

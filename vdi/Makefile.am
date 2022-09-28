@@ -15,4 +15,5 @@ libvdi_a_SOURCES = \
 	vdidefs.h vdimaps.h pattern.h \
 	\
 	writepng.c writepng.h \
+	writebmp.c writebmp.h \
 	$(empty)

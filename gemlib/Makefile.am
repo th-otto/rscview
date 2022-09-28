@@ -224,6 +224,7 @@ libgem_a_SOURCES = \
 	vrt_cpyfm.c \
 	\
 	v_write_png.c \
+	v_write_bmp.c \
 	vs_drawrect.c \
 	\
 	n_v_bez.c \

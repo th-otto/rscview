@@ -59,6 +59,9 @@ static _WORD xworkout[57];
  */
 static _BOOL verbose = FALSE;
 static _BOOL aes_3d = FALSE;
+#define IMAGE_PNG 0
+#define IMAGE_BMP 1
+static int image_format = IMAGE_PNG;
 static char const cgi_cachedir[] = "cache";
 
 struct curl_parms {
@@ -272,12 +275,27 @@ static _WORD write_image(RSCTREE *tree, rsc_opts *opts, _WORD x, _WORD y, _WORD 
 		basename = g_strdup_printf("%s%s", tmp, aes_3d ? "_3d" : "");
 		g_free(tmp);
 	}
-	if (tree->rt_file->rsc_nls_domain.lang)
-		namebuf = g_strdup_printf("%03ld_%s_%s.png", tree->rt_number, tree->rt_file->rsc_nls_domain.lang, basename);
-	else
-		namebuf = g_strdup_printf("%03ld_%s.png", tree->rt_number, basename);
-	filename = g_build_filename(opts->output_dir, namebuf, NULL);
-	err = v_write_png(vdi_handle, filename);
+	switch (image_format)
+	{
+	case IMAGE_PNG:
+		if (tree->rt_file->rsc_nls_domain.lang)
+			namebuf = g_strdup_printf("%03ld_%s_%s.png", tree->rt_number, tree->rt_file->rsc_nls_domain.lang, basename);
+		else
+			namebuf = g_strdup_printf("%03ld_%s.png", tree->rt_number, basename);
+		filename = g_build_filename(opts->output_dir, namebuf, NULL);
+		err = v_write_png(vdi_handle, filename);
+		break;
+	case IMAGE_BMP:
+		if (tree->rt_file->rsc_nls_domain.lang)
+			namebuf = g_strdup_printf("%03ld_%s_%s.bmp", tree->rt_number, tree->rt_file->rsc_nls_domain.lang, basename);
+		else
+			namebuf = g_strdup_printf("%03ld_%s.bmp", tree->rt_number, basename);
+		filename = g_build_filename(opts->output_dir, namebuf, NULL);
+		err = v_write_bmp(vdi_handle, filename);
+		break;
+	default:
+		return EINVAL;
+	}	
 	if (err != 0)
 	{
 		KINFO(("write_image: %s: %s\n", filename, strerror(err)));
