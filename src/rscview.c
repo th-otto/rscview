@@ -8,6 +8,7 @@
 #include "portvdi.h"
 #include "nls.h"
 #include "fileio.h"
+#include "or_draw.h"
 #include "rsc.h"
 #include "ws.h"
 #include "debug.h"
@@ -108,6 +109,29 @@ static void open_screen(void)
 static void close_screen(void)
 {
 	v_clsvwk(vdi_handle);
+}
+
+/*** ---------------------------------------------------------------------- ***/
+
+_WORD GetNumColors(void)
+{
+	static _WORD num_colors;
+	
+	if (num_colors == 0)
+	{
+		num_colors = ws.ws_ncolors;
+		if (num_colors == 0 || num_colors == -1 || ws.ws_npals == 0)
+			num_colors = 32766; /* more than we need */
+	}
+	return num_colors;
+}
+
+/* ------------------------------------------------------------------------- */
+
+void GetTextSize(_WORD *width, _WORD *height)
+{
+	*width = gl_wchar;
+	*height = gl_hchar;
 }
 
 /* ------------------------------------------------------------------------- */
@@ -365,7 +389,7 @@ static void end_drawrect(GRECT *gr)
 
 /* ------------------------------------------------------------------------- */
 
-static _BOOL draw_dialog(RSCTREE *tree)
+static _BOOL draw_dialog(RSCTREE *tree, EXTOB_MODE mode)
 {
 	OBJECT *ob;
 	GRECT gr;
@@ -382,7 +406,10 @@ static _BOOL draw_dialog(RSCTREE *tree)
 	clear_screen(tree->rt_name);
 	
 	start_drawrect();
-	objc_draw_grect(ob, ROOT, MAX_DEPTH, &desk);
+	if (mode == EXTOB_NONE || mode == EXTOB_AES)
+		objc_draw_grect(ob, ROOT, MAX_DEPTH, &desk);
+	else
+		ob_draw_dialog(phys_handle, ob, ROOT, MAX_DEPTH, &desk, mode);
 	end_drawrect(&gr);
 
 	err = write_image(tree, gr.g_x, gr.g_y, gr.g_w, gr.g_h, gen_imagemap);
@@ -726,7 +753,7 @@ static void fm_parse(RSCTREE *tree, const char *alert, int is_translation, struc
 }
 
 
-static _BOOL draw_alert(RSCTREE *tree)
+static _BOOL draw_alert(RSCTREE *tree, EXTOB_MODE mode)
 {
 	const char *str;
 	const char *translation;
@@ -756,7 +783,10 @@ static _BOOL draw_alert(RSCTREE *tree)
 	 * and does not restore the screen background.
 	 */
 	start_drawrect();
-	form_alert_ex(1, translation, 1 | (tree->rt_file->rsc_emutos != EMUTOS_NONE ? 2 : 0));
+	if (mode == EXTOB_NONE || mode == EXTOB_AES)
+		form_alert_ex(1, translation, 1 | (tree->rt_file->rsc_emutos != EMUTOS_NONE ? 2 : 0));
+	else
+		ob_draw_alert(phys_handle, 1, translation, &desk, mode);
 	end_drawrect(&gr);
 	
 	err = write_image(tree, gr.g_x, gr.g_y, gr.g_w, gr.g_h, FALSE);
@@ -856,7 +886,7 @@ static _BOOL draw_all_trees(RSCFILE *file)
 		case RT_DIALOG:
 		case RT_FREE:
 		case RT_UNKNOWN:
-			ret &= draw_dialog(tree);
+			ret &= draw_dialog(tree, file->rsc_extob.mode);
 			break;
 		case RT_MENU:
 			ret &= draw_menu(tree);
@@ -865,7 +895,7 @@ static _BOOL draw_all_trees(RSCFILE *file)
 			ret &= draw_string(tree);
 			break;
 		case RT_ALERT:
-			ret &= draw_alert(tree);
+			ret &= draw_alert(tree, file->rsc_extob.mode);
 			break;
 		case RT_FRIMG:
 		case RT_MOUSE:

@@ -27,6 +27,8 @@ rscview_SOURCES = \
 	fileio.c \
 	bghio.c \
 	fio_err.c \
+	or_draw.c \
+	fo_alert.c \
 	pofile.c pofile.h \
 	glib.c \
 	charset.c cp_atari.h cp_iso1.h cp_st_l2.h cp_st_l9.h cp_1250.h cp_1252.h cp_st_gr.h cp_st_ru.h cp_st_l5.h \
@@ -42,6 +44,8 @@ rscview_cgi_SOURCES = \
 	rsc_lang.c rsc_lang.h langtab.h \
 	fileio.c \
 	bghio.c \
+	or_draw.c \
+	fo_alert.c \
 	fio_err.c \
 	pofile.c pofile.h \
 	glib.c \

@@ -28,6 +28,7 @@ libgem_a_SOURCES = \
 	a_menu_register.c \
 	a_menu_bar.c \
 	\
+	a_objc_add.c \
 	a_objc_draw.c \
 	a_objc_draw_grect.c \
 	a_objc_offset.c \
