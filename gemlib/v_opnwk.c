@@ -120,7 +120,7 @@
  */
 
 void
-v_opnwk (short work_in[], short *handle, short work_out[])
+v_opnwk (short work_in[16], short *handle, short *work_out)
 {
 	short vdi_control[VDI_CNTRLMAX]; 
 	short vdi_ptsin[8];

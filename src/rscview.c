@@ -141,7 +141,7 @@ static void str_lwr(char *name)
 {
 	while (*name)
 	{
-		*name = tolower(*name);
+		*name = tolower((unsigned char)*name);
 		name++;
 	}
 }

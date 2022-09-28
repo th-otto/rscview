@@ -759,6 +759,7 @@ png_convert_to_rfc1123_buffer(char out[29], png_const_timep ptime)
          APPEND_STRING(PNG_FORMAT_NUMBER(number_buf, format, (value)))
 #     define APPEND(ch) if (pos < 28) out[pos++] = (ch)
 
+      number_buf[0] = '\0';
       APPEND_NUMBER(PNG_NUMBER_FORMAT_u, (unsigned)ptime->day);
       APPEND(' ');
       APPEND_STRING(short_months[(ptime->month - 1)]);
