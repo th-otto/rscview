@@ -60,6 +60,7 @@
 #include <time.h>
 #include <errno.h>
 #include <unistd.h>
+#include "visibility.h"
 #include "writepng.h"					/* typedefs, common macros, public prototypes */
 #include "debug.h"
 #include "zlib.h"

@@ -58,6 +58,7 @@
 
 #include <png.h>
 #include <setjmp.h>
+#include "visibility.h"
 
 #ifndef TRUE
 #  define TRUE 1
@@ -99,20 +100,29 @@ typedef struct _writepng_info {
 
 /* prototypes for public functions in writepng.c */
 
-void writepng_version_info(void);
+VISIBILITY("default") void writepng_version_info(void);
 
-writepng_info *writepng_new(void);
-int writepng_init(writepng_info *wpnginfo);
-void writepng_exit(writepng_info *wpnginfo);
+#define writepng_new __hidden_writepng_new
+#define writepng_init __hidden_writepng_init
+#define writepng_exit __hidden_writepng_exit
+#define writepng_output __hidden_writepng_output
+#define writepng_encode_image __hidden_writepng_encode_image
+#define writepng_encode_row __hidden_writepng_encode_row
+#define writepng_encode_finish __hidden_writepng_encode_finish
+#define writepng_cleanup __hidden_writepng_cleanup
 
-int writepng_output(writepng_info *wpnginfo);
+VISIBILITY("hidden") writepng_info *writepng_new(void);
+VISIBILITY("hidden") int writepng_init(writepng_info *wpnginfo);
+VISIBILITY("hidden") void writepng_exit(writepng_info *wpnginfo);
 
-int writepng_encode_image(writepng_info *wpnginfo);
+VISIBILITY("hidden") int writepng_output(writepng_info *wpnginfo);
 
-int writepng_encode_row(writepng_info *wpnginfo, unsigned char *row_data);
+VISIBILITY("hidden") int writepng_encode_image(writepng_info *wpnginfo);
 
-int writepng_encode_finish(writepng_info *wpnginfo);
+VISIBILITY("hidden") int writepng_encode_row(writepng_info *wpnginfo, unsigned char *row_data);
 
-void writepng_cleanup(writepng_info *wpnginfo);
+VISIBILITY("hidden") int writepng_encode_finish(writepng_info *wpnginfo);
+
+VISIBILITY("hidden") void writepng_cleanup(writepng_info *wpnginfo);
 
 #endif /* __WRITEPNG_H__ */

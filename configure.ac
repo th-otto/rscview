@@ -2,10 +2,10 @@ AC_PREREQ(2.59)
 m4_define(rscview_major_version, 1)
 m4_define(rscview_minor_version, 05)
 m4_define(release_year, 2018)
-m4_define(rscview_date, 25.07.RELEASE_YEAR)
+m4_define(rscview_date, 25.07.release_year)
 m4_define(rscview_version, rscview_major_version.rscview_minor_version)
 
-AC_INIT([rscview], [RSCVIEW_VERSION], [http://www.tho-otto.de/bugs/],,[http://www.tho-otto.de/])
+AC_INIT([rscview], [rscview_version], [http://www.tho-otto.de/bugs/],,[http://www.tho-otto.de/])
 AC_CONFIG_SRCDIR(src/rscview.c)
 
 AUTHOR="Thorsten Otto"

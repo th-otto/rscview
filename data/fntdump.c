@@ -407,7 +407,7 @@ static void fnttoc(UB *b, int l, FILE *out, const char *filename, const char *na
 	fprintf(out, "\n");
 
 	fprintf(out, "\n");
-	fprintf(out, "FONT_HDR const %s = {\n", name);
+	fprintf(out, "static FONT_HDR const %s = {\n", name);
 	fprintf(out, "\t%d,\t\t/* font_id */\n", override_id ? override_id : LOAD_UW(h + 0));
 	fprintf(out, "\t%d,\t\t/* point */\n", LOAD_UW(h + 2));
 	fprintf(out, "\t\"%s\",\t\t/* name */\n", facename_buf);
@@ -438,7 +438,6 @@ static void fnttoc(UB *b, int l, FILE *out, const char *filename, const char *na
 	fprintf(out, "\t%d,\t\t/* form_height */\n", form_height);
 	fprintf(out, "\tNULL\n");
 	fprintf(out, "};\n");
-	fprintf(out, "\n");
 }
 
 

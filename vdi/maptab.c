@@ -1,3 +1,4 @@
+#include "visibility.h"
 #include "maptab.h"
 
 unsigned short const atari_to_utf16[256] = {

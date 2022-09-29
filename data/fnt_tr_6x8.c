@@ -115,7 +115,7 @@ static uint8_t const fnt_tr_6x8_dat_table[] = {
 };
 
 
-FONT_HDR const fnt_tr_6x8 = {
+static FONT_HDR const fnt_tr_6x8 = {
 	6,		/* font_id */
 	8,		/* point */
 	"6x6 Turkish font",		/* name */
@@ -142,4 +142,3 @@ FONT_HDR const fnt_tr_6x8 = {
 	6,		/* form_height */
 	NULL
 };
-

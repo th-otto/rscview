@@ -25,11 +25,16 @@ typedef struct _writebmp_info {
 
 /* prototypes for public functions in writebmp.c */
 
-writebmp_info *writebmp_new(void);
-void writebmp_exit(writebmp_info *wbmpinfo);
+#define writebmp_new __hidden_writebmp_new
+#define writebmp_exit __hidden_writebmp_exit
+#define writebmp_output __hidden_writebmp_output
+#define writebmp_cleanup __hidden_writebmp_cleanup
 
-int writebmp_output(writebmp_info *wbmpinfo);
+VISIBILITY("hidden") writebmp_info *writebmp_new(void);
+VISIBILITY("hidden") void writebmp_exit(writebmp_info *wbmpinfo);
 
-void writebmp_cleanup(writebmp_info *wbmpinfo);
+VISIBILITY("hidden") int writebmp_output(writebmp_info *wbmpinfo);
+
+VISIBILITY("hidden") void writebmp_cleanup(writebmp_info *wbmpinfo);
 
 #endif /* __WRITEBMP_H__ */

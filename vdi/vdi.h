@@ -23,6 +23,7 @@
 
 #include "vdidefs.h"
 #include "fonthdr.h"
+#include "visibility.h"
 
 /*
 Opcode      VDI Name                   Function
@@ -437,14 +438,6 @@ Opcode      VDI Name                   Function
 #define PATTERN_HEIGHT 16
 #define PATTERN_SIZE (PATTERN_HEIGHT * PATTERN_WIDTH / 16)
 
-void vdi_init(void);
-void vditrap(VDIPB *pb);
-int vdi_output_c(_WORD dev, unsigned char c);
-int vdi_phys_handle(void);
-void vdi_change_colors(void);
-gboolean vdi_vq_vgdos(void);
-int vdi_cursconf(_WORD func, _WORD rate);
-void vdi_cursblink(void);
 
 
 #define SYSFONTS    3
@@ -945,9 +938,15 @@ struct v_bez_pars
 	vdi_rectangle clipr;
 };
 
-void vdi_init_bm(VWK *v);
-void vdi_init_common(VWK *v);
-void vdi_release_handle(VDIPB *pb, _WORD h);
-void vdi_clswk(VWK *v);
+#define vdi_init_bm __hidden_vdi_init_bm
+#define vdi_init_common __hidden_vdi_init_comon
+#define vdi_release_handle __hidden_vdi_release_handle
+#define vdi_clswk __hidden_vdi_clswk
 
-void vditrap(VDIPB *pb);
+VISIBILITY("hidden") void vdi_init_bm(VWK *v);
+VISIBILITY("hidden") void vdi_init_common(VWK *v);
+VISIBILITY("hidden") void vdi_release_handle(VDIPB *pb, _WORD h);
+VISIBILITY("hidden") void vdi_clswk(VWK *v);
+
+VISIBILITY("default") gboolean vdi_vq_vgdos(void);
+VISIBILITY("default") void vditrap(VDIPB *pb);
