@@ -118,13 +118,23 @@ static void open_screen(void)
 		objc_sysvar(SV_SET, ACTBUTCOL, G_WHITE, 0, &dummy, &dummy);
 		objc_sysvar(SV_SET, BACKGRCOL, G_WHITE, 0, &dummy, &dummy);
 	}
+
+	objc_draw_init();
 }
 
 /* ------------------------------------------------------------------------- */
 
 static void close_screen(void)
 {
+	objc_draw_exit();
 	v_clsvwk(vdi_handle);
+}
+
+/*** ---------------------------------------------------------------------- ***/
+
+_WORD GetNumPlanes(void)
+{
+	return xworkout[4];
 }
 
 /*** ---------------------------------------------------------------------- ***/
@@ -148,6 +158,21 @@ void GetTextSize(_WORD *width, _WORD *height)
 {
 	*width = gl_wchar;
 	*height = gl_hchar;
+}
+
+/*** ---------------------------------------------------------------------- ***/
+
+void GetScreenSize(_WORD *width, _WORD *height)
+{
+	*width = ws.ws_xres + 1;
+	*height = ws.ws_yres + 1;
+	/*
+	 * work around a bug in some VDIs returning an off-by-1 value (AtariX)
+	 */
+	if ((*width & 0x0f) == 0x0f)
+		(*width)++;
+	if ((*height & 0x0f) == 0x0f)
+		(*height)++;
 }
 
 /* ------------------------------------------------------------------------- */

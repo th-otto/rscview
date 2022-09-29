@@ -254,7 +254,7 @@ static _BOOL split_alert_string(_WORD def, ALERT_STRING *alert, const _UBYTE *st
 
 /* ------------------------------------------------------------------------- */
 
-void ob_draw_alert(_WORD vdi_handle, _WORD defbutton, const char *str, GRECT *gr, EXTOB_MODE mode)
+void ob_draw_alert(_WORD vdi_handle, _WORD defbutton, const char *str, const GRECT *gr, EXTOB_MODE mode)
 {
 	ALERT_STRING info;
 	OBJECT *rs_alert;
@@ -267,6 +267,7 @@ void ob_draw_alert(_WORD vdi_handle, _WORD defbutton, const char *str, GRECT *gr
 				 +       FO_NUM_LINES		/* strings */
 				 +       FO_NUM_BUTTONS		/* buttons */
 	];
+	GRECT al_grect;
 
 	if ((rs_alert = WrkTree(F_ALERT)) == NULL)
 		return;
@@ -544,6 +545,7 @@ void ob_draw_alert(_WORD vdi_handle, _WORD defbutton, const char *str, GRECT *gr
 	if (mode == EXTOB_ORCS)
 		alert[ROOT].ob_flags |= OF_TOUCHEXIT | OF_MOVEABLE;
 
+	form_center_grect(alert, &al_grect);
 	if (mode == EXTOB_NONE || mode == EXTOB_AES)
 		objc_draw_grect(alert, ROOT, MAX_DEPTH, gr);
 	else

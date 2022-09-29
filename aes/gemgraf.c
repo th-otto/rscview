@@ -416,7 +416,7 @@ void gsx_start(void)
 
 	KDEBUG(("gsx_start(): gl_wchar=%d, gl_hchar=%d, gl_wbox=%d, gl_hbox=%d\n", gl_wchar, gl_hchar, gl_wbox, gl_hbox));
 
-	vsl_type(gl_handle, USERLINE);
+	vsl_type(gl_handle, LT_SOLID);
 	vsl_width(gl_handle, 1);
 	vsl_udsty(gl_handle, -1);
 	r_set(&gl_rscreen, 0, 0, gl_width, gl_height);

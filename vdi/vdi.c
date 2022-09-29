@@ -4181,7 +4181,7 @@ static int vdi_vsl_type(VWK *v, VDIPB *pb)
 	V("vsl_type[%d]: %d", v->handle, m);
 
 	if (m < 1 || m > LT_MAX)
-		m = SOLID;
+		m = LT_SOLID;
 	v->line_type = m;
 	V_INTOUT(pb, 0) = m;
 	V_NINTOUT(pb, 1);
@@ -4375,7 +4375,7 @@ static _UWORD get_line_pattern(VWK *v)
 	
 	switch (v->line_type)
 	{
-	case SOLID:
+	case LT_SOLID:
 		line_pattern = 0xffff;
 		break;
 	case LONGDASH:
@@ -6355,7 +6355,7 @@ static VWK *init_vwk(VDIPB *pb, int h, int phys_wk, int width, int height, int p
 
 	m = V_INTIN(pb, 1);
 	if (m < 1 || m > LT_MAX)
-		m = SOLID;
+		m = LT_SOLID;
 	v->line_type = m;
 
 	m = V_INTIN(pb, 2);

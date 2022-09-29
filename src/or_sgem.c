@@ -1,0 +1,438 @@
+#include "config.h"
+#include <gem.h>
+#include "portvdi.h"
+#include "or_draw.h"
+#include "w_draw.h"
+
+typedef struct {
+	_UBYTE *big;
+	void *big_p;
+	_UBYTE *small;
+	void *small_p;
+} SYSGEM_IMAGE;
+
+struct _sysgem {
+	_WORD shortcut_color;
+	_WORD frametext_color;
+	_WORD selb_color;
+	_WORD selt_color;
+	_WORD help_color;
+	_BOOL like_mac;
+	_BOOL edit_mono;
+	_BOOL low_resolution;
+	_BOOL bergner;
+};
+static struct _sysgem sysgem;
+
+typedef _UBYTE BIG_IMAGE[32];
+typedef _UBYTE SMALL_IMAGE[16];
+
+static BIG_IMAGE IMG_PFEIL1 = {
+0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x03, 0xC0, 0x03, 0xC0, 0x03, 0xC0, 0x03, 0xC0, 0x03, 0xC0, 
+0x0F, 0xF0, 0x0F, 0xF0, 0x07, 0xE0, 0x03, 0xC0, 0x01, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+
+static _UBYTE IMG_PFEIL1_DISABLED[] = {
+0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x80, 0x01, 0x40, 0x02, 0x80, 0x01, 0x40, 0x02, 0x80, 
+0x05, 0x50, 0x0A, 0xA0, 0x05, 0x40, 0x02, 0x80, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+
+static BIG_IMAGE IMG_PFEIL4 = {
+0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xC0, 0x00, 0xE0, 0x1F, 0xF0, 0x1F, 0xF8, 
+0x1F, 0xF8, 0x1F, 0xF0, 0x00, 0xE0, 0x00, 0xC0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+
+static _UBYTE IMG_PFEIL4_DISABLED[] = {
+0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x40, 0x00, 0xA0, 0x15, 0x50, 0x0A, 0xA8, 
+0x15, 0x50, 0x0A, 0xA0, 0x00, 0x40, 0x00, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+
+static BIG_IMAGE IMG_PFEIL5 = {
+0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x03, 0x00, 0x07, 0x00, 0x0F, 0xF8, 0x1F, 0xF8, 
+0x1F, 0xF8, 0x0F, 0xF8, 0x07, 0x00, 0x03, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+
+static _UBYTE IMG_PFEIL5_DISABLED[] = {
+0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x02, 0x00, 0x05, 0x50, 0x0A, 0xA8, 
+0x15, 0x50, 0x0A, 0xA8, 0x05, 0x00, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+
+static BIG_IMAGE IMG_PFEIL6 = {
+0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x80, 0x03, 0xC0, 0x07, 0xE0, 0x0F, 0xF0, 0x0F, 0xF0, 
+0x03, 0xC0, 0x03, 0xC0, 0x03, 0xC0, 0x03, 0xC0, 0x03, 0xC0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+
+static _UBYTE IMG_PFEIL6_DISABLED[] = {
+0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x80, 0x01, 0x40, 0x02, 0xA0, 0x05, 0x50, 0x0A, 0xA0, 
+0x01, 0x40, 0x02, 0x80, 0x01, 0x40, 0x02, 0x80, 0x01, 0x40, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+
+static BIG_IMAGE IMG_CIRCLE = {
+0x00, 0x00, 0x00, 0x00, 0x13, 0xC0, 0x1C, 0x30, 0x1C, 0x08, 0x00, 0x08, 0x20, 0x04, 0x20, 0x04, 
+0x20, 0x04, 0x20, 0x04, 0x10, 0x00, 0x10, 0x38, 0x0C, 0x38, 0x03, 0xC8, 0x00, 0x00, 0x00, 0x00};
+
+static _UBYTE IMG_CIRCLE_DISABLED[] = {
+0x00, 0x00, 0x00, 0x00, 0x11, 0x40, 0x08, 0x20, 0x14, 0x00, 0x00, 0x08, 0x00, 0x04, 0x20, 0x00, 
+0x00, 0x04, 0x20, 0x00, 0x10, 0x00, 0x00, 0x28, 0x04, 0x10, 0x02, 0x88, 0x00, 0x00, 0x00, 0x00};
+
+static BIG_IMAGE IMG_SEL_DESEL_NORM_HIGH = {
+0x00, 0x00, 0x7F, 0xFE, 0x40, 0x02, 0x40, 0x02, 0x40, 0x02, 0x40, 0x02, 0x40, 0x02, 0x40, 0x02, 
+0x40, 0x02, 0x40, 0x02, 0x40, 0x02, 0x40, 0x02, 0x40, 0x02, 0x40, 0x02, 0x7F, 0xFE, 0x00, 0x00};
+
+static BIG_IMAGE IMG_SEL_SEL_NORM_HIGH = {
+0x00, 0x00, 0x7F, 0xFE, 0x40, 0x02, 0x58, 0x1A, 0x5C, 0x3A, 0x4E, 0x72, 0x47, 0xE2, 0x43, 0xC2, 
+0x43, 0xC2, 0x47, 0xE2, 0x4E, 0x72, 0x5C, 0x3A, 0x58, 0x1A, 0x40, 0x02, 0x7F, 0xFE, 0x00, 0x00};
+
+static BIG_IMAGE IMG_SEL_DESEL_DIS_HIGH = {
+0x00, 0x00, 0x55, 0x54, 0x00, 0x02, 0x40, 0x00, 0x00, 0x02, 0x40, 0x00, 0x00, 0x02, 0x40, 0x00, 
+0x00, 0x02, 0x40, 0x00, 0x00, 0x02, 0x40, 0x00, 0x00, 0x02, 0x40, 0x00, 0x2A, 0xAA, 0x00, 0x00};
+
+static BIG_IMAGE IMG_SEL_SEL_DIS_HIGH = {
+0x00, 0x00, 0x55, 0x54, 0x00, 0x02, 0x48, 0x10, 0x14, 0x2A, 0x4A, 0x50, 0x04, 0xA2, 0x41, 0x40, 
+0x02, 0x82, 0x45, 0x20, 0x0A, 0x52, 0x54, 0x28, 0x08, 0x12, 0x40, 0x00, 0x2A, 0xAA, 0x00, 0x00};
+
+static BIG_IMAGE IMG_CIR_DESEL_NORM_HIGH = {
+0x00, 0x00, 0x00, 0x00, 0x03, 0x80, 0x0C, 0x60, 0x10, 0x10, 0x20, 0x08, 0x20, 0x08, 0x40, 0x04, 
+0x40, 0x04, 0x40, 0x04, 0x20, 0x08, 0x20, 0x08, 0x10, 0x10, 0x0C, 0x60, 0x03, 0x80, 0x00, 0x00};
+
+static BIG_IMAGE IMG_CIR_SEL_NORM_HIGH = {
+0x00, 0x00, 0x00, 0x00, 0x03, 0x80, 0x0C, 0x60, 0x10, 0x10, 0x23, 0x88, 0x27, 0xC8, 0x4F, 0xE4, 
+0x4F, 0xE4, 0x4F, 0xE4, 0x27, 0xC8, 0x23, 0x88, 0x10, 0x10, 0x0C, 0x60, 0x03, 0x80, 0x00, 0x00};
+
+static BIG_IMAGE IMG_CIR_DESEL_DIS_HIGH = {
+0x00, 0x00, 0x00, 0x00, 0x02, 0x80, 0x08, 0x20, 0x00, 0x00, 0x20, 0x08, 0x00, 0x00, 0x40, 0x04, 
+0x00, 0x00, 0x40, 0x04, 0x00, 0x00, 0x20, 0x08, 0x00, 0x00, 0x08, 0x20, 0x02, 0x80, 0x00, 0x00};
+
+static BIG_IMAGE IMG_CIR_SEL_DIS_HIGH = {
+0x00, 0x00, 0x00, 0x00, 0x02, 0x80, 0x08, 0x20, 0x00, 0x00, 0x22, 0x88, 0x05, 0x40, 0x4A, 0xA4, 
+0x05, 0x40, 0x4A, 0xA4, 0x05, 0x40, 0x22, 0x88, 0x00, 0x00, 0x08, 0x20, 0x02, 0x80, 0x00, 0x00};
+
+static SMALL_IMAGE IMG_SEL_DESEL_NORM_LOW = {
+0x3F, 0xFC, 0x20, 0x04, 0x20, 0x04, 0x20, 0x04, 0x20, 0x04, 0x20, 0x04, 0x3F, 0xFC, 0x00, 0x00};
+
+static SMALL_IMAGE IMG_SEL_SEL_NORM_LOW = {
+0x3F, 0xFC, 0x38, 0x1C, 0x26, 0x64, 0x21, 0x84, 0x26, 0x64, 0x38, 0x1C, 0x3F, 0xFC, 0x00, 0x00};
+
+static SMALL_IMAGE IMG_SEL_DESEL_DIS_LOW = {
+0x2A, 0xA8, 0x00, 0x04, 0x20, 0x00, 0x00, 0x04, 0x20, 0x00, 0x00, 0x04, 0x2A, 0xA8, 0x00, 0x00};
+
+static SMALL_IMAGE IMG_SEL_SEL_DIS_LOW = {
+0x2A, 0xA4, 0x10, 0x08, 0x22, 0x44, 0x01, 0x80, 0x22, 0x44, 0x10, 0x00, 0x2A, 0xAC, 0x00, 0x00};
+
+static SMALL_IMAGE IMG_CIR_DESEL_NORM_LOW = {
+0x0F, 0xF0, 0x78, 0x1E, 0xE0, 0x07, 0xC0, 0x03, 0xC0, 0x03, 0xE0, 0x07, 0x78, 0x1E, 0x0F, 0xF0};
+
+static SMALL_IMAGE IMG_CIR_SEL_NORM_LOW = {
+0x0F, 0xF0, 0x78, 0x1E, 0xE3, 0xC7, 0xCF, 0xF3, 0xCF, 0xF3, 0xE3, 0xC7, 0x78, 0x1E, 0x0F, 0xF0};
+
+static SMALL_IMAGE IMG_CIR_DESEL_DIS_LOW = {
+0x0A, 0xA0, 0x50, 0x14, 0xA0, 0x05, 0x40, 0x02, 0xA0, 0x01, 0x40, 0x02, 0x50, 0x0A, 0x05, 0x50};
+
+static SMALL_IMAGE IMG_CIR_SEL_DIS_LOW = {
+0x0A, 0xA0, 0x50, 0x14, 0xA2, 0x85, 0x45, 0x42, 0x8A, 0xA1, 0x42, 0x82, 0x50, 0x0A, 0x05, 0x50};
+
+static SYSGEM_IMAGE img_pfeil1 = { IMG_PFEIL1, 0, 0, 0 };
+static SYSGEM_IMAGE img_pfeil1_disabled = { IMG_PFEIL1_DISABLED, 0, 0, 0 };
+static SYSGEM_IMAGE img_pfeil4 = { IMG_PFEIL4, 0, 0, 0 };
+static SYSGEM_IMAGE img_pfeil4_disabled = { IMG_PFEIL4_DISABLED, 0, 0, 0 };
+static SYSGEM_IMAGE img_pfeil5 = { IMG_PFEIL5, 0, 0, 0 };
+static SYSGEM_IMAGE img_pfeil5_disabled = { IMG_PFEIL5_DISABLED, 0, 0, 0 };
+static SYSGEM_IMAGE img_pfeil6 = { IMG_PFEIL6, 0, 0, 0 };
+static SYSGEM_IMAGE img_pfeil6_disabled = { IMG_PFEIL6_DISABLED, 0, 0, 0 };
+static SYSGEM_IMAGE img_circle = { IMG_CIRCLE, 0, 0, 0 };
+static SYSGEM_IMAGE img_circle_disabled = { IMG_CIRCLE_DISABLED, 0, 0, 0 };
+static SYSGEM_IMAGE img_sel_desel_norm = { IMG_SEL_DESEL_NORM_HIGH, 0, IMG_SEL_DESEL_NORM_LOW, 0 };
+static SYSGEM_IMAGE img_sel_sel_norm = { IMG_SEL_SEL_NORM_HIGH, 0, IMG_SEL_SEL_NORM_LOW, 0 };
+static SYSGEM_IMAGE img_sel_desel_dis = { IMG_SEL_DESEL_DIS_HIGH, 0, IMG_SEL_DESEL_DIS_LOW, 0 };
+static SYSGEM_IMAGE img_sel_sel_dis = { IMG_SEL_SEL_DIS_HIGH, 0, IMG_SEL_SEL_DIS_LOW, 0 };
+static SYSGEM_IMAGE img_cir_desel_norm = { IMG_CIR_DESEL_NORM_HIGH, 0, IMG_CIR_DESEL_NORM_LOW, 0 };
+static SYSGEM_IMAGE img_cir_sel_norm = { IMG_CIR_SEL_NORM_HIGH, 0, IMG_CIR_SEL_NORM_LOW, 0 };
+static SYSGEM_IMAGE img_cir_desel_dis = { IMG_CIR_DESEL_DIS_HIGH, 0, IMG_CIR_DESEL_DIS_LOW, 0 };
+static SYSGEM_IMAGE img_cir_sel_dis = { IMG_CIR_SEL_DIS_HIGH, 0, IMG_CIR_SEL_DIS_LOW, 0 };
+
+/******************************************************************************/
+/* -------------------------------------------------------------------------- */
+/******************************************************************************/
+
+void sysgem_draw_button(_WORD x, _WORD y, _WORD w, _WORD h, _UWORD type, OBSPEC obspec, _UWORD flags, _UWORD state, char *text, _WORD shortcut_pos)
+{
+	(void)x;
+	(void)y;
+	(void)w;
+	(void)h;
+	(void)type;
+	(void)obspec;
+	(void)flags;
+	(void)state;
+	(void)text;
+	(void)shortcut_pos;
+}
+
+void sysgem_draw_radio(_WORD x, _WORD y, _WORD w, _WORD h, _UWORD type, OBSPEC obspec, _UWORD flags, _UWORD state, char *text, _WORD shortcut)
+{
+	(void)x;
+	(void)y;
+	(void)w;
+	(void)h;
+	(void)type;
+	(void)obspec;
+	(void)flags;
+	(void)state;
+	(void)text;
+	(void)shortcut;
+}
+
+void sysgem_draw_select(_WORD x, _WORD y, _WORD w, _WORD h, _UWORD type, OBSPEC obspec, _UWORD flags, _UWORD state, char *text, _WORD shortcut)
+{
+	(void)x;
+	(void)y;
+	(void)w;
+	(void)h;
+	(void)type;
+	(void)obspec;
+	(void)flags;
+	(void)state;
+	(void)text;
+	(void)shortcut;
+}
+
+void sysgem_draw_help(_WORD x, _WORD y, _WORD w, _WORD h, _UWORD type, OBSPEC obspec, _UWORD flags, _UWORD state, char *text, _WORD shortcut)
+{
+	(void)x;
+	(void)y;
+	(void)w;
+	(void)h;
+	(void)type;
+	(void)obspec;
+	(void)flags;
+	(void)state;
+	(void)text;
+	(void)shortcut;
+}
+
+void sysgem_draw_notebook(_WORD x, _WORD y, _WORD w, _WORD h, _UWORD type, OBSPEC obspec, _UWORD flags, _UWORD state, char *text, _WORD shortcut)
+{
+	(void)x;
+	(void)y;
+	(void)w;
+	(void)h;
+	(void)type;
+	(void)obspec;
+	(void)flags;
+	(void)state;
+	(void)text;
+	(void)shortcut;
+}
+
+void sysgem_draw_box(_WORD x, _WORD y, _WORD w, _WORD h, _UWORD type, OBSPEC obspec, _UWORD flags, _UWORD state, _BOOL is_root)
+{
+	(void)x;
+	(void)y;
+	(void)w;
+	(void)h;
+	(void)type;
+	(void)obspec;
+	(void)flags;
+	(void)state;
+	(void)is_root;
+}
+
+void sysgem_draw_boxchar(_WORD x, _WORD y, _WORD w, _WORD h, _UWORD type, OBSPEC obspec, _UWORD flags, _UWORD state)
+{
+	(void)x;
+	(void)y;
+	(void)w;
+	(void)h;
+	(void)type;
+	(void)obspec;
+	(void)flags;
+	(void)state;
+}
+
+void sysgem_draw_frame(_WORD x, _WORD y, _WORD w, _WORD h, _UWORD type, const char *text, _UWORD flags, _UWORD state)
+{
+	(void)x;
+	(void)y;
+	(void)w;
+	(void)h;
+	(void)type;
+	(void)text;
+	(void)flags;
+	(void)state;
+}
+
+void sysgem_draw_string(_WORD x, _WORD y, _WORD w, _WORD h, _UWORD type, OBSPEC obspec, _UWORD flags, _UWORD state, char *text, _WORD shortcut)
+{
+	(void)x;
+	(void)y;
+	(void)w;
+	(void)h;
+	(void)type;
+	(void)obspec;
+	(void)text;
+	(void)flags;
+	(void)state;
+	(void)shortcut;
+}
+
+void sysgem_draw_text(_WORD x, _WORD y, _WORD w, _WORD h, _UWORD type, OBSPEC obspec, _UWORD flags, _UWORD state)
+{
+	(void)x;
+	(void)y;
+	(void)w;
+	(void)h;
+	(void)type;
+	(void)obspec;
+	(void)flags;
+	(void)state;
+}
+
+void sysgem_draw_mentry(_WORD x, _WORD y, _WORD w, _WORD h, _UWORD type, OBSPEC obspec, _UWORD flags, _UWORD state, char *text, _WORD shortcut)
+{
+	(void)x;
+	(void)y;
+	(void)w;
+	(void)h;
+	(void)type;
+	(void)obspec;
+	(void)text;
+	(void)flags;
+	(void)state;
+	(void)shortcut;
+}
+
+void sysgem_draw_mbox(_WORD x, _WORD y, _WORD w, _WORD h, _UWORD type, OBSPEC obspec, _UWORD flags, _UWORD state)
+{
+	(void)x;
+	(void)y;
+	(void)w;
+	(void)h;
+	(void)type;
+	(void)obspec;
+	(void)flags;
+	(void)state;
+}
+
+void sysgem_draw_edit(_WORD x, _WORD y, _WORD w, _WORD h, _UWORD type, OBSPEC obspec, _UWORD flags, _UWORD state)
+{
+	(void)x;
+	(void)y;
+	(void)w;
+	(void)h;
+	(void)type;
+	(void)obspec;
+	(void)flags;
+	(void)state;
+}
+
+void sysgem_draw_listbox(_WORD x, _WORD y, _WORD w, _WORD h, _UWORD type, OBSPEC obspec, _UWORD flags, _UWORD state)
+{
+	(void)x;
+	(void)y;
+	(void)w;
+	(void)h;
+	(void)type;
+	(void)obspec;
+	(void)flags;
+	(void)state;
+}
+
+void sysgem_draw_bar(_WORD pb_x, _WORD pb_y, _WORD pb_w, _WORD pb_h, _UWORD type, OBSPEC obspec, _UWORD flags, _UWORD state, _WORD next_w, _WORD next_h, OBSPEC next_obspec)
+{
+	(void)pb_x;
+	(void)pb_y;
+	(void)pb_w;
+	(void)pb_h;
+	(void)type;
+	(void)obspec;
+	(void)flags;
+	(void)state;
+	(void)next_w;
+	(void)next_h;
+	(void)next_obspec;
+}
+
+/******************************************************************************/
+/* -------------------------------------------------------------------------- */
+/******************************************************************************/
+
+static void fix_image(SYSGEM_IMAGE *image)
+{
+	image->big_p = image->big;
+	if (image->small != NULL)
+	{
+		image->small_p = image->small;
+	}
+}
+
+/* -------------------------------------------------------------------------- */
+
+static void release_image(SYSGEM_IMAGE *image)
+{
+	if (image->small != NULL)
+	{
+	}
+}
+
+/* -------------------------------------------------------------------------- */
+
+void sysgem_exit(void)
+{
+	release_image(&img_pfeil1);
+	release_image(&img_pfeil1_disabled);
+	release_image(&img_pfeil4);
+	release_image(&img_pfeil4_disabled);
+	release_image(&img_pfeil5);
+	release_image(&img_pfeil5_disabled);
+	release_image(&img_pfeil6);
+	release_image(&img_pfeil6_disabled);
+	release_image(&img_circle);
+	release_image(&img_circle_disabled);
+	release_image(&img_sel_desel_norm);
+	release_image(&img_sel_sel_norm);
+	release_image(&img_sel_desel_dis);
+	release_image(&img_sel_sel_dis);
+	release_image(&img_cir_desel_norm);
+	release_image(&img_cir_sel_norm);
+	release_image(&img_cir_desel_dis);
+	release_image(&img_cir_sel_dis);
+}
+
+/* -------------------------------------------------------------------------- */
+
+void sysgem_init(void)
+{
+	_WORD cw, ch;
+	
+	GetTextSize(&cw, &ch);
+	if (GetNumColors() >= 16)
+	{
+		sysgem.shortcut_color = W_PAL_RED;
+		sysgem.frametext_color = W_PAL_RED;
+		sysgem.selb_color = W_PAL_RED;
+		sysgem.selt_color = W_PAL_WHITE;
+		sysgem.help_color = W_PAL_YELLOW;
+	} else
+	{
+		sysgem.shortcut_color = W_PAL_BLACK;
+		sysgem.frametext_color = W_PAL_BLACK;
+		sysgem.selb_color = W_PAL_BLACK;
+		sysgem.selt_color = W_PAL_BLACK;
+		sysgem.help_color = W_PAL_BLACK;
+	}
+	sysgem.like_mac = TRUE;
+	sysgem.edit_mono = FALSE;
+	sysgem.low_resolution = ch < 13;
+	sysgem.bergner = FALSE;
+	
+	fix_image(&img_pfeil1);
+	fix_image(&img_pfeil1_disabled);
+	fix_image(&img_pfeil4);
+	fix_image(&img_pfeil4_disabled);
+	fix_image(&img_pfeil5);
+	fix_image(&img_pfeil5_disabled);
+	fix_image(&img_pfeil6);
+	fix_image(&img_pfeil6_disabled);
+	fix_image(&img_circle);
+	fix_image(&img_circle_disabled);
+	fix_image(&img_sel_desel_norm);
+	fix_image(&img_sel_sel_norm);
+	fix_image(&img_sel_desel_dis);
+	fix_image(&img_sel_sel_dis);
+	fix_image(&img_cir_desel_norm);
+	fix_image(&img_cir_sel_norm);
+	fix_image(&img_cir_desel_dis);
+	fix_image(&img_cir_sel_dis);
+}

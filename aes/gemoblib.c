@@ -244,7 +244,7 @@ static void draw_hi(GRECT *prect, _WORD state, _WORD clip, _WORD th, _WORD icol)
 	GRECT r;
 
 	gsx_moff();
-	vsl_type(gl_handle, USERLINE);
+	vsl_type(gl_handle, LT_SOLID);
 	vsl_udsty(gl_handle, -1);			/* solid line style */
 
 	if (clip)

@@ -2,17 +2,18 @@
 #include <gem.h>
 #include "portvdi.h"
 #include "or_draw.h"
+#include "w_draw.h"
 
-static _WORD vdi_handle;
-static EXTOB_MODE objc_mode;
-_WORD color_background = G_LWHITE;
-_WORD color_disabled = G_LBLACK;
-_WORD color_indicator = G_LWHITE;
-_WORD color_activator = G_LWHITE;
-_BOOL move_indicator = FALSE;
-_BOOL move_activator = FALSE;
-_BOOL change_indicator = TRUE;
-_BOOL change_activator = FALSE;
+_WORD od_handle;
+EXTOB_MODE objc_mode;
+_WORD color_background = W_PAL_LGRAY;
+_WORD color_disabled = W_PAL_DGRAY;
+_WORD color_indicator = W_PAL_LGRAY;
+_WORD color_activator = W_PAL_LGRAY;
+_WORD move_indicator = FALSE;
+_WORD move_activator = FALSE;
+_WORD change_indicator = TRUE;
+_WORD change_activator = FALSE;
 _BOOL op_draw3d = FALSE;
 _BOOL od_clear;
 _UWORD od_oldstate;
@@ -20,6 +21,33 @@ PARMBLKFUNC od_code;
 PARMBLK od_parm;
 
 #define CUR_WIDTH 2
+#define MAX_FRAMESIZE 4
+#define te_displen te_junk1
+#define te_offset  te_junk2
+#define ted_extended(ted) ((ted)->te_displen != 0)
+
+#define MAC_RADIO 0
+#define MAC_CHECK 1
+#define MAC_SWITCH 2
+#define MAC_BOOLEAN 3
+#define MAC_H_RADIO 4
+#define MAC_H_CHECK 5
+#define MAC_H_LIST 6
+#define NUM_MAC_IMAGES 7
+#define MAC_THREESTATE 100
+
+#define CHAR_CHECK       0x08
+#define CHAR_LISTBOX     0xf0
+
+#define KEY_CODEMASK       0xff00
+#define KEY_SHIFTMASK      0xe000
+#define OF_MOVEABLE        0x0800
+
+
+_WORD od_cw, od_ch;
+GRECT od_pxy;
+GRECT od_framerec;
+GRECT od_outrec;
 
 #if CUR_WIDTH != 0
 static OBJECT cur_left[] = {
@@ -31,21 +59,162 @@ static OBJECT cur_right[] = {
 #endif
 
 
+/*****************************************************************************/
+/* ------------------------------------------------------------------------- */
+/*****************************************************************************/
+
+_UBYTE *calc_text(const char *ptmplt, _WORD tmplen, _UBYTE *ptext, _WORD txtlen, const char *pvalid, _BOOL reset, _UBYTE fillchar, _WORD max_cur_pos)
+{
+	_BOOL stop = FALSE, curstop = FALSE;
+	_WORD tmpi, txti, vali;
+	_UBYTE *cp, *textedbuf;
+	_WORD cpos;
+	_UBYTE *templatep;
+	
+	txti = 0;
+	vali = 0;
+	if ((textedbuf = g_new(_UBYTE, tmplen)) == NULL)
+		return NULL;
+	/*
+	 * FIXME UTF8: '_' in template represents a char, not a byte;
+	 * result string may be longer than template
+	 */
+	templatep = g_strdup(ptmplt);
+	tmplen = tmplen - 1;
+	if (templatep == NULL)
+	{
+		g_free(textedbuf);
+		return NULL;
+	}
+	cpos = 0;
+	cp = textedbuf;
+	for (tmpi = 0; tmpi < tmplen; tmpi++)
+	{
+		if (templatep[tmpi] == '_')
+		{
+			if (txti < (txtlen - 1) &&
+				!stop && (ptext[txti] != '@' || txti > 0 || pvalid[vali] == '@') &&
+				ptext[txti] != '\0')
+			{
+				if (pvalid[vali] == '*')
+				{
+					*cp++ = '*';
+				} else if (ptext[txti] == '@' && pvalid[vali] != '@' && (ptext[txti + 1] == '@' || ptext[txti + 1] == '\0'))
+				{
+					*cp = fillchar;
+					if (fillchar != '\0')
+						cp++;
+					stop = TRUE;
+					curstop = TRUE;
+				} else
+				{
+					*cp++ = ptext[txti];
+				}
+				txti++;
+				vali++;
+				/*
+				 * point pvalid back to last char if
+				 * it is shorter than the number
+				 * of input positions.
+				 * This is not an error but a not
+				 * so well documented behaviour of input fields
+				 */
+				if (pvalid[vali] == '\0')
+					--vali;
+				if (reset && !curstop)
+				{
+					if (tmpi >= max_cur_pos)
+					{
+						curstop = TRUE;
+					} else
+					{
+						cpos++;
+					}
+				}
+			} else
+			{
+				*cp = fillchar;
+				if (fillchar != '\0')
+					cp++;
+				if (reset)
+				{
+					ptext[txti++] = '\0';
+					if (txti < txtlen)
+						ptext[txti] = '\0';
+				} else
+				{
+					txti++;
+				}
+				stop = TRUE;
+				curstop = TRUE;
+			}
+		} else
+		{
+			*cp++ = templatep[tmpi];
+			if (!curstop)
+				cpos++;
+		}
+	}
+	if (reset)
+	{
+	}
+	*cp = '\0';
+	g_free(templatep);
+	return textedbuf;
+}
+
+/*** ---------------------------------------------------------------------- ***/
+
+static char *DialogTitelTxt(const char *free_string, _WORD state, _BOOL intern)
+{
+	const char *txtStr, *start;
+	char *retV;
+	size_t  len;
+	
+	if (free_string == NULL || ((state & OS_DRAW3D) && intern))
+		return NULL;
+
+	txtStr = free_string;
+	start = strrchr(txtStr, '$');
+	if (start != NULL)
+	{
+		if (intern)
+		{
+			txtStr = start + 1;
+			len = strlen(txtStr);
+		} else
+		{
+			len = (size_t) (start - txtStr);
+		}
+	} else
+	{
+		len = strlen(txtStr);
+	}
+	retV = g_new(_UBYTE, len + 1);
+	if (retV != NULL)
+	{
+		memcpy(retV, txtStr, len);
+		retV[len] = '\0';
+	}
+	return retV;
+}
 
 /*****************************************************************************/
 /* ------------------------------------------------------------------------- */
 /*****************************************************************************/
 
-void od_setfont(WIND_OS *os, _WORD size, _WORD color, _UWORD style)
+void od_setfont(_WORD handle, _WORD size, _WORD color, _UWORD style)
 {
-	W_SetFont(os, FONT_SYSTEM, (size & TE_FONT_MASK) == SMALL ? FONT_SIZE_ICON : GetTextNormalHeight(), color, style);
-	od_cw = W_CharWidth(os, ' ');
-	od_ch = W_CharHeight(os, ' ');
+	_WORD dummy;
+	
+	vst_height(handle, (size & TE_FONT_MASK) == SMALL ? 4 : 13, &dummy, &dummy, &od_cw, &od_ch);
+	vst_color(handle, color);
+	vst_effects(handle, style);
 }
 
-static _UBYTE *char2text(_UBYTE c)
+static char *char2text(_UBYTE c)
 {
-	static _UBYTE buf[2];
+	static char buf[2];
 
 	buf[0] = c;
 	return buf;
@@ -62,7 +231,7 @@ void od_box(_WORD advance, _BOOL draw)
 	od_pxy.g_h -= advance;
 	if (draw)
 	{
-		W_Rectangle(vdi_handle, &od_pxy);
+		W_Rectangle(od_handle, &od_pxy);
 	}
 }
 
@@ -71,16 +240,12 @@ static void outline(_UWORD state)
 {
 	if (state & OS_OUTLINED)
 	{
-		void *pen;
-
-		vswr_mode(vdi_handle, MD_REPLACE);
-		pen = W_PenCreate(vdi_handle, 1, W_PEN_SOLID, W_PAL_WHITE);
+		vswr_mode(od_handle, MD_REPLACE);
+		vsl_color(od_handle, W_PAL_WHITE);
 		od_box(-1, TRUE);
 		od_box(-1, TRUE);
-		W_PenDelete(vdi_handle, pen);
-		pen = W_PenCreate(vdi_handle, 1, W_PEN_SOLID, W_PAL_BLACK);
+		vsl_color(od_handle, W_PAL_BLACK);
 		od_box(-1, TRUE);
-		W_PenDelete(vdi_handle, pen);
 	}
 }
 
@@ -88,20 +253,18 @@ static void outline(_UWORD state)
 static void cross(GRECT *gr)
 {
 	W_POINTS xy[2];
-	void *pen;
 
-	pen = W_PenCreate(vdi_handle, 1, W_PEN_SOLID, W_PAL_WHITE);
-	vswr_mode(vdi_handle, MD_TRANS);
+	vsl_color(od_handle, W_PAL_WHITE);
+	vswr_mode(od_handle, MD_TRANS);
 	xy[0].xx = gr->g_x;
 	xy[0].yy = gr->g_y;
 	xy[1].xx = gr->g_x + gr->g_w - 1;
 	xy[1].yy = gr->g_y + gr->g_h - 1;
-	W_Lines(vdi_handle, xy, 2);
+	W_Lines(od_handle, xy, 2);
 	xy[0].xx = xy[1].xx;
 	xy[1].xx = gr->g_x;
-	W_Lines(vdi_handle, xy, 2);
-	vswr_mode(vdi_handle, MD_REPLACE);
-	W_PenDelete(vdi_handle, pen);
+	W_Lines(od_handle, xy, 2);
+	vswr_mode(od_handle, MD_REPLACE);
 }
 
 
@@ -173,7 +336,6 @@ _BOOL color_3d(_UWORD flags, _UWORD state, _WORD *color, _WORD *pattern)
 void shadow(_WORD framesize, _WORD framecol)
 {
 	W_POINTS pxy[3];
-	void *pen;
 
 	if (framesize != 0)
 	{
@@ -193,24 +355,23 @@ void shadow(_WORD framesize, _WORD framecol)
 		pxy[1].yy = pxy[0].yy;
 		pxy[2].xx = pxy[1].xx;
 		pxy[2].yy = od_outrec.g_y + framesize /* + 1 */;
-		W_SetBkMode(vdi_handle, MD_REPLACE);
-		pen = W_PenCreate(vdi_handle, 1, W_PEN_SOLID, framecol);
+		vswr_mode(od_handle, MD_REPLACE);
+		vsl_color(od_handle, framecol);
 		framesize += framesize;
 		while (framesize > 0)
 		{
-			W_Lines(vdi_handle, pxy, 3);
+			W_Lines(od_handle, pxy, 3);
 			pxy[0].yy++;
 			pxy[1].xx++;
 			pxy[1].yy++;
 			pxy[2].xx++;
 			framesize--;
 		}
-		W_PenDelete(vdi_handle, pen);
 	}
 }
 
 
-void *_draw_box(
+static void _draw_box(
 	_WORD framesize,
 	_WORD framecol,
 	_BOOL filled,
@@ -218,18 +379,16 @@ void *_draw_box(
 	_WORD fillcol
 )
 {
-	void *pen;
-
-	W_SetBkMode(vdi_handle, MD_REPLACE);
+	vswr_mode(od_handle, MD_REPLACE);
 	if (filled)
 	{
-		W_Fill_Rect(vdi_handle, &od_pxy, fillpattern, fillcol);
+		W_Fill_Rect(od_handle, &od_pxy, fillpattern, fillcol, FALSE);
 	}
 	if (framesize > 0)
 	{
 		_WORD i;
 
-		pen = W_PenCreate(vdi_handle, 1, W_PEN_SOLID, framecol);
+		vsl_color(od_handle, framecol);
 		if (framesize > MAX_FRAMESIZE)
 			framesize = MAX_FRAMESIZE;
 		i = framesize;
@@ -242,7 +401,7 @@ void *_draw_box(
 	{
 		_WORD i;
 
-		pen = W_PenCreate(vdi_handle, 1, W_PEN_SOLID, framecol);
+		vsl_color(od_handle, framecol);
 		if (framesize < -(MAX_FRAMESIZE))
 			framesize = -(MAX_FRAMESIZE);
 		i = framesize;
@@ -250,27 +409,21 @@ void *_draw_box(
 			od_box(-1, TRUE);
 		} while (++i != 0);
 		od_box(-framesize, FALSE);
-	} else
-	{
-		pen = NULL;
 	}
-	return pen;
 }
 
 
 static void draw_dialog_frame(_WORD pattern, _WORD color)
 {
-	void *pen;
 	W_POINTS pxy[3];
 	
-	W_SetBkMode(vdi_handle, MD_REPLACE);
-	W_Fill_Rect(vdi_handle, &od_pxy, pattern, color);
+	vswr_mode(od_handle, MD_REPLACE);
+	W_Fill_Rect(od_handle, &od_pxy, pattern, color, FALSE);
 	od_box(3, FALSE);
 	rc_copy(&od_pxy, &od_framerec);
 	od_box(-1, FALSE);
-	pen = W_PenCreate(vdi_handle, 1, W_PEN_SOLID, W_PAL_BLACK);
-	W_Rectangle(vdi_handle, &od_pxy);
-	W_PenDelete(vdi_handle, pen);
+	vsl_color(od_handle, W_PAL_BLACK);
+	W_Rectangle(od_handle, &od_pxy);
 	
 	od_box(-1, FALSE);
 	pxy[0].xx = od_pxy.g_x;
@@ -279,23 +432,20 @@ static void draw_dialog_frame(_WORD pattern, _WORD color)
 	pxy[1].yy = od_pxy.g_y;
 	pxy[2].xx = od_pxy.g_x + od_pxy.g_w - 1;
 	pxy[2].yy = od_pxy.g_y;
-	pen = W_PenCreate(vdi_handle, 1, W_PEN_SOLID, W_PAL_DGRAY);
-	W_Lines(vdi_handle, pxy, 3);
-	W_PenDelete(vdi_handle, pen);
+	vsl_color(od_handle, W_PAL_DGRAY);
+	W_Lines(od_handle, pxy, 3);
 	pxy[0].xx = od_pxy.g_x + 1;
 	pxy[0].yy = od_pxy.g_y + od_pxy.g_h - 1;
 	pxy[1].xx = od_pxy.g_x + od_pxy.g_w - 1;
 	pxy[1].yy = od_pxy.g_y + od_pxy.g_h - 1;
 	pxy[2].xx = od_pxy.g_x + od_pxy.g_w - 1;
 	pxy[2].yy = od_pxy.g_y + 1;
-	pen = W_PenCreate(vdi_handle, 1, W_PEN_SOLID, W_PAL_WHITE);
-	W_Lines(vdi_handle, pxy, 3);
-	W_PenDelete(vdi_handle, pen);
+	vsl_color(od_handle, W_PAL_WHITE);
+	W_Lines(od_handle, pxy, 3);
 	
-	pen = W_PenCreate(vdi_handle, 1, W_PEN_SOLID, W_PAL_LGRAY);
+	vsl_color(od_handle, W_PAL_LGRAY);
 	od_box(-1, TRUE);
 	od_box(-1, TRUE);
-	W_PenDelete(vdi_handle, pen);
 
 	od_box(-1, FALSE);
 	pxy[0].xx = od_pxy.g_x;
@@ -304,46 +454,40 @@ static void draw_dialog_frame(_WORD pattern, _WORD color)
 	pxy[1].yy = od_pxy.g_y;
 	pxy[2].xx = od_pxy.g_x + od_pxy.g_w - 1;
 	pxy[2].yy = od_pxy.g_y;
-	pen = W_PenCreate(vdi_handle, 1, W_PEN_SOLID, W_PAL_WHITE);
-	W_Lines(vdi_handle, pxy, 3);
-	W_PenDelete(vdi_handle, pen);
+	vsl_color(od_handle, W_PAL_WHITE);
+	W_Lines(od_handle, pxy, 3);
 	pxy[0].xx = od_pxy.g_x + 1;
 	pxy[0].yy = od_pxy.g_y + od_pxy.g_h - 1;
 	pxy[1].xx = od_pxy.g_x + od_pxy.g_w - 1;
 	pxy[1].yy = od_pxy.g_y + od_pxy.g_h - 1;
 	pxy[2].xx = od_pxy.g_x + od_pxy.g_w - 1;
 	pxy[2].yy = od_pxy.g_y + 1;
-	pen = W_PenCreate(vdi_handle, 1, W_PEN_SOLID, W_PAL_DGRAY);
-	W_Lines(vdi_handle, pxy, 3);
-	W_PenDelete(vdi_handle, pen);
+	vsl_color(od_handle, W_PAL_DGRAY);
+	W_Lines(od_handle, pxy, 3);
 
-	pen = W_PenCreate(vdi_handle, 1, W_PEN_SOLID, W_PAL_BLACK);
+	vsl_color(od_handle, W_PAL_BLACK);
 	od_box(-1, TRUE);
-	W_PenDelete(vdi_handle, pen);
 }
 
 
-void draw_underline_char(_WORD x, _WORD y, _WORD color, const _UBYTE *txt, _WORD offset)
+void draw_underline_char(_WORD x, _WORD y, _WORD color, const char *txt, _WORD offset)
 {
 	W_POINTS pxy[2];
-	void *pen;
-	_WORD oldmode;
 	_WORD x_offset;
 	
-	x_offset = W_NTextWidth(vdi_handle, txt, offset);
+	UNUSED(txt);
+	x_offset = offset * od_cw;
 	pxy[0].xx = x + x_offset;
 	pxy[0].yy = y + od_ch - 1;
-	pxy[1].xx = pxy[0].xx + W_CharWidth(vdi_handle, txt[offset]) - 1;
+	pxy[1].xx = pxy[0].xx + od_cw - 1;
 	pxy[1].yy = pxy[0].yy;
-	oldmode = W_SetBkMode(vdi_handle, MD_REPLACE);
-	pen = W_PenCreate(vdi_handle, 1, W_PEN_SOLID, color);
-	W_Lines(vdi_handle, pxy, 2);
-	W_PenDelete(vdi_handle, pen);
-	W_SetBkMode(vdi_handle, oldmode);
+	vswr_mode(od_handle, MD_REPLACE);
+	vsl_color(od_handle, color);
+	W_Lines(od_handle, pxy, 2);
 }
 
 
-_WORD wclip_center(_WORD just)
+static _WORD wclip_center(_WORD just)
 {
 	switch (just & TE_JUST_MASK)
 	{
@@ -356,19 +500,19 @@ _WORD wclip_center(_WORD just)
 }
 
 
-static _BOOL text_rect(_UBYTE *txt, GRECT *gr, _WORD size, _WORD centered, _BOOL centver, _WORD textcol, _WORD offset, _WORD bold, GRECT *text)
+static _BOOL text_rect(char *txt, GRECT *gr, _WORD size, _WORD centered, _BOOL centver, _WORD textcol, _WORD offset, _WORD bold, GRECT *text)
 {
 	_WORD x, y, w, h;
 
 	if (offset != -1 && objc_mode != EXTOB_MAGIX && txt[offset] == '[')
 	{
-		strCpy(&txt[offset], &txt[offset+1]);
+		memmove(&txt[offset], &txt[offset + 1], strlen(&txt[offset + 1]) + 1);
 	}
-	od_setfont(vdi_handle, size, textcol, bold);
+	od_setfont(od_handle, size, textcol, bold);
 	x = gr->g_x;
 	y = gr->g_y;
 	centered &= TE_JUST_MASK;
-	w = W_TextWidth(vdi_handle, txt);
+	w = W_TextWidth(od_handle, txt);
 	h = od_ch;
 	if (centered == TE_CNTR)
 	{
@@ -386,32 +530,30 @@ static _BOOL text_rect(_UBYTE *txt, GRECT *gr, _WORD size, _WORD centered, _BOOL
 }
 
 
-static void _draw_text(_UBYTE *txt, GRECT *gr, _WORD centered, _BOOL centver, _WORD textcol, _WORD textmode, _WORD offset, GRECT *clip)
+static void _draw_text(char *txt, GRECT *gr, _WORD centered, _BOOL centver, _WORD textcol, _WORD textmode, _WORD offset, GRECT *clip)
 {
-	_WORD oldmode;
-
 	if (offset == -1)
 	{
-		oldmode = W_SetBkMode(vdi_handle, textmode ? textmode : MD_TRANS);
-		W_Text(vdi_handle, clip->g_x, clip->g_y, txt);
+		vswr_mode(od_handle, textmode ? textmode : MD_TRANS);
+		W_Text(od_handle, clip->g_x, clip->g_y, txt);
 	} else
 	{
 		if (textmode)
 		{
-			oldmode = W_SetBkMode(vdi_handle, textmode);
-			W_ClipText(vdi_handle, gr, txt, wclip_center(centered), centver ? 0 : -1);
+			vswr_mode(od_handle, textmode);
+			W_ClipText(od_handle, gr, txt, wclip_center(centered), centver ? 0 : -1);
 		} else
 		{
-			oldmode = W_SetBkMode(vdi_handle, MD_TRANS);
-			W_Text(vdi_handle, clip->g_x, clip->g_y, txt);
+			vswr_mode(od_handle, MD_TRANS);
+			W_Text(od_handle, clip->g_x, clip->g_y, txt);
 		}
 		draw_underline_char(clip->g_x, clip->g_y, textcol, txt, offset);
 	}
-	W_SetBkMode(vdi_handle, oldmode);
+	vswr_mode(od_handle, MD_REPLACE);
 }
 
 
-void draw_text(_UBYTE *txt, GRECT *gr, _WORD size, _WORD centered, _BOOL centver, _WORD textcol, _WORD textmode, _WORD offset, _WORD bold)
+void draw_text(char *txt, GRECT *gr, _WORD size, _WORD centered, _BOOL centver, _WORD textcol, _WORD textmode, _WORD offset, _WORD bold)
 {
 	GRECT clip;
 
@@ -420,16 +562,16 @@ void draw_text(_UBYTE *txt, GRECT *gr, _WORD size, _WORD centered, _BOOL centver
 }
 
 
-void draw_char(_UBYTE c, GRECT *gr, _WORD size, _WORD centered, _BOOL centver, _WORD textcol, _WORD textmode)
+static void draw_char(_UBYTE c, GRECT *gr, _WORD size, _WORD centered, _BOOL centver, _WORD textcol, _WORD textmode)
 {
 	_WORD x, y, w, h;
-	_WORD oldmode;
-
-	od_setfont(vdi_handle, size, textcol, TXT_ATTR_NONE);
+	char buf[2];
+	
+	od_setfont(od_handle, size, textcol, TXT_NORMAL);
 	x = gr->g_x;
 	y = gr->g_y;
 	h = gr->g_h;
-	w = W_CharWidth(vdi_handle, c);
+	w = od_cw;
 	if (centered == TE_CNTR)
 	{
 		x += (gr->g_w - w) / 2;
@@ -439,28 +581,29 @@ void draw_char(_UBYTE c, GRECT *gr, _WORD size, _WORD centered, _BOOL centver, _
 	}
 	if (centver != FALSE)
 	{
-		h = W_CharHeight(vdi_handle, c);
+		h = od_ch;
 		y += (gr->g_h - h) / 2;
 	}
-	oldmode = W_SetBkMode(vdi_handle, textmode ? MD_REPLACE : MD_TRANS);
-	W_Char(vdi_handle, x, y, w, h, c);
-	W_SetBkMode(vdi_handle, oldmode);
+	vswr_mode(od_handle, textmode ? MD_REPLACE : MD_TRANS);
+	buf[0] = c;
+	buf[1] = '\0';
+	v_gtextn(od_handle, x, y, buf, 1);
+	vswr_mode(od_handle, MD_REPLACE);
 }
 
 
 static void draw_ted(TEDINFO *ted, _BOOL formatted, _BOOL box, _WORD bold, _UBYTE fillchar, _UWORD flags, _UWORD state, _WORD *framesize, _WORD *framecol)
 {
-	_UBYTE *cp, *txt;
+	char *cp, *txt;
 	_UWORD color;
 	_WORD offset = -1;
 	_WORD centered = ted->te_just;
 	_WORD textmode;
-	void *pen;
 
 	color = ted->te_color;
 	if (formatted)
 	{
-		cp = txt = calc_text(NULL, ted->te_ptmplt, ted->te_tmplen, ted->te_ptext, ted->te_txtlen, ted->te_pvalid, FALSE, fillchar, 0);
+		cp = txt = calc_text(ted->te_ptmplt, ted->te_tmplen, ted->te_ptext, ted->te_txtlen, ted->te_pvalid, FALSE, fillchar, 0);
 		if (objc_mode == EXTOB_NONE)
 			offset = -1;
 		if (cp != NULL)
@@ -471,7 +614,7 @@ static void draw_ted(TEDINFO *ted, _BOOL formatted, _BOOL box, _WORD bold, _UBYT
 				{
 					cp += ted->te_offset;
 					cp[ted->te_displen] = '\0';
-					if ((int)strLen(ted->te_ptext) > ted->te_displen)
+					if ((int)strlen(ted->te_ptext) > ted->te_displen)
 					{
 						_WORD wchar, hchar;
 
@@ -485,12 +628,12 @@ static void draw_ted(TEDINFO *ted, _BOOL formatted, _BOOL box, _WORD bold, _UBYT
 		}
 	} else
 	{
-		_UBYTE *p;
+		char *p;
 
 		cp = txt = g_strdup(ted->te_ptext);
 		if (cp != NULL)
 		{
-			switch (is_ext_type(&objc_options, G_TEXT, OF_NONE, OS_NORMAL))
+			switch (is_ext_type(objc_mode, G_TEXT, OF_NONE, OS_NORMAL))
 			{
 			case EXTTYPE_EXIT:
 			case EXTTYPE_RADIO:
@@ -534,8 +677,7 @@ static void draw_ted(TEDINFO *ted, _BOOL formatted, _BOOL box, _WORD bold, _UBYT
 		if (!(state & OS_SELECTED))
 			if (color_3d(flags, state, &fcolor, &pattern) && !(flags & OF_EDITABLE))
 				textmode = MD_TRANS;
-		pen = _draw_box(*framesize, *framecol, TRUE, pattern, fcolor);
-		W_PenDelete(vdi_handle, pen);
+		_draw_box(*framesize, *framecol, TRUE, pattern, fcolor);
 	} else
 	{
 #if 1
@@ -555,15 +697,14 @@ static void draw_ted(TEDINFO *ted, _BOOL formatted, _BOOL box, _WORD bold, _UBYT
 
 					textcol = COLSPEC_GET_TEXTCOL(color);
 					text_rect(cp, &od_pxy, ted->te_font, centered, TRUE, textcol, offset, bold, &clip);
-					W_SetBkMode(vdi_handle, MD_REPLACE);
-					W_Fill_Rect(vdi_handle, &clip, pattern, fcolor);
+					vswr_mode(od_handle, MD_REPLACE);
+					W_Fill_Rect(od_handle, &clip, pattern, fcolor, FALSE);
 					_draw_text(cp, &od_pxy, centered, TRUE, textcol, textmode, offset, &clip);
 					g_free(txt);
 					cp = NULL;
 				} else
 				{
-					pen = _draw_box(0, W_PAL_WHITE, TRUE, pattern, fcolor);
-					W_PenDelete(vdi_handle, pen);
+					_draw_box(0, W_PAL_WHITE, TRUE, pattern, fcolor);
 				}
 			}
 		}
@@ -576,7 +717,7 @@ static void draw_ted(TEDINFO *ted, _BOOL formatted, _BOOL box, _WORD bold, _UBYT
 		g_free(txt);
 	}
 	if (state & OS_SELECTED)
-		W_Invert_Rect(vdi_handle, &od_framerec);
+		W_Invert_Rect(od_handle, &od_framerec);
 }
 
 
@@ -821,11 +962,10 @@ static _BOOL get_macimage(_WORD type, _WORD state, _WORD *width, _WORD *height, 
 }
 
 
-_UWORD _draw_mac(_WORD flags, _WORD state, _WORD x, _WORD y, _WORD type, _WORD *w, _BOOL *draw_3d)
+static _UWORD _draw_mac(_WORD flags, _WORD state, _WORD x, _WORD y, _WORD type, _WORD *w, _BOOL *draw_3d)
 {
 	GRECT gr;
 	_WORD color, pattern;
-	void *pen;
 	_WORD h;
 	_UBYTE *data, *mask;
 	_WORD pencolor;
@@ -840,6 +980,7 @@ _UWORD _draw_mac(_WORD flags, _WORD state, _WORD x, _WORD y, _WORD type, _WORD *
 	*draw_3d = color_3d(flags, state, &color, &pattern);
 	pencolor = *draw_3d && (state & OS_DISABLED) && GetNumColors() >= 16 ? color_disabled : W_PAL_BLACK;
 	
+	fprintf(stderr, "draw_mac: %d %d %d %d %04x\n", type, color, pattern, *draw_3d, state);
 	switch (type)
 	{
 	case MAC_RADIO:
@@ -863,31 +1004,30 @@ _UWORD _draw_mac(_WORD flags, _WORD state, _WORD x, _WORD y, _WORD type, _WORD *
 			_UBYTE *data, *mask;
 
 			if (get_macimage(type, state, w, &h, &mask, &data))
-				W_Draw_Icon(vdi_handle, x, y, (*w + 15) & 0xfff0, h, data, mask, COL_SET, COL_RESET, FALSE);
+				W_Draw_Icon(od_handle, x, y, (*w + 15) & 0xfff0, h, data, mask, COL_SET, COL_RESET, FALSE);
 		} else
 #endif
 		{
 #if 0
-			W_Fill_Rect(vdi_handle, &gr, pattern, color);
+			W_Fill_Rect(od_handle, &gr, pattern, color, FALSE);
 #endif
 			if (*draw_3d && 0)
 			{
 			} else
 			{
-				pen = W_PenCreate(vdi_handle, 1, W_PEN_SOLID, pencolor);
-				W_Ellipse(vdi_handle, &gr, TRUE, IP_SOLID, W_PAL_WHITE);
-				W_Ellipse(vdi_handle, &gr, FALSE, IP_SOLID, pencolor);
+				vsl_color(od_handle, pencolor);
+				W_Ellipse(od_handle, &gr, TRUE, IP_SOLID, W_PAL_WHITE, TRUE);
+				W_Ellipse(od_handle, &gr, FALSE, IP_SOLID, pencolor, TRUE);
 				if (state & OS_SELECTED)
 				{
 					gr.g_x += 3;
 					gr.g_y += 3;
 					gr.g_w -= 6;
 					gr.g_h -= 6;
-					W_PenDelete(vdi_handle, pen);
-					pen = W_PenCreate(vdi_handle, 0, W_PEN_NULL, W_PAL_WHITE);
-					W_Ellipse(vdi_handle, &gr, TRUE, IP_SOLID, pencolor);
+					vsl_color(od_handle, W_PAL_WHITE);
+					W_Ellipse(od_handle, &gr, TRUE, IP_SOLID, W_PAL_WHITE, FALSE);
+					vsl_color(od_handle, W_PAL_BLACK);
 				}
-				W_PenDelete(vdi_handle, pen);
 			}
 		}
 		break;
@@ -911,84 +1051,78 @@ _UWORD _draw_mac(_WORD flags, _WORD state, _WORD x, _WORD y, _WORD type, _WORD *
 					gr.g_h -= 2;
 				}
 			}
-			pen = W_PenCreate(vdi_handle, 1, W_PEN_NULL, pencolor);
-			W_Fill_Rect(vdi_handle, &gr, IP_SOLID, W_PAL_WHITE);
-			W_PenDelete(vdi_handle, pen);
+			vsl_color(od_handle, pencolor);
+			W_Fill_Rect(od_handle, &gr, IP_SOLID, W_PAL_WHITE, FALSE);
 
-			pen = W_PenCreate(vdi_handle, 1, W_PEN_SOLID, W_PAL_WHITE);
+			vsl_color(od_handle, W_PAL_WHITE);
 			pxy[0].xx = gr.g_x + 1;
 			pxy[0].yy = gr.g_y + gr.g_h - 1;
 			pxy[1].xx = gr.g_x + gr.g_w - 1;
 			pxy[1].yy = pxy[0].yy;
 			pxy[2].xx = pxy[1].xx;
 			pxy[2].yy = gr.g_y + 1;
-			W_Lines(vdi_handle, pxy, 3);
-			W_PenDelete(vdi_handle, pen);
+			W_Lines(od_handle, pxy, 3);
 
 			if (GetNumColors() > 2)
 			{
-				pen = W_PenCreate(vdi_handle, 1, W_PEN_SOLID, W_PAL_LGRAY);
+				vsl_color(od_handle, W_PAL_LGRAY);
 				pxy[0].xx = gr.g_x + 2;
 				pxy[0].yy = gr.g_y + gr.g_h - 2;
 				pxy[1].xx = gr.g_x + gr.g_w - 2;
 				pxy[1].yy = pxy[0].yy;
 				pxy[2].xx = pxy[1].xx;
 				pxy[2].yy = gr.g_y + 2;
-				W_Lines(vdi_handle, pxy, 3);
-				W_PenDelete(vdi_handle, pen);
+				W_Lines(od_handle, pxy, 3);
 			}
 
-			pen = W_PenCreate(vdi_handle, 1, W_PEN_SOLID, pencolor);
+			vsl_color(od_handle, pencolor);
 			pxy[0].xx = gr.g_x;
 			pxy[0].yy = gr.g_y + gr.g_h - 1;
 			pxy[1].xx = pxy[0].xx;
 			pxy[1].yy = gr.g_y;
 			pxy[2].xx = gr.g_x + gr.g_w - 1;
 			pxy[2].yy = pxy[1].yy;
-			W_Lines(vdi_handle, pxy, 3);
+			W_Lines(od_handle, pxy, 3);
 			pxy[0].xx = gr.g_x + 1;
 			pxy[0].yy = gr.g_y + gr.g_h - 2;
 			pxy[1].xx = pxy[0].xx;
 			pxy[1].yy = gr.g_y + 1;
 			pxy[2].xx = gr.g_x + gr.g_w - 2;
 			pxy[2].yy = pxy[1].yy;
-			W_Lines(vdi_handle, pxy, 3);
-			W_PenDelete(vdi_handle, pen);
+			W_Lines(od_handle, pxy, 3);
 
 			if (state & OS_SELECTED)
 			{
-				pen = W_PenCreate(vdi_handle, 1, W_PEN_SOLID, pencolor);
 				pxy[0].xx = gr.g_x + 3;
 				pxy[0].yy = gr.g_y + 3;
 				pxy[1].xx = gr.g_x + gr.g_w - 3;
 				pxy[1].yy = gr.g_y + gr.g_h - 3;
-				W_Lines(vdi_handle, pxy, 2);
+				W_Lines(od_handle, pxy, 2);
 				pxy[0].xx = gr.g_x + 4;
 				pxy[0].yy = gr.g_y + 3;
 				pxy[1].xx = gr.g_x + gr.g_w - 3;
 				pxy[1].yy = gr.g_y + gr.g_h - 4;
-				W_Lines(vdi_handle, pxy, 2);
+				W_Lines(od_handle, pxy, 2);
 				pxy[0].xx = gr.g_x + 2;
 				pxy[0].yy = gr.g_y + 3;
 				pxy[1].xx = gr.g_x + gr.g_w - 4;
 				pxy[1].yy = gr.g_y + gr.g_h - 3;
-				W_Lines(vdi_handle, pxy, 2);
+				W_Lines(od_handle, pxy, 2);
 				pxy[0].xx = gr.g_x + 3;
 				pxy[0].yy = gr.g_y + gr.g_h - 3;
 				pxy[1].xx = gr.g_x + gr.g_w - 3;
 				pxy[1].yy = gr.g_y + 3;
-				W_Lines(vdi_handle, pxy, 2);
+				W_Lines(od_handle, pxy, 2);
 				pxy[0].xx = gr.g_x + 4;
 				pxy[0].yy = gr.g_y + gr.g_h - 3;
 				pxy[1].xx = gr.g_x + gr.g_w - 3;
 				pxy[1].yy = gr.g_y + 4;
-				W_Lines(vdi_handle, pxy, 2);
+				W_Lines(od_handle, pxy, 2);
 				pxy[0].xx = gr.g_x + 3;
 				pxy[0].yy = gr.g_y + gr.g_h - 4;
 				pxy[1].xx = gr.g_x + gr.g_w - 4;
 				pxy[1].yy = gr.g_y + 3;
-				W_Lines(vdi_handle, pxy, 2);
-				W_PenDelete(vdi_handle, pen);
+				W_Lines(od_handle, pxy, 2);
 			}
 		} else
 		{
@@ -1006,10 +1140,10 @@ _UWORD _draw_mac(_WORD flags, _WORD state, _WORD x, _WORD y, _WORD type, _WORD *
 					gr.g_h -= 4;
 				}
 			}
-			W_Fill_Rect(vdi_handle, &gr, pattern, color);
-			pen = W_PenCreate(vdi_handle, 1, W_PEN_SOLID, W_PAL_BLACK);
-			W_Fill_Rect(vdi_handle, &gr, IP_SOLID, W_PAL_WHITE);
-			W_Rectangle(vdi_handle, &gr);
+			W_Fill_Rect(od_handle, &gr, pattern, color, FALSE);
+			vsl_color(od_handle, W_PAL_BLACK);
+			W_Fill_Rect(od_handle, &gr, IP_SOLID, W_PAL_WHITE, FALSE);
+			W_Rectangle(od_handle, &gr);
 			if (state & OS_SELECTED)
 			{
 				W_POINTS pxy[2];
@@ -1018,14 +1152,13 @@ _UWORD _draw_mac(_WORD flags, _WORD state, _WORD x, _WORD y, _WORD type, _WORD *
 				pxy[0].yy = gr.g_y;
 				pxy[1].xx = gr.g_x + gr.g_w - 1;
 				pxy[1].yy = gr.g_y + gr.g_h - 1;
-				W_Lines(vdi_handle, pxy, 2);
+				W_Lines(od_handle, pxy, 2);
 				pxy[0].xx = gr.g_x;
 				pxy[0].yy = gr.g_y + gr.g_h - 1;
 				pxy[1].xx = gr.g_x + gr.g_w - 1;
 				pxy[1].yy = gr.g_y;
-				W_Lines(vdi_handle, pxy, 2);
+				W_Lines(od_handle, pxy, 2);
 			}
-			W_PenDelete(vdi_handle, pen);
 		}
 		break;
 
@@ -1036,40 +1169,40 @@ _UWORD _draw_mac(_WORD flags, _WORD state, _WORD x, _WORD y, _WORD type, _WORD *
 			gr.g_w -= 1;
 			gr.g_h -= 1;
 		}
-		W_Fill_Rect(vdi_handle, &gr, pattern, color);
+		W_Fill_Rect(od_handle, &gr, pattern, color, FALSE);
 		if (0 && *w == 16 && h == 16 && get_macimage(type, state, w, &h, &mask, &data))
 		{
-			W_Draw_Image(vdi_handle, x, y, (*w + 15) & 0xfff0, h, data, COL_SET, W_PAL_WHITE, MD_TRANS);
+			W_Draw_Image(od_handle, x, y, (*w + 15) & 0xfff0, h, data, COL_SET, W_PAL_WHITE, MD_TRANS);
 		} else if (*draw_3d && 0)
 		{
 		} else
 		{
-			pen = W_PenCreate(vdi_handle, 1, W_PEN_SOLID, pencolor);
-			W_Rectangle(vdi_handle, &gr);
+			vsl_color(od_handle, pencolor);
+			W_Rectangle(od_handle, &gr);
 			if (state & OS_SELECTED)
 			{
 				W_POINTS pxy[2];
 
 				if (h >= 16)
 				{
-					vsl_width(vdi_handle, 2);
+					vsl_width(od_handle, 2);
 				}
 				pxy[0].xx = gr.g_x + 2;
 				pxy[0].yy = gr.g_y + 2;
 				pxy[1].xx = gr.g_x + gr.g_w - 3;
 				pxy[1].yy = gr.g_y + gr.g_h - 3;
-				W_Lines(vdi_handle, pxy, 2);
+				W_Lines(od_handle, pxy, 2);
 				if (h >= 16)
-					W_Pixel(vdi_handle, pxy + 1, 1, pencolor);
+					W_Pixel(od_handle, pxy + 1, 1, pencolor);
 				pxy[0].xx = gr.g_x + 2;
 				pxy[0].yy = gr.g_y + gr.g_h - 3;
 				pxy[1].xx = gr.g_x + gr.g_w - 3;
 				pxy[1].yy = gr.g_y + 2;
-				W_Lines(vdi_handle, pxy, 2);
+				W_Lines(od_handle, pxy, 2);
 				if (h >= 16)
-					W_Pixel(vdi_handle, pxy + 1, 1, pencolor);
+					W_Pixel(od_handle, pxy + 1, 1, pencolor);
+				vsl_width(od_handle, 1);
 			}
-			W_PenDelete(vdi_handle, pen);
 		}
 		break;
 	
@@ -1092,68 +1225,64 @@ _UWORD _draw_mac(_WORD flags, _WORD state, _WORD x, _WORD y, _WORD type, _WORD *
 					gr.g_h -= 2;
 				}
 			}
-			pen = W_PenCreate(vdi_handle, 1, W_PEN_NULL, pencolor);
-			W_Fill_Rect(vdi_handle, &gr, IP_SOLID, W_PAL_WHITE);
-			W_PenDelete(vdi_handle, pen);
+			vsl_color(od_handle, pencolor);
+			W_Fill_Rect(od_handle, &gr, IP_SOLID, W_PAL_WHITE, FALSE);
 
-			pen = W_PenCreate(vdi_handle, 1, W_PEN_SOLID, W_PAL_WHITE);
+			vsl_color(od_handle, W_PAL_WHITE);
 			pxy[0].xx = gr.g_x + 1;
 			pxy[0].yy = gr.g_y + gr.g_h - 1;
 			pxy[1].xx = gr.g_x + gr.g_w - 1;
 			pxy[1].yy = pxy[0].yy;
 			pxy[2].xx = pxy[1].xx;
 			pxy[2].yy = gr.g_y + 1;
-			W_Lines(vdi_handle, pxy, 3);
-			W_PenDelete(vdi_handle, pen);
+			W_Lines(od_handle, pxy, 3);
 
 			if (GetNumColors() > 2)
 			{
-				pen = W_PenCreate(vdi_handle, 1, W_PEN_SOLID, W_PAL_LGRAY);
+				vsl_color(od_handle, W_PAL_LGRAY);
 				pxy[0].xx = gr.g_x + 2;
 				pxy[0].yy = gr.g_y + gr.g_h - 2;
 				pxy[1].xx = gr.g_x + gr.g_w - 2;
 				pxy[1].yy = pxy[0].yy;
 				pxy[2].xx = pxy[1].xx;
 				pxy[2].yy = gr.g_y + 2;
-				W_Lines(vdi_handle, pxy, 3);
-				W_PenDelete(vdi_handle, pen);
+				W_Lines(od_handle, pxy, 3);
 			}
 
-			pen = W_PenCreate(vdi_handle, 1, W_PEN_SOLID, pencolor);
+			vsl_color(od_handle, pencolor);
 			pxy[0].xx = gr.g_x;
 			pxy[0].yy = gr.g_y + gr.g_h - 1;
 			pxy[1].xx = pxy[0].xx;
 			pxy[1].yy = gr.g_y;
 			pxy[2].xx = gr.g_x + gr.g_w - 1;
 			pxy[2].yy = pxy[1].yy;
-			W_Lines(vdi_handle, pxy, 3);
+			W_Lines(od_handle, pxy, 3);
 			pxy[0].xx = gr.g_x + 1;
 			pxy[0].yy = gr.g_y + gr.g_h - 2;
 			pxy[1].xx = pxy[0].xx;
 			pxy[1].yy = gr.g_y + 1;
 			pxy[2].xx = gr.g_x + gr.g_w - 2;
 			pxy[2].yy = pxy[1].yy;
-			W_Lines(vdi_handle, pxy, 3);
-			W_PenDelete(vdi_handle, pen);
+			W_Lines(od_handle, pxy, 3);
 			
 			if (get_macimage(MAC_BOOLEAN, OS_NORMAL, w, &h, &mask, &data))
 			{
 				data = (_UBYTE *)threestate_3d;
-				W_Draw_Icon(vdi_handle, gr.g_x + 2, gr.g_y + 2, gr.g_w - 5, gr.g_h - 5, data, mask, COL_SET, COL_RESET, FALSE);
+				W_Draw_Icon(od_handle, gr.g_x + 2, gr.g_y + 2, gr.g_w - 5, gr.g_h - 5, data, mask, COL_SET, COL_RESET, FALSE);
 			}
 		} else
 		{
 			if (get_macimage(MAC_CHECK, OS_NORMAL, w, &h, &mask, &data))
 			{
 				data = (_UBYTE *)(*w == h ? big_threestate : small_threestate);
-				W_Draw_Icon(vdi_handle, x, y, (*w + 15) & 0xfff0, h, data, mask, COL_SET, COL_RESET, FALSE);
+				W_Draw_Icon(od_handle, x, y, (*w + 15) & 0xfff0, h, data, mask, COL_SET, COL_RESET, FALSE);
 			}
 		}
 		break;
 	
 	default:
 		if (get_macimage(type, state, w, &h, &mask, &data))
-			W_Draw_Icon(vdi_handle, x, y, (*w + 15) & 0xfff0, h, data, mask, COL_SET, COL_RESET, FALSE);
+			W_Draw_Icon(od_handle, x, y, (*w + 15) & 0xfff0, h, data, mask, COL_SET, COL_RESET, FALSE);
 		break;
 	}
 	if ((state & OS_OUTLINED) && objc_mode != EXTOB_MAGIX)
@@ -1164,24 +1293,22 @@ _UWORD _draw_mac(_WORD flags, _WORD state, _WORD x, _WORD y, _WORD type, _WORD *
 		xgr.g_y = y - FRAMESIZE;
 		xgr.g_w = *w + 2 * FRAMESIZE;
 		xgr.g_h = h + 2 * FRAMESIZE;
-		pen = W_PenCreate(vdi_handle, 1, W_PEN_SOLID, pencolor);
-		W_Rectangle(vdi_handle, &xgr);
-		W_PenDelete(vdi_handle, pen);
+		vsl_color(od_handle, pencolor);
+		W_Rectangle(od_handle, &xgr);
 	}
 	return state & ~(OS_OUTLINED|OS_SELECTED|OS_CHECKED);
 }
 
 
-static _WORD _draw_inner_frame(_UWORD state, _UWORD flags, _WORD x, _WORD y, const _UBYTE *str)
+static _WORD _draw_inner_frame(_UWORD state, _UWORD flags, _WORD x, _WORD y, const char *str)
 {
 	_WORD color, pattern;
 	_WORD mode;
 	_WORD w, h;
-	void *pen;
 	W_POINTS pxy[6];
 	_BOOL draw_3d;
 
-	od_setfont(vdi_handle, state & OS_CHECKED ? SMALL : IBM, W_PAL_BLACK, 0);
+	od_setfont(od_handle, state & OS_CHECKED ? SMALL : IBM, W_PAL_BLACK, 0);
 	od_pxy.g_y += od_ch / 2;
 	od_pxy.g_h -= od_ch / 2;
 	color = W_PAL_WHITE;
@@ -1196,13 +1323,14 @@ static _WORD _draw_inner_frame(_UWORD state, _UWORD flags, _WORD x, _WORD y, con
 	{
 		od_box(-1, FALSE);
 	}
-	W_SetBkMode(vdi_handle, MD_REPLACE);
+	vswr_mode(od_handle, MD_REPLACE);
 
-	W_Fill_Rect(vdi_handle, &od_pxy, pattern, color);
-	pen = W_PenCreate(vdi_handle, 1, W_PEN_SOLID, W_PAL_BLACK);
+	W_Fill_Rect(od_handle, &od_pxy, pattern, color, FALSE);
+	vsl_color(od_handle, W_PAL_BLACK);
 	if (str != NULL /* && *str != '\0' */)
 	{
-		W_TextExtent(vdi_handle, FONT_CURRENT, FONT_SIZE_CURRENT, TXT_ATTR_NONE, str, &w, &h);
+		w = (_WORD)strlen(str) * od_cw;
+		h = od_ch;
 		x += od_cw;
 		pxy[0].xx = x;			pxy[0].yy = od_pxy.g_y;
 		pxy[1].xx = od_pxy.g_x; pxy[1].yy = pxy[0].yy;
@@ -1210,46 +1338,43 @@ static _WORD _draw_inner_frame(_UWORD state, _UWORD flags, _WORD x, _WORD y, con
 		pxy[3].xx = pxy[1].xx + od_pxy.g_w - 1; pxy[3].yy = pxy[2].yy;
 		pxy[4].xx = pxy[3].xx;	pxy[4].yy = pxy[0].yy;
 		pxy[5].xx = x + w;		pxy[5].yy = pxy[0].yy;
-		W_Lines(vdi_handle, pxy, 6);
+		W_Lines(od_handle, pxy, 6);
 		if (draw_3d)
 		{
-			W_PenDelete(vdi_handle, pen);
-			pen = W_PenCreate(vdi_handle, 1, W_PEN_SOLID, W_PAL_WHITE);
+			vsl_color(od_handle, W_PAL_WHITE);
 			pxy[0].xx = od_pxy.g_x + 1;
 			pxy[0].yy = od_pxy.g_y + od_pxy.g_h - 1;
 			pxy[1].xx = od_pxy.g_x + od_pxy.g_w - 1;
 			pxy[1].yy = pxy[0].yy;
 			pxy[2].xx = pxy[1].xx;
 			pxy[2].yy = od_pxy.g_y + 1;
-			W_Lines(vdi_handle, pxy, 3);
+			W_Lines(od_handle, pxy, 3);
 		}
-		W_SetBkMode(vdi_handle, mode);
-		W_Text(vdi_handle, x, y, str);
+		vswr_mode(od_handle, mode);
+		W_Text(od_handle, x, y, str);
 		xywh2rect(x, y, w, h, &od_pxy);
 		rc_copy(&od_pxy, &od_framerec);
 		if (state & OS_CROSSED)
 		{
-			W_PenDelete(vdi_handle, pen);
-			pen = _draw_box(1, W_PAL_BLACK, FALSE, IP_HOLLOW, W_PAL_WHITE);
+			_draw_box(1, W_PAL_BLACK, FALSE, IP_HOLLOW, W_PAL_WHITE);
 		}
 		if (od_clear)
 		{
 			if (((state & OS_SELECTED) && !(od_oldstate & OS_SELECTED)) ||
 				(!(state & OS_SELECTED) && (od_oldstate & OS_SELECTED)) )
 			{
-				W_Invert_Rect(vdi_handle, &od_pxy);
+				W_Invert_Rect(od_handle, &od_pxy);
 			}
 		} else
 		{
 			if (state & OS_SELECTED)
-				W_Invert_Rect(vdi_handle, &od_pxy);
+				W_Invert_Rect(od_handle, &od_pxy);
 		}
-		W_SetBkMode(vdi_handle, MD_REPLACE);
+		vswr_mode(od_handle, MD_REPLACE);
 	} else
 	{
 		od_box(0, TRUE);
 	}
-	W_PenDelete(vdi_handle, pen);
 	return state & ~(OS_OUTLINED|OS_SELECTED|OS_CROSSED|OS_CHECKED);
 }
 
@@ -1263,24 +1388,22 @@ static void FilledRect(_WORD x0, _WORD y0, _WORD x1, _WORD y1, _WORD color)
 	gr.g_y = y0;
 	gr.g_w = x1 - x0 + 1;
 	gr.g_h = y1 - y0 + 1;
-	W_Fill_Rect(vdi_handle, &gr, IP_SOLID, color);
+	W_Fill_Rect(od_handle, &gr, IP_SOLID, color, FALSE);
 }
 
 /* -------------------------------------------------------------------------- */
 
 static void Line(_WORD x0, _WORD y0, _WORD x1, _WORD y1, _WORD color)
 {
-	void *pen;
 	W_POINTS p[2];
 	
-	pen = W_PenCreate(vdi_handle, 1, W_PEN_SOLID, color);
+	vsl_color(od_handle, color);
 
 	p[0].xx = x0;
 	p[0].yy = y0;
 	p[1].xx = x1;
 	p[1].yy = y1;
-	W_Lines(vdi_handle, p, 2);
-	W_PenDelete(vdi_handle, pen);
+	W_Lines(od_handle, p, 2);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -1318,7 +1441,7 @@ static _WORD CenterX(_WORD x1, _WORD x2, const char *text)
 	_WORD x;
 	_WORD len;
 
-	len = W_TextWidth(vdi_handle, text);
+	len = W_TextWidth(od_handle, text);
 	x = x2 - x1;
 	x /= 2;
 	x += x1;
@@ -1329,7 +1452,7 @@ static _WORD CenterX(_WORD x1, _WORD x2, const char *text)
 
 /* -------------------------------------------------------------------------- */
 
-static void _draw_outer_frame(_WORD x, _WORD y, _WORD w, _WORD h, _UWORD type, const _UBYTE *text, _UWORD flags, _UWORD state)
+static void _draw_outer_frame(_WORD x, _WORD y, _WORD w, _WORD h, _UWORD type, const char *text, _UWORD flags, _UWORD state)
 {
 	_WORD x0, y0, x1, y1;
 	_WORD len;
@@ -1361,7 +1484,7 @@ static void _draw_outer_frame(_WORD x, _WORD y, _WORD w, _WORD h, _UWORD type, c
 	x1 = x + w - 1;
 	y1 = y + h - 1;
 
-	W_SetBkMode(vdi_handle, MD_REPLACE);
+	vswr_mode(od_handle, MD_REPLACE);
 	if (state & OS_WHITEBAK)				/* Whiteback gesetzt? */
 	{
 		FilledRect(x0, y0, x1, y1, op_draw3d ? color_background : W_PAL_WHITE);
@@ -1372,7 +1495,7 @@ static void _draw_outer_frame(_WORD x, _WORD y, _WORD w, _WORD h, _UWORD type, c
 	if (empty(text))
 		return;
 
-	od_setfont(vdi_handle, (state & OS_CHECKED) ? SMALL : IBM, W_PAL_BLACK, TXT_ATTR_NONE);
+	od_setfont(od_handle, (state & OS_CHECKED) ? SMALL : IBM, W_PAL_BLACK, TXT_NORMAL);
 
 	if (state & OS_CROSSED)
 	{
@@ -1385,7 +1508,7 @@ static void _draw_outer_frame(_WORD x, _WORD y, _WORD w, _WORD h, _UWORD type, c
 	y++;
 	if (op_draw3d && (state & OS_CHECKED))
 		y++;
-	len = W_TextWidth(vdi_handle, text);
+	len = W_TextWidth(od_handle, text);
 	/*
 	 * repaint the background of the text by removing the lines
 	 * drawn from draw_box5() above
@@ -1398,89 +1521,34 @@ static void _draw_outer_frame(_WORD x, _WORD y, _WORD w, _WORD h, _UWORD type, c
 	{
 		Line(x, y0, x + len - 1, y0, W_PAL_WHITE);
 	}
-	W_SetBkMode(vdi_handle, MD_TRANS);
-	W_Text(vdi_handle, x, y, text);
-	W_SetBkMode(vdi_handle, MD_REPLACE);
-	od_setfont(vdi_handle, IBM, W_PAL_BLACK, TXT_ATTR_NONE);
+	vswr_mode(od_handle, MD_TRANS);
+	W_Text(od_handle, x, y, text);
+	vswr_mode(od_handle, MD_REPLACE);
+	od_setfont(od_handle, IBM, W_PAL_BLACK, TXT_NORMAL);
 }
 
 
-#if 0
-_WORD _CDECL draw_inner_frame(PARMBLK *pb)
-{
-	GRECT gr;
-	_WORD state, flags;
-
-	xywh2rect(pb->pb_xc, pb->pb_yc, pb->pb_wc, pb->pb_hc, &gr);
-	W_Clip_Rect(vdi_handle, TRUE, &gr);
-	od_oldstate = pb->pb_prevstate;
-	flags = pb->pb_tree[pb->pb_obj].ob_flags;
-	state = _draw_inner_frame(pb->pb_currstate, flags, pb->pb_x, pb->pb_y, (_UBYTE *)(pb->pb_parm));
-	W_Clip_Rect(vdi_handle, FALSE, &gr);
-	return state;
-}
-
-
-_WORD _CDECL draw_mac(PARMBLK *pb)
-{
-	_WORD w;
-	_BOOL draw_3d;
-
-	return _draw_mac(pb->pb_tree[pb->pb_obj].ob_flags, pb->pb_currstate, pb->pb_x, pb->pb_y, (_WORD)(_LONG)pb->pb_parm, &w, &draw_3d);
-}
-
-
-_WORD _CDECL draw_circle(PARMBLK *pb)
-{
-	GRECT gr;
-	_WORD state;
-
-	xywh2rect(pb->pb_xc, pb->pb_yc, pb->pb_wc, pb->pb_hc, &gr);
-	W_Clip_Rect(vdi_handle, TRUE, &gr);
-	od_oldstate = pb->pb_prevstate;
-	state = _draw_circle(pb->pb_currstate, pb->pb_x, pb->pb_y, pb->pb_w, pb->pb_h);
-	W_Clip_Rect(vdi_handle, FALSE, &gr);
-	return state;
-}
-
-
-_WORD _CDECL draw_under_line(PARMBLK *pb)
-{
-	GRECT gr;
-	_WORD state;
-
-	xywh2rect(pb->pb_xc, pb->pb_yc, pb->pb_wc, pb->pb_hc, &gr);
-	W_Clip_Rect(vdi_handle, TRUE, &gr);
-	od_oldstate = pb->pb_prevstate;
-	state = _draw_under_line(pb->pb_currstate, pb->pb_x, pb->pb_y, pb->pb_w, pb->pb_h, (_UBYTE *)(pb->pb_parm), -1);
-	W_Clip_Rect(vdi_handle, FALSE, &gr);
-	return state;
-}
-#endif
-
-
-static _WORD _draw_under_line(_UWORD state, _WORD x, _WORD y, _WORD w, _WORD h, _UBYTE *str, _WORD offset)
+static _WORD _draw_under_line(_UWORD state, _WORD x, _WORD y, _WORD w, _WORD h, char *str, _WORD offset)
 {
 	W_POINTS pxy[2];
-	void *pen;
 	_WORD bold;
 	_WORD size;
 	
 	if ((state & OS_WHITEBAK) && objc_mode != EXTOB_MAGIX)
-		bold = TXT_ATTR_BOLD;
+		bold = TXT_THICKENED;
 	else
-		bold = TXT_ATTR_NONE;
+		bold = TXT_NORMAL;
 	size = IBM;
 	if (objc_mode == EXTOB_MAGIC || objc_mode == EXTOB_ORCS)
 	{
 		if (state & OS_CHECKED)
 			size = SMALL;
 		if (state & OS_WHITEBAK)
-			bold |= TXT_ATTR_BOLD;
+			bold |= TXT_THICKENED;
 		if (state & OS_DRAW3D)
-			bold |= TXT_ATTR_SHADOWED;
+			bold |= TXT_SHADOWED;
 	}
-	od_setfont(vdi_handle, size, W_PAL_BLACK, bold);
+	od_setfont(od_handle, size, W_PAL_BLACK, bold);
 	y += (h - od_ch) / 2;
 	pxy[0].xx = x;
 	pxy[0].yy = y + od_ch;
@@ -1489,8 +1557,8 @@ static _WORD _draw_under_line(_UWORD state, _WORD x, _WORD y, _WORD w, _WORD h, 
 	if (str != NULL && *str != '\0')
 	{
 #if 0
-		W_SetBkMode(vdi_handle, MD_REPLACE);
-		W_Text(vdi_handle, x, y, str);
+		vswr_mode(od_handle, MD_REPLACE);
+		W_Text(od_handle, x, y, str);
 #else
 		GRECT gr;
 
@@ -1498,9 +1566,9 @@ static _WORD _draw_under_line(_UWORD state, _WORD x, _WORD y, _WORD w, _WORD h, 
 		gr.g_y = y;
 		gr.g_w = w;
 		gr.g_h = h;
-		if (bold & TXT_ATTR_SHADOWED)
+		if (bold & TXT_SHADOWED)
 		{
-			bold &= ~TXT_ATTR_SHADOWED;
+			bold &= ~TXT_SHADOWED;
 			gr.g_x += 2;
 			gr.g_y += 2;
 			draw_text(str, &gr, size, TE_LEFT, FALSE, W_PAL_BLACK, MD_TRANS, offset, bold);
@@ -1520,44 +1588,40 @@ static _WORD _draw_under_line(_UWORD state, _WORD x, _WORD y, _WORD w, _WORD h, 
 	{
 		if (state & (OS_SHADOWED|OS_OUTLINED))
 		{
-			pen = W_PenCreate(vdi_handle, 1, W_PEN_SOLID, W_PAL_BLACK);
-			W_Lines(vdi_handle, pxy, 2);
+			vsl_color(od_handle, W_PAL_BLACK);
+			W_Lines(od_handle, pxy, 2);
 			if (state & OS_OUTLINED)
 			{
 				pxy[0].yy += 2;
 				pxy[1].yy += 2;
-				W_Lines(vdi_handle, pxy, 2);
+				W_Lines(od_handle, pxy, 2);
 			}
-			W_PenDelete(vdi_handle, pen);
 		}
 	} else
 	{
 		outline(state);
-		if (bold == TXT_ATTR_NONE && offset == -1)
+		if (bold == TXT_NORMAL && offset == -1)
 		{
-			pen = W_PenCreate(vdi_handle, 1, W_PEN_SOLID, W_PAL_BLACK);
-			W_Lines(vdi_handle, pxy, 2);
-			W_PenDelete(vdi_handle, pen);
+			vsl_color(od_handle, W_PAL_BLACK);
+			W_Lines(od_handle, pxy, 2);
 		}
 	}
 	return state & ~(OS_SELECTED|OS_SHADOWED|OS_OUTLINED|OS_WHITEBAK|OS_CHECKED|OS_DRAW3D);
 }
 
 
-_UWORD _draw_circle(_UWORD state, _WORD x, _WORD y, _WORD w, _WORD h)
+static _UWORD _draw_circle(_UWORD state, _WORD x, _WORD y, _WORD w, _WORD h)
 {
 	void *data;
-	void *pen;
 
 	xywh2rect(x, y, w, h, &od_pxy);
 	rc_copy(&od_pxy, &od_framerec);
 	rc_copy(&od_pxy, &od_outrec);
-	pen = _draw_box(-1, W_PAL_BLACK, TRUE, IP_HOLLOW, W_PAL_WHITE);
+	_draw_box(-1, W_PAL_BLACK, TRUE, IP_HOLLOW, W_PAL_WHITE);
 	if (state & OS_SHADOWED)
 		shadow(-1, W_PAL_BLACK);
-	W_PenDelete(vdi_handle, pen);
 
-	od_setfont(vdi_handle, IBM, W_PAL_BLACK, TXT_ATTR_NONE);
+	od_setfont(od_handle, IBM, W_PAL_BLACK, TXT_NORMAL);
 	if (od_ch < 13)
 	{
 		w = 16;
@@ -1568,12 +1632,12 @@ _UWORD _draw_circle(_UWORD state, _WORD x, _WORD y, _WORD w, _WORD h)
 		w = h = 16;
 		data = big_circle;
 	}
-	W_Draw_Image(vdi_handle, x, y, w, h, data, COL_SET, W_PAL_WHITE, MD_TRANS);
+	W_Draw_Image(od_handle, x, y, w, h, data, COL_SET, W_PAL_WHITE, MD_TRANS);
 	return state & ~(OS_SELECTED|OS_OUTLINED|OS_CROSSED|OS_CHECKED|OS_SHADOWED);
 }
 
 
-void _draw_image(BITBLK *bi, _WORD x, _WORD y, _BOOL selected, _BOOL convert)
+static void _draw_image(BITBLK *bi, _WORD x, _WORD y, _BOOL selected)
 {
 	_WORD w, h;
 
@@ -1585,29 +1649,29 @@ void _draw_image(BITBLK *bi, _WORD x, _WORD y, _BOOL selected, _BOOL convert)
 	if (od_clear)
 		if ((!selected && (od_oldstate & OS_SELECTED)) ||
 			(selected && !(od_oldstate & OS_SELECTED)))
-			W_Invert_Rect(vdi_handle, &od_framerec);
+			W_Invert_Rect(od_handle, &od_framerec);
 /*
 	if (dst.fd_nplanes == 1)
 	{
-		vro_cpyfm(vdi_handle, selected ? NOT_SORD : S_OR_D, _pxy, &src, &dst);
+		vro_cpyfm(od_handle, selected ? NOT_SORD : S_OR_D, _pxy, &src, &dst);
 	} else
 */
 	{
 		void *pdata = bi->bi_pdata;
 
 		if (selected)
-			W_Draw_Image(vdi_handle, x, y, w, h, pdata, W_PAL_WHITE, bi->bi_color, MD_ERASE);
+			W_Draw_Image(od_handle, x, y, w, h, pdata, W_PAL_WHITE, bi->bi_color, MD_ERASE);
 		else
-			W_Draw_Image(vdi_handle, x, y, w, h, pdata, bi->bi_color, W_PAL_WHITE, MD_TRANS);
+			W_Draw_Image(od_handle, x, y, w, h, pdata, bi->bi_color, W_PAL_WHITE, MD_TRANS);
 	}
 }
 
 
-static void _draw_icon(ICONBLK *ib, _WORD x, _WORD y, _BOOL selected, _BOOL convert)
+static void _draw_icon(ICONBLK *ib, _WORD x, _WORD y, _BOOL selected)
 {
 	_UBYTE c;
 	_UWORD icolor;
-	_UBYTE *txt;
+	char *txt;
 	_UWORD maskcol, datacol;
 	_WORD w, h;
 	void *pdata, *pmask;
@@ -1620,14 +1684,14 @@ static void _draw_icon(ICONBLK *ib, _WORD x, _WORD y, _BOOL selected, _BOOL conv
 	w = ib->ib_wicon;
 	h = ib->ib_hicon;
 	xywh2rect(x, y, w, h, &od_framerec);
-	W_SetBkMode(vdi_handle, MD_REPLACE);
+	vswr_mode(od_handle, MD_REPLACE);
 	pdata = ib->ib_pdata;
 	pmask = ib->ib_pmask;
-	W_Draw_Icon(vdi_handle, x, y, w, h, pdata, pmask, datacol, maskcol, selected);
+	W_Draw_Icon(od_handle, x, y, w, h, pdata, pmask, datacol, maskcol, selected);
 	if ((txt = ib->ib_ptext) != NULL && ib->ib_wtext > 0)
 	{
 		_WORD offset;
-		_UBYTE *str = txt;
+		char *str = txt;
 
 		xywh2rect(x - ib->ib_xicon + ib->ib_xtext, y - ib->ib_yicon + ib->ib_ytext, ib->ib_wtext, ib->ib_htext, &od_pxy);
 		offset = -1;
@@ -1647,12 +1711,12 @@ static void _draw_icon(ICONBLK *ib, _WORD x, _WORD y, _BOOL selected, _BOOL conv
 
 		if (selected)
 		{
-			W_Fill_Rect(vdi_handle, &od_pxy, IP_SOLID, datacol);
-			draw_text(str, &od_pxy, SMALL, TE_CNTR, TRUE, maskcol, 0, offset, TXT_ATTR_NONE);
+			W_Fill_Rect(od_handle, &od_pxy, IP_SOLID, datacol, FALSE);
+			draw_text(str, &od_pxy, SMALL, TE_CNTR, TRUE, maskcol, 0, offset, TXT_NORMAL);
 		} else
 		{
-			W_Fill_Rect(vdi_handle, &od_pxy, IP_SOLID, maskcol);
-			draw_text(str, &od_pxy, SMALL, TE_CNTR, TRUE, datacol, 0, offset, TXT_ATTR_NONE);
+			W_Fill_Rect(od_handle, &od_pxy, IP_SOLID, maskcol, FALSE);
+			draw_text(str, &od_pxy, SMALL, TE_CNTR, TRUE, datacol, 0, offset, TXT_NORMAL);
 		}
 		if (offset != -1)
 			g_free(str);
@@ -1662,17 +1726,17 @@ static void _draw_icon(ICONBLK *ib, _WORD x, _WORD y, _BOOL selected, _BOOL conv
 	{
 		GRECT gr;
 
-		xywh2rect(x + ib->ib_xchar, y + ib->ib_ychar, CHARWIDTH, CHARHEIGHT, &gr);
-		draw_text(char2text(c), &gr, SMALL, TE_LEFT, FALSE, selected ? maskcol : datacol, 0, -1, TXT_ATTR_NONE);
+		xywh2rect(x + ib->ib_xchar, y + ib->ib_ychar, 6, 8, &gr);
+		draw_text(char2text(c), &gr, SMALL, TE_LEFT, FALSE, selected ? maskcol : datacol, 0, -1, TXT_NORMAL);
 	}
 }
 
 /*** ---------------------------------------------------------------------- ***/
 
-static void _draw_cicon(CICONBLK *cib, _WORD x, _WORD y, _BOOL selected, _BOOL convert)
+static void _draw_cicon(CICONBLK *cib, _WORD x, _WORD y, _WORD state)
 {
 	_UBYTE c;
-	_UBYTE *txt;
+	char *txt;
 	_UWORD icolor;
 	_UWORD maskcol, datacol;
 	_WORD w, h;
@@ -1694,7 +1758,7 @@ static void _draw_cicon(CICONBLK *cib, _WORD x, _WORD y, _BOOL selected, _BOOL c
 		cicon = cicon_find_plane(cib->mainlist, 1);
 	if (cicon != NULL)
 	{
-		W_Draw_Cicon(vdi_handle, dx, dy, w, h, cicon, datacol, maskcol, selected, convert);
+		W_Draw_Cicon(od_handle, dx, dy, w, h, cicon, datacol, maskcol, state);
 	}
 
 	if (cicon == NULL)
@@ -1702,47 +1766,47 @@ static void _draw_cicon(CICONBLK *cib, _WORD x, _WORD y, _BOOL selected, _BOOL c
 		void *pdata = cib->monoblk.ib_pdata;
 		void *pmask = cib->monoblk.ib_pmask;
 		
-		W_Draw_Icon(vdi_handle, dx, dy, w, h, pdata, pmask, datacol, maskcol, selected);
+		W_Draw_Icon(od_handle, dx, dy, w, h, pdata, pmask, datacol, maskcol, (state & OS_SELECTED) != 0);
 	}
 	if ((txt = cib->monoblk.ib_ptext) != NULL && txt[0] != '\0')
 	{
 		_WORD offset;
-		_WORD oldmode = W_SetBkMode(vdi_handle, MD_TRANS);
 
+		vswr_mode(od_handle, MD_TRANS);
 		od_pxy.g_x = x + cib->monoblk.ib_xtext;
 		od_pxy.g_y = y + cib->monoblk.ib_ytext;
 		od_pxy.g_w = cib->monoblk.ib_wtext;
 		od_pxy.g_h = cib->monoblk.ib_htext;
 		offset = -1;
-		if (selected)
+		if (state & OS_SELECTED)
 		{
-			W_Fill_Rect(vdi_handle, &od_pxy, IP_SOLID, datacol);
-			draw_text(cib->monoblk.ib_ptext, &od_pxy, SMALL, TE_CNTR, TRUE, maskcol, MD_TRANS, offset, TXT_ATTR_NONE);
+			W_Fill_Rect(od_handle, &od_pxy, IP_SOLID, datacol, FALSE);
+			draw_text(cib->monoblk.ib_ptext, &od_pxy, SMALL, TE_CNTR, TRUE, maskcol, MD_TRANS, offset, TXT_NORMAL);
 		} else
 		{
-			W_Fill_Rect(vdi_handle, &od_pxy, IP_SOLID, maskcol);
-			draw_text(cib->monoblk.ib_ptext, &od_pxy, SMALL, TE_CNTR, TRUE, datacol, MD_TRANS, offset, TXT_ATTR_NONE);
+			W_Fill_Rect(od_handle, &od_pxy, IP_SOLID, maskcol, FALSE);
+			draw_text(cib->monoblk.ib_ptext, &od_pxy, SMALL, TE_CNTR, TRUE, datacol, MD_TRANS, offset, TXT_NORMAL);
 		}
-		W_SetBkMode(vdi_handle, oldmode);
+		vswr_mode(od_handle, MD_REPLACE);
 	}
 	c = ICOLSPEC_GET_CHARACTER(icolor);
 	if (c != 0)
 	{
 		GRECT gr;
 
-		xywh2rect(x + cib->monoblk.ib_xicon + cib->monoblk.ib_xchar, y + cib->monoblk.ib_yicon + cib->monoblk.ib_ychar, CHARWIDTH, CHARHEIGHT, &gr);
-		draw_text(char2text(c), &gr, SMALL, TE_LEFT, FALSE, selected ? maskcol : datacol, 0, -1, TXT_ATTR_NONE);
+		xywh2rect(x + cib->monoblk.ib_xicon + cib->monoblk.ib_xchar, y + cib->monoblk.ib_yicon + cib->monoblk.ib_ychar, 6, 8, &gr);
+		draw_text(char2text(c), &gr, SMALL, TE_LEFT, FALSE, state & OS_SELECTED ? maskcol : datacol, 0, -1, TXT_NORMAL);
 	}
 }
 
 /*** ---------------------------------------------------------------------- ***/
 
-static _UWORD draw_check_radio(_WORD flags, _WORD state, _WORD x, _WORD y, _UBYTE *cp, _WORD offset, _WORD type)
+static _UWORD draw_check_radio(_WORD flags, _WORD state, _WORD x, _WORD y, char *cp, _WORD offset, _WORD type)
 {
 	_WORD w;
 	_BOOL draw_3d;
 
-	od_setfont(vdi_handle, IBM, W_PAL_BLACK, TXT_ATTR_NONE);
+	od_setfont(od_handle, IBM, W_PAL_BLACK, TXT_NORMAL);
 	if (flags & 0x0800)
 	{
 		od_pxy.g_w -= 16;
@@ -1758,23 +1822,23 @@ static _UWORD draw_check_radio(_WORD flags, _WORD state, _WORD x, _WORD y, _UBYT
 	{
 		if (GetNumColors() >= 16)
 		{
-			draw_text(cp, &od_pxy, IBM, TE_LEFT, TRUE, state & OS_DISABLED ? color_disabled : W_PAL_BLACK, MD_TRANS, offset, TXT_ATTR_NONE);
+			draw_text(cp, &od_pxy, IBM, TE_LEFT, TRUE, state & OS_DISABLED ? color_disabled : W_PAL_BLACK, MD_TRANS, offset, TXT_NORMAL);
 		} else
 		{
-			draw_text(cp, &od_pxy, IBM, TE_LEFT, TRUE, W_PAL_BLACK, MD_TRANS, offset, TXT_ATTR_NONE);
+			draw_text(cp, &od_pxy, IBM, TE_LEFT, TRUE, W_PAL_BLACK, MD_TRANS, offset, TXT_NORMAL);
 			if (state & OS_DISABLED)
 			{
 				od_pxy.g_x = x;
 				od_pxy.g_w = w;
-				W_Disable_Rect(vdi_handle, &od_pxy);
+				W_Disable_Rect(od_handle, &od_pxy);
 			}
 		}
 	} else
 	{
-		draw_text(cp, &od_pxy, IBM, TE_LEFT, TRUE, W_PAL_BLACK, MD_TRANS, offset, TXT_ATTR_NONE);
+		draw_text(cp, &od_pxy, IBM, TE_LEFT, TRUE, W_PAL_BLACK, MD_TRANS, offset, TXT_NORMAL);
 		if (state & OS_DISABLED)
 		{
-			W_Disable_Rect(vdi_handle, &od_pxy);
+			W_Disable_Rect(od_handle, &od_pxy);
 		}
 	}
 	return state & ~OS_DISABLED;
@@ -1782,7 +1846,7 @@ static _UWORD draw_check_radio(_WORD flags, _WORD state, _WORD x, _WORD y, _UBYT
 
 /*** ---------------------------------------------------------------------- ***/
 
-static _UWORD draw_threestate(_WORD flags, _WORD state, _WORD x, _WORD y, _UBYTE *cp, _WORD offset)
+static _UWORD draw_threestate(_WORD flags, _WORD state, _WORD x, _WORD y, char *cp, _WORD offset)
 {
 	switch (state & (OS_SELECTED|OS_CHECKED))
 	{
@@ -1801,22 +1865,19 @@ static _UWORD draw_threestate(_WORD flags, _WORD state, _WORD x, _WORD y, _UBYTE
 
 /*** ---------------------------------------------------------------------- ***/
 
-_WORD _CDECL draw_userdef(PARMBLK *pb)
+static _WORD _CDECL draw_userdef(PARMBLK *pb)
 {
 	GRECT gr;
-	void *pen;
 
 	xywh2rect(pb->pb_xc, pb->pb_yc, pb->pb_wc, pb->pb_hc, &gr);
-	W_Clip_Rect(vdi_handle, TRUE, &gr);
 	/* draw an IBOX type frame */
 	xywh2rect(pb->pb_x, pb->pb_y, pb->pb_w, pb->pb_h, &od_pxy);
-	W_SetBkMode(vdi_handle, MD_REPLACE);
-	W_Clear_Rect(vdi_handle, &od_pxy);
+	vswr_mode(od_handle, MD_REPLACE);
+	W_Clear_Rect(od_handle, &od_pxy);
 	od_box(1, FALSE);
 	rc_copy(&od_pxy, &od_framerec);
-	pen = W_PenCreate(vdi_handle, 1, W_PEN_SOLID, W_PAL_BLACK);
+	vsl_color(od_handle, W_PAL_BLACK);
 	od_box(-1, TRUE);
-	W_PenDelete(vdi_handle, pen);
 	rc_copy(&od_pxy, &od_outrec);
 	outline(pb->pb_currstate);
 	if (od_clear)
@@ -1824,14 +1885,13 @@ _WORD _CDECL draw_userdef(PARMBLK *pb)
 		if (((pb->pb_currstate & OS_SELECTED) && !(pb->pb_prevstate & OS_SELECTED)) ||
 			(!(pb->pb_currstate & OS_SELECTED) && (pb->pb_prevstate & OS_SELECTED)) )
 		{
-			W_Invert_Rect(vdi_handle, &od_pxy);
+			W_Invert_Rect(od_handle, &od_pxy);
 		}
 	} else
 	{
 		if (pb->pb_currstate & OS_SELECTED)
-			W_Invert_Rect(vdi_handle, &od_pxy);
+			W_Invert_Rect(od_handle, &od_pxy);
 	}
-	W_Clip_Rect(vdi_handle, FALSE, &gr);
 	return pb->pb_currstate & ~(OS_OUTLINED|OS_SELECTED); /* nothing more to do for GEM */
 }
 
@@ -1867,35 +1927,34 @@ void TO_draw_obj(
 	_WORD framesize;
 	_WORD framecol;
 	_WORD offset;
-	_UBYTE *cp;
+	char *cp;
 	_BOOL ted_check;
 	_WORD bold;
 	_WORD centered, centver;
 	_WORD textmode;
-	void *pen;
 
 	framesize = 0;
 	framecol = W_PAL_BLACK;
 	ted_check = FALSE;
-	bold = TXT_ATTR_NONE;
+	bold = TXT_NORMAL;
 	xywh2rect(x, y, w, h, &od_pxy);
 	rc_copy(&od_pxy, &od_framerec);
 	rc_copy(&od_pxy, &od_outrec);
 	if (flags & OF_INDIRECT)
 		obspec = *(obspec.indirect);
-	W_SetBkMode(vdi_handle, MD_REPLACE);
-	W_SetBkColor(vdi_handle, W_PAL_WHITE);
+	vswr_mode(od_handle, MD_REPLACE);
 
 	switch (type & OBTYPEMASK)
 	{
 	case G_BOX:
 	case G_BOXCHAR:
 	case G_EXTBOX:
-		switch (is_ext_type(&objc_options, type, flags, state))
+		switch (is_ext_type(objc_mode, type, flags, state))
 		{
 		case EXTTYPE_CIRCLE:
 			state = _draw_circle(state, x, y, w, h);
 			break;
+#if 0
 		case EXTTYPE_SLIDE:
 			{
 				MY_SLIDE slide;
@@ -1905,7 +1964,7 @@ void TO_draw_obj(
 				{
 					_LONG val, count;
 					
-					MemSetZeroStruct(slide);
+					memset(&slide, 0, sizeof(slide));
 					slider = &slide;
 					slide.sl_value = &val;
 					slide.sl_count = &count;
@@ -1922,6 +1981,7 @@ void TO_draw_obj(
 				state = hdraw_slider(x, y, w, h, slider, state);
 			}
 			break;
+#endif
 		case EXTTYPE_FLYMOVER:
 			{
 				W_POINTS pxy[2];
@@ -1930,10 +1990,9 @@ void TO_draw_obj(
 				pxy[0].yy = od_pxy.g_y;
 				pxy[1].xx = pxy[0].xx + od_pxy.g_w - 1;
 				pxy[1].yy = pxy[0].yy + od_pxy.g_h - 1;
-				pen = W_PenCreate(vdi_handle, 1, W_PEN_SOLID, W_PAL_BLACK);
-				W_SetBkMode(vdi_handle, MD_REPLACE);
-				W_Lines(vdi_handle, pxy, 2);
-				W_PenDelete(vdi_handle, pen);
+				vsl_color(od_handle, W_PAL_BLACK);
+				vswr_mode(od_handle, MD_REPLACE);
+				W_Lines(od_handle, pxy, 2);
 				state &= ~OS_CROSSED;
 			}
 			break;
@@ -1977,11 +2036,11 @@ void TO_draw_obj(
 				if (color_3d(flags, state, &color, &pattern))
 				{
 					textmode = FALSE;
-					if (GetNumColors() >= 16 || op_use3d == DRAW3D_FORCE)
+					if (GetNumColors() >= 16)
 					{
 						if (type == (G_BOXCHAR | (G_OBJX_SHORTCUT << 8)))
 						{
-							_UBYTE empty = '\0';
+							char empty = '\0';
 
 							framesize--;
 							if (framesize < 0)
@@ -2017,7 +2076,7 @@ void TO_draw_obj(
 							 objc_mode == EXTOB_MAGIC ||
 							 objc_mode == EXTOB_ORCS))
 						{
-							_UBYTE empty = '\0';
+							char empty = '\0';
 							
 							hdraw_button(state, flags, x, y, w, h, &empty, FALSE, -1, framesize);
 							filled = FALSE;
@@ -2027,8 +2086,7 @@ void TO_draw_obj(
 							state &= ~OS_SELECTED;
 					}
 				}
-				pen = _draw_box(framesize, OBSPEC_GET_FRAMECOL(obspec), filled, pattern, color);
-				W_PenDelete(vdi_handle, pen);
+				_draw_box(framesize, OBSPEC_GET_FRAMECOL(obspec), filled, pattern, color);
 			}
 			if ((type & OBTYPEMASK) == G_BOXCHAR)
 			{
@@ -2041,7 +2099,7 @@ void TO_draw_obj(
 				if (state & OS_CROSSED)
 					cross(&od_framerec);
 				state &= ~OS_CROSSED;
-				W_Invert_Rect(vdi_handle, &od_framerec);
+				W_Invert_Rect(od_handle, &od_framerec);
 			}
 			break;
 		}
@@ -2053,29 +2111,28 @@ void TO_draw_obj(
 			state = OS_NORMAL;
 		} else
 		{
-			pen = _draw_box(framesize = OBSPEC_GET_FRAMESIZE(obspec),
+			_draw_box(framesize = OBSPEC_GET_FRAMESIZE(obspec),
 				OBSPEC_GET_FRAMECOL(obspec),
 				FALSE, IP_HOLLOW, W_PAL_WHITE);
 			if (framesize < 0)
 			{
 				od_box(0, TRUE);
 			}
-			W_PenDelete(vdi_handle, pen);
 			outline(state);
 			if (od_clear)
 			{
 				if ( ((state & OS_SELECTED) && !(od_oldstate & OS_SELECTED)) ||
 					 (!(state & OS_SELECTED) && (od_oldstate & OS_SELECTED)) )
 				{
-					W_Invert_Rect(vdi_handle, &od_framerec);
+					W_Invert_Rect(od_handle, &od_framerec);
 				}
 			} else
 			{
 				if (state & OS_SELECTED)
-					W_Invert_Rect(vdi_handle, &od_framerec);
+					W_Invert_Rect(od_handle, &od_framerec);
 			}
 		}
-		switch (is_ext_type(&objc_options, type, flags, state))
+		switch (is_ext_type(objc_mode, type, flags, state))
 		{
 		case EXTTYPE_FLYMOVER:
 			{
@@ -2085,10 +2142,9 @@ void TO_draw_obj(
 				pxy[0].yy = od_pxy.g_y;
 				pxy[1].xx = pxy[0].xx + od_pxy.g_w - 1;
 				pxy[1].yy = pxy[0].yy + od_pxy.g_h - 1;
-				pen = W_PenCreate(vdi_handle, 1, W_PEN_SOLID, W_PAL_BLACK);
-				vswr_mode(vdi_handle, MD_REPLACE);
-				W_Lines(vdi_handle, pxy, 2);
-				W_PenDelete(vdi_handle, pen);
+				vsl_color(od_handle, W_PAL_BLACK);
+				vswr_mode(od_handle, MD_REPLACE);
+				W_Lines(od_handle, pxy, 2);
 				state &= ~OS_CROSSED;
 			}
 			break;
@@ -2103,7 +2159,7 @@ void TO_draw_obj(
 		/* FALL THROUGH */
 	case G_TEXT:
 	case G_BOXTEXT:
-		switch (is_ext_type(&objc_options, type, flags, state))
+		switch (is_ext_type(objc_mode, type, flags, state))
 		{
 		case EXTTYPE_LIST:
 			/* node representing popup, handled in main loop */
@@ -2119,9 +2175,8 @@ void TO_draw_obj(
 				TEDINFO *ted = obspec.tedinfo;
 				_UWORD color = ted->te_color;
 
-				pen = _draw_box(framesize = ted->te_thickness, COLSPEC_GET_FRAMECOL(color),
+				_draw_box(framesize = ted->te_thickness, COLSPEC_GET_FRAMECOL(color),
 					TRUE, COLSPEC_GET_FILLPATTERN(color), COLSPEC_GET_INTERIORCOL(color));
-				W_PenDelete(vdi_handle, pen);
 				outline(state);
 			}
 			break;
@@ -2130,7 +2185,7 @@ void TO_draw_obj(
 			{
 				TEDINFO *ted = obspec.tedinfo;
 
-				cp = calc_text(NULL, ted->te_ptmplt, ted->te_tmplen, ted->te_ptext, ted->te_txtlen, ted->te_pvalid, FALSE, '\0', 0);
+				cp = calc_text(ted->te_ptmplt, ted->te_tmplen, ted->te_ptext, ted->te_txtlen, ted->te_pvalid, FALSE, '\0', 0);
 				if (cp != NULL)
 				{
 					state = hdraw_title(state, x, y, w, h, cp);
@@ -2151,7 +2206,7 @@ void TO_draw_obj(
 				*cp = '\0';
 			draw_ted(obspec.tedinfo, ted_check,
 				(type & OBTYPEMASK) == G_BOXTEXT || (type & OBTYPEMASK) == G_FBOXTEXT,
-				TXT_ATTR_NONE, ' ', flags, state, &framesize, &framecol);
+				TXT_NORMAL, ' ', flags, state, &framesize, &framecol);
 			outline(state);
 			if (cp != NULL)
 				*cp = '$';
@@ -2178,7 +2233,7 @@ void TO_draw_obj(
 				_UBYTE fillchar = '_';
 				TEDINFO ted;
 
-				MemCpyStruct(ted, *obspec.tedinfo);
+				ted = *obspec.tedinfo;
 				if (!(flags & OF_EDITABLE))
 					fillchar = ' ';
 				draw_ted(&ted, ted_check,
@@ -2190,28 +2245,30 @@ void TO_draw_obj(
 		}
 		break;
 
+#if 0
 	case G_MTEXT:
 		if (mtext_draw != FUNK_NULL)
 		{
 			MTEDINFO *mted = (MTEDINFO *)obspec.tedinfo;
 
-			framesize = (*mtext_draw)(vdi_handle, mted, state & OS_SELECTED ? TRUE : FALSE);
+			framesize = (*mtext_draw)(od_handle, mted, state & OS_SELECTED ? TRUE : FALSE);
 			outline(state);
 			(*mtext_show_cursor)(mted, x, y, show_cursor, cur_left, cur_right);
 		}
 		break;
+#endif
 
 	case G_IMAGE:
-		_draw_image(obspec.bitblk, x, y, state & OS_SELECTED ? TRUE : FALSE, (type & OBEXTTYPEMASK) == G_OBJX_MUST_CONVERT);
+		_draw_image(obspec.bitblk, x, y, state & OS_SELECTED ? TRUE : FALSE);
 		outline(state);
 		break;
 
 	case G_ICON:
-		_draw_icon(obspec.iconblk, x, y, state & OS_SELECTED ? TRUE : FALSE, (type & OBEXTTYPEMASK) == G_OBJX_MUST_CONVERT);
+		_draw_icon(obspec.iconblk, x, y, state & OS_SELECTED ? TRUE : FALSE);
 		break;
 
 	case G_CICON:
-		_draw_cicon(obspec.ciconblk, x, y, state & OS_SELECTED ? TRUE : FALSE, (type & OBEXTTYPEMASK) == G_OBJX_MUST_CONVERT);
+		_draw_cicon(obspec.ciconblk, x, y, state);
 		break;
 
 	case G_USERDEF:
@@ -2235,7 +2292,7 @@ void TO_draw_obj(
 		centered = TE_CNTR;
 		centver = TRUE;
 		{
-			_UBYTE *txt = g_strdup(obspec.free_string);
+			char *txt = g_strdup(obspec.free_string);
 			_WORD wr_mode = MD_REPLACE;
 
 			if (objc_mode != EXTOB_MAGIX)
@@ -2246,7 +2303,7 @@ void TO_draw_obj(
 			}
 			cp = txt;
 
-			switch (is_ext_type(&objc_options, type, flags, state))
+			switch (is_ext_type(objc_mode, type, flags, state))
 			{
 			case EXTTYPE_EXIT:
 			case EXTTYPE_UNDO2:
@@ -2362,18 +2419,19 @@ void TO_draw_obj(
 				break;
 			
 			case EXTTYPE_SLIDE:
+#if 0
 				{
 					MY_SLIDE slider;
 
-					MemSetZeroStruct(slider);
+					memset(&slider, 0, sizeof(slider));
 					state = hdraw_slider(x, y, w, h, &slider, state);
 				}
+#endif
 				cp = NULL;
 				break;
 			
 			case EXTTYPE_LIST_BOX:
-				pen = _draw_box(framesize, W_PAL_BLACK, TRUE, IP_HOLLOW, W_PAL_WHITE);
-				W_PenDelete(vdi_handle, pen);
+				_draw_box(framesize, W_PAL_BLACK, TRUE, IP_HOLLOW, W_PAL_WHITE);
 				cp = NULL;
 				break;
 
@@ -2435,8 +2493,7 @@ void TO_draw_obj(
 
 			if (cp != NULL && wr_mode == MD_REPLACE)
 			{
-				pen = _draw_box(framesize, W_PAL_BLACK, TRUE, IP_HOLLOW, W_PAL_WHITE);
-				W_PenDelete(vdi_handle, pen);
+				_draw_box(framesize, W_PAL_BLACK, TRUE, IP_HOLLOW, W_PAL_WHITE);
 			}
 			outline(state);
 			if (cp != NULL)
@@ -2444,7 +2501,7 @@ void TO_draw_obj(
 				draw_text(cp, &od_pxy, IBM, centered, centver, W_PAL_BLACK, wr_mode, offset, bold);
 			}
 			if (state & OS_SELECTED)
-				W_Invert_Rect(vdi_handle, &od_framerec);
+				W_Invert_Rect(od_handle, &od_framerec);
 			g_free(txt);
 		}
 		break;
@@ -2461,13 +2518,13 @@ void TO_draw_obj(
 			pattern = IP_HOLLOW;
 			if (od_clear | color_3d(flags, state, &color, &pattern))
 			{
-				W_Fill_Rect(vdi_handle, &od_pxy, pattern, color);
+				W_Fill_Rect(od_handle, &od_pxy, pattern, color, FALSE);
 				if (pattern == IP_SOLID)
 					state &= ~OS_SELECTED;
 			}
 		}
 		{
-			_UBYTE *txt;
+			char *txt;
 
 			offset = -1;
 			txt = g_strdup(obspec.free_string);
@@ -2478,7 +2535,7 @@ void TO_draw_obj(
 					offset = (_WORD)(cp - txt);
 			}
 			cp = txt;
-			switch (is_ext_type(&objc_options, type, flags, state))
+			switch (is_ext_type(objc_mode, type, flags, state))
 			{
 			case EXTTYPE_EXIT:
 			case EXTTYPE_UNDO2:
@@ -2571,17 +2628,17 @@ void TO_draw_obj(
 				cp = NULL;
 				break;
 			case EXTTYPE_NICELINE:
-				W_SetBkMode(vdi_handle, MD_REPLACE);
+				vswr_mode(od_handle, MD_REPLACE);
 				if (state & OS_WHITEBAK)
 				{
-					W_Fill_Rect(vdi_handle, &od_framerec, IP_SOLID, W_PAL_WHITE);
+					W_Fill_Rect(od_handle, &od_framerec, IP_SOLID, W_PAL_WHITE, FALSE);
 				}
 				od_pxy.g_y = y + h / 2 - 1;
 				od_pxy.g_h = 2;
 				if (GetNumColors() >= 16)
-					W_Fill_Rect(vdi_handle, &od_pxy, IP_SOLID, color_disabled);
+					W_Fill_Rect(od_handle, &od_pxy, IP_SOLID, color_disabled, FALSE);
 				else
-					W_Fill_Rect(vdi_handle, &od_pxy, IP_4PATT, W_PAL_BLACK);
+					W_Fill_Rect(od_handle, &od_pxy, IP_4PATT, W_PAL_BLACK, FALSE);
 				state = OS_NORMAL;
 				cp = NULL;
 				break;
@@ -2597,7 +2654,7 @@ void TO_draw_obj(
 				cp = NULL;
 				break;
 			default:
-				if (objc_mode != EXTOB_MAGIC  && objc_mode != EXTOB_ORCS)
+				if (objc_mode != EXTOB_MAGIC && objc_mode != EXTOB_ORCS)
 					offset = -1;
 				break;
 			}
@@ -2611,7 +2668,7 @@ void TO_draw_obj(
 			}
 		}
 		if (state & OS_SELECTED)
-			W_Invert_Rect(vdi_handle, &od_pxy);
+			W_Invert_Rect(od_handle, &od_pxy);
 		break;
 	}
 
@@ -2627,7 +2684,7 @@ void TO_draw_obj(
 		cross(&od_framerec);
 
 	if (state & OS_DISABLED)
-		W_Disable_Rect(vdi_handle, &od_framerec);
+		W_Disable_Rect(od_handle, &od_framerec);
 
 	if (state & OS_SHADOWED)
 		shadow(framesize, framecol);
@@ -2638,7 +2695,7 @@ void TO_draw_obj(
 		if (objc_mode == EXTOB_ORCS)
 		{
 			if (ted_extended(obspec.tedinfo) &&
-				(int)strLen(obspec.tedinfo->te_ptext) > obspec.tedinfo->te_displen)
+				(int)strlen(obspec.tedinfo->te_ptext) > obspec.tedinfo->te_displen)
 			{
 				_WORD wchar, hchar;
 
@@ -2651,11 +2708,1046 @@ void TO_draw_obj(
 #endif
 }
 
+/*****************************************************************************/
+/*** ---------------------------------------------------------------------- ***/
+/*****************************************************************************/
+
+_WORD hdraw_button(_WORD state, _WORD flags, _WORD x, _WORD y, _WORD w, _WORD h, char *txtStr, _BOOL extBut, _WORD offset, _WORD framesize)
+{
+	GRECT work;
+	_WORD color, pattern;
+	_BOOL draw_3d;
+
+	xywh2rect(x, y, w, h, &work);
+
+	color = W_PAL_WHITE;
+	pattern = IP_HOLLOW;
+	color_3d(flags, state, &color, &pattern);
+	draw_3d = GetNumColors() >= 16 && op_draw3d;
+	if (!draw_3d)
+	{
+		W_Clear_Rect(od_handle, &work);
+	} else if (objc_mode == EXTOB_HONKA || extBut)
+	{
+		GRECT use;
+		W_POINTS points[3];
+		
+		vsl_color(od_handle, W_PAL_BLACK);
+
+		use.g_x = x - 2;
+		use.g_y = y - 3;
+		use.g_w = w + 4;
+		use.g_h = h + 6;
+		if (flags & OF_DEFAULT)
+		{
+			W_Rectangle(od_handle, &use);
+			use.g_x -= 1;
+			use.g_y -= 1;
+			use.g_w += 2;
+			use.g_h += 2;
+		}
+		points[0].xx = use.g_x + 1;
+		points[0].yy = use.g_y;
+		points[1].xx = use.g_x + use.g_w - 2;
+		points[1].yy = points[0].yy;
+		W_Lines(od_handle, points, 2);
+
+		points[0].xx = use.g_x + use.g_w - 1;
+		points[0].yy = use.g_y + 1;
+		points[1].xx = points[0].xx;
+		points[1].yy = use.g_y + use.g_h - 2;
+		W_Lines(od_handle, points, 2);
+
+		points[0].xx = use.g_x + 1;
+		points[0].yy = use.g_y + use.g_h - 1;
+		points[1].xx = use.g_x + use.g_w - 2;
+		points[1].yy = points[0].yy;
+		W_Lines(od_handle, points, 2);
+
+		points[0].xx = use.g_x;
+		points[0].yy = use.g_y + 1;
+		points[1].xx = points[0].xx;
+		points[1].yy = use.g_y + use.g_h - 2;
+		W_Lines(od_handle, points, 2);
+
+		if (state & OS_SELECTED)
+		{
+			use.g_x = x - 1;
+			use.g_y = y - 2;
+			use.g_w = w + 2;
+			use.g_h = h + 4;
+			W_Fill_Rect(od_handle, &use, IP_SOLID, W_PAL_DGRAY, FALSE);
+		} else
+		{
+			use.g_x = x - 1;
+			use.g_y = y - 2;
+			use.g_w = w + 2;
+			use.g_h = h + 4;
+
+			vsl_color(od_handle, W_PAL_WHITE);
+			points[0].xx = use.g_x;
+			points[0].yy = use.g_y + use.g_h - 1;
+			points[1].xx = points[0].xx;
+			points[1].yy = use.g_y;
+			points[2].xx = use.g_x + use.g_w - 1;
+			points[2].yy = points[1].yy;
+			W_Lines(od_handle, points, 3);
+
+			points[0].xx++;
+			points[0].yy--;
+			points[1].xx++;
+			points[1].yy++;
+			points[2].xx--;
+			points[2].yy++;
+			W_Lines(od_handle, points, 3);
+
+			vsl_color(od_handle, W_PAL_DGRAY);
+			points[0].xx = use.g_x;
+			points[0].yy = use.g_y + use.g_h - 1;
+			points[1].xx = use.g_x + use.g_w - 1;
+			points[1].yy = points[0].yy;
+			points[2].xx = points[1].xx;
+			points[2].yy = use.g_y;
+			W_Lines(od_handle, points, 3);
+
+			points[0].xx++;
+			points[0].yy--;
+			points[1].xx--;
+			points[1].yy--;
+			points[2].xx--;
+			points[2].yy++;
+			W_Lines(od_handle, points, 3);
+
+			use.g_x = x + 1;
+			use.g_y = y;
+			use.g_w = w - 2;
+			use.g_h = h;
+			W_Fill_Rect(od_handle, &use, IP_SOLID, W_PAL_LGRAY, FALSE);
+		}
+	} else
+	{
+		W_POINTS points[3];
+
+		if (offset >= 0)
+		{
+			x -= 1;
+			y -= 1;
+			w += 2;
+			h += 2;
+			xywh2rect(x, y, w, h, &work);
+		}
+		W_Fill_Rect(od_handle, &work, pattern, color, FALSE);
+
+		work.g_x -= 2;
+		work.g_y -= 2;
+		work.g_w += 4;
+		work.g_h += 4;
+
+		if (state & OS_SELECTED)
+			vsl_color(od_handle, W_PAL_WHITE);
+		else
+			vsl_color(od_handle, W_PAL_DGRAY);
+		points[0].xx = x;
+		points[0].yy = y + h;
+		points[1].xx = x + w;
+		points[1].yy = points[0].yy;
+		points[2].xx = points[1].xx;
+		points[2].yy = y;
+		W_Lines(od_handle, points, 3);
+		if (framesize < -2)
+		{
+			points[0].xx--;
+			points[0].yy++;
+			points[1].xx++;
+			points[1].yy++;
+			points[2].xx++;
+			points[2].yy--;
+			W_Lines(od_handle, points, 3);
+			work.g_x -= 1;
+			work.g_y -= 1;
+			work.g_w += 2;
+			work.g_h += 2;
+		}
+
+		if (state & OS_SELECTED)
+			vsl_color(od_handle, W_PAL_DGRAY);
+		else
+			vsl_color(od_handle, W_PAL_WHITE);
+		points[0].xx = x - 1;
+		points[0].yy = y + h - 1;
+		points[1].xx = points[0].xx;
+		points[1].yy = y - 1;
+		points[2].xx = x + w - 1;
+		points[2].yy = points[1].yy;
+		W_Lines(od_handle, points, 3);
+		if (framesize < -2)
+		{
+			points[0].xx--;
+			points[0].yy++;
+			points[1].xx--;
+			points[1].yy--;
+			points[2].xx++;
+			points[2].yy--;
+			W_Lines(od_handle, points, 3);
+		}
+
+		if (framesize < -1)
+		{
+			vsl_color(od_handle, W_PAL_BLACK);
+			W_Rectangle(od_handle, &work);
+		}
+	}
+
+	{
+		_UBYTE *taste;
+		_WORD xpos, ypos;
+		_WORD style;
+		_WORD cw, ch;
+
+		style = TXT_NORMAL;
+		color = W_PAL_BLACK;
+		if (state & OS_DISABLED)
+		{
+			if (GetNumColors() >= 16)
+			{
+				color = color_disabled;
+			} else
+			{
+				style = TXT_LIGHT;
+				color = W_PAL_WHITE;
+			}
+		}
+		od_setfont(od_handle, IBM, color, style);
+
+		taste = txtStr;
+		if (offset >= 0)
+		{
+			taste += offset;
+			if (extBut)
+				*taste++ = '\0';
+			else if (*taste == '[')
+				memmove(taste, taste + 1, strlen(taste + 1) + 1);
+		}
+
+		cw = W_TextWidth(od_handle, txtStr);
+		ch = od_ch;
+		xpos = x + (w - 1 - cw) / 2;
+		ypos = y + (h - ch) / 2;
+		if (state & OS_SELECTED)
+		{
+			xpos++;
+			ypos++;
+		}
+
+		vswr_mode(od_handle, MD_TRANS);
+		W_Text(od_handle, xpos, ypos, txtStr);
+
+		if (extBut && offset > 0)
+		{
+			od_setfont(od_handle, SMALL, color, style);
+			cw = W_TextWidth(od_handle, txtStr);
+			ch = od_ch;
+			xpos = x + w - 1 - cw - 2;
+			ypos = y + (h - ch) / 2 + 1;
+			if (state & OS_SELECTED)
+			{
+				xpos++;
+				ypos++;
+			}
+			W_Text(od_handle, xpos, ypos, taste);
+		}
+		od_setfont(od_handle, IBM, W_PAL_BLACK, TXT_NORMAL);
+		vswr_mode(od_handle, MD_REPLACE);
+		if (!extBut && offset >= 0)
+		{
+			if ((state & OS_DISABLED) && GetNumColors() >= 16)
+				color = color_disabled;
+			else
+				color = W_PAL_BLACK;
+			draw_underline_char(xpos, ypos, color, txtStr, offset);
+		}
+	}
+
+	if (draw_3d)
+	{
+		state &= ~(OS_SELECTED|OS_DISABLED);
+	} else
+	{
+		vsl_color(od_handle, W_PAL_BLACK);
+		od_box(-1, TRUE);
+		od_box(-1, TRUE);
+		if (flags & OF_DEFAULT)
+			od_box(-1, TRUE);
+	}
+
+	state &= ~(OS_OUTLINED | OS_SHADOWED);
+
+	return state;
+}
+
 /*** ---------------------------------------------------------------------- ***/
 
-void od_open(_WORD _vdi_handle, GRECT *clip)
+static _UBYTE RB0[] = {
+0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xC0, 0x00, 0x03, 0x00, 0xC0, 0x00, 0x05, 0x00,
+0xCF, 0xFF, 0xFB, 0x00, 0xC8, 0x00, 0x0D, 0x00, 0xC8, 0x00, 0x0B, 0x00, 0xC8, 0x1E, 0x0D, 0x00,
+0xC8, 0x3F, 0x0B, 0x00, 0xC8, 0x33, 0x0D, 0x00, 0xC8, 0x33, 0x0B, 0x00, 0xC8, 0x06, 0x0D, 0x00,
+0xC8, 0x06, 0x0B, 0x00, 0xC8, 0x0C, 0x0D, 0x00, 0xC8, 0x0C, 0x0B, 0x00, 0xC8, 0x00, 0x0D, 0x00,
+0xC8, 0x0C, 0x0B, 0x00, 0xC8, 0x0C, 0x0D, 0x00, 0xC8, 0x00, 0x0B, 0x00, 0xC8, 0x00, 0x0D, 0x00,
+0xCF, 0xFF, 0xFB, 0x00, 0xD5, 0x55, 0x55, 0x00, 0xEA, 0xAA, 0xAB, 0x00, 0xC0, 0x00, 0x00, 0x00};
+static BITBLK rs_frage = {  NULL,   4,  24,	 0,   0, 0x0001 };
+
+#ifndef OS_WINDOWS
+static _UBYTE RB1[] = {
+0xFF, 0xE0, 0x00, 0x00, 0x00, 0x70, 0x00, 0x00, 0x00, 0x78, 0x00, 0x00, 0x00, 0x7C, 0x00, 0x00,
+0x00, 0x7F, 0xF8, 0x00, 0x00, 0x20, 0x0C, 0x00, 0x00, 0x10, 0x0E, 0x00, 0x00, 0x08, 0x0F, 0x00,
+0x00, 0x04, 0x0F, 0x80, 0x00, 0x02, 0x0F, 0xC0, 0x00, 0x01, 0x0F, 0xE0, 0x00, 0x00, 0x8F, 0xF0,
+0x00, 0x00, 0x40, 0x10, 0x00, 0x00, 0x20, 0x10, 0x00, 0x00, 0x10, 0x10, 0x00, 0x00, 0x08, 0x10,
+0x00, 0x00, 0x04, 0x10, 0x00, 0x00, 0x02, 0x10, 0x00, 0x00, 0x01, 0x18, 0x00, 0x00, 0x00, 0x9C,
+0x00, 0x00, 0x00, 0x5E, 0x00, 0x00, 0x00, 0x3F, 0x00, 0x00, 0x00, 0x1F, 0x00, 0x00, 0x00, 0x01};
+static BITBLK rs_beweg = {  NULL,   4,  24,	 0,   0, 0x0001 };
+#endif
+
+_WORD hdraw_title(_WORD state, _WORD x, _WORD y, _WORD w, _WORD h, const char *titleStr)
 {
-	vdi_handle = _vdi_handle;
+
+	xywh2rect(x, y, w, h+2, &od_pxy);
+	_draw_box(2, W_PAL_BLACK, TRUE, IP_SOLID, W_PAL_WHITE);
+
+#ifndef OS_WINDOWS
+	if (!(state & OS_WHITEBAK))
+	{
+		if (rs_beweg.bi_pdata == NULL)
+		{
+			rs_beweg.bi_pdata = (_WORD *)RB1;
+		}
+		_draw_image(&rs_beweg, x + w - 32, y, FALSE);
+	}
+#endif
+
+	if (!(state & OS_DRAW3D))
+	{
+		if (*titleStr != '\0')
+		{
+			if (rs_frage.bi_pdata == NULL)
+			{
+				rs_frage.bi_pdata = (_WORD *)RB0;
+			}
+			_draw_image(&rs_frage, x, y, FALSE);
+		}
+	}
+
+	if (*titleStr != '\0')
+	{
+		_UBYTE	*ttStr;
+
+		if ((ttStr = DialogTitelTxt(titleStr, state, FALSE)) != NULL)
+		{
+			xywh2rect(x, y, w, h, &od_pxy);
+			draw_text(ttStr, &od_pxy, IBM, TE_CNTR, TRUE, W_PAL_BLACK, 0, -1, TXT_NORMAL);
+			g_free(ttStr);
+		}
+	}
+	return state & ~(OS_DRAW3D | OS_WHITEBAK | OS_CROSSED | OS_OUTLINED);
+}
+
+/*** ---------------------------------------------------------------------- ***/
+
+static _WORD w_text(_WORD handle,
+	_WORD xx, _WORD yy,
+	_WORD size, const _UBYTE *from,
+	_WORD color, _BOOL draw)
+{
+	_UBYTE *wkCh, *to;
+	_WORD pos = -1;
+
+	to = g_strdup(from);
+	if (to != NULL)
+	{
+		wkCh = to;
+		while (*wkCh != '\0')
+		{
+			if (*wkCh == '[')
+			{
+				*wkCh = '\0';
+				if (draw)
+					pos = W_TextWidth(handle, to);
+				memmove(wkCh, wkCh + 1, strlen(wkCh + 1) + 1);
+			} else
+			{
+				if (*wkCh == '_')
+				{
+					*wkCh = '\0';
+					break;
+				}
+				wkCh++;
+			}
+		}
+
+		od_setfont(handle, size, color, TXT_NORMAL);
+		if (draw)
+		{
+			W_Text(handle, xx, yy, to);
+
+			if (pos != -1)
+			{
+				draw_underline_char(xx, yy, color, to, pos);
+			}
+		}
+		pos = W_TextWidth(handle, to);
+		g_free(to);
+	}
+	return pos;
+}
+
+/*** ---------------------------------------------------------------------- ***/
+
+_WORD hdraw_list(_WORD x, _WORD y, _WORD w, _WORD h,
+	OBSPEC obspec, _UWORD flags, _UWORD state, GRECT *gr)
+{
+	_WORD iconDiff;
+	_BOOL showIcon = FALSE;
+	TEDINFO *ted = obspec.tedinfo;
+	_WORD textw;
+	_UWORD color;
+	_WORD framesize;
+	_WORD framecol;
+	_BOOL draw_3d;
+
+	if ((flags & OF_EDITABLE) || (flags & OF_SELECTABLE))
+		showIcon = TRUE;
+	if (state & OS_DISABLED)
+		showIcon = FALSE;
+
+	if (showIcon)
+		iconDiff = 16;
+	else
+		iconDiff = 0;
+
+	color = ted->te_color;
+	xywh2rect(x, y, w, h, &od_pxy);
+	rc_copy(&od_pxy, &od_outrec);
+	framecol = COLSPEC_GET_FRAMECOL(color);
+	_draw_box(framesize = ted->te_thickness, framecol,
+		TRUE, COLSPEC_GET_FILLPATTERN(color), COLSPEC_GET_INTERIORCOL(color));
+
+	if (state & OS_SHADOWED)
+		shadow(framesize, framecol);
+
+	textw = w_text(od_handle, x, y, ted->te_font, ted->te_ptmplt, COLSPEC_GET_TEXTCOL(color), TRUE);
+
+	gr->g_x = x + textw,
+	gr->g_y = y;
+	gr->g_w = w - textw - iconDiff;
+	gr->g_h = h;
+
+	state &= ~(OS_SELECTED | OS_SHADOWED | OS_CHECKED);
+
+	if (showIcon)
+		state = _draw_mac(flags, state, x + w - iconDiff, y, MAC_H_LIST, &w, &draw_3d);
+
+	return state;
+}
+
+/*** ---------------------------------------------------------------------- ***/
+
+void hdraw_popup_size(_WORD handle, _WORD x, _WORD y, _WORD w, _WORD h,
+	OBSPEC obspec, _UWORD flags, _UWORD state, GRECT *gr)
+{
+	_WORD iconDiff;
+	TEDINFO *ted = obspec.tedinfo;
+	_WORD textw;
+	_UWORD color;
+
+	UNUSED(flags);
+	iconDiff = 16;
+	if (state & OS_CHECKED)
+		iconDiff = 0;
+
+	color = ted->te_color;
+	textw = w_text(handle, x, y, ted->te_font, ted->te_ptmplt, COLSPEC_GET_TEXTCOL(color), FALSE);
+
+	gr->g_x = x + textw;
+	gr->g_y = y;
+	gr->g_w = w - textw - iconDiff;
+	gr->g_h = h;
+}
+
+/*** ---------------------------------------------------------------------- ***/
+
+_WORD hdraw_popup(_WORD type, _WORD x, _WORD y, _WORD w, _WORD h,
+	OBSPEC obspec, _UWORD flags, _UWORD state, GRECT *gr)
+{
+	_WORD iconDiff;
+	TEDINFO *ted = obspec.tedinfo;
+	_WORD textw;
+	_UWORD color;
+	_WORD framesize;
+	_WORD framecol;
+
+	iconDiff = 16;
+	if (state & OS_CHECKED)
+		iconDiff = 0;
+
+	color = ted->te_color;
+
+	if (od_clear)
+	{
+		_WORD fillcol, fillpattern;
+
+		vswr_mode(od_handle, MD_REPLACE);
+		fillcol = COLSPEC_GET_INTERIORCOL(color);
+		fillpattern = COLSPEC_GET_FILLPATTERN(color);
+
+		if (color_3d(flags, state, &fillcol, &fillpattern) &&
+			GetNumColors() >= 16 && (state & OS_SELECTED))
+		{
+			fillcol = W_PAL_DGRAY;
+			fillpattern = IP_SOLID;
+			state &= ~OS_SELECTED;
+		}
+		W_Fill_Rect(od_handle, &od_pxy, fillpattern, fillcol, FALSE);
+	}
+	vswr_mode(od_handle, COLSPEC_GET_TEXTMODE(color) ? MD_REPLACE : MD_TRANS);
+
+	textw = w_text(od_handle, x, y, ted->te_font, ted->te_ptmplt, COLSPEC_GET_TEXTCOL(color), TRUE);
+	if (state & OS_SELECTED)
+	{
+		xywh2rect(x, y, textw, h, &od_pxy);
+		W_Invert_Rect(od_handle, &od_pxy);
+	}
+
+	od_pxy.g_x = x + textw;
+	od_pxy.g_y = y;
+	od_pxy.g_w = w - textw - iconDiff;
+	od_pxy.g_h = h;
+	if (gr != NULL)
+		rc_copy(&od_pxy, gr);
+
+	od_pxy.g_w += iconDiff;
+	rc_copy(&od_pxy, &od_outrec);
+	framecol = COLSPEC_GET_FRAMECOL(color);
+	_draw_box(framesize = ted->te_thickness, framecol,
+		TRUE, COLSPEC_GET_FILLPATTERN(color), COLSPEC_GET_INTERIORCOL(color));
+
+	if (state & OS_SHADOWED)
+		shadow(framesize, framecol);
+
+	switch (type & OBEXTTYPEMASK)
+	{
+	case G_OBJX_POPUP_MULTIPLE << 8: /* EXTTYPE_POPUP_MULTIPLE */
+	case G_OBJX_POPUP_SINGLE << 8: /* EXTTYPE_POPUP_SINGLE */
+		od_pxy.g_w -= iconDiff;
+		W_ClipText(od_handle, &od_pxy, ted->te_ptext, wclip_center(ted->te_just), 0);
+		break;
+	}
+
+	state &= ~(OS_SELECTED | OS_SHADOWED | OS_CHECKED);
+
+	if (iconDiff != 0)
+	{
+		W_POINTS pxy[2];
+		GRECT icon;
+
+		x = x + w - iconDiff;
+		pxy[0].xx = x - 1;
+		pxy[0].yy = y;
+		pxy[1].xx = pxy[0].xx;
+		pxy[1].yy = y + h - 1;
+		vsl_color(od_handle, framecol);
+		W_Lines(od_handle, pxy, 2);
+		xywh2rect(x, y, iconDiff, h, &icon);
+		switch (type & OBEXTTYPEMASK)
+		{
+		case G_OBJX_POPUP_SINGLE << 8: /* EXTTYPE_POPUP_SINGLE */
+			draw_char(CHAR_LISTBOX, &icon, ted->te_font, TE_CNTR, TRUE, COLSPEC_GET_TEXTCOL(color), COLSPEC_GET_TEXTMODE(color));
+			break;
+		case G_OBJX_POPUP_SIMPLE << 8: /* EXTTYPE_POPUP_SIMPLE */
+			state = _draw_circle(state, x, y, iconDiff, h);
+			break;
+		case G_OBJX_POPUP_MULTIPLE << 8: /* EXTTYPE_POPUP_MULTIPLE */
+			draw_char(CHAR_CHECK, &icon, ted->te_font, TE_CNTR, TRUE, COLSPEC_GET_TEXTCOL(color), COLSPEC_GET_TEXTMODE(color));
+			break;
+		}
+	}
+	vswr_mode(od_handle, MD_REPLACE);
+
+	return state;
+}
+
+/*****************************************************************************/
+/*** ---------------------------------------------------------------------- ***/
+/*****************************************************************************/
+
+enum ext_type is_ext_type(EXTOB_MODE mode, _UWORD type, _UWORD flags, _UWORD state)
+{
+	_UWORD basetype = type & OBTYPEMASK;
+	
+	switch (mode)
+	{
+	case EXTOB_MAGIX:
+		if (state & OS_WHITEBAK)
+		{
+			switch (basetype)
+			{
+			case G_BUTTON:
+				if ((state & 0xff00) == 0xfe00)
+					return EXTTYPE_INNERFRAME;
+				if (flags & OF_RBUTTON)
+					return EXTTYPE_RADIO;
+				if (state & 0x8000)
+					return EXTTYPE_CHECK;
+				return EXTTYPE_EXIT;
+			case G_STRING:
+				if ((state & 0xff00) == 0xff00)
+					return EXTTYPE_LINE;
+				return EXTTYPE_EXIT;
+			case G_SHORTCUT:
+				/* if ((state & OS_DISABLED) &&
+					tree->ob_spec.free_string[0] == '-')
+					return EXTTYPE_NICELINE; */
+				break;
+			}
+		}
+		break;
+	
+	case EXTOB_NONE:
+	case EXTOB_AES:
+	case EXTOB_OVERLAY:
+	case EXTOB_WEGA:
+	case EXTOB_HONKA:
+	case EXTOB_WIN:
+	case EXTOB_UNKNOWN:
+		break;
+	
+	case EXTOB_GEISS1:
+	case EXTOB_GEISS2:
+	case EXTOB_MYDIAL:
+	case EXTOB_FLYDIAL:
+	case EXTOB_FACEVALUE:
+	case EXTOB_ORCS:
+	case EXTOB_MAGIC:
+		switch (type & OBEXTTYPEMASK)
+		{
+		case G_OBJX_MOVER << 8:
+			if (flags & OF_TOUCHEXIT)
+				if ((state & (OS_OUTLINED|OS_CROSSED)) == (OS_OUTLINED|OS_CROSSED))
+					return EXTTYPE_FLYMOVER;
+			if (mode == EXTOB_MAGIC && basetype == G_IBOX)
+				return EXTTYPE_FLYMOVER;
+			break;
+		case G_OBJX_SHORTCUT << 8:
+			switch (basetype)
+			{
+			case G_BUTTON:
+				if (!(flags & (OF_RBUTTON | OF_EXIT)))
+				{
+					if (mode == EXTOB_ORCS && (state & OS_DRAW3D))
+						return EXTTYPE_CHECK_SWITCH;
+					return EXTTYPE_CHECK;
+				}
+				/* fall through */
+			case G_STRING:
+				if (flags & OF_RBUTTON)
+					return EXTTYPE_RADIO;
+				/* fall through */
+			case G_SHORTCUT:
+			default:
+				if (flags & 0x2000)
+					return EXTTYPE_UNDO;
+				if ((flags & MYDIAL_UNDO_FLAG) && mode == EXTOB_MYDIAL)
+					return EXTTYPE_UNDO;
+				if (mode == EXTOB_MAGIC)
+				{
+					if (flags & 0x4000)
+						return EXTTYPE_UNDO;
+					if (flags & 0x8000)
+						return EXTTYPE_HELP;
+				}
+				if (!(flags & OF_RBUTTON))
+					if ((basetype == G_BUTTON && (flags & OF_EXIT)) ||
+						(basetype == G_STRING && !(flags & OF_EXIT)))
+					return EXTTYPE_EXIT;
+				break;
+			}
+			break;
+		case G_OBJX_LINE << 8:
+			switch (mode)
+			{
+			default:
+				switch (basetype)
+				{
+				case G_BUTTON:
+				case G_STRING:
+					return EXTTYPE_LINE;
+				}
+				break;
+			case EXTOB_MAGIC:
+				switch (basetype)
+				{
+				case G_IMAGE:
+				case G_ICON:
+				case G_CICON:
+					break;
+				default:
+					if (state & (OS_SHADOWED|OS_OUTLINED|OS_CHECKED|OS_DISABLED|OS_DRAW3D|OS_WHITEBAK))
+						return EXTTYPE_LINE;
+					return EXTTYPE_EXIT;
+				}
+				break;
+			}
+			break;
+		case G_OBJX_FRAME << 8:
+			switch (basetype)
+			{
+			case G_BUTTON:
+				return EXTTYPE_INNERFRAME;
+			case G_BOX:
+				return EXTTYPE_OUTERFRAME;
+			}
+			break;
+		case G_OBJX_NICELINE << 8:
+		/* case G_OBJX_NOTEBOOK << 8: same as G_OBJX_NICELINE */
+			switch (basetype)
+			{
+			case G_IMAGE:
+			case G_ICON:
+			case G_CICON:
+				break;
+			case G_STRING:
+			case G_SHORTCUT:
+				if (state & OS_DISABLED)
+					return EXTTYPE_NICELINE;
+				return EXTTYPE_HELP;
+			default:
+				return EXTTYPE_HELP;
+			}
+			break;
+		case G_OBJX_CIRCLE << 8:
+			switch (basetype)
+			{
+			case G_BOXCHAR:
+				return EXTTYPE_CIRCLE;
+			}
+			break;
+		case G_OBJX_THREESTATE << 8:
+			switch (basetype)
+			{
+			case G_BUTTON:
+				return EXTTYPE_THREESTATE;
+			}
+			break;
+		case G_OBJX_LONGEDIT << 8:
+			switch (basetype)
+			{
+			case G_FTEXT:
+			case G_FBOXTEXT:
+				return EXTTYPE_LONGEDIT;
+			}
+			break;
+		case G_OBJX_DEFAULT << 8:
+			switch (basetype)
+			{
+			case G_IMAGE:
+			case G_ICON:
+			case G_CICON:
+				break;
+			default:
+				if (flags & OF_DEFAULT)
+					return EXTTYPE_DEFAULT;
+				if ((flags & OF_EXIT) || ((flags & OF_TOUCHEXIT) && mode == EXTOB_MYDIAL))
+					return EXTTYPE_UNDO2;
+				break;
+			}
+			break;
+		}
+		break;
+	
+	case EXTOB_SYSGEM:
+		switch (basetype)
+		{
+		case G_BUTTON:
+			if ((type & OBEXTTYPEMASK) == (1 << 8))
+				return EXTTYPE_SYSGEM_HELP;
+			if ((type & OBEXTTYPEMASK) == (2 << 8))
+				return EXTTYPE_SYSGEM_HELP;
+			if ((type & OBEXTTYPEMASK) == (3 << 8))
+				return EXTTYPE_SYSGEM_NOTEBOOK;
+			if (flags & OF_EXIT)
+				return EXTTYPE_SYSGEM_BUTTON;
+			if (flags & OF_RBUTTON)
+				return EXTTYPE_SYSGEM_RADIO;
+			if (flags & OF_SELECTABLE)
+				return EXTTYPE_SYSGEM_SELECT;
+			if (flags & OF_TOUCHEXIT)
+				return EXTTYPE_SYSGEM_TOUCHEXIT;
+			return EXTTYPE_SYSGEM_FRAME;
+		
+		case G_BOX:
+			if ((type & OBEXTTYPEMASK) == (50 << 8))
+				return EXTTYPE_SYSGEM_BAR1;
+			if ((type & OBEXTTYPEMASK) == (51 << 8))
+				return EXTTYPE_SYSGEM_BAR2;
+			if ((type & OBEXTTYPEMASK) == (52 << 8))
+				return EXTTYPE_SYSGEM_BAR3;
+			return EXTTYPE_SYSGEM_BOX;
+		
+		case G_BOXCHAR:
+			if ((type & OBEXTTYPEMASK) != (11 << 8))
+				return EXTTYPE_SYSGEM_BOXCHAR;
+			break;
+		
+		case G_TEXT:
+		case G_BOXTEXT:
+			switch (type & OBEXTTYPEMASK)
+			{
+			case 2 << 8:
+				return EXTTYPE_SYSGEM_LISTBOX;
+			case 3 << 8:
+				return EXTTYPE_SYSGEM_CIRCLE;
+			}
+			return EXTTYPE_SYSGEM_TEXT;
+		case G_FTEXT:
+		case G_FBOXTEXT:
+			/* if (sysgem.self_edit) */
+				return EXTTYPE_SYSGEM_EDIT;
+		
+		case G_STRING:
+		case G_TITLE:
+		case G_SHORTCUT:
+			return EXTTYPE_SYSGEM_STRING;
+		}
+		break;
+	}
+
+	if (mode == EXTOB_FACEVALUE)
+	{
+		switch (basetype)
+		{
+		case G_BOXTEXT:
+			switch (type & OBEXTTYPEMASK)
+			{
+			case 30 << 8:
+				if (flags & OF_TOUCHEXIT)
+				{
+					if (state & 0x0400)
+						return EXTTYPE_POPUP_SINGLE;
+				}
+				break;
+			default:
+				if (flags & 0x8000)
+					return EXTTYPE_HELP;
+				break;
+			}
+			break;
+		}
+	}
+	
+	if (mode == EXTOB_ORCS)
+	{
+		if ((flags & (OF_TOUCHEXIT|OF_MOVEABLE)) == (OF_TOUCHEXIT|OF_MOVEABLE))
+			return EXTTYPE_MOVER;
+		switch (basetype)
+		{
+		case G_BUTTON:
+			switch (type & OBEXTTYPEMASK)
+			{
+			case G_OBJX_SHORTCUT << 8:
+				if (!(flags & (OF_RBUTTON | OF_EXIT)))
+				{
+					if (state & OS_DRAW3D)
+						return EXTTYPE_CHECK_SWITCH;
+					else if (!(state & OS_SHADOWED))
+						return EXTTYPE_CHECK;
+				}
+				if (flags & OF_RBUTTON)
+					return EXTTYPE_RADIO;
+				if (flags & OF_EXIT)
+					return EXTTYPE_EXIT;
+				break;
+			case G_OBJX_TITLE << 8:
+				if (flags & OF_TOUCHEXIT)
+					return EXTTYPE_TITLE;
+				break;
+			case G_OBJX_LIST_BOX << 8:
+				return EXTTYPE_LIST_BOX;
+			}
+			if ((flags & KEY_SHIFTMASK) != 0 && (state & KEY_CODEMASK) != 0)
+				return EXTTYPE_EXIT;
+			break;
+
+		case G_USERDEF:
+			switch (type & OBEXTTYPEMASK)
+			{
+			case G_OBJX_MY_USERDEF << 8:
+				return EXTTYPE_OBJWIND;
+			}
+			break;
+
+		case G_STRING:
+		case G_SHORTCUT:
+			break;
+			
+		case G_TEXT:
+		case G_BOXTEXT:
+			switch (type & OBEXTTYPEMASK)
+			{
+			case G_OBJX_LIST << 8:
+				return EXTTYPE_LIST;
+			case G_OBJX_TITLE << 8:
+				return EXTTYPE_TITLE;
+			case G_OBJX_LIST_BOX << 8:
+				return EXTTYPE_LIST_BOX;
+			}
+			return EXTTYPE_EXIT;
+		
+		case G_FTEXT:
+		case G_FBOXTEXT:
+			switch (type & OBEXTTYPEMASK)
+			{
+			case G_OBJX_LIST << 8:
+				return EXTTYPE_LIST;
+			case G_OBJX_TITLE << 8:
+				return EXTTYPE_TITLE;
+			case G_OBJX_LIST_BOX << 8:
+				return EXTTYPE_LIST_BOX;
+			case G_OBJX_POPUP_SINGLE << 8:
+				return EXTTYPE_POPUP_SINGLE;
+			case G_OBJX_POPUP_SIMPLE << 8:
+				return EXTTYPE_POPUP_SIMPLE;
+			case G_OBJX_POPUP_MULTIPLE << 8:
+				return EXTTYPE_POPUP_MULTIPLE;
+			}
+			return EXTTYPE_EXIT;
+		
+		case G_BOX:
+		case G_BOXCHAR:
+		case G_EXTBOX:
+			switch (type & OBEXTTYPEMASK)
+			{
+			case G_OBJX_SLIDE << 8:
+				return EXTTYPE_SLIDE;
+			default:
+				if ((flags & (OF_MOVEABLE|OF_SELECTABLE|OF_EXIT)) == (OF_MOVEABLE|OF_EXIT|OF_SELECTABLE))
+					return EXTTYPE_CLOSER;
+				break;
+			}
+			break;
+		}
+	}
+	return EXTTYPE_NONE;
+}
+
+/*****************************************************************************/
+/*** --------------------------------------------------------------------- ***/
+/*****************************************************************************/
+
+static void save_lineattr(_WORD handle, _WORD attrib[6])
+{
+	vql_attributes(handle, attrib);
+}
+
+/*** --------------------------------------------------------------------- ***/
+
+static void restore_lineattr(_WORD handle, _WORD attrib[6])
+{
+	vsl_type(handle, attrib[0]);
+	vsl_color(handle, attrib[1]);
+	vswr_mode(handle, attrib[2]);
+	vsl_width(handle, attrib[3]);
+	vsl_ends(handle, attrib[4], attrib[5]);
+}
+
+/*** --------------------------------------------------------------------- ***/
+
+static void save_textattr(_WORD handle, _WORD attrib[10])
+{
+	vqt_attributes(handle, attrib);
+}
+
+/*** --------------------------------------------------------------------- ***/
+
+static void restore_textattr(_WORD handle, _WORD attrib[10])
+{
+	_WORD dummy;
+	
+	vst_font(handle, attrib[0]);
+	vst_color(handle, attrib[1]);
+	vst_rotation(handle, attrib[2]);
+	vst_alignment(handle, attrib[3], attrib[4], &dummy, &dummy);
+	/*
+	 * do not restore writing mode here,
+	 * it is off-by-1 in most TOS versions,
+	 * but maybe not when using fVDI/NVDI.
+	 * restore it using some of the other functions
+	 */
+	/* vswr_mode(handle, attrib[5]); */
+	vst_height(handle, attrib[7], &dummy, &dummy, &dummy, &dummy);
+}
+
+/*** --------------------------------------------------------------------- ***/
+
+static void save_fillattr(_WORD handle, _WORD attrib[5])
+{
+	vqf_attributes(handle, attrib);
+}
+
+/*** --------------------------------------------------------------------- ***/
+
+static void restore_fillattr(_WORD handle, _WORD attrib[5])
+{
+	vsf_interior(handle, attrib[0]);
+	vsf_color(handle, attrib[1]);
+	vsf_style(handle, attrib[2]);
+	vswr_mode(handle, attrib[3]);
+	vsf_perimeter(handle, attrib[4]);
+}
+
+/*** --------------------------------------------------------------------- ***/
+
+static void save_markattr(_WORD handle, _WORD attrib[5])
+{
+	vqm_attributes(handle, attrib);
+}
+
+/*** --------------------------------------------------------------------- ***/
+
+static void restore_markattr(_WORD handle, _WORD attrib[5])
+{
+	vsm_type(handle, attrib[0]);
+	vsm_color(handle, attrib[1]);
+	vswr_mode(handle, attrib[2]);
+	vsm_height(handle, attrib[3]);
+	/* vsm_width(handle, attrib[4]); */
+}
+
+/*** --------------------------------------------------------------------- ***/
+
+static void save_clip(_WORD handle, _WORD clip[5])
+{
+	_WORD wo[57];
+	
+	vq_extnd(handle, 1, wo);
+	clip[0] = wo[45];
+	clip[1] = wo[46];
+	clip[2] = wo[47];
+	clip[3] = wo[48];
+	clip[4] = wo[19];
+}
+
+/*** --------------------------------------------------------------------- ***/
+
+static void restore_clip(_WORD handle, _WORD clip[5])
+{
+	vs_clip(handle, clip[4], clip);
+}
+
+/*** --------------------------------------------------------------------- ***/
+
+static void od_open(_WORD vdi_handle, const GRECT *clip)
+{
+	_WORD dummy;
+
+	od_handle = vdi_handle;
 	/*
 	 * can't use HideMouse here, because this function may be called
 	 * from USERDEFs, which are called from AES
@@ -2666,23 +3758,48 @@ void od_open(_WORD _vdi_handle, GRECT *clip)
 	od_parm.pb_yc = clip->g_y;
 	od_parm.pb_wc = clip->g_w;
 	od_parm.pb_hc = clip->g_h;
-	rc_copy(&old_clip, clip);
-	return old;
+
+	vsf_interior(vdi_handle, FIS_SOLID);
+	vsf_style(vdi_handle, IP_SOLID);
+	vsf_perimeter(vdi_handle, FALSE);
+
+	vswr_mode(vdi_handle, MD_REPLACE);
+
+	vsl_ends(vdi_handle, 0, 0);
+	vsl_type(vdi_handle, LT_SOLID);
+	vsl_width(vdi_handle, 1);
+	vsl_color(vdi_handle, G_BLACK);
+
+	vst_alignment(vdi_handle, TA_LEFT, TA_TOP, &dummy, &dummy);
+	od_setfont(vdi_handle, IBM, W_PAL_BLACK, TXT_NORMAL);
+	vswr_mode(vdi_handle, MD_REPLACE);
 }
 
+/* ------------------------------------------------------------------------- */
 
-void od_close(void)
+static void od_close(const GRECT *gr)
 {
-	v_show_c(vdi_handle, FALSE);
+	v_show_c(od_handle, FALSE);
+	W_Clip_Rect(od_handle, FALSE, gr);
 }
 
+/* ------------------------------------------------------------------------- */
 
 _BOOL objc_draw_init(void)
 {
+	_WORD dummy;
+	
+	objc_sysvar(SV_INQUIRE, LK3DIND, FALSE, FALSE, &move_indicator, &change_indicator);
+	objc_sysvar(SV_INQUIRE, LK3DACT, TRUE, FALSE, &move_activator, &dummy);
+	objc_sysvar(SV_INQUIRE, INDBUTCOL, G_LWHITE, 0, &color_indicator, &dummy);
+	objc_sysvar(SV_INQUIRE, ACTBUTCOL, G_LWHITE, 0, &color_activator, &dummy);
+	objc_sysvar(SV_INQUIRE, BACKGRCOL, G_LWHITE, 0, &color_background, &dummy);
+	op_draw3d = color_indicator != G_WHITE || color_activator != G_WHITE || color_background != G_WHITE;
 	sysgem_init();
 	return TRUE;
 }
 
+/* ------------------------------------------------------------------------- */
 
 void objc_draw_exit(void)
 {
@@ -2691,12 +3808,32 @@ void objc_draw_exit(void)
 
 /* ------------------------------------------------------------------------- */
 
-void ob_draw_dialog(_WORD _vdi_handle, OBJECT *tree, _WORD start, _WORD depth, GRECT *gr, EXTOB_MODE mode)
+void ob_draw_dialog(_WORD vdi_handle, OBJECT *tree, _WORD start, _WORD depth, const GRECT *gr, EXTOB_MODE mode)
 {
-	od_open(_vdi_handle, gr);
+	_WORD lineattrib[6];
+	_WORD textattrib[10];
+	_WORD fillattrib[5];
+	_WORD markattrib[5];
+	_WORD clip[5];
+	
+	/*
+	 * since we are going to use the AES vdi handle,
+	 * save the attributes and restore them later
+	 */
+	save_lineattr(vdi_handle, lineattrib);
+	save_textattr(vdi_handle, textattrib);
+	save_fillattr(vdi_handle, fillattrib);
+	save_markattr(vdi_handle, markattrib);
+	save_clip(vdi_handle, clip);
+
+	od_open(vdi_handle, gr);
 	objc_mode = mode;
-	tree = tree;
-	start = start;
-	depth = depth;
-	od_close();
+	obj_draw_area(tree, start, depth, FALSE);
+	od_close(gr);
+
+	restore_textattr(vdi_handle, textattrib);
+	restore_lineattr(vdi_handle, lineattrib);
+	restore_fillattr(vdi_handle, fillattrib);
+	restore_markattr(vdi_handle, markattrib);
+	restore_clip(vdi_handle, clip);
 }

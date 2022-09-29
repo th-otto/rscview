@@ -102,13 +102,23 @@ static void open_screen(void)
 		objc_sysvar(SV_SET, ACTBUTCOL, G_WHITE, 0, &dummy, &dummy);
 		objc_sysvar(SV_SET, BACKGRCOL, G_WHITE, 0, &dummy, &dummy);
 	}
+
+	objc_draw_init();
 }
 
 /* ------------------------------------------------------------------------- */
 
 static void close_screen(void)
 {
+	objc_draw_exit();
 	v_clsvwk(vdi_handle);
+}
+
+/*** ---------------------------------------------------------------------- ***/
+
+_WORD GetNumPlanes(void)
+{
+	return xworkout[4];
 }
 
 /*** ---------------------------------------------------------------------- ***/
@@ -132,6 +142,21 @@ void GetTextSize(_WORD *width, _WORD *height)
 {
 	*width = gl_wchar;
 	*height = gl_hchar;
+}
+
+/*** ---------------------------------------------------------------------- ***/
+
+void GetScreenSize(_WORD *width, _WORD *height)
+{
+	*width = ws.ws_xres + 1;
+	*height = ws.ws_yres + 1;
+	/*
+	 * work around a bug in some VDIs returning an off-by-1 value (AtariX)
+	 */
+	if ((*width & 0x0f) == 0x0f)
+		(*width)++;
+	if ((*height & 0x0f) == 0x0f)
+		(*height)++;
 }
 
 /* ------------------------------------------------------------------------- */
@@ -870,6 +895,41 @@ static _BOOL draw_image(RSCTREE *tree)
 
 /* ------------------------------------------------------------------------- */
 
+static _BOOL draw_tree(RSCFILE *file, RSCTREE *tree)
+{
+	_BOOL ret = TRUE;
+	
+	if (tree == NULL)
+		return FALSE;
+	switch (tree->rt_type)
+	{
+	case RT_DIALOG:
+	case RT_FREE:
+	case RT_UNKNOWN:
+		ret &= draw_dialog(tree, file->rsc_extob.mode);
+		break;
+	case RT_MENU:
+		ret &= draw_menu(tree);
+		break;
+	case RT_FRSTR:
+		ret &= draw_string(tree);
+		break;
+	case RT_ALERT:
+		ret &= draw_alert(tree, file->rsc_extob.mode);
+		break;
+	case RT_FRIMG:
+	case RT_MOUSE:
+		ret &= draw_image(tree);
+		break;
+	case RT_BUBBLEMORE:
+	case RT_BUBBLEUSER:
+		break;
+	}
+	return ret;
+}
+
+/* ------------------------------------------------------------------------- */
+
 static _BOOL draw_all_trees(RSCFILE *file)
 {
 	RSCTREE *tree;
@@ -881,31 +941,30 @@ static _BOOL draw_all_trees(RSCFILE *file)
 	}
 	FOR_ALL_RSC(file, tree)
 	{
-		switch (tree->rt_type)
-		{
-		case RT_DIALOG:
-		case RT_FREE:
-		case RT_UNKNOWN:
-			ret &= draw_dialog(tree, file->rsc_extob.mode);
-			break;
-		case RT_MENU:
-			ret &= draw_menu(tree);
-			break;
-		case RT_FRSTR:
-			ret &= draw_string(tree);
-			break;
-		case RT_ALERT:
-			ret &= draw_alert(tree, file->rsc_extob.mode);
-			break;
-		case RT_FRIMG:
-		case RT_MOUSE:
-			ret &= draw_image(tree);
-			break;
-		case RT_BUBBLEMORE:
-		case RT_BUBBLEUSER:
-			break;
-		}
+		ret &= draw_tree(file, tree);
 	}
+	if (pnglist_file)
+	{
+		fprintf(pnglist_file, "?>\n");
+	}
+	while (alert_buttons != NULL)
+	{
+		struct alert_button *alert = alert_buttons;
+		alert_buttons = alert->next;
+		free(alert);
+	}
+	return ret;
+}
+
+static _BOOL draw_one_tree(RSCFILE *file, RSCTREE *tree)
+{
+	_BOOL ret;
+
+	if (pnglist_file)
+	{
+		fprintf(pnglist_file, "<?php\n");
+	}
+	ret = draw_tree(file, tree);
 	if (pnglist_file)
 	{
 		fprintf(pnglist_file, "?>\n");
@@ -1260,7 +1319,8 @@ enum rscview_opt {
 	OPT_CREATE_PNGLIST,
 	OPT_REPORT_PO,
 	OPT_REPORT_RSC,
-	OPT_IMAGE_FORMAT
+	OPT_IMAGE_FORMAT,
+	OPT_INDEX
 };
 
 static struct option const long_options[] = {
@@ -1280,6 +1340,7 @@ static struct option const long_options[] = {
 	{ "report-rsc", no_argument, NULL, OPT_REPORT_RSC },
 	{ "3d", no_argument, NULL, OPT_3D },
 	{ "image-format", required_argument, NULL, OPT_IMAGE_FORMAT },
+	{ "index", required_argument, NULL, OPT_INDEX },
 	{ "version", no_argument, NULL, OPT_VERSION },
 	{ "help", no_argument, NULL, OPT_HELP },
 	{ NULL, no_argument, NULL, 0 }
@@ -1336,7 +1397,8 @@ int main(int argc, char **argv)
 	const char *po_dir = NULL;
 	const char *charset = NULL;
 	_UWORD load_flags = XRSC_SAFETY_CHECKS;
-	
+	int treeindex = -1;
+
 	while ((c = getopt_long_only(argc, argv, "c:l:p:P:TvX3hV", long_options, NULL)) != EOF)
 	{
 		switch ((enum rscview_opt) c)
@@ -1379,6 +1441,10 @@ int main(int argc, char **argv)
 		
 		case OPT_IMAGEMAP:
 			gen_imagemap = TRUE;
+			break;
+			
+		case OPT_INDEX:
+			treeindex = (int)strtol(optarg, NULL, 0);
 			break;
 			
 		case OPT_VERBOSE:
@@ -1502,8 +1568,15 @@ int main(int argc, char **argv)
 				vst_font(vdi_handle, file->rsc_nls_domain.fontset);
 				vst_font(phys_handle, file->rsc_nls_domain.fontset);
 				
-				if (draw_all_trees(file) == FALSE)
-					exit_status = EXIT_FAILURE;
+				if (treeindex >= 0)
+				{
+					if (draw_one_tree(file, rsc_tree_index(file, treeindex, RT_ANY)) == FALSE)
+						exit_status = EXIT_FAILURE;
+				} else
+				{
+					if (draw_all_trees(file) == FALSE)
+						exit_status = EXIT_FAILURE;
+				}
 				
 				vst_font(phys_handle, 1);
 				close_screen();

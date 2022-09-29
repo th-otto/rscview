@@ -202,7 +202,7 @@ enum ext_type {
 
 #define G_OBJX_MUST_CONVERT (0x01 << 8)
 
-enum ext_type is_ext_type(const EXTOB_OPTIONS *extob, _UWORD type, _UWORD flags, _UWORD state);
+enum ext_type is_ext_type(EXTOB_MODE mode, _UWORD type, _UWORD flags, _UWORD state);
 
 
 EXTERN_C_END
