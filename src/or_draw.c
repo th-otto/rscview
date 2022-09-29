@@ -980,7 +980,6 @@ static _UWORD _draw_mac(_WORD flags, _WORD state, _WORD x, _WORD y, _WORD type, 
 	*draw_3d = color_3d(flags, state, &color, &pattern);
 	pencolor = *draw_3d && (state & OS_DISABLED) && GetNumColors() >= 16 ? color_disabled : W_PAL_BLACK;
 	
-	fprintf(stderr, "draw_mac: %d %d %d %d %04x\n", type, color, pattern, *draw_3d, state);
 	switch (type)
 	{
 	case MAC_RADIO:

@@ -107,7 +107,6 @@ void W_Lines(_WORD handle, const W_POINTS points[], _WORD npoints)
 		*toAr++ = points[ii].xx;
 		*toAr++ = points[ii].yy;
 	}
-	vsl_ends(handle, 0, 0);
 	v_pline(handle, npoints, ar);
 }
 
@@ -324,7 +323,6 @@ void W_Rectangle(_WORD handle, const GRECT *gr)
 		pxy[8]++;
 #endif
 	
-	vsl_ends(handle, 0, 0);
 	v_pline(handle, 5, pxy);
 }
 
@@ -356,7 +354,6 @@ void W_Ellipse(_WORD handle, const GRECT *gr, _BOOL fill, _WORD style, _WORD col
 	yradius = gr->g_h / 2;
 	x = gr->g_x + xradius;
 	y = gr->g_y + yradius;
-	vsl_ends(handle, 0, 0);
 	if (fill)
 	{
 		vsf_perimeter(handle, perimeter);

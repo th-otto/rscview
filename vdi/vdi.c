@@ -304,6 +304,81 @@ static void vdi_draw_vline(VWK *v, int x, int y1, int y2, _UWORD pattern, int op
 }
 
 
+static void vdi_draw_abline(VWK *v, int x1, int x2, int y1, int y2, _UWORD pattern, int op, pel fg, pel bg)
+{
+	int tmp;
+	int dx; 				   /* width of rectangle around line */
+	int dy; 				   /* height of rectangle around line */
+	int yinc;
+	int e1; 			  /* epsilon 1 */
+	int e2; 			  /* epsilon 2 */
+	int eps;
+	int loopcnt;
+	int x, y;
+	
+	/* Always draw from left to right */
+	if (x2 < x1)
+	{
+		tmp = x1;
+		x1 = x2;
+		x2 = tmp;
+	}
+	dx = x2 - x1;
+	dy = y2 - y1;
+
+	/* calculate increase values for x and y to add to actual address */
+	if (dy < 0)
+	{
+		dy = -dy;						/* make dy absolute */
+		yinc = -1;
+	} else
+	{
+		yinc = 1;
+	}
+
+	x = x1;
+	y = y1;
+	
+	if (dx >= dy)
+	{
+		e1 = 2 * dy;
+		eps = -dx;
+		e2 = 2 * dx;
+
+		for (loopcnt = dx; loopcnt >= 0; loopcnt--)
+		{
+			gfx_put_pixel(v, x, y, pattern, op, fg, bg);
+			pattern = rolw(pattern);
+			x++;
+			eps += e1;
+			if (eps >= 0)
+			{
+				eps -= e2;
+				y += yinc;		/* increment y */
+			}
+		}
+	} else
+	{
+		e1 = 2 * dx;
+		eps = -dy;
+		e2 = 2 * dy;
+
+		for (loopcnt = dy; loopcnt >= 0; loopcnt--)
+		{
+			gfx_put_pixel(v, x, y, pattern, op, fg, bg);
+			pattern = rolw(pattern);
+			y += yinc;
+			eps += e1;
+			if (eps >= 0)
+			{
+				eps -= e2;
+				x++;
+			}
+		}
+	}
+}
+
+
 static void vdi_draw_line(VWK *v, int x1, int y1, int x2, int y2, _UWORD pattern, int op, pel fg, pel bg)
 {
 	/* Test for special cases of straight lines or single point */
@@ -335,7 +410,8 @@ static void vdi_draw_line(VWK *v, int x1, int y1, int x2, int y2, _UWORD pattern
 		}
 		return;
 	}
-	/* else diagonal line; TODO */
+	/* else diagonal line */
+	vdi_draw_abline(v, x1, x2, x1, y1, pattern, op, fg, bg);
 }
 
 
@@ -351,6 +427,19 @@ static void vdi_draw_lines(VWK *v, VDI_POINT *points, int n, _UWORD pattern, int
 		x2 = points->x;
 		y2 = points->y;
 		points++;
+		/*
+		 * copy a DRI kludge: if we're in XOR mode, avoid XORing intermediate
+		 * points in a polyline.  we do it slightly differently than DRI with
+		 * slightly differing results - but it's a kludge in either case.
+		 */
+		if (op == MD_XOR && n != 0)
+		{
+			if (x1 != x2)
+				x2--;
+			else if (y1 != y2)
+				y2--;
+		}
+
 		vdi_draw_line(v, x1, y1, x2, y2, pattern, op, fg, bg);
 		x1 = x2;
 		y1 = y2;
@@ -4439,17 +4528,17 @@ static void do_fillarea(VWK *v, VDI_POINT *points, int n)
 
 static void draw_segs(VWK *v, int nr_vertices, VDI_POINT *points, gboolean fill)
 {
-    if (nr_vertices >= 2)
-    {
-        /* output to driver, converting ndc if necessary */
-        if (fill)
-        {
-            do_fillarea(v, points, nr_vertices);
-        } else
-        {
-        	do_pline(v, points, nr_vertices);
-        }
-    }
+	if (nr_vertices >= 2)
+	{
+		/* output to driver, converting ndc if necessary */
+		if (fill)
+		{
+			do_fillarea(v, points, nr_vertices);
+		} else
+		{
+			do_pline(v, points, nr_vertices);
+		}
+	}
 }
 
 
@@ -5756,7 +5845,8 @@ static short Isin(unsigned short angle)
 	const short *table;
 
 	half = 0;
-	while (angle >= I_PI) {
+	while (angle >= I_PI)
+	{
 		half ^= 1;
 		angle -= I_PI;
 	}
