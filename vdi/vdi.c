@@ -306,7 +306,7 @@ static void vdi_draw_vline(VWK *v, int x, int y1, int y2, _UWORD pattern, int op
 }
 
 
-static void vdi_draw_abline(VWK *v, int x1, int x2, int y1, int y2, _UWORD pattern, int op, pel fg, pel bg)
+static void vdi_draw_abline(VWK *v, int x1, int y1, int x2, int y2, _UWORD pattern, int op, pel fg, pel bg)
 {
 	int tmp;
 	int dx; 				   /* width of rectangle around line */
@@ -413,7 +413,7 @@ static void vdi_draw_line(VWK *v, int x1, int y1, int x2, int y2, _UWORD pattern
 		return;
 	}
 	/* else diagonal line */
-	vdi_draw_abline(v, x1, x2, x1, y1, pattern, op, fg, bg);
+	vdi_draw_abline(v, x1, y1, x2, y2, pattern, op, fg, bg);
 }
 
 
