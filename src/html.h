@@ -28,6 +28,7 @@ typedef struct _rsc_opts {
 	FILE *errorfile;
 	gboolean for_cgi;
 	gboolean cgi_cached;
+	gboolean aes_3d;
 	gboolean use_xhtml;
 	gboolean to_xml;
 	gboolean hidemenu;

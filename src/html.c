@@ -154,6 +154,7 @@ static char *html_cgi_params(rsc_opts *opts)
 	return g_strconcat(
 		opts->hidemenu ? "&amp;hidemenu=1" : "",
 		opts->cgi_cached ? "&amp;cached=1" : "",
+		opts->aes_3d ? "&amp;aes3d=1" : "",
 		NULL);
 }
 	

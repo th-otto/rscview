@@ -63,7 +63,7 @@ Some features will not work without JavaScript enabled.
 <td>
 <fieldset>
 Type in URL of a .RSC file (it must be remotely accessible from that URL<br />
-for example <a href="rscview.cgi?url=/rsc/orcs.rsc">http://www.tho-otto.de/rsc/orcs.rsc</a>):
+for example <a href="rscview.cgi?url=/rsc/orcs.rsc&amp;contents=1">http://www.tho-otto.de/rsc/orcs.rsc</a>):
 <br />
 <input type="text" id="url" name="url" size="60" tabindex="1" style="margin-top: 1ex;" />
 <input id="submiturl" style="background-color: #cccccc; font-weight: bold; visibility: hidden;" type="button" value="View" onclick="submitUrl(document.getElementById('url').value);" />
@@ -81,7 +81,9 @@ document.getElementById('submiturl').style.visibility="visible";
 <fieldset>
 Choose a .RSC file for upload <br />
 <input type="file" id="file" name="file" size="60" accept=".rsc,.RSC,.rso,.RSO,.hrd,.HRD,.rsd,.RSD,.def,.DEF,.dfn,.DFN" style="margin-top: 1ex;" required="required" multiple="multiple"/>
-<input id="submitfile" style="background-color: #cccccc; font-weight: bold;" type="button" value="View" onclick="submitFile();" />
+<input id="submitfile" style="background-color: #cccccc; font-weight: bold;" type="button" value="View" onclick="submitFile();" /> <br />
+Note: if you have a resource definition file (*.rso, *.hrd, *.rsm etc.),
+you should select that along with the resource file.
 </fieldset>
 <br />
 </div>
@@ -92,7 +94,7 @@ document.getElementById('uploadbox').style.display="block";
 
 <fieldset>
 <table>
-<tr><td style="padding-left: 2ex"><input type="checkbox" name="3d" value="1" /> Use 3d-effects<br /></td></tr>
+<tr><td style="padding-left: 2ex"><input type="checkbox" name="aes3d" value="1" /> Use 3d-effects<br /></td></tr>
 <tr>
 <td>
 <input type="radio" name="index" value="0" checked="checked" />Show only first dialog

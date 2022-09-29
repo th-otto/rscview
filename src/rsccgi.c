@@ -59,7 +59,6 @@ static _WORD xworkout[57];
  * program options
  */
 static _BOOL verbose = FALSE;
-static _BOOL aes_3d = FALSE;
 #define IMAGE_PNG 0
 #define IMAGE_BMP 1
 static int image_format = IMAGE_PNG;
@@ -77,7 +76,7 @@ struct curl_parms {
 /* ------------------------------------------------------------------------- */
 /*****************************************************************************/
 
-static void open_screen(void)
+static void open_screen(rsc_opts *opts)
 {
 	int i;
 	_WORD pxy[8];
@@ -103,7 +102,7 @@ static void open_screen(void)
 
 	vsf_color(vdi_handle, G_WHITE);
 	
-	if (aes_3d)
+	if (opts->aes_3d)
 	{
 		objc_sysvar(SV_SET, LK3DIND, FALSE, TRUE, &dummy, &dummy);
 		objc_sysvar(SV_SET, LK3DACT, TRUE, FALSE, &dummy, &dummy);
@@ -316,12 +315,12 @@ static _WORD write_image(RSCTREE *tree, rsc_opts *opts, _WORD x, _WORD y, _WORD 
 			tp->tm_hour,
 			tp->tm_min,
 			tp->tm_sec,
-			aes_3d ? "_3d" : "");
+			opts->aes_3d ? "_3d" : "");
 		g_free(tmp);
 	} else
 	{
 		char *tmp = g_ascii_strdown(tree->rt_name, STR0TERM);
-		basename = g_strdup_printf("%s%s", tmp, aes_3d ? "_3d" : "");
+		basename = g_strdup_printf("%s%s", tmp, opts->aes_3d ? "_3d" : "");
 		g_free(tmp);
 	}
 	switch (image_format)
@@ -767,7 +766,7 @@ static gboolean display_tree(const char *filename, rsc_opts *opts, GString *out,
 				file->rsc_nls_domain.fontset = cset;
 		}
 
-		open_screen();
+		open_screen(opts);
 		vst_font(vdi_handle, file->rsc_nls_domain.fontset);
 		vst_font(phys_handle, file->rsc_nls_domain.fontset);
 
@@ -824,7 +823,7 @@ static gboolean display_file(const char *filename, rsc_opts *opts, GString *out)
 				file->rsc_nls_domain.fontset = cset;
 		}
 
-		open_screen();
+		open_screen(opts);
 		vst_font(vdi_handle, file->rsc_nls_domain.fontset);
 		vst_font(phys_handle, file->rsc_nls_domain.fontset);
 
@@ -878,7 +877,7 @@ static gboolean display_file(const char *filename, rsc_opts *opts, GString *out)
 			g_string_append(out, "</td>\n");
 
 			g_string_append(out, "<td>");
-			fname = g_strdup_printf("%s?url=%s&index=%u%s", cgi_scriptname, html_referer_url, treeindex, opts->cgi_cached ? "&cached=1" : "");
+			fname = g_strdup_printf("%s?url=%s&index=%u%s%s", cgi_scriptname, html_referer_url, treeindex, opts->cgi_cached ? "&cached=1" : "", opts->aes_3d ? "&aes3d=1" : "");
 			quoted = html_quote_name(fname, QUOTE_UNICODE|QUOTE_NOLTR);
 			name_quoted = html_quote_name(tree->rt_name, QUOTE_UNICODE);
 			g_string_append_printf(out, "<a href=\"%s\">%s</a>",
@@ -1128,6 +1127,7 @@ int main(void)
 
 	memset(opts, 0, sizeof(*opts));
 	opts->cgi_cached = FALSE;
+	opts->aes_3d = FALSE;
 	opts->use_xhtml = FALSE;
 	opts->to_xml = FALSE;
 	opts->charset = NULL;
@@ -1192,9 +1192,9 @@ int main(void)
 		show_contents = (int)strtol(val, NULL, 10);
 		g_free(val);
 	}
-	if ((val = cgiFormString("3d")) != NULL)
+	if ((val = cgiFormString("aes3d")) != NULL)
 	{
-		aes_3d = (int)strtol(val, NULL, 10);
+		opts->aes_3d = (int)strtol(val, NULL, 10);
 		g_free(val);
 	}
 	
