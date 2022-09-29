@@ -3789,7 +3789,7 @@ _BOOL objc_draw_init(void)
 	_WORD dummy;
 	
 	objc_sysvar(SV_INQUIRE, LK3DIND, FALSE, FALSE, &move_indicator, &change_indicator);
-	objc_sysvar(SV_INQUIRE, LK3DACT, TRUE, FALSE, &move_activator, &dummy);
+	objc_sysvar(SV_INQUIRE, LK3DACT, TRUE, FALSE, &move_activator, &change_activator);
 	objc_sysvar(SV_INQUIRE, INDBUTCOL, G_LWHITE, 0, &color_indicator, &dummy);
 	objc_sysvar(SV_INQUIRE, ACTBUTCOL, G_LWHITE, 0, &color_activator, &dummy);
 	objc_sysvar(SV_INQUIRE, BACKGRCOL, G_LWHITE, 0, &color_background, &dummy);

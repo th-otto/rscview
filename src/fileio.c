@@ -10,7 +10,6 @@
 #include "rsc.h"
 #include <time.h>
 #include "debug.h"
-#include "aesutils.h"
 #include "rso.h"
 #include "pofile.h"
 #include "rsc_lang.h"
@@ -92,6 +91,9 @@ static NOTRANS_ENTRY const notrans[] = {
     { EMUTOS_AES,  0, str("xF") },
 #undef str
 };
+
+#undef min
+#define min(x,y)	(((x) < (y)) ? (x) : (y))
 
 /******************************************************************************/
 /*** ---------------------------------------------------------------------- ***/
@@ -985,7 +987,8 @@ static _BOOL hrd_load(RSCFILE *file, const char *filename, _BOOL *def_found)
 			if (tree != NULL)
 			{
 				tree->rt_type = lasttype;
-				strmaxcpy(tree->rt_name, min(HRD_NAMELEN,MAXNAMELEN) + 1, (const char *)entry.hrd_name);
+				strncpy(tree->rt_name, (const char *)entry.hrd_name, min(HRD_NAMELEN,MAXNAMELEN));
+				tree->rt_name[min(HRD_NAMELEN,MAXNAMELEN)] = '\0';
 			}
 			break;
 		case HRD_OBJECT:
@@ -1141,7 +1144,8 @@ static _BOOL dfn_load(RSCFILE *file, const char *filename, _BOOL *def_found)
 			if (treename)
 			{
 				tree->rt_type = type;
-				strmaxcpy(tree->rt_name, min(RSDNAMELEN,MAXNAMELEN) + 1, nameinfo.na_name);
+				strncpy(tree->rt_name, nameinfo.na_name, min(RSDNAMELEN,MAXNAMELEN));
+				tree->rt_name[min(RSDNAMELEN,MAXNAMELEN)] = '\0';
 			} else
 			{
 				ob = NULL;
@@ -1243,7 +1247,8 @@ static _BOOL rsd_load(RSCFILE *file, const char *filename, _BOOL *def_found)
 			if (tree != NULL)
 			{
 				tree->rt_type = nameinfo.na_treetype;
-				strmaxcpy(tree->rt_name, min(RSDNAMELEN,MAXNAMELEN) + 1, nameinfo.na_name);
+				strncpy(tree->rt_name, nameinfo.na_name, min(RSDNAMELEN,MAXNAMELEN));
+				tree->rt_name[min(RSDNAMELEN,MAXNAMELEN)] = '\0';
 			}
 			lasttype = nameinfo.na_treetype;
 		} else if (nameinfo.na_nametype == 1)

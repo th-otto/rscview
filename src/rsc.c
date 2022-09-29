@@ -12,7 +12,6 @@
 #include <ro_mem.h>
 #include <fileio.h>
 #include <time.h>
-#include "aesutils.h"
 #include "pofile.h"
 
 rsc_options op_rsc_opts = {
@@ -582,7 +581,8 @@ _BOOL ob_setname(RSCFILE *file, RSCTREE *tree, _WORD ob, const char *name, size_
 	if (file == NULL || tree == NULL || ob < 0 || ob >= tree->rt_nobs)
 		return FALSE;
 	p = tree->rt_obnames + ob * (MAXNAMELEN + 1);
-	strmaxcpy(p, maxlen, name);
+	strncpy(p, name, maxlen - 1);
+	p[maxlen - 1] = '\0';
 	return TRUE;
 }
 

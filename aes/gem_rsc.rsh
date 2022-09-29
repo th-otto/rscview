@@ -545,7 +545,7 @@ static _UBYTE const gem_rsc_IMAGE13[] = {
 0x02, 0x40, 0x02, 0x40, 0x02, 0x40, 0x03, 0xC0, 0x00, 0x00};
 
 
-const char *const rs_fstr[] = {
+static const char *const rs_fstr[] = {
 	gem_rsc_string_52,
 	gem_rsc_string_53,
 	gem_rsc_string_54,

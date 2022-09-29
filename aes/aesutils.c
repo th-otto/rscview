@@ -33,15 +33,6 @@ const char *scasb(const char *p, char b)
 
 
 /*
- * Copy src xywh block to dest xywh block.
- */
-void rc_copy(const GRECT *src, GRECT *dst)
-{
-	*dst = *src;
-}
-
-
-/*
  * Return true if the x,y position is within the grect.
  */
 _BOOL inside(_WORD x, _WORD y, const GRECT *pt)
@@ -77,21 +68,6 @@ int aes_toupper(int ch)
 	if (ch >= 'a' && ch <= 'z')
 		ch -= 0x20;
 	return ch;
-}
-
-
-/*
- * Length of a string
- */
-size_t strlen(const char *p1)
-{
-	_WORD len;
-
-	len = 0;
-	while (*p1++)
-		len++;
-
-	return len;
 }
 
 

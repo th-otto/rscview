@@ -1559,7 +1559,7 @@ static void gsx_cblt(_WORD *saddr, _UWORD sx, _UWORD sy, _UWORD sw, _WORD *daddr
 /*
  *	Routine to draw a color icon, which is a graphic image with a text
  *	string underneath it.  Note that this routine is very similar to
- *	gr_icon().   It has an extra parameter which is the list of color
+ *	gr_gicon().   It has an extra parameter which is the list of color
  *	icons for different resolutions.
  */
 void gr_cicon(_WORD state, _WORD *pmask, _WORD *pdata, const char *ptext, vdi_wchar_t ch, _WORD chx, _WORD chy, GRECT *pi, GRECT *pt, CICONBLK *cicon)

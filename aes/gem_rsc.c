@@ -6,7 +6,6 @@
 #include "s_endian.h"
 
 OBJECT **aes_rsc_tree = (OBJECT **)rs_trindex;
-const char *const *aes_rsc_string = rs_frstr;
 const BITBLK *const *aes_rsc_bitblk = rs_frimg;
 
 /* Strings for the alert box */
@@ -14,6 +13,54 @@ static char msg_str[MAX_LINENUM][MAX_LINELEN+1];
 static char msg_but[MAX_BUTNUM][MAX_BUTLEN+1];
 
 static nls_domain aes_domain = { "aes", NULL, CHARSET_ST, NULL };
+
+
+/*** ---------------------------------------------------------------------- ***/
+
+/*
+ *  trims trailing spaces from string
+ */
+static void trim_spaces(char *string)
+{
+	char *p;
+
+	for (p = string + strlen(string) - 1; p >= string; p--)
+		if (*p != ' ')
+			break;
+	p[1] = '\0';
+}
+
+/*** ---------------------------------------------------------------------- ***/
+
+static void xlate_obj_array(nls_domain *domain, OBJECT *obj_array, _LONG nobs, _BOOL trim_strings)
+{
+	OBJECT *obj;
+	
+	for (obj = obj_array; --nobs >= 0; obj++)
+	{
+		_WORD type = obj->ob_type & OBTYPEMASK;
+		switch (type)
+		{
+		case G_TEXT:
+		case G_FTEXT:
+			obj->ob_spec.tedinfo->te_ptext = nls_dgettext(domain, obj->ob_spec.tedinfo->te_ptext);
+			break;
+		case G_BOXTEXT:
+		case G_FBOXTEXT:
+			obj->ob_spec.tedinfo->te_ptmplt = nls_dgettext(domain, obj->ob_spec.tedinfo->te_ptmplt);
+			break;
+		case G_STRING:
+		case G_BUTTON:
+		case G_TITLE:
+			if (type == G_STRING && trim_strings)
+				trim_spaces(obj->ob_spec.free_string);
+			obj->ob_spec.free_string = nls_dgettext(domain, obj->ob_spec.free_string);
+			break;
+		default:
+			break;
+		}
+	}
+}
 
 _BOOL rsc_read(void)
 {
@@ -47,5 +94,5 @@ void rsc_free(void)
 /* Get a string from the GEM-RSC */
 char *rs_str(_UWORD stnum)
 {
-	return nls_dgettext(&aes_domain, aes_rsc_string[stnum]);
+	return nls_dgettext(&aes_domain, rs_frstr[stnum]);
 }

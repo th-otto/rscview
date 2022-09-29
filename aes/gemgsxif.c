@@ -49,6 +49,7 @@
 #endif
 #include "s_endian.h"
 
+#undef aestrap_intercepted
 #define aestrap_intercepted() 0
 
 
