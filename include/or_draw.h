@@ -35,6 +35,9 @@ extern PARMBLK od_parm;
 extern GRECT od_pxy;
 extern GRECT od_framerec;
 extern GRECT od_outrec;
+extern _WORD color_background;
+extern _WORD color_activator;
+extern _WORD od_ch;
 
 void od_setfont(_WORD handle, _WORD size, _WORD color, _UWORD style);
 void od_box(_WORD advance, _BOOL draw);

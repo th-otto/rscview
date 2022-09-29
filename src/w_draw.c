@@ -695,3 +695,32 @@ _WORD W_TextWidth(_WORD handle, const char *text)
 	w = extend[2] - extend[0];
 	return w;
 }
+
+/******************************************************************************/
+/* W_NTextWidth()                                                              */
+/* -------------------------------------------------------------------------- */
+/* Entwickler......: Th.Otto                                                  */
+/* 1.Version.......:                                                          */
+/* letzte Aenderung:                                                          */
+/* -------------------------------------------------------------------------- */
+/* Gibt die Breite des Textes (text) in Bildpunkten zurueck. Die              */
+/* Funktion ist notwendig, seit in  Metabildern und auf Drucker               */
+/* TRUE-TYPE-Fonts benutzt werden.                                            */
+/* -------------------------------------------------------------------------- */
+/* Parameter:                                                                 */
+/* -> os           = Zeiger auf Ausgabegeraete/Geraetekontexte                */
+/* -> text         = Zeiger auf Text, der zu untersuchen ist                  */
+/* -------------------------------------------------------------------------- */
+/* Rueckgabe:                                                                 */
+/*                   Breite des Textes in Bildpunkten                         */
+/******************************************************************************/
+
+_WORD W_NTextWidth(_WORD handle, const char *text, size_t len)
+{
+	_WORD w;
+	_WORD extend[8];
+	
+	vqt_extentn(handle, text, len, extend);
+	w = extend[2] - extend[0];
+	return w;
+}
