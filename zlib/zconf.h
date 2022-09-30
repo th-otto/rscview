@@ -548,6 +548,10 @@ __extension__ typedef long long z_off64_t_;
 #  endif
 #endif
 
+#ifdef __GNUC__
+#define NO_DUMMY_DECL
+#endif
+
 /* MVS linker does not support external names larger than 8 bytes */
 #if defined(__MVS__)
   #pragma map(deflateInit_,"DEIN")

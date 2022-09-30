@@ -826,7 +826,7 @@ void *gaddr;
 	case R_OBSPEC:
 		if (idx < 0 || idx >= NUM_OBS)
 			return 0;
-		*((_LONG **)gaddr) = &rs_object[idx].ob_spec.index;
+		*((_LONG_PTR **)gaddr) = &rs_object[idx].ob_spec.index;
 		break;
 #endif
 #if NUM_TI != 0

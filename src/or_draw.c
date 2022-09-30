@@ -1855,9 +1855,6 @@ static void show_cursor(_WORD x, _WORD y, OBJECT *objects)
 #endif
 }
 
-#ifdef OS_ATARI
-#include "ciconrsc.h"
-#endif
 
 
 void TO_draw_obj(
