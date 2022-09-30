@@ -418,7 +418,7 @@ static void flip_xrsrc_header(XRS_HEADER *header)
  * If you change this, you also have to change vdi_put_image
  * and vro_cpy_to_screen in the VDI.
  */
-#define FLIP_DATA 0
+#define FLIP_DATA 1
 
 #if FLIP_DATA
 static void flip_image(size_t words, _WORD *data)
@@ -1848,7 +1848,7 @@ RSCFILE *xrsrc_load(const char *filename, _WORD wchar, _WORD hchar, _UWORD flags
 						return NULL;
 					}
 #if FLIP_DATA
-					if (swap_flag)
+					if (file->rsc_little_endian)
 					{
 						flip_image(size / 2, cicon->monoblk.ib_pdata);
 						flip_image(size / 2, cicon->monoblk.ib_pmask);
@@ -1924,7 +1924,7 @@ RSCFILE *xrsrc_load(const char *filename, _WORD wchar, _WORD hchar, _UWORD flags
 								break;
 							}
 #if FLIP_DATA
-							if (swap_flag)
+							if (file->rsc_little_endian)
 							{
 								flip_image(size * dp->num_planes / 2, dp->col_data);
 								flip_image(size / 2, dp->col_mask);
@@ -1945,7 +1945,7 @@ RSCFILE *xrsrc_load(const char *filename, _WORD wchar, _WORD hchar, _UWORD flags
 									break;
 								}
 #if FLIP_DATA
-								if (swap_flag)
+								if (file->rsc_little_endian)
 								{
 									flip_image(size * dp->num_planes / 2, dp->sel_data);
 									flip_image(size / 2, dp->sel_mask);
@@ -2085,7 +2085,7 @@ RSCFILE *xrsrc_load(const char *filename, _WORD wchar, _WORD hchar, _UWORD flags
 	 * swap it now when loading a file,
 	 * after their pointers have been fixed
 	 */
-	if (file->rsc_swap_flag)
+	if (file->rsc_little_endian)
 		xrsc_flip_data(file, filesize);
 #endif
 
