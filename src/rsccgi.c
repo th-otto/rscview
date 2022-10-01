@@ -437,18 +437,34 @@ static _BOOL draw_dialog(RSCTREE *tree, rsc_opts *opts, GString *out, EXTOB_MODE
 
 /* ------------------------------------------------------------------------- */
 
-static _BOOL draw_menu(RSCTREE *tree, rsc_opts *opts, GString *out)
+/*
+ *  trims trailing spaces from string
+ */
+static void trim_spaces(char *string)
+{
+	char *p;
+
+	for (p = string + strlen(string) - 1; p >= string; p--)
+		if (*p != ' ')
+			break;
+	p[1] = '\0';
+}
+
+/*** ---------------------------------------------------------------------- ***/
+
+static _BOOL draw_menu(RSCFILE *file, RSCTREE *tree, rsc_opts *opts, GString *out)
 {
 	OBJECT *ob;
 	_WORD thebar;
 	_WORD theactive;
 	_WORD themenus;
-	_WORD title, menubox;
+	_WORD title, menubox, child;
 	_WORD x;
 	GRECT gr;
 	_WORD err;
 	_WORD maxx, maxy;
-	
+	char *str;
+
 	ob = tree->rt_objects.menu.mn_tree;
 	if (ob == NULL)
 		return FALSE;
@@ -531,6 +547,42 @@ static _BOOL draw_menu(RSCTREE *tree, rsc_opts *opts, GString *out)
 			maxy = my;
 	} while (menubox != themenus);
 	
+	g_string_append(out, "<nav>\n");
+	g_string_append(out, "    <ul>\n");
+
+	title = ob[theactive].ob_head;
+	menubox = ob[themenus].ob_head;
+	do
+	{
+		g_string_append(out, "        <li class=\"rsctitle\"> \n");
+		str = (ob[title].ob_type & 0xff) == G_TITLE ? nls_conv_to_utf8(file->rsc_nls_domain.fontset, ob[title].ob_spec.free_string, STR0TERM, QUOTE_HTML) : g_strdup("");
+		trim_spaces(str);
+		g_string_append_printf(out, "            <label class=\"rsctitlestring\" for='title-%d'>%s</label>\n", title, str);
+		g_free(str);
+		g_string_append_printf(out, "            <input class=\"rsctitleinput\" type=\"checkbox\" id=\"title-%d\"/>\n", title);
+		child = ob[menubox].ob_head;
+		if (child != NIL)
+		{
+			g_string_append(out, "            <ul class=\"rscmenubox\">\n");
+			do
+			{
+				str = (ob[child].ob_type & 0xff) == G_STRING ? nls_conv_to_utf8(file->rsc_nls_domain.fontset, ob[child].ob_spec.free_string, STR0TERM, QUOTE_HTML) : g_strdup("");
+				trim_spaces(str);
+				g_string_append_printf(out, "                <li class=\"rscmenuentry\"><a href=\"#\">%s</a></li>\n", str);
+				g_free(str);
+				child = ob[child].ob_next;
+			} while (child != menubox);
+			g_string_append(out, "            </ul>\n");
+		}
+		g_string_append(out, "        </li>\n");
+		title = ob[title].ob_next;
+		menubox = ob[menubox].ob_next;
+	} while (title != theactive && menubox != themenus);
+	
+	g_string_append(out, "    </ul>\n");
+	g_string_append(out, "</nav>\n");
+	g_string_append(out, "<br />\n");
+
 	ob[ROOT].ob_width = maxx;
 	ob[ROOT].ob_height = maxy;
 	ob[thebar].ob_width = maxx;
@@ -701,7 +753,7 @@ static _BOOL draw_tree(RSCFILE *file, RSCTREE *tree, rsc_opts *opts, GString *ou
 		ret &= draw_dialog(tree, opts, out, file->rsc_extob.mode);
 		break;
 	case RT_MENU:
-		ret &= draw_menu(tree, opts, out);
+		ret &= draw_menu(file, tree, opts, out);
 		break;
 	case RT_FRSTR:
 		ret &= draw_string(tree, opts, out);

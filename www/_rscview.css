@@ -142,3 +142,65 @@ li {
   font-size: 11pt;
   cursor: pointer;
 }
+
+
+/* style for the titles */
+.rsctitle {
+    display: block;
+    float: left;
+    margin: 0px;
+    position: relative;
+    white-space: nowrap;
+}
+/* style for the title strings */
+.rsctitlestring {
+    display: block;
+    padding: 0px 8px;
+    color: #000000;
+    background: #ffffff;
+}
+/* style for the titles when hovered */
+.rsctitlestring:hover {
+    color: #ffffff;
+    background: #000000;
+}
+/* style for the submenu boxes */
+.rscmenubox {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background: #ffffff;
+    border: solid 1px black;
+    margin: 0px;
+    /* we hide the sub menu's */
+    display: none;
+}
+/* style for the submenu entries */
+.rscmenuentry {
+    white-space: pre;
+    width: 100%;
+}
+/* style for the submenu strings */
+.rscmenuentry > a {
+    display: block;
+    color: black;
+    text-decoration: none;
+    font-family: courier;
+    padding-right: 0px;
+    margin-right: 0px;
+}
+.rscmenuentry > a:hover {
+    color: white;
+    background: black;
+}
+
+/* here the magic happens: */
+/* we hide the checkboxes, they are just there to store the 'state' in the background */
+/* their state will be triggered by clicking the corresponding label */
+.rsctitleinput {
+    display: none;
+}
+/* we show the sub menu, if it follows a checked checkbox */
+.rsctitleinput:checked + ul {
+    display: block;
+}
