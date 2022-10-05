@@ -493,7 +493,7 @@ local int updatewindow(z_streamp strm, const Bytef *end, unsigned copy)
    if there is no input available. */
 #define PULLBYTE() \
     do { \
-        if (have == 0) goto inf_leave; \
+        if (have == 0) { goto inf_leave; } \
         have--; \
         hold += (unsigned long)(*next++) << bits; \
         bits += 8; \
@@ -503,8 +503,9 @@ local int updatewindow(z_streamp strm, const Bytef *end, unsigned copy)
    not enough available input to do that, then return from inflate(). */
 #define NEEDBITS(n) \
     do { \
-        while (bits < (unsigned)(n)) \
+        while (bits < (unsigned)(n)) { \
             PULLBYTE(); \
+        } \
     } while (0)
 
 /* Return the low n bits of the bit accumulator (n < 16) */

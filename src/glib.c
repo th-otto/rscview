@@ -909,7 +909,7 @@ void convslash(char *str)
 
 #define CONTINUATION_CHAR                           \
   if ((*(const unsigned char *)p & 0xc0) != 0x80) /* 10xxxxxx */ \
-    goto error;                                     \
+    { goto error; }                                    \
   val <<= 6;                                        \
   val |= (*(const unsigned char *)p) & 0x3f
 

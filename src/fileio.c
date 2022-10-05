@@ -1509,8 +1509,10 @@ static _BOOL rso_read_header(RSO_HEADER *rso_header)
 	INPWC(rso_header->rso_rule1.lower);
 	INPWC(rso_header->rso_rule1.alpha);
 	INPWC(rso_header->rso_rule1.alnum);
-	FREAD(rso_header->rso_rule1.add, 40); update_checksum(rso_header->rso_rule1.add, 40);
-	FREAD(rso_header->rso_rule1.sub, 40); update_checksum(rso_header->rso_rule1.sub, 40);
+	FREAD(rso_header->rso_rule1.add, 40);
+	update_checksum(rso_header->rso_rule1.add, 40);
+	FREAD(rso_header->rso_rule1.sub, 40);
+	update_checksum(rso_header->rso_rule1.sub, 40);
 	INPL(rso_header->rso_rule1.charset[0]);
 	INPL(rso_header->rso_rule1.charset[1]);
 	INPL(rso_header->rso_rule1.charset[2]);
@@ -1524,8 +1526,10 @@ static _BOOL rso_read_header(RSO_HEADER *rso_header)
 	INPWC(rso_header->rso_rule2.lower);
 	INPWC(rso_header->rso_rule2.alpha);
 	INPWC(rso_header->rso_rule2.alnum);
-	FREAD(rso_header->rso_rule2.add, 40); update_checksum(rso_header->rso_rule2.add, 40);
-	FREAD(rso_header->rso_rule2.sub, 40); update_checksum(rso_header->rso_rule2.sub, 40);
+	FREAD(rso_header->rso_rule2.add, 40);
+	update_checksum(rso_header->rso_rule2.add, 40);
+	FREAD(rso_header->rso_rule2.sub, 40);
+	update_checksum(rso_header->rso_rule2.sub, 40);
 	INPL(rso_header->rso_rule2.charset[0]);
 	INPL(rso_header->rso_rule2.charset[1]);
 	INPL(rso_header->rso_rule2.charset[2]);
