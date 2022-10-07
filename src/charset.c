@@ -12,6 +12,10 @@
 #include "cp_st_ru.h"
 #include "cp_st_l5.h"
 
+#define MAX(a,b)  ((a) > (b)? (a) : (b))
+#define MIN(a,b)  ((a) < (b)? (a) : (b))
+
+
 #define nls_put_unichar(p, wc) \
 	if (wc < 0x80) \
 	{ \
@@ -146,7 +150,7 @@ char *nls_conv_to_utf8(int charset, const void *src, size_t len, int quote_flags
 		char *p;
 		unsigned int wc;
 		
-		dst = p = g_new(char, len * UTF8_CHARMAX + 1);
+		dst = p = g_new(char, len * MAX(UTF8_CHARMAX, 6) + 1);
 		if (dst != NULL)
 		{
 			ptr = (const unsigned char *)src;
@@ -191,6 +195,14 @@ char *nls_conv_to_utf8(int charset, const void *src, size_t len, int quote_flags
 					*p++ = 'u';
 					*p++ = 'o';
 					*p++ = 't';
+					*p++ = ';';
+				} else if ((quote_flags & QUOTE_HTML) && c == ' ')
+				{
+					*p++ = '&';
+					*p++ = 'n';
+					*p++ = 'b';
+					*p++ = 's';
+					*p++ = 'p';
 					*p++ = ';';
 				} else
 				{

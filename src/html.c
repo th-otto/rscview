@@ -36,9 +36,7 @@ static char const html_toolbar_style[] = "rscview_nav_toolbar";
 static char const html_nav_img_style[] = "rscview_nav_img";
 static char const html_node_style[] = "rscview_node";
 static char const html_pnode_style[] = "rscview_pnode";
-static char const html_dropdown_info_style[] = "rscview_dropdown_info";
 static char const html_error_note_style[] = "rscview_error_note";
-static char const html_dropdown_style[] = "rscview_dropdown";
 
 static char const html_nav_back_png[] = "images/iback.png";
 static char const html_nav_prev_png[] = "images/iprev.png";
@@ -52,7 +50,6 @@ static char const html_nav_index_png[] = "images/iindex.png";
 static char const html_nav_help_png[] = "images/ihelp.png";
 #endif
 static char const html_nav_info_png[] = "images/iinfo.png";
-static char const html_rsc_info_id[] = "rsc_info";
 static char const html_nav_dimensions[] = " width=\"32\" height=\"21\"";
 
 
@@ -195,79 +192,6 @@ static char *html_filename_for_tree(RSCFILE *file, rsc_opts *opts, _WORD treeind
 		filename = p;
 	}
 	return filename;	
-}
-
-/* ------------------------------------------------------------------------- */
-
-void html_out_entities(GString *out)
-{
-	g_string_append(out, " [\n");
-	g_string_append(out, "<!ENTITY uparrow \"&#8679;\">          <!-- 0x01 U+21E7 -->\n");
-	g_string_append(out, "<!ENTITY downarrow \"&#8681;\">        <!-- 0x02 U+21E9 -->\n");
-	g_string_append(out, "<!ENTITY rightarrow \"&#8680;\">       <!-- 0x03 U+21E8 -->\n");
-	g_string_append(out, "<!ENTITY leftarrow \"&#8678;\">        <!-- 0x04 U+21E6 -->\n");
-	g_string_append(out, "<!ENTITY ballotbox \"&#9744;\">        <!-- 0x05 U+2610 -->\n");
-	g_string_append(out, "<!ENTITY ballotboxcheck \"&#9745;\">   <!-- 0x06 U+2611 -->\n");
-	g_string_append(out, "<!ENTITY ballotboxx \"&#9746;\">       <!-- 0x07 U+2612 -->\n");
-	g_string_append(out, "<!ENTITY checkmark \"&#10003;\">       <!-- 0x08 U+2713 -->\n");
-	g_string_append(out, "<!ENTITY watch \"&#8986;\">            <!-- 0x09 U+231A -->\n");
-	g_string_append(out, "<!ENTITY bell \"&#9086;\">             <!-- 0x0a U+237E -->\n");
-	g_string_append(out, "<!ENTITY eightnote \"&#9834;\">        <!-- 0x0b U+266a -->\n");
-	g_string_append(out, "<!ENTITY mountain \"&#9968;\">         <!-- 0x0e U+26f0 -->\n");
-	g_string_append(out, "<!ENTITY umbrella \"&#9969;\">         <!-- 0x0f U+26f1 -->\n");
-	g_string_append(out, "<!ENTITY circledzero \"&#9450;\">      <!-- 0x10 U+24ea -->\n");
-	g_string_append(out, "<!ENTITY circledone \"&#9312;\">       <!-- 0x11 U+2460 -->\n");
-	g_string_append(out, "<!ENTITY circledtwo \"&#9313;\">       <!-- 0x12 U+2461 -->\n");
-	g_string_append(out, "<!ENTITY circledthree \"&#9314;\">     <!-- 0x13 U+2462 -->\n");
-	g_string_append(out, "<!ENTITY circledfour \"&#9315;\">      <!-- 0x14 U+2463 -->\n");
-	g_string_append(out, "<!ENTITY circledfive \"&#9316;\">      <!-- 0x15 U+2464 -->\n");
-	g_string_append(out, "<!ENTITY circledsix \"&#9317;\">       <!-- 0x16 U+2465 -->\n");
-	g_string_append(out, "<!ENTITY circledseven \"&#9318;\">     <!-- 0x17 U+2466 -->\n");
-	g_string_append(out, "<!ENTITY circledeight \"&#9319;\">     <!-- 0x18 U+2467 -->\n");
-	g_string_append(out, "<!ENTITY circlednine \"&#9320;\">      <!-- 0x19 U+2468 -->\n");
-	g_string_append(out, "<!ENTITY capitalschwa \"&#399;\">      <!-- 0x1a U+018f -->\n");
-	g_string_append(out, "<!ENTITY fountain \"&#9970;\">         <!-- 0x1c U+26f2 -->\n");
-	g_string_append(out, "<!ENTITY flaginhole \"&#9971;\">       <!-- 0x1d U+26f3 -->\n");
-	g_string_append(out, "<!ENTITY ferry \"&#9972;\">            <!-- 0x1e U+26f4 -->\n");
-	g_string_append(out, "<!ENTITY sailboat \"&#9973;\">         <!-- 0x1f U+26f5 -->\n");
-	g_string_append(out, "<!ENTITY increment \"&#8710;\">        <!-- 0x7f U+2206 -->\n");
-
-	g_string_append(out, "<!ENTITY nul \"&#9216;\">              <!-- 0x00 U+2400 -->\n");
-	g_string_append(out, "<!ENTITY soh \"&#9217;\">              <!-- 0x01 U+2401 -->\n");
-	g_string_append(out, "<!ENTITY stx \"&#9218;\">              <!-- 0x02 U+2402 -->\n");
-	g_string_append(out, "<!ENTITY etx \"&#9219;\">              <!-- 0x03 U+2403 -->\n");
-	g_string_append(out, "<!ENTITY eot \"&#9220;\">              <!-- 0x04 U+2404 -->\n");
-	g_string_append(out, "<!ENTITY enq \"&#9221;\">              <!-- 0x05 U+2405 -->\n");
-	g_string_append(out, "<!ENTITY ack \"&#9222;\">              <!-- 0x06 U+2406 -->\n");
-	g_string_append(out, "<!ENTITY bel \"&#9223;\">              <!-- 0x07 U+2407 -->\n");
-	g_string_append(out, "<!ENTITY bs  \"&#9224;\">              <!-- 0x08 U+2408 -->\n");
-	g_string_append(out, "<!ENTITY ht  \"&#9225;\">              <!-- 0x09 U+2409 -->\n");
-	g_string_append(out, "<!ENTITY lf  \"&#9226;\">              <!-- 0x0a U+240a -->\n");
-	g_string_append(out, "<!ENTITY vt  \"&#9227;\">              <!-- 0x0b U+240b -->\n");
-	g_string_append(out, "<!ENTITY ff  \"&#9228;\">              <!-- 0x0c U+240c -->\n");
-	g_string_append(out, "<!ENTITY cr  \"&#9229;\">              <!-- 0x0d U+240d -->\n");
-	g_string_append(out, "<!ENTITY so  \"&#9230;\">              <!-- 0x0e U+240e -->\n");
-	g_string_append(out, "<!ENTITY si  \"&#9231;\">              <!-- 0x0f U+240f -->\n");
-	g_string_append(out, "<!ENTITY dle \"&#9232;\">              <!-- 0x10 U+2410 -->\n");
-	g_string_append(out, "<!ENTITY dc1 \"&#9233;\">              <!-- 0x11 U+2411 -->\n");
-	g_string_append(out, "<!ENTITY dc2 \"&#9234;\">              <!-- 0x12 U+2412 -->\n");
-	g_string_append(out, "<!ENTITY dc3 \"&#9235;\">              <!-- 0x13 U+2413 -->\n");
-	g_string_append(out, "<!ENTITY dc4 \"&#9236;\">              <!-- 0x14 U+2414 -->\n");
-	g_string_append(out, "<!ENTITY nak \"&#9237;\">              <!-- 0x15 U+2415 -->\n");
-	g_string_append(out, "<!ENTITY syn \"&#9238;\">              <!-- 0x16 U+2416 -->\n");
-	g_string_append(out, "<!ENTITY etb \"&#9239;\">              <!-- 0x17 U+2417 -->\n");
-	g_string_append(out, "<!ENTITY can \"&#9240;\">              <!-- 0x18 U+2418 -->\n");
-	g_string_append(out, "<!ENTITY em  \"&#9241;\">              <!-- 0x19 U+2419 -->\n");
-	g_string_append(out, "<!ENTITY sub \"&#9242;\">              <!-- 0x1a U+241a -->\n");
-	g_string_append(out, "<!ENTITY esc \"&#9243;\">              <!-- 0x1b U+241b -->\n");
-	g_string_append(out, "<!ENTITY fs  \"&#9244;\">              <!-- 0x1c U+241c -->\n");
-	g_string_append(out, "<!ENTITY gs  \"&#9245;\">              <!-- 0x1d U+241d -->\n");
-	g_string_append(out, "<!ENTITY rs  \"&#9246;\">              <!-- 0x1e U+241e -->\n");
-	g_string_append(out, "<!ENTITY us  \"&#9247;\">              <!-- 0x1f U+241f -->\n");
-	g_string_append(out, "<!ENTITY del \"&#9249;\">              <!-- 0x7f U+2421 -->\n");
-
-	g_string_append(out, "<!ENTITY nbsp \"&#32;\">\n");
-	g_string_append(out, "]");
 }
 
 /*****************************************************************************/
@@ -745,7 +669,7 @@ void html_out_nav_toolbar(RSCFILE *file, rsc_opts *opts, GString *out, _WORD tre
 	char *title;
 	const char *alt;
 	const char *disabled;
-	const char *void_href = "javascript:void(0);";
+	static char const void_href[] = "javascript:void(0);";
 	int xpos = 0;
 	const int button_w = 40;
 	
@@ -754,7 +678,7 @@ void html_out_nav_toolbar(RSCFILE *file, rsc_opts *opts, GString *out, _WORD tre
 	g_string_append(out, "<form action=\"rscview.cgi\" method=\"get\">\n");
 	g_string_append(out, "<fieldset style=\"border:0;margin-left:0;margin-right:0;padding-top:0;padding-bottom:0;padding-left:0;padding-right:0;\">\n");
 	g_string_append(out, "<legend></legend>\n");
-	g_string_append(out, "<ul>\n");
+	g_string_append(out, "<nav><ul>\n");
 	alt = _("Back");
 	g_string_append_printf(out,
 		"<li style=\"position:absolute;left:%dpx;\">"
@@ -807,15 +731,18 @@ void html_out_nav_toolbar(RSCFILE *file, rsc_opts *opts, GString *out, _WORD tre
 	xpos += button_w;
 
 	alt = _("Show info about file");
-	str = g_strdup(void_href);
 	disabled = "";
 	g_string_append_printf(out,
 		"<li style=\"position:absolute;left:%dpx;\">"
-		"<a href=\"%s\" class=\"%s%s\" onclick=\"showInfo();\" accesskey=\"i\" rel=\"copyright\"><img src=\"%s\" alt=\"&nbsp;%s&nbsp;\" title=\"%s\"%s%s</a>"
-		"</li>\n",
-		xpos,
-		str, html_nav_img_style, disabled, html_nav_info_png, alt, alt, html_nav_dimensions, html_closer);
-	g_free(str);
+		"<ul><li class=\"rsctitle\">"
+		"<label class=\"rsctitlestring\" for=\"fileinfo\">"
+		"<img class=\"%s%s\" src=\"%s\" alt=\"&nbsp;%s&nbsp;\" title=\"%s\"%s%s</a>"
+		"</label>"
+		"<input class=\"rsctitleinput\" type=\"checkbox\" id=\"fileinfo\"/>"
+		"<ul class=\"rscmenubox\">"
+		"<li class=\"rscmenuentry\"><a class=\"fileinfo\">Info goes here</a></li>"
+		"</ul></li></ul></li>\n",
+		xpos, html_nav_img_style, disabled, html_nav_info_png, alt, alt, html_nav_dimensions, html_closer);
 	xpos += button_w + 20;
 
 	if (opts->for_cgi)
@@ -945,9 +872,11 @@ void html_out_header(RSCFILE *file, rsc_opts *opts, GString *out, const char *ti
 			g_free(str);
 		}
 		
+#if 0
 		str = g_strdup("javascript: showInfo();");
 		g_string_append_printf(out, "<link href=\"%s\" rel=\"copyright\"%s\n", str, html_closer);
 		g_free(str);
+#endif
 	}
 	
 	html_out_stylesheet(opts, out);
@@ -987,16 +916,6 @@ void html_out_header(RSCFILE *file, rsc_opts *opts, GString *out, const char *ti
 #if 0
 		g_string_append(out, "<pre>");
 #endif
-	}
-
-	if (file)
-	{
-		/*
-		 * this element is displayed for "About"
-		 */
-		g_string_append_printf(out, "<span class=\"%s\">", html_dropdown_style);
-		g_string_append_printf(out, "<span class=\"%s\" id=\"%s_content\">", html_dropdown_info_style, html_rsc_info_id);
-		g_string_append_printf(out, "</span></span>\n");
 	}
 }
 

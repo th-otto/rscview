@@ -547,28 +547,27 @@ static _BOOL draw_menu(RSCFILE *file, RSCTREE *tree, rsc_opts *opts, GString *ou
 			maxy = my;
 	} while (menubox != themenus);
 	
-	g_string_append(out, "<nav>\n");
+	g_string_append(out, "<nav aria-label=\"Main-Menu\">\n");
 	g_string_append(out, "    <ul>\n");
 
 	title = ob[theactive].ob_head;
 	menubox = ob[themenus].ob_head;
 	do
 	{
-		g_string_append(out, "        <li class=\"rsctitle\"> \n");
+		g_string_append(out, "        <li class=\"dropdown\"\n");
 		str = (ob[title].ob_type & 0xff) == G_TITLE ? nls_conv_to_utf8(file->rsc_nls_domain.fontset, ob[title].ob_spec.free_string, STR0TERM, QUOTE_HTML) : g_strdup("");
 		trim_spaces(str);
-		g_string_append_printf(out, "            <label class=\"rsctitlestring\" for='title-%d'>%s</label>\n", title, str);
+		g_string_append_printf(out, "            <span class=\"dropdown_title\" aria-expanded=\"false\" aria-controls=\"title-%d\">%s</span>\n", title, str);
 		g_free(str);
-		g_string_append_printf(out, "            <input class=\"rsctitleinput\" type=\"checkbox\" id=\"title-%d\"/>\n", title);
 		child = ob[menubox].ob_head;
 		if (child != NIL)
 		{
-			g_string_append(out, "            <ul class=\"rscmenubox\">\n");
+			g_string_append_printf(out, "            <ul class=\"dropdown_menu\" id=\"title-%d\">\n", title);
 			do
 			{
 				str = (ob[child].ob_type & 0xff) == G_STRING ? nls_conv_to_utf8(file->rsc_nls_domain.fontset, ob[child].ob_spec.free_string, STR0TERM, QUOTE_HTML) : g_strdup("");
 				trim_spaces(str);
-				g_string_append_printf(out, "                <li class=\"rscmenuentry\"><a href=\"#\">%s</a></li>\n", str);
+				g_string_append_printf(out, "                <li><a href=\"#\">%s</a></li>\n", str);
 				g_free(str);
 				child = ob[child].ob_next;
 			} while (child != menubox);

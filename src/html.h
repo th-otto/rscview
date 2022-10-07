@@ -55,4 +55,3 @@ void html_out_response_header(FILE *out, unsigned long len, gboolean xml);
 void html_out_header(RSCFILE *file, rsc_opts *opts, GString *out, const char *title, _WORD treeindex, gboolean for_error);
 void html_out_trailer(RSCFILE *file, rsc_opts *opts, GString *out, _WORD treeindex, gboolean for_error);
 void html_out_nav_toolbar(RSCFILE *file, rsc_opts *opts, GString *out, _WORD treeindex);
-void html_out_entities(GString *out);
