@@ -318,6 +318,22 @@ zero for all emulators which do not properly support the STOP opcode.
 </tr>
 
 <tr><td colspan="3"><hr /></td></tr>
+<tr><td>Single FAT support:</td>
+<td>
+<select <?php setting('with_1fat_support', bool_setting()); ?>
+</td>
+<td>
+Set this to 1 to enable support for filesystems with
+only one file allocation table (FAT) instead of the usual two FATs.
+<br />
+This is disabled by default because all versions of Atari TOS assume
+two FATs. There are erroneously mastered disks that claim to have a
+single FAT, but in reality have two. For compatibility with Atari TOS
+EmuTOS has to assume two FATs by default.
+</td>
+</tr>
+
+<tr><td colspan="3"><hr /></td></tr>
 
 <tr><td>&nbsp;</td><td></td><td></td></tr>
 
