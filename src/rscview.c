@@ -4,7 +4,7 @@
 #include <getopt.h>
 #include <errno.h>
 #include <ctype.h>
-#include <sys/stat.h>
+#include <stat_.h>
 #include "portvdi.h"
 #include "nls.h"
 #include "fileio.h"
@@ -1386,6 +1386,43 @@ static void print_version(void)
 }
 
 /* ------------------------------------------------------------------------- */
+
+#if defined(__LINUX_GLIBC_WRAP_H) && 0
+
+/* ugly hack to get __libc_start_main versioned */
+/*
+ * disabled again above, because dlsym is now in
+ * glibc, thus libdl won't be referenced, leading 
+ * to unresolved reference to dlsym instead :(
+ */
+
+#define STR_(s) #s
+#define STR(s)  STR_(s)
+#include <dlfcn.h>
+
+#ifdef __UCLIBC__
+#define __libc_start_main       __uClibc_main
+#endif
+
+int __libc_start_main(
+        int (*main)(int,char**,char**), int ac, char **av,
+        int (*init)(void), void (*fini)(void),
+        void (*rtld_fini)(void), void *stack_end);
+int __libc_start_main(
+        int (*main)(int,char**,char**), int ac, char **av,
+        int (*init)(void), void (*fini)(void),
+        void (*rtld_fini)(void), void *stack_end)
+{
+	typeof(__libc_start_main) *real_lsm;
+	if ((*(void**)&real_lsm = dlsym(RTLD_NEXT, STR(__libc_start_main))) != 0)
+		return real_lsm(main, ac, av, init, fini, rtld_fini, stack_end);
+	fputs("BUG: dlsym error\n", stderr);
+	return 1;
+}
+#undef STR
+#undef STR_
+#endif
+
 
 int main(int argc, char **argv)
 {

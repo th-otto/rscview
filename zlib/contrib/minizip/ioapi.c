@@ -11,6 +11,7 @@
 */
 
 #define ZLIB_COMPILATION
+#include <linux/libcwrap.h>
 #if defined(_WIN32) && (!(defined(_CRT_SECURE_NO_WARNINGS)))
         #define _CRT_SECURE_NO_WARNINGS
 #endif

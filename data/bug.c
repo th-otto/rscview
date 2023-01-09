@@ -47,6 +47,7 @@
  * - LINGUAS, POTFILES.in to be optionally specified on the command line
  */
 
+#include <linux/libcwrap.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>

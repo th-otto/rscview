@@ -13,6 +13,8 @@
 */
 
 
+#include <linux/libcwrap.h>
+
 #if (!defined(_WIN32)) && (!defined(WIN32)) && (!defined(__APPLE__))
         #ifndef __USE_FILE_OFFSET64
                 #define __USE_FILE_OFFSET64

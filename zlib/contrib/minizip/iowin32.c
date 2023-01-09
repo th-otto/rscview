@@ -12,6 +12,7 @@
 */
 
 #define ZLIB_COMPILATION
+#include <linux/libcwrap.h>
 #include <stdlib.h>
 
 #include "zlib.h"

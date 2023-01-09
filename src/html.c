@@ -2,7 +2,7 @@
 #include <gem.h>
 #include <time.h>
 #include <assert.h>
-#include <sys/stat.h>
+#include <stat_.h>
 #include <errno.h>
 #include "fileio.h"
 #include "debug.h"

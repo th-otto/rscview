@@ -3,7 +3,7 @@
 #include <getopt.h>
 #include <errno.h>
 #include <ctype.h>
-#include <sys/stat.h>
+#include <stat_.h>
 #if defined(__CYGWIN__) && !defined(_WIN32)
 /* workaround bug in cygwin curl header */
 #define SOCKET int

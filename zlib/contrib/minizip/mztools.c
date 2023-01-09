@@ -6,6 +6,7 @@
 
 /* Code */
 #define ZLIB_COMPILATION
+#include <linux/libcwrap.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

@@ -12,6 +12,8 @@
          Copyright (C) 2009-2010 Mathias Svensson ( http://result42.com )
 */
 
+#include <linux/libcwrap.h>
+
 #if (!defined(_WIN32)) && (!defined(WIN32)) && (!defined(__APPLE__))
         #ifndef __USE_FILE_OFFSET64
                 #define __USE_FILE_OFFSET64
