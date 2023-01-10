@@ -60,7 +60,7 @@ rscview_cgi_SOURCES = \
 	html.c html.h \
 	$(empty)
 
-rscview_LDADD = -L../aes -L../vdi -L../gemlib -L../util -laes -lgem -lvdi -laes -lgem -lvdi -lutil
+rscview_LDADD = -L../aes -L../vdi -L../gemlib -L../util -laes -lgem -lvdi -laes -lgem -lvdi -lutil @GLIBC_SO_SCRIPT@
 rscview_DEPENDENCIES = $(GEMLIBS)
 rscview$(EXEEXT): $(rscview_OBJECTS) $(rscview_DEPENDENCIES) $(EXTRA_rscview_DEPENDENCIES) 
 	@rm -f rscview$(EXEEXT)
@@ -73,7 +73,7 @@ if !CROSS_COMPILING
 endif
 
 
-rscview_cgi_LDADD = -L../aes -L../vdi -L../gemlib -L../util -laes -lgem -lvdi -laes -lgem -lvdi -lutil $(GLIB_LIBS) $(CURL_LIBS)
+rscview_cgi_LDADD = -L../aes -L../vdi -L../gemlib -L../util -laes -lgem -lvdi -laes -lgem -lvdi -lutil $(GLIB_LIBS) $(CURL_LIBS) @GLIBC_SO_SCRIPT@
 rscview_cgi_DEPENDENCIES = $(GEMLIBS)
 if !WITH_SYSTEM_LIBPNG
 rscview_cgi_DEPENDENCIES += $(PNG_LIBS)

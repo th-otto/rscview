@@ -1387,14 +1387,11 @@ static void print_version(void)
 
 /* ------------------------------------------------------------------------- */
 
-#if defined(__LINUX_GLIBC_WRAP_H) && 0
+#if defined(__LINUX_GLIBC_WRAP_H)
 
 /* ugly hack to get __libc_start_main versioned */
-/*
- * disabled again above, because dlsym is now in
- * glibc, thus libdl won't be referenced, leading 
- * to unresolved reference to dlsym instead :(
- */
+
+#if __GLIBC_PREREQ(2, 34)
 
 #define STR_(s) #s
 #define STR(s)  STR_(s)
@@ -1421,6 +1418,7 @@ int __libc_start_main(
 }
 #undef STR
 #undef STR_
+#endif
 #endif
 
 
