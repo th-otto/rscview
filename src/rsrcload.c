@@ -904,6 +904,113 @@ _BOOL W_Cicon_Setpalette(_WORD *palette)
 	return TRUE;
 }
 
+/*****************************************************************************/
+/* ------------------------------------------------------------------------- */
+/*****************************************************************************/
+
+static unsigned char const nvdi_to_std8[256] = {
+   0,   1,   2,   3,   4,  41, 155,  18,
+  23,   9,  10, 178,  12,  13,  14,  15,
+ 238, 202,  12, 144,   4, 246, 241, 205,
+ 147, 147,  65, 216, 213, 208, 150, 150,
+  68,  10, 163, 160,  14, 153,  71, 166,
+ 163, 160, 157, 155,  74,   2,  89,  86,
+  83,  80,   6, 230, 233, 199, 141, 141,
+  59, 249,  28,  27, 144, 141,  59, 219,
+  27,  26, 150, 150,  68, 169, 163, 160,
+  14, 153,  71, 169, 163, 160, 157, 155,
+  74,  95,  89,  86,  83,  80,   6, 188,
+ 191, 194, 138, 138,  56, 227,  27,  26,
+ 138, 138,  56, 222,  26,  25,  24,   8,
+  56, 172, 172,  24,   8,  22,  71, 172,
+ 172,   8,  22,  21,  74,  98,  98,  86,
+  83,  80,   6,   9, 125, 128,  13, 135,
+  53, 185, 125, 128,  13, 135,  53, 182,
+ 182,  24,   8,  22,  53,  11,  11,   8,
+  22,  21,  20, 175, 175,  22,  21,  20,
+   7, 101, 101, 101,  20,   7,  18, 122,
+ 125, 128, 131, 133,  50, 185, 125, 128,
+ 131, 133,  50, 182, 182,   8,  22,  21,
+  50, 179, 179,  22,  21,  20,   7, 177,
+ 177,  21,  20,   7,  18, 104, 104, 104,
+   7,  18,  17,   1,  35,  38,  41,  44,
+   5, 119,  35,  38,  41,  44,   5, 116,
+ 116,  38,  41,  44,   5, 113, 113, 113,
+  20,   7,  18, 110, 110, 110,   7,  18,
+  17,   3,   3,   3,  18,  17,  32,  32,
+ 122, 122,   9, 230,  30,  92,  92, 166,
+ 166,  10, 246,  30,  30, 238,  12, 144,
+ 141,  62,  17,  17,  20,  20,  26, 255,
+};
+static unsigned char const nvdi_to_std4[256] = {
+   0,   1,   2,   3,   4,  13,  14,   7,
+   8,   9,  10,  11,  12,  13,  14,  15
+};
+
+typedef unsigned char B_DATA;
+#define B_SIZE 1
+#define B_NUMBITS 8
+#define B_HIGHMASK 0x80
+
+static void convert_cicon_data(ICONBLK *mono, B_DATA *data, _WORD planes)
+{
+	const unsigned char *pixels;
+	int x, y, p;
+	B_DATA *datap;
+	B_DATA *ptr;
+	B_DATA mask;
+	unsigned char color, colmask;
+	int wdwidth;
+	long planesize;
+	unsigned long offset;
+
+	if (data == NULL)
+		return;
+	if (planes == 4)
+		pixels = nvdi_to_std4;
+	else
+		pixels = nvdi_to_std8;
+	
+	wdwidth = ((mono->ib_wicon + 15) / 16) * (16 / B_NUMBITS);
+	planesize = wdwidth * B_SIZE * mono->ib_hicon;
+	
+	for (y = 0; y < mono->ib_hicon; y++)
+	{
+		for (x = 0; x < mono->ib_wicon; x++)
+		{
+			offset = (y * wdwidth + x / B_NUMBITS);
+			mask = B_HIGHMASK >> (x % B_NUMBITS);
+			datap = data + offset;
+			color = 0;
+			colmask = 0x01;
+			for (p = 0, ptr = datap; p < planes; p++, ptr += planesize / B_SIZE)
+			{
+				if (*ptr & mask)
+					color |= colmask;
+				colmask <<= 1;
+			}
+			
+			color = pixels[color];
+			colmask = 0x01;
+			for (p = 0, ptr = datap; p < planes; p++, ptr += planesize / B_SIZE)
+			{
+				*ptr &= ~mask;
+				if (color & colmask)
+					*ptr |= mask;
+				colmask <<= 1;
+			}
+		}
+	}
+}
+
+/* ------------------------------------------------------------------------- */
+
+static void convert_cicon(ICONBLK *mono, CICON *cicon)
+{
+	convert_cicon_data(mono, (B_DATA *)cicon->col_data, cicon->num_planes);
+	convert_cicon_data(mono, (B_DATA *)cicon->sel_data, cicon->num_planes);
+}
+
 /*** ---------------------------------------------------------------------- ***/
 
 /*
@@ -1958,6 +2065,9 @@ RSCFILE *xrsrc_load(const char *filename, _WORD wchar, _WORD hchar, _UWORD flags
 							}
 							num_cicons--;
 
+							if (flags & XRSC_NVDI_PALETTE)
+								convert_cicon(&cicon->monoblk, dp);
+							
 							dp = (CICON *)p;
 							sp = p;
 							offset = OFFSET(p, buf, _LONG);

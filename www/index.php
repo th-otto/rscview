@@ -95,6 +95,7 @@ document.getElementById('uploadbox').style.display="block";
 <fieldset>
 <table>
 <tr><td style="padding-left: 2ex"><input type="checkbox" name="aes3d" value="1" /> Use 3d-effects<br /></td></tr>
+<tr><td style="padding-left: 2ex"><input type="checkbox" name="nvdi" value="1" /> Use NVDI palette for color icons<br /></td></tr>
 <tr>
 <td>
 <input type="radio" name="index" value="0" checked="checked" />Show only first dialog

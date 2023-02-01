@@ -1319,6 +1319,7 @@ enum rscview_opt {
 	OPT_CREATE_PNGLIST,
 	OPT_REPORT_PO,
 	OPT_REPORT_RSC,
+	OPT_NVDI,
 	OPT_IMAGE_FORMAT,
 	OPT_INDEX
 };
@@ -1339,6 +1340,7 @@ static struct option const long_options[] = {
 	{ "report-po", no_argument, NULL, OPT_REPORT_PO },
 	{ "report-rsc", no_argument, NULL, OPT_REPORT_RSC },
 	{ "3d", no_argument, NULL, OPT_3D },
+	{ "nvdi", no_argument, NULL, OPT_NVDI },
 	{ "image-format", required_argument, NULL, OPT_IMAGE_FORMAT },
 	{ "index", required_argument, NULL, OPT_INDEX },
 	{ "version", no_argument, NULL, OPT_VERSION },
@@ -1360,6 +1362,7 @@ static void usage(FILE *fp)
 	fprintf(fp, _("   -P, --pngdir <dir>          write output files to <dir>\n"));
 	fprintf(fp, _("   -T, --timestamps            use timestamps in filenames\n"));
 	fprintf(fp, _("   -3, --3d                    use AES 3D flags\n"));
+	fprintf(fp, _("       --nvdi                  convert color icons using NVDI palette\n"));
 	fprintf(fp, _("       --create-html <file>    create HTML file with references to images\n"));
 	fprintf(fp, _("       --imagemap              create an imagemap for use in HTML\n"));
 	fprintf(fp, _("       --create-pnglist <file> create PHP scriptlet for written images\n"));
@@ -1500,6 +1503,10 @@ int main(int argc, char **argv)
 		
 		case OPT_3D:
 			aes_3d = TRUE;
+			break;
+		
+		case OPT_NVDI:
+			load_flags |= XRSC_NVDI_PALETTE;
 			break;
 		
 		case OPT_IMAGE_FORMAT:

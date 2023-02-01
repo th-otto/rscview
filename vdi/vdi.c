@@ -16,7 +16,7 @@
  * our "screen" format
  */
 #define vdi_w 1280
-#define vdi_h 1024
+#define vdi_h 4096
 #define vdi_form_id 3 /* pixel-packed */
 #define vdi_bit_order 1
 #define vdi_planes 8

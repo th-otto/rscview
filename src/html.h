@@ -29,6 +29,7 @@ typedef struct _rsc_opts {
 	gboolean for_cgi;
 	gboolean cgi_cached;
 	gboolean aes_3d;
+	gboolean nvdi_palette;
 	gboolean use_xhtml;
 	gboolean to_xml;
 	gboolean hidemenu;

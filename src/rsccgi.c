@@ -794,6 +794,9 @@ static gboolean display_tree(const char *filename, rsc_opts *opts, GString *out,
 	RSCFILE *file;
 	gboolean retval = FALSE;
 	_UWORD load_flags = XRSC_SAFETY_CHECKS;
+
+	if (opts->nvdi_palette)
+		load_flags |= XRSC_NVDI_PALETTE;
 	
 	po_init(opts->po_dir, FALSE, FALSE);
 	appl_init();
@@ -853,6 +856,9 @@ static gboolean display_file(const char *filename, rsc_opts *opts, GString *out)
 	_UWORD load_flags = XRSC_SAFETY_CHECKS;
 	unsigned int treeindex;
 
+	if (opts->nvdi_palette)
+		load_flags |= XRSC_NVDI_PALETTE;
+	
 	po_init(opts->po_dir, FALSE, FALSE);
 	appl_init();
 
@@ -1214,6 +1220,7 @@ int main(void)
 	memset(opts, 0, sizeof(*opts));
 	opts->cgi_cached = FALSE;
 	opts->aes_3d = FALSE;
+	opts->nvdi_palette = FALSE;
 	opts->use_xhtml = FALSE;
 	opts->to_xml = FALSE;
 	opts->charset = NULL;
@@ -1281,6 +1288,11 @@ int main(void)
 	if ((val = cgiFormString("aes3d")) != NULL)
 	{
 		opts->aes_3d = (int)strtol(val, NULL, 10);
+		g_free(val);
+	}
+	if ((val = cgiFormString("nvdi")) != NULL)
+	{
+		opts->nvdi_palette = (int)strtol(val, NULL, 10);
 		g_free(val);
 	}
 	

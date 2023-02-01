@@ -135,6 +135,7 @@ struct _rscfile {
 #define XRSC_SAFETY_CHECKS    0x0008	/* perform lots of validation checks */
 #define XRSC_REPORT_PO        0x0010	/* report message statistics from loading po file */
 #define XRSC_REPORT_RSC       0x0020	/* report translation statistics from translating resource */
+#define XRSC_NVDI_PALETTE     0x0040	/* convert color icons using NVDI palette */
 
 
 RSCFILE *xrsrc_load(const char *fname, _WORD wchar, _WORD hchar, _UWORD flags);

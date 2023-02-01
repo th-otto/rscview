@@ -294,21 +294,6 @@ AC_DEFUN([AC_GETTIMEOFDAY_ARGS],
 # to make
 m4_ifdef([AM_SILENT_RULES],[AM_SILENT_RULES([yes])])
 
-AC_MSG_CHECKING(whether we are using glibc)
-AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <stdlib.h>
-#ifndef __GLIBC__
-no
-#endif]],[[]])], result=yes, result=no)
-AC_MSG_RESULT([$result])
-
-if test $result = yes; then
-AC_DEFINE([HAVE_GLIBC], 1, [Define if using glibc])
-dnl append that also to confdefs.h
-echo "#include \"${srcdir}/include/linux/libcwrap.h\"" >> confdefs.h
-GLIBC_SO_SCRIPT=libc.so
-fi
-AC_SUBST([GLIBC_SO_SCRIPT])
-
 AH_TOP([
 
 #ifndef __CONFIG_H__
@@ -328,6 +313,21 @@ AM_PROG_AS
 AM_PROG_AR
 AC_PROG_RANLIB
 AC_CHECK_TOOL(STRIP, strip, :)
+
+AC_MSG_CHECKING(whether we are using glibc)
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <stdlib.h>
+#ifndef __GLIBC__
+no
+#endif]],[[]])], result=yes, result=no)
+AC_MSG_RESULT([$result])
+
+if test $result = yes; then
+AC_DEFINE([HAVE_GLIBC], 1, [Define if using glibc])
+dnl append that also to confdefs.h
+echo "#include \"${srcdir}/include/linux/libcwrap.h\"" >> confdefs.h
+GLIBC_SO_SCRIPT=libc.so
+fi
+AC_SUBST([GLIBC_SO_SCRIPT])
 
 AC_PROG_CC_WARNINGS
 AC_NO_CPLUSPLUS_COMMENTS_IN_C_CODE
