@@ -36,10 +36,13 @@ function is_cli()
 }
 	
 
-function error_handler($errno, $errmsg, $errfile, $errline, $errcontext)
+function error_handler(int $errno, string $errmsg, string $errfile, int $errline, array $errcontext = []): bool
 {
 	global $log;
+	global $last_error_message;
 	fputs($log, "$errmsg\n");
+	/* error_get_last() returns null with custom error handler being set */
+	$last_error_message = $errmsg;
 	return true;
 }
 
@@ -58,6 +61,7 @@ function get_options()
 	global $targets;
 
 	$romversion = '';
+	$country = '';
 	if (is_cli())
 	{
 		for ($i = 1; $i < $_SERVER["argc"]; $i++)
@@ -121,6 +125,7 @@ function compile_emutos()
 	global $exitcode;
 	global $targets;
 	global $commit;
+	global $last_error_message;
 	
 	$retval = false;
 	$exitcode = 1;
@@ -128,7 +133,7 @@ function compile_emutos()
 	$fp = fopen('localconf.h', 'w');
 	if (!is_resource($fp))
 	{
-		error_log(trim((error_get_last())['message']));
+		error_log($last_error_message);
 	} else
 	{
 		$target = str_replace("@", "", $romversion);
@@ -254,6 +259,7 @@ function fetch_source()
 	global $log;
 	global $commit;
 	global $exitcode;
+	global $last_error_message;
 
 	$source_archive = $versions[$emutosversion]['archive'];
 	$top_dir = 'emutos-' . $source_archive;
@@ -261,7 +267,7 @@ function fetch_source()
 	$local_archive = $topdir . '/' . $source_archive;
 
 	$tmpdir = tempnam(".", 'tmp');
-	unlink($tmpdir);
+	safe_unlink($tmpdir);
 	if (!mkdir($tmpdir) || !chdir($tmpdir))
 	{
 		echo("chdir $tmpdir failed\n");
@@ -332,6 +338,11 @@ function fetch_source()
 		$tags = array();
 		exec("git tag -l 'VERSION_*' | sort -t '_' -V -k 2,5 -r", $tags);
 		$fp = fopen("$topdir/versions.php", "w");
+		if (!is_resource($fp))
+		{
+			error_log("cannot create $topdir/versions.php: $last_error_message");
+			return false;
+		}
 		fprintf($fp, "<" . "?php\n");
 		fprintf($fp, "\$versions = array(\n");
 		fprintf($fp, "\t'snapshot' => array('name' => 'Current snapshot', 'archive' => 'master'),\n");
@@ -412,12 +423,15 @@ if ($retval)
 if (!$retval)
 {
 	$errfile = fopen("$topdir/errors.log", 'a');
-	fputs($errfile, "$currdate: start\n");
-	fprintf($errfile, "FROM: %s\n", isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : 'here');
-	fprintf($errfile, "POST: %s\n", var_export($_POST, true));
-	fprintf($errfile, "FAILED:\n");
-	fputs($errfile, "$compile_output\n\n");
-	fclose($errfile);
+	if (is_resource($errfile))
+	{
+		fputs($errfile, "$currdate: start\n");
+		fprintf($errfile, "FROM: %s\n", isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : 'here');
+		fprintf($errfile, "POST: %s\n", var_export($_POST, true));
+		fprintf($errfile, "FAILED:\n");
+		fputs($errfile, "$compile_output\n\n");
+		fclose($errfile);
+	}
 }
 
 if ($builddir != '')
