@@ -154,6 +154,8 @@ function compile_emutos()
 			fprintf($fp, "#define CONF_WITH_ST_MMU %s\n", onoff($_POST['conf_with_st_mmu']));
 		if ($_POST['conf_with_tt_mmu'] != '')
 			fprintf($fp, "#define CONF_WITH_TT_MMU %s\n", onoff($_POST['conf_with_tt_mmu']));
+		if ($_POST['conf_with_falcon_mmu'] != '')
+			fprintf($fp, "#define CONF_WITH_FALCON_MMU %s\n", onoff($_POST['conf_with_falcon_mmu']));
 		if ($_POST['conf_with_blitter'] != '')
 			fprintf($fp, "#define CONF_WITH_BLITTER %s\n", onoff($_POST['conf_with_blitter']));
 		if ($_POST['conf_with_monster'] != '')
@@ -179,6 +181,10 @@ function compile_emutos()
 			fprintf($fp, "#define GEMDOS_VERSION %s\n", $_POST['gemdos_version']);
 		if ($_POST['aes_version'] != '')
 			fprintf($fp, "#define AES_VERSION %s\n", $_POST['aes_version']);
+		if ($_POST['conf_with_scsi_driver'] != '')
+			fprintf($fp, "#define CONF_WITH_SCSI_DRIVER %s\n", onoff($_POST['conf_with_scsi_driver']));
+		if ($_POST['conf_with_xhdi'] != '')
+			fprintf($fp, "#define CONF_WITH_XHDI %s\n", onoff($_POST['conf_with_xhdi']));
 
 		if ($_POST['use_stop_insn'] != '')
 			fprintf($fp, "#define USE_STOP_INSN_TO_FREE_HOST_CPU %s\n", onoff($_POST['use_stop_insn']));

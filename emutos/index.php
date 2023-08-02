@@ -69,6 +69,12 @@ Country:
 
 <tr><td>&nbsp;</td><td></td><td></td></tr>
 
+<!--
+ ********************************************************
+ *  H A R D W A R E   S U P P O R T   S E C T I O N     *
+ ********************************************************
+-->
+
 <tr><td colspan="3"><hr /></td></tr>
 <tr>
 <td colspan="3">
@@ -118,6 +124,16 @@ Set CONF_WITH_TT_MMU to 1 to enable support for TT MMU
 </tr>
 
 <tr><td colspan="3"><hr /></td></tr>
+<tr><td>Falcon MMU:</td>
+<td>
+<select <?php setting('conf_with_falcon_mmu', bool_setting()); ?>
+</td>
+<td>
+Set CONF_WITH_FALCON_MMU to 1 to enable support for Falcon MMU
+</td>
+</tr>
+
+<tr><td colspan="3"><hr /></td></tr>
 <tr><td>BLITTER:</td>
 <td>
 <select <?php setting('conf_with_blitter', bool_setting()); ?>
@@ -152,6 +168,12 @@ RAM expansion card
 <tr><td>&nbsp;</td><td></td><td></td></tr>
 <tr><td>&nbsp;</td><td></td><td></td></tr>
 <tr><td>&nbsp;</td><td></td><td></td></tr>
+
+<!--
+ ********************************************************
+ *  S O F T W A R E   S E C T I O N   -   B I O S       *
+ ********************************************************
+-->
 
 <tr><td colspan="3"><hr /></td></tr>
 <tr>
@@ -188,6 +210,12 @@ duration, in seconds. If it is set to 0, the welcome screen will never
 set CONF_WITH_MEMORY_TEST to 1 to do a memory test during a cold boot
 </td>
 </tr>
+
+<!--
+ ********************************************************
+ *  S O F T W A R E   S E C T I O N   -   A E S         *
+ ********************************************************
+-->
 
 <tr><td colspan="3"><hr /></td></tr>
 <tr><td>Color icons:</td>
@@ -233,6 +261,12 @@ Set CONF_WITH_3D_OBJECTS to 1 to enable support for 3D objects,
 as in Atari TOS 4
 </td>
 </tr>
+
+<!--
+ ********************************************************
+ *  S O F T W A R E   S E C T I O N   -   G E M D O S   *
+ ********************************************************
+-->
 
 <tr><td colspan="3"><hr /></td></tr>
 <tr><td>TOS version:</td>
@@ -292,6 +326,37 @@ AES 3.30/3.40 even though we do not (yet) support certain menu_xxx()
 functions that were introduced in AES 3.30.
 </td>
 </tr>
+
+<!--
+ ********************************************************
+ *  S O F T W A R E   S E C T I O N   -   V D I         *
+ ********************************************************
+-->
+
+<!--
+ ************************************************************************
+ *  S O F T W A R E   S E C T I O N   -   3 R D   P A R T Y   A P I     *
+ ************************************************************************
+-->
+
+<tr><td colspan="3"><hr /></td></tr>
+<tr><td>SCSI Driver:</td>
+<td>
+<select <?php setting('conf_with_scsi_driver', bool_setting()); ?>
+</td>
+<td>
+Set CONF_WITH_SCSI_DRIVER to 1 to activate support for the SCSI driver
+API, which allows user programs to issue SCSI-style commands directly
+to devices. See the <a href="https://tho-otto.de/hypview/hypview.cgi?url=%2Fhyp%2Fscsidrv_en.hyp">documentation by Steffen Engel</a> for more details.
+</td>
+</tr>
+
+
+<!--
+ ********************************************************
+ *  E M U L A T O R   S E C T I O N                     *
+ ********************************************************
+-->
 
 <tr><td>&nbsp;</td><td></td><td></td></tr>
 <tr><td>&nbsp;</td><td></td><td></td></tr>
