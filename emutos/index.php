@@ -165,6 +165,26 @@ RAM expansion card
 </td>
 </tr>
 
+<tr><td colspan="3"><hr /></td></tr>
+<tr><td>SCSI:</td>
+<td>
+<select <?php setting('conf_with_scsi', bool_setting()); ?>
+</td>
+<td>
+Define CONF_WITH_SCSI to activate SCSI support
+</td>
+</tr>
+
+<tr><td colspan="3"><hr /></td></tr>
+<tr><td>IDE:</td>
+<td>
+<select <?php setting('conf_with_ide', bool_setting()); ?>
+</td>
+<td>
+Define CONF_WITH_IDE to activate IDE support
+</td>
+</tr>
+
 <tr><td>&nbsp;</td><td></td><td></td></tr>
 <tr><td>&nbsp;</td><td></td><td></td></tr>
 <tr><td>&nbsp;</td><td></td><td></td></tr>

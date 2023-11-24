@@ -162,6 +162,10 @@ function compile_emutos()
 			fprintf($fp, "#define CONF_WITH_MONSTER %s\n", onoff($_POST['conf_with_monster']));
 		if ($_POST['conf_with_magnum'] != '')
 			fprintf($fp, "#define CONF_WITH_MAGNUM %s\n", onoff($_POST['conf_with_magnum']));
+		if ($_POST['conf_with_scsi'] != '')
+			fprintf($fp, "#define CONF_WITH_SCSI %s\n", onoff($_POST['conf_with_scsi']));
+		if ($_POST['conf_with_ide'] != '')
+			fprintf($fp, "#define CONF_WITH_IDE %s\n", onoff($_POST['conf_with_ide']));
 		
 		if ($_POST['initinfo_duration'] != '')
 			fprintf($fp, "#define INITINFO_DURATION %d\n", $_POST['initinfo_duration']);
