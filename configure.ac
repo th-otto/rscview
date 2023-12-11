@@ -322,10 +322,12 @@ no
 AC_MSG_RESULT([$result])
 
 if test $result = yes; then
+if test "`lsb_release -s -i 2>/dev/null`" = openSUSE; then
 AC_DEFINE([HAVE_GLIBC], 1, [Define if using glibc])
 dnl append that also to confdefs.h
 echo "#include \"${srcdir}/include/linux/libcwrap.h\"" >> confdefs.h
 GLIBC_SO_SCRIPT=libc.so
+fi
 fi
 AC_SUBST([GLIBC_SO_SCRIPT])
 

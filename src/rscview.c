@@ -1,3 +1,5 @@
+#define _GNU_SOURCE
+
 #include "config.h"
 #include <stdint.h>
 #include <gem.h>
