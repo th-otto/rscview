@@ -28,7 +28,7 @@ $languages = array(
 	'be'    => array('en' => 'Belarusian','html' => 'be-BY', 'charset' => 'atarist', 'flag' => 'by.gif', 'native' => '&#x0431;&#x0435;&#x043b;&#x0430;&#x0440;&#x0443;&#x0441;&#x043a;&#x0430;&#x044f; &#x043c;&#x043e;&#x0432;&#x0430;'),
 	'uk'    => array('en' => 'Ukrainian', 'html' => 'uk-UA', 'charset' => 'atarist', 'flag' => 'ua.gif', 'native' => '&#x0423;&#x043a;&#x0440;&#x0430;&#x0457;&#x043d;&#x0441;&#x044c;&#x043a;&#x0430;'),
 	'sk'    => array('en' => 'Slovak',    'html' => 'sk-SK', 'charset' => 'atarist', 'flag' => 'sk.gif', 'native' => 'Sloven&#x010d;ina'),
-	'ro'    => array('en' => 'Romanian',  'html' => 'ro-RO', 'charset' => 'atarist', 'flag' => 'ro.gif', 'native' => 'Rom&x00e2;n&#x0103;'),
+	'ro'    => array('en' => 'Romanian',  'html' => 'ro-RO', 'charset' => 'atarist', 'flag' => 'ro.gif', 'native' => 'Rom&#x00e2;n&#x0103;'),
 	'bg'    => array('en' => 'Bulgarian', 'html' => 'bg-BG', 'charset' => 'atarist', 'flag' => 'bg.gif', 'native' => '&#x0431;&#x044a;&#x043b;&#x0433;&#x0430;&#x0440;&#x0441;&#x043a;&#x0438;'),
 	'sl'    => array('en' => 'Slovenian', 'html' => 'sl-SI', 'charset' => 'atarist', 'flag' => 'si.gif', 'native' => 'Sloven&#x0161;&#x010d;ina'),
 	'hr'    => array('en' => 'Croatian',  'html' => 'hr-HR', 'charset' => 'atarist', 'flag' => 'hr.gif', 'native' => 'Hrvatski'),

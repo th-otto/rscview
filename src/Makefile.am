@@ -5,6 +5,8 @@ AM_CPPFLAGS += $(GLIB_CFLAGS) $(CURL_CFLAGS)
 AM_CPPFLAGS += $(PNG_CFLAGS)
 AM_CPPFLAGS += $(Z_CFLAGS)
 
+AM_CPPFLAGS += -Wno-deprecated-declarations
+
 GEMLIBS = ../aes/libaes.a ../vdi/libvdi.a ../gemlib/libgem.a ../util/libutil.a
 
 bin_PROGRAMS = rscview
