@@ -1328,7 +1328,8 @@ static struct charset_alias const charsets[] = {
 	{ "ISO-8859-9", CHARSET_L5 },
 	{ "latin5", CHARSET_L5 },
 	{ "cp1254", CHARSET_L5 },
-	{ "atarist", CHARSET_ST }
+	{ "KEYBCS2", CHARSET_KM },
+	{ "atarist", CHARSET_ST },
 };
 
 
@@ -1507,7 +1508,7 @@ void po_init(const char *po_dir, gboolean mustexist, gboolean use_defaults)
 			parse_linguas_item(d, g_strdup("nl atarist"), FALSE);
 			parse_linguas_item(d, g_strdup("nn atarist"), FALSE);
 			parse_linguas_item(d, g_strdup("sv atarist"), FALSE);
-			parse_linguas_item(d, g_strdup("cs latin2"), FALSE);
+			parse_linguas_item(d, g_strdup("cs keybcs2"), FALSE); /* was latin2 formerly */
 			parse_linguas_item(d, g_strdup("pl latin2"), FALSE);
 			parse_linguas_item(d, g_strdup("hu latin2"), FALSE);
 			parse_linguas_item(d, g_strdup("ro latin2"), FALSE);

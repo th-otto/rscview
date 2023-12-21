@@ -108,7 +108,7 @@ foreach ($linguas as $lang)
 <a href="fonts/font8x16_atarist_small.html">Original Size</a>
 <a href="fonts/font8x16_atarist_large.html">Large Size</a></p>
 
-<p>Latin2 encoding, used for Czech, Polish and Hungarian.
+<p>Latin2 encoding, used for Polish and Hungarian (and formerly for Czech).
 
 <a href="fonts/font8x16_latin2_small.html">Original Size</a>
 <a href="fonts/font8x16_latin2_large.html">Large Size</a></p>
@@ -132,6 +132,11 @@ foreach ($linguas as $lang)
 
 <a href="fonts/font8x16_latin5_small.html">Original Size</a>
 <a href="fonts/font8x16_latin5_large.html">Large Size</a></p>
+
+<p>Kamenick&#xfd; encoding, used for Czech.
+
+<a href="fonts/font8x16_kamenicky_small.html">Original Size</a>
+<a href="fonts/font8x16_kamenicky_large.html">Large Size</a></p>
 
 
 <br />

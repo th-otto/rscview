@@ -26,7 +26,8 @@
 #define CHARSET_GR 4
 #define CHARSET_RU 5
 #define CHARSET_L5 6
-#define CHARSET_L1 7
+#define CHARSET_KM 7
+#define CHARSET_L1 8
 
 typedef struct _nls_domain {
 	const char *domain;

@@ -441,7 +441,7 @@ Opcode      VDI Name                   Function
 
 
 #define SYSFONTS    3
-#define NLSFONTSETS 6
+#define NLSFONTSETS 7
 
 #define SUPPORTED_EFFECTS (TXT_THICKENED | TXT_LIGHT | TXT_SKEWED | TXT_UNDERLINED | TXT_OUTLINED)
 

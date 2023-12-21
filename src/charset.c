@@ -11,6 +11,7 @@
 #include "cp_st_gr.h"
 #include "cp_st_ru.h"
 #include "cp_st_l5.h"
+#include "cp_st_km.h"
 
 #define MAX(a,b)  ((a) > (b)? (a) : (b))
 #define MIN(a,b)  ((a) < (b)? (a) : (b))
@@ -122,6 +123,8 @@ static const nls_wchar_t *get_cset(int charset)
 		return atari_greek_to_unicode;
 	case CHARSET_RU:
 		return atari_russian_to_unicode;
+	case CHARSET_KM:
+		return atari_kamenicky_to_unicode;
 	default:
 		/*
 		 * this should not happen at all
