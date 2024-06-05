@@ -353,6 +353,17 @@ functions that were introduced in AES 3.30.
  ********************************************************
 -->
 
+<tr><td colspan="3"><hr /></td></tr>
+<tr><td>VDI 16-bit:</td>
+<td>
+<select <?php setting('conf_with_vdi_16bit', bool_setting()); ?>
+</td>
+<td>
+Set CONF_WITH_VDI_16BIT to 1 to include VDI support for the Falcon&apos;s
+16-bit graphics modes.
+</td>
+</tr>
+
 <!--
  ************************************************************************
  *  S O F T W A R E   S E C T I O N   -   3 R D   P A R T Y   A P I     *

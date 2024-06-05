@@ -167,6 +167,9 @@ function compile_emutos()
 		if ($_POST['conf_with_ide'] != '')
 			fprintf($fp, "#define CONF_WITH_IDE %s\n", onoff($_POST['conf_with_ide']));
 		
+		if ($_POST['conf_with_vdi_16bit'] != '')
+			fprintf($fp, "#define CONF_WITH_VDI_16BIT %s\n", onoff($_POST['conf_with_vdi_16bit']));
+
 		if ($_POST['initinfo_duration'] != '')
 			fprintf($fp, "#define INITINFO_DURATION %d\n", $_POST['initinfo_duration']);
 		if ($_POST['conf_with_memory_test'] != '')
