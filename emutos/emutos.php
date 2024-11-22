@@ -197,6 +197,8 @@ function compile_emutos()
 			fprintf($fp, "#define USE_STOP_INSN_TO_FREE_HOST_CPU %s\n", onoff($_POST['use_stop_insn']));
 		if ($_POST['with_1fat_support'] != '')
 			fprintf($fp, "#define CONF_WITH_1FAT_SUPPORT %s\n", onoff($_POST['with_1fat_support']));
+		if ($_POST['cartridge_debug_print'] != '')
+			fprintf($fp, "#define CARTRIDGE_DEBUG_PRINT %s\n", onoff($_POST['cartridge_debug_print']));
 
 		fclose($fp);
 		

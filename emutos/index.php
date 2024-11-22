@@ -382,6 +382,21 @@ to devices. See the <a href="https://tho-otto.de/hypview/hypview.cgi?url=%2Fhyp%
 </td>
 </tr>
 
+<tr><td colspan="3"><hr /></td></tr>
+<tr><td>Cartridge Debug Print:</td>
+<td>
+<select <?php setting('cartridge_debug_print', bool_setting()); ?>
+</td>
+<td>
+Set CARTRIDGE_DEBUG_PRINT to 1 to redirect debug prints to the
+cartridge port. A character 'c' is encoded into address lines
+A8-A1 by performing a read access to the upper half of the cartridge
+address space 0xFB0xxx, which is decoded to the /ROM3 signal.
+This has the advantage of being always available since it does not
+require initialization of a peripheral.
+</td>
+</tr>
+
 
 <!--
  ********************************************************
