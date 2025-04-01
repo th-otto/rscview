@@ -69,6 +69,7 @@ $countries = array(
 	'ru' => array('name' => 'Russian'),
 	'hu' => array('name' => 'Hungarian'),
 	'tr' => array('name' => 'Turkish'),
+	'ca' => array('name' => 'Catalan'),
 );
 
 $targets = array(
