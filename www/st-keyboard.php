@@ -112,6 +112,11 @@ passthru("./mkhtml hungarian.src -");
 passthru("./mkhtml usa-pl.src -");
 ?>
 
+<h1>Romanian layout</h1>
+<?php
+passthru("./mkhtml ro_ro.src -");
+?>
+
 <div style="text-align:center">
 <p>
 <a href="https://validator.w3.org/check?uri=referer"><img
