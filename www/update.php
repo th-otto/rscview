@@ -52,8 +52,12 @@ function gen_images($lang, $dir, $genlist)
 	
 	echo "generating images for $lang\n";
 	$cmd = "$top/rscview --lang $lang --podir . --timestamps --quote-html";
+	$pnglist = "";
 	if ($genlist)
+	{
 		$cmd .= " --create-pnglist pnglist.php";
+		$pnglist = " pnglist*.php";
+	}
 	$cmd .= " --report-po --report-rsc --html-dir . --imagemap desktop.rsc";
 	system($cmd . " --create-html pngout.php 2>&1");
 	if ($genlist)
@@ -67,7 +71,7 @@ function gen_images($lang, $dir, $genlist)
 		mkdir($dir);
 		mkdir("$dir/aes");
 	}
-	system("rm -f $dir/*.png; mv *.png pngout*.php pnglist*.php $dir 2>&1");
+	system("rm -f $dir/*.png; mv *.png pngout*.php" . $pnglist . " $dir 2>&1");
 	
 	$cmd = "$top/rscview --lang $lang --podir . --timestamps --quote-html --create-html pngout.php";
 	if ($genlist)
@@ -78,7 +82,7 @@ function gen_images($lang, $dir, $genlist)
 		$cmd .= " --create-pnglist pnglist_3d.php";
 	system($cmd . " --3d --create-html pngout_3d.php 2>&1");
 	$dir .= "/aes";
-	system("rm -f $dir/*.png; mv *.png pngout*.php pnglist*.php $dir 2>&1");
+	system("rm -f $dir/*.png; mv *.png pngout*.php" . $pnglist . " $dir 2>&1");
 	echo "\n";
 }
 

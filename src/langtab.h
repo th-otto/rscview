@@ -112,6 +112,8 @@ typedef enum {
 	LANGUAGE_ID_ID = COUNTRY_ID, /* 47 */
 	COUNTRY_BD, /* Bangladesh */
 	LANGUAGE_BN_BD = COUNTRY_BD, /* 48 */
+	COUNTRY_CA = 54, /* Catalonia */
+	LANGUAGE_CA_ES = COUNTRY_CA, /* 54 */
 	COUNTRY_MX = 99, /* Mexico (found in Atari sources) */
 	LANGUAGE_ES_MX = COUNTRY_MX  /* 99 */
 } language_t;

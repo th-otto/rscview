@@ -59,4 +59,5 @@
 #define COUNTRY_KH	46	/* km_KH Cambodia */
 #define COUNTRY_ID	47	/* id_ID Indonesia */
 #define COUNTRY_BD	48	/* bn_BD Bangladesh */
+#define COUNTRY_CA	54	/* ca_ES Catalonia */
 #define COUNTRY_MX	99	/* es_MX Mexico (Spanish) */

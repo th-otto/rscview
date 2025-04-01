@@ -7,6 +7,7 @@ $languages = array(
 	'de'    => array('en' => 'German',    'html' => 'de-DE', 'charset' => 'atarist', 'flag' => 'de.gif', 'native' => 'Deutsch'),
 	'fr'    => array('en' => 'French',    'html' => 'fr-FR', 'charset' => 'atarist', 'flag' => 'fr.gif', 'native' => 'Fran&#231;ais'),
 	'es'    => array('en' => 'Spanish',   'html' => 'es-ES', 'charset' => 'atarist', 'flag' => 'es.gif', 'native' => 'Espa&#241;ol'),
+	'ca'    => array('en' => 'Catalan',   'html' => 'ca-ES', 'charset' => 'atarist', 'flag' => 'ca.png', 'native' => 'Catal&#224;'),
 	'it'    => array('en' => 'Italian',   'html' => 'it-IT', 'charset' => 'atarist', 'flag' => 'it.gif', 'native' => 'Italiano'),
 	'en_GB' => array('en' => 'English (GB)', 'html' => 'en-GB', 'charset' => 'atarist', 'flag' => 'uk.gif', 'native' => 'English'),
 	'sv'    => array('en' => 'Swedish',   'html' => 'sv-SV', 'charset' => 'atarist', 'flag' => 'se.gif', 'native' => 'Svenska'),
