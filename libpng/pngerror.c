@@ -256,6 +256,7 @@ png_warning_parameter_unsigned(png_warning_parameters p, int number, int format,
     png_alloc_size_t value)
 {
    char buffer[PNG_NUMBER_BUFFER_SIZE];
+   *buffer = '\0';
    png_warning_parameter(p, number, PNG_FORMAT_NUMBER(buffer, format, value));
 }
 
@@ -272,6 +273,7 @@ png_warning_parameter_signed(png_warning_parameters p, int number, int format,
    if (value < 0)
       u = ~u + 1;
 
+   *buffer = '\0';
    str = PNG_FORMAT_NUMBER(buffer, format, u);
 
    if (value < 0 && str > buffer)
