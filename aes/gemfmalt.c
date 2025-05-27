@@ -408,7 +408,9 @@ _WORD fm_alert(_WORD defbut, const char *palstr, _UWORD flags)
 	
 		if (!defbut)
 			defbut = 1;
-	
+		if (defbut > numbut)
+			defbut = 1;
+
 		ob_gclip(tree, BUTOFF + defbut - 1, &x1, &y1, &x, &y, &w, &h);
 		y = y - tree[ROOT].ob_y;
 		y += h + 2;
