@@ -779,6 +779,31 @@ static void fm_parse(RSCTREE *tree, const char *alert, int is_translation, struc
 	fm_strbrk(tree, TRUE, is_translation, MAX_BUTNUM, MAX_BUTLEN, TOS_MAX_BUTLEN, alert, numbut, &mlenbut, buttons);
 }
 
+/* ------------------------------------------------------------------------- */
+
+#define ARRAY_SIZE(array) ((int)(sizeof(array)/sizeof(array[0])))
+
+static int alert_emutos_def_button(RSCTREE *tree)
+{
+	static struct {
+		_WORD defbutton;
+		const char *name;
+	} const emutos_alerts[] = {
+		{ 2, "STDELDIS" },
+		{ 3, "STFMTERR" },
+		{ 2, "STFOFAIL" },
+	};
+	int i;
+
+	for (i = 0; i < ARRAY_SIZE(emutos_alerts); i++)
+	{
+		if (strcmp(tree->rt_name, emutos_alerts[i].name) == 0)
+			return emutos_alerts[i].defbutton;
+	}
+	return 1;
+}
+
+/* ------------------------------------------------------------------------- */
 
 static _BOOL draw_alert(RSCTREE *tree, EXTOB_MODE mode)
 {
@@ -789,6 +814,7 @@ static _BOOL draw_alert(RSCTREE *tree, EXTOB_MODE mode)
 	struct alert_button *buttons[MAX_BUTNUM];
 	int i;
 	_WORD numbut;
+	_WORD defbutton;
 
 	str = tree->rt_objects.alert.al_str;
 	if (str == NULL)
@@ -810,10 +836,13 @@ static _BOOL draw_alert(RSCTREE *tree, EXTOB_MODE mode)
 	 * and does not restore the screen background.
 	 */
 	start_drawrect();
+	defbutton = 1;
+	if (tree->rt_file->rsc_emutos == EMUTOS_DESK)
+		defbutton = alert_emutos_def_button(tree);
 	if (mode == EXTOB_NONE || mode == EXTOB_AES)
-		form_alert_ex(1, translation, 1 | (tree->rt_file->rsc_emutos != EMUTOS_NONE ? 2 : 0));
+		form_alert_ex(defbutton, translation, 1 | (tree->rt_file->rsc_emutos != EMUTOS_NONE ? 2 : 0));
 	else
-		ob_draw_alert(phys_handle, 1, translation, &desk, mode);
+		ob_draw_alert(phys_handle, defbutton, translation, &desk, mode);
 	end_drawrect(&gr);
 	
 	err = write_image(tree, gr.g_x, gr.g_y, gr.g_w, gr.g_h, FALSE);
