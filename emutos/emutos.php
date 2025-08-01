@@ -166,6 +166,8 @@ function compile_emutos()
 			fprintf($fp, "#define CONF_WITH_SCSI %s\n", onoff($_POST['conf_with_scsi']));
 		if ($_POST['conf_with_ide'] != '')
 			fprintf($fp, "#define CONF_WITH_IDE %s\n", onoff($_POST['conf_with_ide']));
+		if ($_POST['conf_with_nova'] != '')
+			fprintf($fp, "#define CONF_WITH_NOVA %s\n", onoff($_POST['conf_with_nova']));
 		
 		if ($_POST['conf_with_vdi_16bit'] != '')
 			fprintf($fp, "#define CONF_WITH_VDI_16BIT %s\n", onoff($_POST['conf_with_vdi_16bit']));

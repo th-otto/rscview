@@ -185,6 +185,16 @@ Define CONF_WITH_IDE to activate IDE support
 </td>
 </tr>
 
+<tr><td colspan="3"><hr /></td></tr>
+<tr><td>NOVA:</td>
+<td>
+<select <?php setting('conf_with_nova', bool_setting()); ?>
+</td>
+<td>
+Define CONF_WITH_NOVA to enable support for Nova graphic card adapter
+</td>
+</tr>
+
 <tr><td>&nbsp;</td><td></td><td></td></tr>
 <tr><td>&nbsp;</td><td></td><td></td></tr>
 <tr><td>&nbsp;</td><td></td><td></td></tr>
