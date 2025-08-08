@@ -93,6 +93,7 @@ $targets = array(
 	'flop'             => array('filename' => 'emutos@UNIQUE@.st',       'zip' => 'etos-flop@UNIQUE@', 'unique' => 1, 'name' => 'Bootable floppy with RAM tos'),
 	'pak3'             => array('filename' => 'etospak3@UNIQUE@.img',    'zip' => 'etos-pak3@UNIQUE@', 'unique' => 1, 'name' => '256k ROM, suitable for PAK/3 systems'),
 	'cart'             => array('filename' => 'etoscart.img',            'zip' => 'etos-cart',         'unique' => 0, 'name' => 'EmuTOS as a diagnostic cartridge'),
+	'lisaflop'         => array('filename' => 'emutos.dc42',             'zip' => 'etos-lisa@UNIQUE@', 'unique' => 1, 'name' => 'EmuTOS RAM as Apple Lisa boot floppy'),
 );
 
 function _redirect($message, $url = NULL)
