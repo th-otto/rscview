@@ -393,6 +393,16 @@ to devices. See the <a href="https://tho-otto.de/hypview/hypview.cgi?url=%2Fhyp%
 </tr>
 
 <tr><td colspan="3"><hr /></td></tr>
+<tr><td>XHDI:</td>
+<td>
+<select <?php setting('conf_with_xhdi', bool_setting()); ?>
+</td>
+<td>
+Set CONF_WITH_XHDI to 1 to enable XHDI support (i.e. the XHDI cookie etc.)
+</td>
+</tr>
+
+<tr><td colspan="3"><hr /></td></tr>
 <tr><td>Cartridge Debug Print:</td>
 <td>
 <select <?php setting('cartridge_debug_print', bool_setting()); ?>

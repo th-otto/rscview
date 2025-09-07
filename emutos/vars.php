@@ -78,7 +78,7 @@ $targets = array(
 	'@512'             => array('filename' => 'etos512@UNIQUE@.img',     'zip' => 'etos-512@UNIQUE@',  'unique' => 1, 'name' => '512k ROM image'),
 	'@1024'            => array('filename' => 'etos1024k.img',           'zip' => 'etos-1024',         'unique' => 0, 'name' => '1024k ROM image, with all languages'),
 	'aranym'           => array('filename' => 'emutos-aranym.img',       'zip' => 'etos-aranym',       'unique' => 0, 'name' => '512k ROM image, suitable for ARAnyM'),
-	'firebee'          => array('filename' => 'emutosfb.s19',            'zip' => 'etos-fb',           'unique' => 0, 'name' => 'SREC file, to be flashed on the FireBee'),
+	'firebee'          => array('filename' => 'etosfb@UNIQUE@.s19',      'zip' => 'etosfb@UNIQUE@',    'unique' => 1, 'name' => 'SREC file, to be flashed on the FireBee'),
 	'firebee-prg'      => array('filename' => 'emutos.prg',              'zip' => 'etos-fb-prg',       'unique' => 0, 'name' => 'RAM tos for the FireBee'),
 	'amiga'            => array('filename' => 'emutos-amiga.rom',        'zip' => 'etos-amiga',        'unique' => 0, 'name' => 'ROM for Amiga hardware'),
 	'amigavampire'     => array('filename' => 'emutos-vampire.rom',      'zip' => 'etos-vampire',      'unique' => 0, 'name' => 'ROM for Amiga optimized for Vampire V2'),
