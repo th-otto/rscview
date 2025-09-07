@@ -13,7 +13,6 @@ include('vars.php');
 <meta http-equiv="content-type" content="text/html;charset=UTF-8" />
 <meta name="keywords" content="ARAnyM, EmuTOS" />
 <link rel="stylesheet" type="text/css" href="emutos.css" />
-<script src="emutos.js"></script>
 </head>
 
 <body onload="onload();">
@@ -22,6 +21,39 @@ include('vars.php');
 <hr />
 <h1>EmuTOS custom building made easy</h1>
 <hr />
+<script type="text/javascript">
+function changeVersion()
+{
+	var version = document.getElementById('emutosversion').value;
+}
+
+function changeRomVersion()
+{
+	var version = document.getElementById('romversion').value;
+	var disabled = '';
+	switch (version) {
+<?php
+	global $targets;
+	foreach ($targets as $romversion => $key)
+	{
+		echo "\tcase " . '"' . $romversion . '"' . ":\n";
+		if ($key['unique'])
+			echo "\t\tdisabled = '';\n";
+		else
+			echo "\t\tdisabled = 'disabled';\n";
+		echo "\t\tbreak;\n";
+	}
+?>
+	}
+	document.getElementById('country').disabled = disabled;
+}
+
+function onload()
+{
+	changeVersion();
+	changeRomVersion();
+}
+</script>
 
 <?php
 	if (isset($_SESSION['sess_message']))

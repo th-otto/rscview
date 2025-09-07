@@ -72,28 +72,33 @@ $countries = array(
 	'ca' => array('name' => 'Catalan'),
 );
 
+/*
+ * TODO:
+ * - firebee target is unique only since version 1.2
+ * - 512k target is unique only since version 1.1
+ */
 $targets = array(
-	'@192'             => array('filename' => 'etos192@UNIQUE@.img',     'zip' => 'etos-192@UNIQUE@',  'unique' => 1, 'name' => '192k ROM image'),
-	'@256'             => array('filename' => 'etos256@UNIQUE@.img',     'zip' => 'etos-256@UNIQUE@',  'unique' => 1, 'name' => '256k ROM image'),
-	'@512'             => array('filename' => 'etos512@UNIQUE@.img',     'zip' => 'etos-512@UNIQUE@',  'unique' => 1, 'name' => '512k ROM image'),
-	'@1024'            => array('filename' => 'etos1024k.img',           'zip' => 'etos-1024',         'unique' => 0, 'name' => '1024k ROM image, with all languages'),
-	'aranym'           => array('filename' => 'emutos-aranym.img',       'zip' => 'etos-aranym',       'unique' => 0, 'name' => '512k ROM image, suitable for ARAnyM'),
-	'firebee'          => array('filename' => 'etosfb@UNIQUE@.s19',      'zip' => 'etosfb@UNIQUE@',    'unique' => 1, 'name' => 'SREC file, to be flashed on the FireBee'),
-	'firebee-prg'      => array('filename' => 'emutos.prg',              'zip' => 'etos-fb-prg',       'unique' => 0, 'name' => 'RAM tos for the FireBee'),
-	'amiga'            => array('filename' => 'emutos-amiga.rom',        'zip' => 'etos-amiga',        'unique' => 0, 'name' => 'ROM for Amiga hardware'),
-	'amigavampire'     => array('filename' => 'emutos-vampire.rom',      'zip' => 'etos-vampire',      'unique' => 0, 'name' => 'ROM for Amiga optimized for Vampire V2'),
-	'v4sa'             => array('filename' => 'emutos-vampire-v4sa.rom', 'zip' => 'etos-v4sa',         'unique' => 0, 'name' => 'ROM for Amiga Vampire V4 Standalone'),
-	'amigakd'          => array('filename' => 'emutos-kickdisk.adf',     'zip' => 'etos-kickdisk',     'unique' => 0, 'name' => 'EmuTOS as Amiga 1000 Kickstart disk'),
-	'amigaflop'        => array('filename' => 'emutos.adf',              'zip' => 'etos-amiflop',      'unique' => 0, 'name' => 'EmuTOS RAM as Amiga boot floppy'),
-	'amigaflopvampire' => array('filename' => 'emutos-vampire.adf',      'zip' => 'etos-vampflop',     'unique' => 0, 'name' => 'EmuTOS RAM as Amiga boot floppy optimized for Vampire V2'),
-	'm548x-dbug'       => array('filename' => 'emutos-m548x-dbug.s19',   'zip' => 'etos-m548x-dbug',   'unique' => 0, 'name' => 'EmuTOS-RAM for dBUG on ColdFire Evaluation Boards'),
-	'm548x-bas'        => array('filename' => 'emutos-m548x-bas.s19',    'zip' => 'etos-m548x-bas',    'unique' => 0, 'name' => 'EmuTOS for BaS_gcc on ColdFire Evaluation Boards'),
-	'm548x-prg'        => array('filename' => 'emutos.prg',              'zip' => 'etos-m548x-prg',    'unique' => 0, 'name' => 'RAM tos for ColdFire Evaluation Boards with BaS_gcc'),
-	'prg'              => array('filename' => 'emutos@UNIQUE@.prg',      'zip' => 'etos-prg@UNIQUE@',  'unique' => 1, 'name' => 'emutos.prg, a RAM tos'),
-	'flop'             => array('filename' => 'emutos@UNIQUE@.st',       'zip' => 'etos-flop@UNIQUE@', 'unique' => 1, 'name' => 'Bootable floppy with RAM tos'),
-	'pak3'             => array('filename' => 'etospak3@UNIQUE@.img',    'zip' => 'etos-pak3@UNIQUE@', 'unique' => 1, 'name' => '256k ROM, suitable for PAK/3 systems'),
-	'cart'             => array('filename' => 'etoscart.img',            'zip' => 'etos-cart',         'unique' => 0, 'name' => 'EmuTOS as a diagnostic cartridge'),
-	'lisaflop'         => array('filename' => 'emutos.dc42',             'zip' => 'etos-lisa@UNIQUE@', 'unique' => 1, 'name' => 'EmuTOS RAM as Apple Lisa boot floppy'),
+	'@192'             => array('filename' => 'etos192*.img',              'zip' => 'etos-192@UNIQUE@',  'unique' => 1, 'name' => '192k ROM image'),
+	'@256'             => array('filename' => 'etos256*.img',              'zip' => 'etos-256@UNIQUE@',  'unique' => 1, 'name' => '256k ROM image'),
+	'@512'             => array('filename' => 'etos512*.img',              'zip' => 'etos-512@UNIQUE@',  'unique' => 1, 'name' => '512k ROM image'),
+	'@1024'            => array('filename' => 'etos1024k.img',             'zip' => 'etos-1024',         'unique' => 0, 'name' => '1024k ROM image, with all languages'),
+	'aranym'           => array('filename' => 'emutos-aranym.img',         'zip' => 'etos-aranym',       'unique' => 0, 'name' => '512k ROM image, suitable for ARAnyM'),
+	'firebee'          => array('filename' => 'etosfb*.s19 emutosfb*.s19', 'zip' => 'etosfb@UNIQUE@',    'unique' => 1, 'name' => 'SREC file, to be flashed on the FireBee'),
+	'firebee-prg'      => array('filename' => 'emutos*.prg',               'zip' => 'etos-fb-prg',       'unique' => 0, 'name' => 'RAM tos for the FireBee'),
+	'amiga'            => array('filename' => 'emutos-amiga*.rom',         'zip' => 'etos-amiga',        'unique' => 0, 'name' => 'ROM for Amiga hardware'),
+	'amigavampire'     => array('filename' => 'emutos-vampire*.rom',       'zip' => 'etos-vampire',      'unique' => 0, 'name' => 'ROM for Amiga optimized for Vampire V2'),
+	'v4sa'             => array('filename' => 'emutos-vampire-v4sa.rom',   'zip' => 'etos-v4sa',         'unique' => 0, 'name' => 'ROM for Amiga Vampire V4 Standalone'),
+	'amigakd'          => array('filename' => 'emutos-kickdisk*.adf',      'zip' => 'etos-kickdisk',     'unique' => 0, 'name' => 'EmuTOS as Amiga 1000 Kickstart disk'),
+	'amigaflop'        => array('filename' => 'emutos*.adf',               'zip' => 'etos-amiflop',      'unique' => 0, 'name' => 'EmuTOS RAM as Amiga boot floppy'),
+	'amigaflopvampire' => array('filename' => 'emutos-vampire.adf',        'zip' => 'etos-vampflop',     'unique' => 0, 'name' => 'EmuTOS RAM as Amiga boot floppy optimized for Vampire V2'),
+	'm548x-dbug'       => array('filename' => 'emutos-m548x-dbug.s19',     'zip' => 'etos-m548x-dbug',   'unique' => 0, 'name' => 'EmuTOS-RAM for dBUG on ColdFire Evaluation Boards'),
+	'm548x-bas'        => array('filename' => 'emutos-m548x-bas.s19',      'zip' => 'etos-m548x-bas',    'unique' => 0, 'name' => 'EmuTOS for BaS_gcc on ColdFire Evaluation Boards'),
+	'm548x-prg'        => array('filename' => 'emutos*.prg',               'zip' => 'etos-m548x-prg',    'unique' => 0, 'name' => 'RAM tos for ColdFire Evaluation Boards with BaS_gcc'),
+	'prg'              => array('filename' => 'emutos*.prg',               'zip' => 'etos-prg@UNIQUE@',  'unique' => 1, 'name' => 'emutos.prg, a RAM tos'),
+	'flop'             => array('filename' => 'emutos*.st',                'zip' => 'etos-flop@UNIQUE@', 'unique' => 1, 'name' => 'Bootable floppy with RAM tos'),
+	'pak3'             => array('filename' => 'etospak3*.img',             'zip' => 'etos-pak3@UNIQUE@', 'unique' => 1, 'name' => '256k ROM, suitable for PAK/3 systems'),
+	'cart'             => array('filename' => 'etoscart*.img',             'zip' => 'etos-cart@UNIQUE@', 'unique' => 0, 'name' => 'EmuTOS as a diagnostic cartridge'),
+	'lisaflop'         => array('filename' => 'emutos*.dc42',              'zip' => 'etos-lisa@UNIQUE@', 'unique' => 1, 'name' => 'EmuTOS RAM as Apple Lisa boot floppy'),
 );
 
 function _redirect($message, $url = NULL)
